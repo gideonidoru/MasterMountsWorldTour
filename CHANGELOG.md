@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0
+
+**Picking a session length now constrains the plan, which is what it was
+supposed to do all along.**
+
+- The Farm Plan list is limited to the stops that fit your session. Previously
+  it computed the right answer, announced it in chat, and then showed all 106
+  stops anyway — so the one surface you're actually looking at contradicted the
+  choice you'd just made.
+- The header counts the visible stops and says how many are held back
+  (`· 104 beyond this session`), so nothing vanishes silently.
+- The plan repaints the moment you pick, instead of waiting for something else
+  to refresh it.
+- Chat says "Session set" rather than "Session started" when you're only
+  choosing a length.
+
 ## 1.2.2
 
 Three fixes to the session picker, all reported from live play.

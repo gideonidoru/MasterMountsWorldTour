@@ -199,9 +199,9 @@ function S.Start(minutes, setOnly)
 			.. "Everything reachable needs longer than that right now.", st.minutes)
 		return false
 	end
-	MM:Print("|cff40d860Session started: %d minutes.|r %d stops, ~%.1f mounts expected, "
-		.. "%s of work planned.", st.minutes, #chosen, mounts,
-		U.FormatSeconds(used * 60))
+	MM:Print("|cff40d860Session %s: %d minutes.|r %d stops, ~%.1f mounts expected, "
+		.. "%s of work planned.", setOnly and "set" or "started", st.minutes,
+		#chosen, mounts, U.FormatSeconds(used * 60))
 	MM:Print("   %s", S.NextLine() or "")
 	-- Same reasoning as a route: a session is a mode where the next stop is
 	-- the thing you want on screen.

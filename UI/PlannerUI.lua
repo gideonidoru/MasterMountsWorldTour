@@ -231,6 +231,14 @@ function UI.BuildPlanner(panel)
 	-- Session is neither an action on the plan nor a filter on the list: it
 	-- changes how the plan gets EXECUTED. It gets its own slot between the two
 	-- groups, with a wider gap on each side to say so.
+	-- The plan view is now session-dependent, so it has to repaint when the
+	-- session does. Without this you pick a length and the list sits unchanged
+	-- until something else happens to refresh it -- which is exactly how this
+	-- looked broken.
+	MM:On("MM_SESSION_CHANGED", function()
+		if UI.RefreshPlanner then UI.RefreshPlanner() end
+	end)
+
 	local clearBtn = UI.MakeButton(panel, "Clear Plan")
 	clearBtn:SetPoint("LEFT", easyBtn, "RIGHT", 6, 0)
 
@@ -475,8 +483,22 @@ function UI.RefreshPlanner()
 
 	-- ordered as the route would run it
 	MM.Router:Build()
+	-- A SESSION CONSTRAINS THIS LIST.
+	--
+	-- Picking "45 minutes" was computing the right answer, announcing it in
+	-- chat, and then showing all 106 stops anyway -- so the one surface the
+	-- player is actually looking at contradicted the choice they had just made.
+	-- Constraining the plan view is what "plan for the time I have" MEANS; the
+	-- goal counter agreeing was never the point.
+	--
+	-- The rest of the plan is not deleted, only hidden behind the limit, and
+	-- the header says how many are held back so nothing disappears silently.
 	local items, zones = {}, {}
+	local sess = MM.Session and MM.Session.Active and MM.Session.Active()
+	local limit = (sess and sess.planned and sess.planned > 0) and sess.planned or nil
+	local hiddenBySession = limit and math.max(0, #MM.Router.route - limit) or 0
 	for i, step in ipairs(MM.Router.route) do
+		if limit and i > limit then break end
 		-- one stop, every mount it yields — sharing the stop's index so the
 		-- numbering reflects trips made rather than mounts wanted
 		for _, m in ipairs(step.members or { step }) do
@@ -503,7 +525,8 @@ function UI.RefreshPlanner()
 	local zoneCount = 0
 	for _ in pairs(zones) do zoneCount = zoneCount + 1 end
 	local goalCount = 0
-	for _, step in ipairs(MM.Router.route) do
+	for i, step in ipairs(MM.Router.route) do
+		if limit and i > limit then break end
 		goalCount = goalCount + #(step.members or { step })
 	end
 	-- "153 stops" answers a question nobody asked. What a collector wants to
@@ -521,8 +544,9 @@ function UI.RefreshPlanner()
 			U.FormatSeconds((t.routeMinutes or t.minutes) * 60), mountText,
 			U.FormatSeconds(t.minutes * 60))
 	end
-	summaryText:SetText(head .. ("%d mounts · %d stops · %d zones%s%s"):format(
-		goalCount, #MM.Router.route, zoneCount,
+	summaryText:SetText(head .. ("%d mounts · %d stops · %d zones%s%s%s"):format(
+		goalCount, limit or #MM.Router.route, zoneCount,
+		hiddenBySession > 0 and (" · " .. hiddenBySession .. " beyond this session") or "",
 		offRoute > 0 and (" · " .. offRoute .. " unplaced") or "",
 		waiting > 0 and (" · " .. waiting .. " waiting") or ""))
 	routeButton:SetRouteState(MM.cdb.routeActive)
