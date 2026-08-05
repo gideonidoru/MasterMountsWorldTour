@@ -190,7 +190,9 @@ function UI.BuildPlanner(panel)
 	band:SetHeight(30)
 	band:SetColorTexture(0, 0, 0, 0.35)
 
-	local autoBtn = UI.MakeButton(panel, "Auto-Plan All Missing")
+	-- "All Missing" trimmed to "All": the row is 1000px of window and the long
+	-- form put the last control within a few pixels of the edge.
+	local autoBtn = UI.MakeButton(panel, "Auto-Plan All")
 	autoBtn:SetPoint("TOPLEFT", 8, -4)
 	autoBtn:SetScript("OnClick", function()
 		local n = MM.Planner:AutoPlanAll()
@@ -205,25 +207,36 @@ function UI.BuildPlanner(panel)
 		end
 	end)
 
-	local optBtn = UI.MakeButton(panel, "Optimize")
-	optBtn:SetPoint("LEFT", easyBtn, "RIGHT", 6, 0)
-	optBtn:SetScript("OnClick", function()
-		local routable, waiting = MM.Planner:Optimize()
-		MM:Print("Plan optimized: %d goals routed for travel + ease, %d parked (lockout/event).",
-			routable, waiting)
-	end)
-	optBtn:SetScript("OnEnter", function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_TOP")
-		GameTooltip:SetText("Optimize the plan order")
-		GameTooltip:AddLine("Reorders your plan into the best route: cheap wins first,"
-			.. " clustered by continent and travel distance. Goals you can't work on"
-			.. " right now (lockouts, inactive events) move to the bottom.", 1, 1, 1, true)
-		GameTooltip:Show()
-	end)
-	optBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
+	-- NO "Optimize" BUTTON. The route is always optimized.
+	--
+	-- Optimize called Router:Build() and then reordered cdb.plan to match the
+	-- route it had just built. The route was never the thing being improved --
+	-- Build reads the plan as an unordered SET and applies its own three layers
+	-- every time, pressed or not. All the button did was overwrite your manual
+	-- plan order (the up/down arrows on each row) with the router's.
+	--
+	-- So it improved nothing and destroyed something, while implying your route
+	-- was second-rate until you found it. The slot is better spent on the
+	-- session picker, which changes the route for real.
+	-- TOOLBAR ORDER: act, then set, then look.
+	--
+	--   [Auto-Plan] [Add 10 Easiest] [Clear Plan] | [Session] | [Available] [Category] [Sort]
+	--    -------- change the plan ------------      -setting-   ---- change the view ----
+	--
+	-- Clear Plan belongs beside the two buttons it undoes, not stranded after
+	-- an unrelated control -- and destructive actions sit at the END of their
+	-- own group, which is where people expect to find them and where they are
+	-- least likely to be hit by accident.
+	--
+	-- Session is neither an action on the plan nor a filter on the list: it
+	-- changes how the plan gets EXECUTED. It gets its own slot between the two
+	-- groups, with a wider gap on each side to say so.
 	local clearBtn = UI.MakeButton(panel, "Clear Plan")
-	clearBtn:SetPoint("LEFT", optBtn, "RIGHT", 6, 0)
+	clearBtn:SetPoint("LEFT", easyBtn, "RIGHT", 6, 0)
+
+	local sessionDrop = UI.MakeSessionPicker(panel)
+	sessionDrop:SetPoint("LEFT", clearBtn, "RIGHT", 14, 0)
+	panel.sessionDrop = sessionDrop
 	clearBtn:SetScript("OnClick", function() MM.Planner:Clear() end)
 
 	local availChk = UI.MakeCheck(panel, "Available now", function(v)
@@ -231,7 +244,7 @@ function UI.BuildPlanner(panel)
 		MM.db.ui.plnAvailable = v
 		UI.RefreshPlanner()
 	end)
-	availChk:SetPoint("LEFT", clearBtn, "RIGHT", 12, 0)
+	availChk:SetPoint("LEFT", sessionDrop, "RIGHT", 14, 0)
 	availChk:SetChecked(MM.Planner.filters.onlyAvailable)
 
 	local catValues = { "GROUP_DROPS", "GROUP_BUY", "GROUP_ACH" }
@@ -449,66 +462,6 @@ function UI.BuildPlanner(panel)
 	routeButton:SetPoint("BOTTOMLEFT", planBox, "BOTTOMLEFT", 76, -42)
 	routeButton:SetPoint("BOTTOMRIGHT", planBox, "BOTTOMRIGHT", -76, -42)
 
-	-- SESSION PICKER, under the button that uses it.
-	--
-	-- "Tell it you have 45 minutes" was reachable only from Options > Weights
-	-- & Priorities or by knowing /mm session exists. I first put it on the route
-	-- monitor, which is wrong: you choose a session length BEFORE starting, and
-	-- the monitor is about the route already running. This is where the decision
-	-- is actually made -- plan above, act below, and how long you have sits with
-	-- the acting.
-	panel.sessionLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	panel.sessionLabel:SetPoint("TOPLEFT", routeButton, "BOTTOMLEFT", 0, -8)
-	panel.sessionLabel:SetTextColor(0.6, 0.6, 0.6)
-	panel.sessionLabel:SetText("I have:")
-
-	panel.sessionBtns = {}
-	local sAnchor
-	for _, len in ipairs(MM.Session.LENGTHS) do
-		local short = len.minutes >= 180 and ("%dh"):format(len.minutes / 60)
-			or ("%dm"):format(len.minutes)
-		local b = UI.MakeButton(panel, short, 38)
-		b:SetHeight(20)
-		if sAnchor then
-			b:SetPoint("LEFT", sAnchor, "RIGHT", 3, 0)
-		else
-			b:SetPoint("LEFT", panel.sessionLabel, "RIGHT", 6, 0)
-		end
-		b.mmMinutes = len.minutes
-		b.mmTooltip = ("%s — %s"):format(len.label, len.blurb)
-		b:SetScript("OnClick", function(self) MM.Session.Start(self.mmMinutes) end)
-		sAnchor = b
-		panel.sessionBtns[#panel.sessionBtns + 1] = b
-	end
-
-	panel.sessionEnd = UI.MakeButton(panel, "End", 38)
-	panel.sessionEnd:SetHeight(20)
-	panel.sessionEnd:SetPoint("LEFT", panel.sessionLabel, "RIGHT", 6, 0)
-	panel.sessionEnd:SetScript("OnClick", function() MM.Session.Stop() end)
-	panel.sessionEnd:Hide()
-
-	function panel:RefreshSession()
-		local st = MM.Session and MM.Session.Active and MM.Session.Active()
-		for _, b in ipairs(self.sessionBtns) do
-			if st then b:Hide() else b:Show() end
-		end
-		if st then
-			local rem = MM.Session.Remaining and MM.Session.Remaining()
-			self.sessionLabel:SetText(rem
-				and ("Session: %d min left"):format(math.max(0, math.floor(rem)))
-				or "Session running")
-			self.sessionLabel:SetTextColor(1, 0.82, 0.2)
-			self.sessionEnd:Show()
-		else
-			self.sessionLabel:SetText("I have:")
-			self.sessionLabel:SetTextColor(0.6, 0.6, 0.6)
-			self.sessionEnd:Hide()
-		end
-	end
-	panel:RefreshSession()
-	MM:On("MM_SESSION_CHANGED", function()
-		if panel.RefreshSession then panel:RefreshSession() end
-	end)
 	routeButton:SetHeight(34)
 end
 

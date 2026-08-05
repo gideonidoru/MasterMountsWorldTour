@@ -12,6 +12,68 @@ local DEFAULT_TAB = 2
 
 -- Shared widget helpers (used by both tabs)
 ------------------------------------------------------------
+-- Session length picker: a dropdown, not a row of buttons.
+--
+-- Four buttons plus a label ate a whole row and still looked like a toolbar of
+-- unrelated actions. One control that states the current choice is smaller,
+-- reads as a setting rather than four commands, and fits the top row beside
+-- the other plan controls.
+--
+-- Built defensively. WowStyle1DropdownTemplate is the modern control and is
+-- what this should use, but a missing template would take the whole Planner
+-- tab down with it -- so a plain button that cycles the lengths stands in if
+-- the template is not there. Degraded, not broken.
+function UI.MakeSessionPicker(parent)
+	local S = MM.Session
+	local function label()
+		local st = S and S.Active and S.Active()
+		if st then
+			local rem = S.Remaining and S.Remaining()
+			return rem and ("%d min left"):format(math.max(0, math.floor(rem)))
+				or "Session on"
+		end
+		return "Any length"
+	end
+
+	local ok, drop = pcall(CreateFrame, "DropdownButton", nil, parent,
+		"WowStyle1DropdownTemplate")
+	if ok and drop and drop.SetupMenu then
+		drop:SetSize(128, 22)
+		drop:SetupMenu(function(_, root)
+			root:CreateTitle("How long have you got?")
+			for _, len in ipairs(S.LENGTHS) do
+				root:CreateButton(("%s — %s"):format(len.label, len.blurb), function()
+					S.Start(len.minutes)
+				end)
+			end
+			if S.Active and S.Active() then
+				root:CreateDivider()
+				root:CreateButton("End session", function() S.Stop() end)
+			else
+				root:CreateButton("Any length (no session)", function() S.Stop(true) end)
+			end
+		end)
+		drop.mmSetLabel = function(self) self:SetText(label()) end
+	else
+		-- Fallback: one button that cycles. Same reach, fewer affordances.
+		drop = UI.MakeButton(parent, label(), 128)
+		drop.mmIndex = 0
+		drop:SetScript("OnClick", function(self)
+			self.mmIndex = (self.mmIndex % #S.LENGTHS) + 1
+			S.Start(S.LENGTHS[self.mmIndex].minutes)
+		end)
+		drop.mmSetLabel = function(self) self:SetText(label()) end
+	end
+
+	drop:mmSetLabel()
+	drop.mmTooltip = "Plan for the time you actually have. "
+		.. "The route is rebuilt to fit it."
+	MM:On("MM_SESSION_CHANGED", function()
+		if drop.mmSetLabel then drop:mmSetLabel() end
+	end)
+	return drop
+end
+
 function UI.MakeButton(parent, text, width)
 	local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
 	b:SetText(text)
