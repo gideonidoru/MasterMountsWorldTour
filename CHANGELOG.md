@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.1
+
+- **Fixed: the session dropdown never showed your choice.** It kept reading
+  "No limit" after you picked a length. `WowStyle1DropdownTemplate` is a
+  DropdownButton, not a Button — `SetText` does nothing on it. The label setter
+  is `SetDefaultText`.
+- The control now shows the chosen length ("20 minutes", "3 hours") rather than
+  a countdown; the route monitor already shows time remaining. The off state
+  reads "No limit" in both the control and the menu.
+
 ## 1.2.0
 
 **The Optimize button is gone, because it never optimized anything.**

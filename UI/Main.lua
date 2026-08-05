@@ -25,14 +25,21 @@ local DEFAULT_TAB = 2
 -- the template is not there. Degraded, not broken.
 function UI.MakeSessionPicker(parent)
 	local S = MM.Session
+	-- What the control SAYS it is set to.
+	--
+	-- Shows the chosen length -- "45 minutes" -- not the time remaining. A
+	-- countdown in a picker reads as a clock rather than as a setting, and the
+	-- monitor already shows remaining time while a route runs. "No limit" is
+	-- the off state, stated as a choice rather than as an absence.
 	local function label()
 		local st = S and S.Active and S.Active()
 		if st then
-			local rem = S.Remaining and S.Remaining()
-			return rem and ("%d min left"):format(math.max(0, math.floor(rem)))
-				or "Session on"
+			for _, len in ipairs(S.LENGTHS) do
+				if len.minutes == st.minutes then return len.label end
+			end
+			return ("%d minutes"):format(st.minutes or 0)
 		end
-		return "Any length"
+		return "No limit"
 	end
 
 	local ok, drop = pcall(CreateFrame, "DropdownButton", nil, parent,
@@ -50,10 +57,18 @@ function UI.MakeSessionPicker(parent)
 				root:CreateDivider()
 				root:CreateButton("End session", function() S.Stop() end)
 			else
-				root:CreateButton("Any length (no session)", function() S.Stop(true) end)
+				root:CreateButton("No limit", function() S.Stop(true) end)
 			end
 		end)
-		drop.mmSetLabel = function(self) self:SetText(label()) end
+		-- A DropdownButton is NOT a Button: SetText does nothing on it, which is
+		-- why the toolbar kept saying "No limit" after a length was picked. The
+		-- label setter is SetDefaultText; SetText is kept only as the fallback
+		-- path's method.
+		drop.mmSetLabel = function(self)
+			local text = label()
+			if self.SetDefaultText then self:SetDefaultText(text)
+			elseif self.SetText then self:SetText(text) end
+		end
 	else
 		-- Fallback: one button that cycles. Same reach, fewer affordances.
 		drop = UI.MakeButton(parent, label(), 128)
