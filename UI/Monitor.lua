@@ -10,7 +10,8 @@ local function build()
 	if frame then return end
 
 	frame = CreateFrame("Frame", "MasterMountsMonitor", UIParent, "BackdropTemplate")
-	frame:SetSize(300, 170)
+	-- 196 not 170: the session row below adds 26px above the button row.
+	frame:SetSize(300, 196)
 	frame:SetPoint("RIGHT", UIParent, "RIGHT", -60, 80)
 	frame:SetMovable(true)
 	frame:EnableMouse(true)
@@ -105,6 +106,43 @@ local function build()
 	frame.nextUp:SetJustifyH("LEFT")
 	frame.nextUp:SetTextColor(0.6, 0.6, 0.6)
 
+	-- SESSION ROW.
+	--
+	-- "Tell it you have 45 minutes" is one of the best things this addon does
+	-- and it was reachable only from Options > Weights & Priorities, or by
+	-- knowing /mm session exists. A feature nobody finds is a feature nobody
+	-- has. It belongs here, on the window you are looking at while deciding
+	-- what to do with the next hour.
+	frame.sessionLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	frame.sessionLabel:SetPoint("BOTTOMLEFT", 10, 36)
+	frame.sessionLabel:SetTextColor(0.6, 0.6, 0.6)
+	frame.sessionLabel:SetText("I have:")
+
+	frame.sessionBtns = {}
+	local anchor
+	for _, len in ipairs(MM.Session.LENGTHS) do
+		local short = len.minutes >= 180 and ("%dh"):format(len.minutes / 60)
+			or ("%dm"):format(len.minutes)
+		local b = UI.MakeButton(frame, short, 40)
+		if anchor then
+			b:SetPoint("LEFT", anchor, "RIGHT", 3, 0)
+		else
+			b:SetPoint("LEFT", frame.sessionLabel, "RIGHT", 6, 0)
+		end
+		b.mmMinutes = len.minutes
+		b.mmTooltip = ("%s — %s"):format(len.label, len.blurb)
+		b:SetScript("OnClick", function(self) MM.Session.Start(self.mmMinutes) end)
+		anchor = b
+		frame.sessionBtns[#frame.sessionBtns + 1] = b
+	end
+
+	-- Replaces the row while a session runs, so the same strip answers both
+	-- "how long have I got" and "how much is left".
+	frame.sessionEnd = UI.MakeButton(frame, "End session", 96)
+	frame.sessionEnd:SetPoint("BOTTOMRIGHT", -8, 36)
+	frame.sessionEnd:SetScript("OnClick", function() MM.Session.Stop() end)
+	frame.sessionEnd:Hide()
+
 	local prev = UI.MakeButton(frame, "Back", 48)
 	prev:SetPoint("BOTTOMLEFT", 8, 8)
 	prev:SetScript("OnClick", function() MM.Router:Advance(-1) end)
@@ -129,8 +167,30 @@ local function build()
 	frame:Hide()
 end
 
+-- Show the pickers when no session is running, the remaining time when one is.
+local function refreshSession()
+	if not (frame and frame.sessionBtns) then return end
+	local st = MM.Session and MM.Session.Active and MM.Session.Active()
+	for _, b in ipairs(frame.sessionBtns) do
+		if st then b:Hide() else b:Show() end
+	end
+	if st then
+		local remaining = MM.Session.Remaining and MM.Session.Remaining()
+		frame.sessionLabel:SetText(remaining
+			and ("Session: %d min left"):format(math.max(0, math.floor(remaining)))
+			or "Session running")
+		frame.sessionLabel:SetTextColor(1, 0.82, 0.2)
+		frame.sessionEnd:Show()
+	else
+		frame.sessionLabel:SetText("I have:")
+		frame.sessionLabel:SetTextColor(0.6, 0.6, 0.6)
+		frame.sessionEnd:Hide()
+	end
+end
+
 local function refresh()
 	if not frame or not frame:IsShown() then return end
+	refreshSession()
 	local cur = MM.Router:Current()
 	if not cur then
 		frame.step:SetText("No active route")
@@ -244,3 +304,9 @@ MM:On("MM_SCANNED", refresh)
 
 -- periodic refresh so lockout timers/currency stay fresh
 C_Timer.NewTicker(30, refresh)
+
+-- A session started or ended: repaint immediately rather than waiting for
+-- the next route event, which may be minutes away.
+MM:On("MM_SESSION_CHANGED", function()
+	if frame and frame:IsShown() then refresh() end
+end)
