@@ -1,0 +1,78 @@
+## Interface: 120100, 120007, 110207
+## Title: Master Mounts – World Tour
+## Notes: The definitive mount collector — collection audit, availability and lockouts, farm planning, routing and navigation.
+## Author: Indrik - Mal'Ganis
+## Version: 1.0.0
+## SavedVariables: MasterMountsDB
+## SavedVariablesPerCharacter: MasterMountsCharDB
+## IconTexture: Interface\AddOns\MasterMountsWorldTour\Media\icon
+## Category-enUS: Collections
+## OptionalDeps: TomTom, Titan, MountsRarity, ElvUI
+
+Libs\LibStub.lua
+Libs\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0.lua
+
+Core.lua
+Util.lua
+Theme.lua
+
+Data\Schema.lua
+Data\Mounts.lua
+
+Attempts.lua
+Scanner.lua
+IDResolver.lua
+Conditions.lua
+Rarity.lua
+Lockouts.lua
+Callings.lua
+Assaults.lua
+Alts.lua
+QuestGate.lua
+Acquire.lua
+Availability.lua
+Timewalking.lua
+TradingPost.lua
+Weights.lua
+Crafting.lua
+Contribute.lua
+Session.lua
+Planner.lua
+Paths.lua
+Router.lua
+
+Nav\FlightPointData.lua
+Nav\TaxiGraphData.lua
+Nav\TransitData.lua
+Nav\Taxi.lua
+Nav\BorderData.lua
+Nav\Journey.lua
+Nav\Teleports.lua
+Nav\Travel.lua
+Nav\TomTomBridge.lua
+Nav\Queue.lua
+Nav\Arrow.lua
+
+Celebration.lua
+RareAlert.lua
+ZoneAlert.lua
+GroupSync.lua
+
+UI\Main.lua
+UI\Collection.lua
+UI\PlannerUI.lua
+UI\Monitor.lua
+UI\Compact.lua
+UI\MapPins.lua
+UI\Broker.lua
+UI\Onboarding.lua
+
+Options.lua
+Tests.lua
+WeightsMatrix.lua
+SourceAudit.lua
+RouterModel.lua
+Score.lua
+Diagnostics.lua

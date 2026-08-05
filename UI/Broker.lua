@@ -1,0 +1,193 @@
+-- Master Mounts broker: LibDataBroker feed (Titan Panel, Bazooka, etc. pick
+-- this up automatically) plus our own gorgeous minimap button.
+local _, MM = ...
+local U = MM.Util
+
+-- Our own art, converted from mm-worldTourIcon.png by tools/make_icon_tga.py.
+-- The 64px copy exists because this draws at 20px: handing the client a
+-- 1024-wide texture to render a thumbnail wastes video memory, and WoW does not
+-- mipmap addon textures.
+local ICON = MM.MEDIA .. "icon-minimap"
+
+local function summaryTooltip(tt)
+	tt:AddLine("|cff33c1ffMaster Mounts|r")
+	local c, t = MM.Scanner.collectedCount, MM.Scanner.totalCount
+	tt:AddLine(("Collected: |cffffffff%d / %d|r (%d%%)"):format(c, t, t > 0 and (c * 100 / t) or 0), 1, 0.82, 0.2)
+
+	local plan = MM.Planner:GetPlan()
+	tt:AddLine(("Farm plan: |cffffffff%d|r goals"):format(#plan), 1, 0.82, 0.2)
+
+	local cur = MM.Router:Current()
+	if cur then
+		tt:AddLine(("Route: goal %d/%d — %s"):format(MM.cdb.routeIndex, #MM.Router.route, cur.label), 0.4, 0.8, 1)
+		-- what the rest of the route is worth, in the same terms as the planner
+		local totals = MM.Router.totals
+		if totals and totals.stops > 0 then
+			tt:AddLine(("Remaining: about %s · ~%.1f mounts"):format(
+				U.FormatSeconds(totals.minutes * 60), totals.mounts), 0.6, 0.6, 0.7)
+		end
+	end
+
+	if MM.Timewalking.IsActive() then
+		tt:AddLine("Timewalking is ACTIVE this week — " .. U.Comma(MM.Timewalking.Badges())
+			.. " badges banked", 0.5, 1, 0.5)
+	end
+
+	tt:AddLine(" ")
+	tt:AddLine("Left-click: open Master Mounts", 0.7, 0.7, 0.7)
+	tt:AddLine("Right-click: quick menu", 0.7, 0.7, 0.7)
+end
+
+local function quickMenu(anchor)
+	if MenuUtil and MenuUtil.CreateContextMenu then
+		MenuUtil.CreateContextMenu(anchor, function(_, root)
+			root:CreateTitle("Master Mounts")
+			root:CreateButton("Collection", function() MM:Fire("MM_TOGGLE_MAIN", 1) end)
+			root:CreateButton("Planner", function() MM:Fire("MM_TOGGLE_MAIN", 2) end)
+			root:CreateButton("Monitor HUD", function() MM:Fire("MM_TOGGLE_MONITOR") end)
+			root:CreateButton("Compact mode", function() MM:Fire("MM_TOGGLE_COMPACT") end)
+			root:CreateButton(MM.cdb.routeActive and "Stop route" or "Start route",
+				function() MM:Fire("MM_ROUTE_TOGGLE") end)
+			root:CreateButton("Easiest mounts (chat)", function() MM:Fire("MM_EASIEST") end)
+			root:CreateButton("Options", function() MM.OpenOptions() end)
+		end)
+	else
+		-- ancient client fallback: just toggle the monitor
+		MM:Fire("MM_TOGGLE_MONITOR")
+	end
+end
+
+------------------------------------------------------------
+-- LibDataBroker data source
+------------------------------------------------------------
+local dataObj
+local LDB = LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true)
+if LDB then
+	dataObj = LDB:NewDataObject("MasterMounts", {
+		type = "data source",
+		text = "Master Mounts",
+		icon = ICON,
+		OnClick = function(self, button)
+			if button == "RightButton" then quickMenu(self) else MM:Fire("MM_TOGGLE_MAIN") end
+		end,
+		OnTooltipShow = summaryTooltip,
+	})
+end
+
+local function updateBrokerText()
+	if not dataObj then return end
+	local cur = MM.Router:Current()
+	if cur then
+		dataObj.text = ("%d/%d %s"):format(MM.cdb.routeIndex, #MM.Router.route, cur.label)
+	else
+		dataObj.text = ("%d/%d"):format(MM.Scanner.collectedCount, MM.Scanner.totalCount)
+	end
+end
+
+MM:On("MM_SCANNED", updateBrokerText)
+MM:On("MM_ROUTE_ADVANCED", updateBrokerText)
+MM:On("MM_ROUTE_STARTED", updateBrokerText)
+MM:On("MM_ROUTE_STOPPED", updateBrokerText)
+
+------------------------------------------------------------
+-- Minimap button: classic gold-ring style, draggable around the rim
+------------------------------------------------------------
+local button
+
+local function positionButton()
+	local angle = math.rad(MM.db.minimapAngle or 215)
+	local radius = (Minimap:GetWidth() / 2) + 5
+	button:ClearAllPoints()
+	button:SetPoint("CENTER", Minimap, "CENTER",
+		math.cos(angle) * radius, math.sin(angle) * radius)
+end
+
+local function buildMinimapButton()
+	if button then return end
+	button = CreateFrame("Button", "MasterMountsMinimapButton", Minimap)
+	button:SetSize(32, 32)
+	button:SetFrameStrata("MEDIUM")
+	button:SetFrameLevel(8)
+	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	button:RegisterForDrag("LeftButton")
+	button:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+
+	-- the mount icon, masked round, inside the classic gold ring
+	local icon = button:CreateTexture(nil, "BACKGROUND")
+	icon:SetSize(20, 20)
+	icon:SetPoint("CENTER", -1, 1)
+	icon:SetTexture(ICON)
+	-- No border crop: that trim exists to cut the frame off a Blizzard icon, and
+	-- our art has none -- cropping it would just shave the edges off.
+	icon:SetTexCoord(0, 1, 0, 1)
+	local mask = button:CreateMaskTexture()
+	mask:SetAllPoints(icon)
+	mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask",
+		"CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+	icon:AddMaskTexture(mask)
+
+	local ring = button:CreateTexture(nil, "OVERLAY")
+	ring:SetSize(54, 54)
+	ring:SetPoint("TOPLEFT")
+	ring:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+
+	button:SetScript("OnClick", function(self, mouse)
+		if mouse == "RightButton" then quickMenu(self) else MM:Fire("MM_TOGGLE_MAIN") end
+	end)
+	button:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+		summaryTooltip(GameTooltip)
+		GameTooltip:Show()
+	end)
+	button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+	-- drag around the minimap rim
+	button:SetScript("OnDragStart", function(self)
+		self:SetScript("OnUpdate", function()
+			local mx, my = Minimap:GetCenter()
+			local cx, cy = GetCursorPosition()
+			local scale = Minimap:GetEffectiveScale()
+			cx, cy = cx / scale, cy / scale
+			MM.db.minimapAngle = math.deg(math.atan2 and math.atan2(cy - my, cx - mx)
+				or math.atan(cy - my, cx - mx))
+			positionButton()
+		end)
+	end)
+	button:SetScript("OnDragStop", function(self)
+		self:SetScript("OnUpdate", nil)
+	end)
+
+	positionButton()
+end
+
+MM:On("MM_LOGIN", function()
+	C_Timer.After(3, function()
+		if MM.db.minimapAngle == nil then MM.db.minimapAngle = 215 end
+		MM.db.minimap = MM.db.minimap or { hide = false }
+
+		-- LibDBIcon is bundled, so this is the normal path: minimap-button
+		-- collectors/hiders (MBB, MBF, ElvUI, etc.) only know how to manage
+		-- buttons registered through it. Our own button is a fallback.
+		local LDBIcon = LibStub and LibStub:GetLibrary("LibDBIcon-1.0", true)
+		if LDBIcon and dataObj then
+			local ok = pcall(LDBIcon.Register, LDBIcon, "MasterMounts", dataObj, MM.db.minimap)
+			if ok then
+				MM.usingLDBIcon = true
+				return
+			end
+		end
+		buildMinimapButton()
+	end)
+end)
+
+-- Let other addons/macros hide our own button if they can't manage it.
+function MM.SetMinimapShown(shown)
+	MM.db.minimap = MM.db.minimap or {}
+	MM.db.minimap.hide = not shown
+	local LDBIcon = LibStub and LibStub:GetLibrary("LibDBIcon-1.0", true)
+	if MM.usingLDBIcon and LDBIcon then
+		pcall(shown and LDBIcon.Show or LDBIcon.Hide, LDBIcon, "MasterMounts")
+	elseif button then
+		button:SetShown(shown)
+	end
+end

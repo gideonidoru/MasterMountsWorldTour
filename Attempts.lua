@@ -1,0 +1,221 @@
+-- Master Mounts: how many times you have actually tried.
+--
+-- Two problems, and the second one is the interesting one.
+--
+-- 1. THEY WERE COUNTED PER CHARACTER. Mounts are account-wide; killing a boss
+--    thirty times on your main and twenty on an alt read as thirty. For an
+--    addon that tells you which character to do a thing on, counting only one
+--    of them is incoherent. Counts now live on the account, and each
+--    character's existing tally is folded in once, the first time it logs in.
+--
+-- 2. WHAT THE NUMBER MEANS. "You have tried this 47 times" is a fact with no
+--    handle on it. The useful question is *where that sits* -- 47 tries at 1 in
+--    50 is ordinary; 47 tries at 1 in 5 would be remarkable.
+--
+--    So the honest statistic is P(still nothing after n attempts) = (1-p)^n.
+--    If that comes to 2%, then 98 collectors in 100 would have it by now.
+--
+--    AND THE ODDS NEXT TIME ARE UNCHANGED. Drops are memoryless. Plenty of
+--    addons imply a pity timer that does not exist, and a collector who
+--    believes they are "due" makes worse decisions than one who knows they are
+--    not. Saying both things in the same breath is the only honest framing:
+--    you have been unlucky, and that buys you nothing.
+local _, MM = ...
+
+MM.Attempts = {}
+local A = MM.Attempts
+local U = MM.Util
+
+local function charKey()
+	return ("%s-%s"):format(UnitName("player") or "?", GetRealmName() or "?")
+end
+
+------------------------------------------------------------
+-- Storage
+------------------------------------------------------------
+local function store()
+	MM.db.attempts = MM.db.attempts or {}
+	return MM.db.attempts
+end
+
+-- Fold a character's old per-character tally into the account total, once.
+--
+-- Summing is right: they are genuinely separate attempts at the same mount.
+-- The flag is per character rather than global, so an alt that has not logged
+-- in since the change still contributes when it does.
+function A.Migrate()
+	if not (MM.db and MM.cdb) then return 0 end
+	MM.db.attemptsMerged = MM.db.attemptsMerged or {}
+	local key = charKey()
+	if MM.db.attemptsMerged[key] then return 0 end
+
+	local moved = 0
+	local acct = store()
+	for spellID, n in pairs(MM.cdb.attempts or {}) do
+		if type(n) == "number" and n > 0 then
+			acct[spellID] = (acct[spellID] or 0) + n
+			moved = moved + n
+		end
+	end
+	MM.db.attemptsMerged[key] = true
+	if moved > 0 then
+		MM:Print("Folded %d attempt%s from %s into the account-wide total.",
+			moved, moved == 1 and "" or "s", key)
+		MM:Fire("MM_ATTEMPT")
+	end
+	return moved
+end
+
+function A.Get(spellID)
+	if not spellID then return 0 end
+	return store()[spellID] or 0
+end
+
+function A.Record(spellID)
+	if not spellID then return end
+	local acct = store()
+	acct[spellID] = (acct[spellID] or 0) + 1
+	-- The per-character count is kept as a local tally so "how many on THIS
+	-- character" stays answerable, but it is no longer the number anyone reads.
+	if MM.cdb and MM.cdb.attempts then
+		MM.cdb.attempts[spellID] = (MM.cdb.attempts[spellID] or 0) + 1
+	end
+	A.RecordTime(spellID)
+	MM:Fire("MM_ATTEMPT", spellID, acct[spellID])
+	return acct[spellID]
+end
+
+------------------------------------------------------------
+-- How long an attempt actually takes
+------------------------------------------------------------
+-- Only ~22% of records state a timePerAttempt, so for most of the collection
+-- the time model ran on a category default -- a better guess, but still a
+-- guess, and every downstream estimate inherited it.
+--
+-- The addon is already standing right where the answer is. It knows when each
+-- attempt happened; the gap between consecutive attempts IS how long one cycle
+-- takes for that content. Nobody has to time anything or fill anything in.
+--
+-- MEDIAN, not mean. Attempt gaps are full of logouts, dinner and alt-tabs, and
+-- a single overnight gap would drag a mean into nonsense. The median ignores
+-- them by construction.
+local MAX_SANE_GAP = 180 * 60 -- 3h: past this you stopped playing, not farming
+local MIN_SAMPLES  = 3        -- below this it is an anecdote, not a measurement
+local KEEP         = 21       -- 21 stamps -> up to 20 gaps
+
+function A.RecordTime(spellID)
+	local now = GetServerTime and GetServerTime() or nil
+	if not (spellID and now) then return end
+	MM.db.attemptTimes = MM.db.attemptTimes or {}
+	local list = MM.db.attemptTimes[spellID]
+	if not list then list = {}; MM.db.attemptTimes[spellID] = list end
+	list[#list + 1] = now
+	while #list > KEEP do tremove(list, 1) end
+end
+
+-- Measured minutes per attempt, or nil when there is not enough to say.
+-- Returning nil is the honest answer and the caller falls back -- a number
+-- invented from one sample would be indistinguishable from a real one.
+function A.MeasuredVisitMinutes(spellID)
+	local list = spellID and MM.db and MM.db.attemptTimes and MM.db.attemptTimes[spellID]
+	if not list or #list < MIN_SAMPLES + 1 then return nil end
+	local gaps = {}
+	for i = 2, #list do
+		local g = list[i] - list[i - 1]
+		if g > 0 and g <= MAX_SANE_GAP then gaps[#gaps + 1] = g end
+	end
+	if #gaps < MIN_SAMPLES then return nil end
+	table.sort(gaps)
+	local mid = #gaps % 2 == 1 and gaps[(#gaps + 1) / 2]
+		or (gaps[#gaps / 2] + gaps[#gaps / 2 + 1]) / 2
+	return math.max(mid / 60, 1), #gaps
+end
+
+------------------------------------------------------------
+-- What the number means
+------------------------------------------------------------
+-- Returns the probability that a collector with this drop rate would STILL
+-- have nothing after this many attempts, or nil when we cannot say.
+--
+-- This is the whole point: it converts a raw count into "you have been
+-- unluckier than X% of people", which is the thing a collector actually wants
+-- to know and cannot work out in their head.
+function A.Unluckiness(rec, tries)
+	if not (rec and rec.dropRate and tries and tries > 0) then return nil end
+	local p = rec.dropRate / 100
+	if p <= 0 or p >= 1 then return nil end
+	return (1 - p) ^ tries
+end
+
+-- The human line. Deliberately says BOTH things.
+function A.Line(rec, spellID)
+	local tries = A.Get(spellID)
+    if tries <= 0 then return nil end
+	local base = ("You have tried this %d time%s"):format(tries, tries == 1 and "" or "s")
+
+	local still = A.Unluckiness(rec, tries)
+	if not still then return base end
+
+	local luckier = (1 - still) * 100
+	-- Only speak up when the streak is genuinely remarkable.
+	--
+	-- The offline harness caught this: two tries at a 50% drop reports
+	-- "unluckier than 75% of collectors", which is arithmetically true and
+	-- editorially false. Two tries is nothing. Framing it as misfortune
+	-- manufactures a grievance out of an ordinary Tuesday, and an addon that
+	-- does that trains people to distrust the numbers that DO matter.
+	--
+	-- The bar is the unluckiest tenth, and at least a handful of attempts --
+	-- because "unluckier than 90% of collectors" after two tries at a common
+	-- drop is a statement about small numbers, not about luck.
+	if luckier < 90 or tries < 5 then
+		return base .. (" — about par for a %s drop"):format(
+			U.Percent and U.Percent(rec.dropRate) or (rec.dropRate .. "%"))
+	end
+	return ("%s — unluckier than %.0f%% of collectors. The odds next time are "
+		.. "still %s; there is no pity timer."):format(base, luckier,
+		U.Percent and U.Percent(rec.dropRate) or (rec.dropRate .. "%"))
+end
+
+------------------------------------------------------------
+-- Wiring
+------------------------------------------------------------
+MM:On("MM_LOGIN", function() C_Timer.After(2, function() pcall(A.Migrate) end) end)
+
+------------------------------------------------------------
+-- Reported, not just stored
+------------------------------------------------------------
+MM:On("MM_ATTEMPTS_DEBUG", function()
+	local acct = store()
+	local rows, total = {}, 0
+	for spellID, n in pairs(acct) do
+		total = total + n
+		local rec = MM.DBBySpell and MM.DBBySpell[spellID]
+		rows[#rows + 1] = {
+			name = (rec and rec.name) or ("spell " .. tostring(spellID)),
+			n = n, rec = rec,
+		}
+	end
+	table.sort(rows, function(a, b) return a.n > b.n end)
+
+	local merged = 0
+	for _ in pairs(MM.db.attemptsMerged or {}) do merged = merged + 1 end
+	MM:Print("Attempts: %d recorded across %d mount%s, account-wide "
+		.. "(%d character%s folded in).", total, #rows, #rows == 1 and "" or "s",
+		merged, merged == 1 and "" or "s")
+	if #rows == 0 then
+		MM:Print("   Nothing tracked yet. Kills of a planned mount's source are")
+		MM:Print("   counted automatically -- no setup, and no clicking.")
+		return
+	end
+	for i = 1, math.min(#rows, 12) do
+		local r = rows[i]
+		local still = r.rec and A.Unluckiness(r.rec, r.n)
+		MM:Print("   %-34s %4d  %s", r.name, r.n,
+			still and ("unluckier than %.0f%% of collectors"):format((1 - still) * 100)
+				or "no rate recorded, so no context")
+	end
+	if #rows > 12 then MM:Print("   ...and %d more", #rows - 12) end
+	MM:Print("   Drops are memoryless: a long streak changes nothing about the")
+	MM:Print("   next attempt. This is context, never a prediction.")
+end)

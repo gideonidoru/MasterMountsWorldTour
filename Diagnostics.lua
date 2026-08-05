@@ -1,0 +1,771 @@
+-- Master Mounts diagnostics report.
+--
+-- Everything the /mm commands print, captured into one plain-text block you can
+-- select and copy. Screenshots of chat lose the scrollback, wrap badly, and
+-- cannot be searched or diffed.
+--
+-- The report is PLAIN TEXT, not colour-coded, and that is deliberate: WoW colour
+-- escapes travel with the text. A pasted line would arrive as
+-- "|cff40d860PASS|r Quest zone resolution", which defeats the point of pasting
+-- it anywhere. Once stripped, the self-test's own PASS / WARN / FAIL words carry
+-- the status perfectly well in plain text, and stay greppable. The chat output
+-- keeps its colours; this is the paste-friendly view of the same thing.
+local _, MM = ...
+
+MM.Diagnostics = {}
+local D = MM.Diagnostics
+
+-- Strip WoW colour escapes and texture links so the result is paste-clean.
+local function plain(s)
+	s = tostring(s or "")
+	s = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	s = s:gsub("|T.-|t", ""):gsub("|A.-|a", "")
+	-- keep item/spell links readable rather than raw hyperlink syntax
+	s = s:gsub("|H.-|h%[(.-)%]|h", "%1"):gsub("|H.-|h(.-)|h", "%1")
+	return s
+end
+D.Plain = plain
+
+------------------------------------------------------------
+-- Capture
+------------------------------------------------------------
+-- Rather than refactor a dozen debug handlers to write somewhere else, we
+-- borrow MM:Print for the duration. Every diagnostic already reports through it,
+-- so this captures all of them -- including ones added later -- with no changes
+-- to any of them.
+function D.Capture(fn)
+	local lines = {}
+	local saved = MM.Print
+	-- Section handlers may open their own copy window when run standalone. That
+	-- is right for a slash command and wrong inside the report: the window
+	-- hijacks the output, the captured section comes back empty, and the reader
+	-- ends up with half a report on screen and half in chat. Handlers check this
+	-- flag and print instead.
+	D.capturing = true
+	MM.Print = function(_, msg, ...)
+		-- `...` is not visible inside a nested closure, so format via pcall
+		-- directly rather than wrapping it in one. A malformed format string in
+		-- some future diagnostic must not take the whole report down.
+		local text
+		if select("#", ...) > 0 then
+			local ok, res = pcall(string.format, tostring(msg), ...)
+			text = ok and res or tostring(msg)
+		else
+			text = tostring(msg)
+		end
+		lines[#lines + 1] = plain(text)
+	end
+	local ran, err = pcall(fn)
+	MM.Print = saved
+	D.capturing = false
+	if not ran then lines[#lines + 1] = "!! capture failed: " .. tostring(err) end
+	return lines
+end
+
+------------------------------------------------------------
+-- Environment header
+------------------------------------------------------------
+-- The first question about any bug report is "on what?". This answers it before
+-- anyone has to ask.
+local function environment()
+	local out = {}
+	local function add(k, v) out[#out + 1] = ("%-18s %s"):format(k .. ":", plain(v)) end
+
+	local version, build, _, iface = GetBuildInfo()
+	add("Addon", MM.VERSION or "?")
+	add("Client", ("%s (build %s, interface %s)"):format(
+		tostring(version), tostring(build), tostring(iface)))
+	add("Locale", GetLocale and GetLocale() or "?")
+	local name = UnitName("player")
+	local realm = GetRealmName and GetRealmName() or "?"
+	local _, class = UnitClass("player")
+	add("Character", ("%s-%s, %s %s, level %s"):format(
+		tostring(name), tostring(realm), tostring(MM.playerFaction or "?"),
+		tostring(class), tostring(UnitLevel("player"))))
+
+	-- Which optional integrations are actually present changes what the rest of
+	-- the report means.
+	local deps = {}
+	for _, addon in ipairs({ "TomTom", "ElvUI", "MountsRarity", "Titan" }) do
+		local loaded = C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded(addon)
+		if loaded then deps[#deps + 1] = addon end
+	end
+	add("Integrations", #deps > 0 and table.concat(deps, ", ") or "none loaded")
+	add("Theme", (MM.db and MM.db.theme) or "default")
+	return out
+end
+
+------------------------------------------------------------
+-- Report
+------------------------------------------------------------
+-- Sections run in order. Each is a label plus the event that produces it; the
+-- capture does the rest.
+-- Exposed so a self-test can walk them. A section that silently produces
+-- nothing is worse than a missing one: the report LOOKS complete while the
+-- answer is absent, which is how a reader ends up asking a person instead.
+local SECTIONS = {
+	{ "SELF-TEST & SUMMARY", function() MM.Tests.RunSync() end },
+	{ "AUDIT",               "MM_AUDIT" },
+	{ "RARITY COVERAGE",     "MM_RARITY_DEBUG" },
+	{ "PREREQUISITE GATES",  "MM_GATES_DEBUG" },
+	{ "BAGS",                "MM_CARRIED_DEBUG" },
+	{ "CALLINGS",            "MM_CALLINGS_DEBUG" },
+	{ "EVENTS / TIMEWALKING","MM_EVENTS_DEBUG" },
+	{ "TRADING POST",        "MM_TRADINGPOST_DEBUG" },
+	{ "TRAVEL",              "MM_TRAVEL_DEBUG" },
+	{ "ZONE ALERTS",         "MM_ZONE_DEBUG" },
+	{ "ID RESOLUTION",       "MM_IDS_DEBUG" },
+	{ "THEME",               "MM_THEME_DEBUG" },
+	{ "ASSAULTS",            "MM_ASSAULTS_DEBUG" },
+	{ "WEIGHTS & PRIORITIES","MM_WEIGHTS_DEBUG" },
+	{ "ROUTE",               "MM_ROUTE_DEBUG" },
+	{ "LAYERED ORDERING",    "MM_LAYERS_DEBUG" },
+	{ "WHY NOT",             "MM_WHYNOT_DEBUG" },
+	{ "ONBOARDING",          "MM_ONBOARDING_DEBUG" },
+	{ "CRAFTING",            "MM_CRAFTING_DEBUG" },
+	{ "CONTRIBUTIONS",       "MM_CONTRIBUTE_DEBUG" },
+	{ "SCORECARD",           "MM_SCORE_DEBUG" },
+	{ "RELEASE READINESS",   "MM_RELEASE_DEBUG" },
+	{ "ATTEMPTS",           "MM_ATTEMPTS_DEBUG" },
+	{ "STATE & SETTINGS",    "MM_STATE_DEBUG" },
+	{ "GROUP SYNC",          "MM_GROUPSYNC_DEBUG" },
+	{ "KNOWN & UNKNOWABLE",  "MM_KNOWN_DEBUG" },
+	{ "COST COVERAGE",       "MM_COSTS_DEBUG" },
+	{ "QUEUEABLE GOALS",     "MM_QUEUE_DEBUG" },
+	{ "SESSION",             "MM_SESSION_DEBUG" },
+	{ "TIME MODEL",          "MM_TIMEMODEL_DEBUG" },
+	{ "REMAINING GAPS",      "MM_GAPS_DEBUG" },
+	-- Added when flight-point harvesting went in, but never listed here, so the
+	-- self-test caught it as unreachable: a diagnostic only a slash command can
+	-- reach is, to whoever reads a pasted report, one that was never written.
+	{ "FLIGHT POINTS",       "MM_FLIGHTPOINTS_DEBUG" },
+}
+D.SECTIONS = SECTIONS
+
+local function build()
+	-- Sections can be run standalone or as part of the full report. Anything
+	-- expensive that the report ALREADY does elsewhere must not be repeated
+	-- here; this is the flag that lets a section tell the difference.
+	D.inReport = true
+	local out = {}
+	local function add(s) out[#out + 1] = s or "" end
+
+	add("===== MASTER MOUNTS DIAGNOSTIC REPORT =====")
+	add("")
+	for _, l in ipairs(environment()) do add(l) end
+
+	for _, section in ipairs(SECTIONS) do
+		add("")
+		add("----- " .. section[1] .. " -----")
+		local body = D.Capture(function()
+			if type(section[2]) == "function" then section[2]()
+			else MM:Fire(section[2]) end
+		end)
+		if #body == 0 then add("(no output)") end
+		for _, l in ipairs(body) do add("  " .. l) end
+	end
+
+	add("")
+	add("===== END OF REPORT =====")
+	D.inReport = false
+	return table.concat(out, "\n")
+end
+-- Exposed so a self-test can TIME the real report rather than a model of it.
+D.Build = build
+
+-- Async subsystems must be warmed before anything reads them, or the report
+-- records "not synced" for things that simply had not answered yet. Same reason
+-- /mm check waits.
+function D.Generate(onReady)
+	pcall(function() MM.Callings.Request() end)
+	pcall(function() MM.Availability.EnsureCalendar() end)
+	pcall(function() MM.TradingPost.Refresh() end)
+	C_Timer.After(4, function()
+		local ok, text = pcall(build)
+		onReady(ok and text or ("Report generation failed: " .. tostring(text)))
+	end)
+end
+
+-- /mm report — same report, printed to chat, for anyone who prefers the console.
+-- The options tab is the better route (chat truncates long lines and the
+-- scrollback is finite) so say so once rather than silently producing a worse
+-- copy of the same thing.
+MM:On("MM_REPORT", function()
+	MM:Print("Building the diagnostic report...")
+	D.Generate(function(text)
+		-- Into the window, and onto disk. It used to dump every line to chat with
+		-- a raw print(), which is why the report always looked half-missing: chat
+		-- has a scrollback limit and none of it can be selected.
+		--
+		-- Saved variables ARE a file -- WTF/Account/<ACCOUNT>/SavedVariables/
+		-- MasterMounts.lua -- flushed on /reload or logout. So a report can be
+		-- handed to someone outside the game without copying anything by hand.
+		if MM.db then
+			MM.db.lastReport = text
+			MM.db.lastReportAt = date and date("%Y-%m-%d %H:%M") or nil
+		end
+		if D.ShowExport then
+			D.ShowExport(text, "Diagnostic report")
+		else
+			for line in text:gmatch("[^\n]*") do
+				if line ~= "" then print(line) end
+			end
+		end
+		MM:Print("Report ready (%d lines). Saved to disk as well -- /reload flushes it to "
+			.. "SavedVariables\\MasterMounts.lua.", select(2, text:gsub("\n", "")) + 1)
+	end)
+end)
+
+------------------------------------------------------------
+-- Copyable export window
+------------------------------------------------------------
+-- Chat mangles generated Lua: it truncates long lines, strips nothing usefully,
+-- and the scrollback is finite. Anything meant to be pasted back into the
+-- codebase needs a selectable box.
+local exportFrame
+-- The matrix is meant to be pasted back to me, so it goes to the copy box
+-- rather than scrolling out of the chat frame. Registered here because this is
+-- where the capture lives; WeightsMatrix.lua stays a pure producer of lines.
+-- Just starts it. The matrix is asynchronous now -- capturing MM:Print around a
+-- call that returns before the work happens would have exported an empty
+-- report, which is the failure it was built to detect.
+MM:On("MM_WEIGHTS_MATRIX_EXPORT", function() MM:Fire("MM_WEIGHTS_MATRIX") end)
+
+-- The export window, made writable.
+--
+-- Deliberately the SAME frame: an import box that looked different from the
+-- export box would suggest they use different formats, and the entire point of
+-- the contribution pipeline is that one produces exactly what the other eats.
+--
+-- `mmText` is what makes the export read-only -- OnTextChanged puts the original
+-- back on every keystroke. Import has to clear it or the box silently refuses
+-- everything typed into it.
+function D.ShowImport(title, onAccept)
+	D.ShowExport("", title or "Paste here")
+	local frame = exportFrame
+	frame.edit.mmText = nil          -- writable
+	frame.edit:SetText("")
+	frame.edit:SetAutoFocus(true)
+
+	if not frame.accept then
+		frame.accept = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+		frame.accept:SetSize(110, 24)
+		frame.accept:SetPoint("BOTTOMRIGHT", -34, 14)
+		frame.accept:SetText("Apply")
+		MM.Theme.Register(frame.accept, "button")
+	end
+	frame.accept:SetScript("OnClick", function()
+		local typed = frame.edit:GetText()
+		frame:Hide()
+		frame.edit:SetAutoFocus(false)
+		if onAccept then onAccept(typed) end
+	end)
+	frame.accept:Show()
+end
+
+function D.ShowExport(text, title)
+	if not exportFrame then
+		exportFrame = CreateFrame("Frame", "MasterMountsExport", UIParent, "BackdropTemplate")
+		exportFrame:SetSize(700, 500)
+		exportFrame:SetPoint("CENTER")
+		exportFrame:SetMovable(true)
+		exportFrame:EnableMouse(true)
+		exportFrame:RegisterForDrag("LeftButton")
+		exportFrame:SetScript("OnDragStart", exportFrame.StartMoving)
+		exportFrame:SetScript("OnDragStop", exportFrame.StopMovingOrSizing)
+		exportFrame:SetFrameStrata("DIALOG")
+		exportFrame:SetBackdrop({
+			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = true, tileSize = 16, edgeSize = 14,
+			insets = { left = 4, right = 4, top = 4, bottom = 4 },
+		})
+		exportFrame:SetBackdropColor(0.03, 0.03, 0.05, 0.95)
+
+		exportFrame.title = exportFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		exportFrame.title:SetPoint("TOPLEFT", 12, -10)
+
+		local hint = exportFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		hint:SetPoint("TOPLEFT", exportFrame.title, "BOTTOMLEFT", 0, -4)
+		hint:SetText("Ctrl+A then Ctrl+C. Escape closes.")
+		hint:SetTextColor(0.6, 0.6, 0.6)
+
+		local close = MM.Theme.CreateCloseButton(exportFrame, 16)
+		close:SetPoint("TOPRIGHT", -8, -8)
+		close:SetScript("OnClick", function() exportFrame:Hide() end)
+
+		local scroll = CreateFrame("ScrollFrame", "MasterMountsExportScroll", exportFrame,
+			"UIPanelScrollFrameTemplate")
+		scroll:SetPoint("TOPLEFT", 12, -46)
+		scroll:SetPoint("BOTTOMRIGHT", -32, 12)
+
+		local edit = CreateFrame("EditBox", nil, scroll)
+		edit:SetMultiLine(true)
+		-- No limit. An EditBox truncates at its default cap, and the full report
+		-- runs to well over a thousand lines -- so the window quietly held a
+		-- PREFIX of the report and looked complete, which is the worst way for a
+		-- diagnostic to fail: the reader cannot tell what is missing.
+		edit:SetMaxLetters(0)
+		if edit.SetMaxBytes then edit:SetMaxBytes(0) end
+		edit:SetAutoFocus(false)
+		edit:SetFontObject("ChatFontNormal")
+		edit:SetWidth(640)
+		edit:SetScript("OnEscapePressed", function() exportFrame:Hide() end)
+		edit:SetScript("OnTextChanged", function(self, userInput)
+			if userInput and self.mmText then self:SetText(self.mmText) end
+		end)
+		scroll:SetScrollChild(edit)
+		exportFrame.edit = edit
+		MM.Theme.SkinTree(exportFrame)
+	end
+
+	exportFrame.title:SetText(title or "Export")
+	exportFrame.edit.mmText = text
+	exportFrame.edit:SetText(text)
+	exportFrame.edit:SetCursorPosition(0)
+	if exportFrame.accept then exportFrame.accept:Hide() end
+	exportFrame:Show()
+	exportFrame.edit:SetFocus()
+	exportFrame.edit:HighlightText()
+end
+
+------------------------------------------------------------
+-- /mm gaps — everything still unknown, and how to close it
+------------------------------------------------------------
+-- The point of this section is to end the loop where a limitation gets asserted
+-- from an absence. Each gap states what is missing, whether the addon can close
+-- it itself, and if not, the exact question a human needs to answer.
+MM:On("MM_GAPS_DEBUG", function()
+	local function count(pred, list)
+		local n = 0
+		for _, v in pairs(list or {}) do if pred(v) then n = n + 1 end end
+		return n
+	end
+
+	-- 1. spellID coverage — closable from the client, right now
+	local noID, matched = 0, 0
+	for _, entry in pairs(MM.Scanner.byMountID or {}) do
+		local rec = entry.rec
+		if rec and not rec.stub then
+			matched = matched + 1
+			if not rec.spellID and entry.spellID then noID = noID + 1 end
+		end
+	end
+	if noID > 0 then
+		MM:Print("|cffffd84dspellIDs:|r %d matched records have no id in the data.", noID)
+		MM:Print("   CLOSABLE HERE -> |cff40d860/mm spells|r exports them from the journal.")
+		MM:Print("   Worth running on a character of EACH faction: the journal shows a")
+		MM:Print("   different subset per faction, so each finds ids the other cannot.")
+	else
+		MM:Print("|cff40d860spellIDs: every matched record carries one.|r")
+	end
+
+	-- 2. uncatalogued journal mounts
+	local stubs = count(function(e)
+		return e.rec and e.rec.stub and e.rec.obtainable ~= false
+	end, MM.Scanner.byMountID)
+	if stubs > 0 then
+		MM:Print("|cffffd84dUncatalogued:|r %d obtainable journal mounts have no record.", stubs)
+		MM:Print("   CLOSABLE HERE -> |cff40d860/mm stubs|r exports them ready to commit.")
+	end
+
+	-- 3. vendor coordinates — needs the player to visit vendors
+	-- Committed locations count as much as learned ones. This previously
+	-- reported "1 learned" and asked the player to visit every vendor, when the
+	-- coordinates were sitting on Wowhead's npc pages the whole time.
+	local committed = 0
+	for _ in pairs(MM.VendorLocations or {}) do committed = committed + 1 end
+	local learned = 0
+	for _ in pairs((MM.db.ids and MM.db.ids.vendors) or {}) do learned = learned + 1 end
+	local missing = {}
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.vendor and not MM.VendorLocations[rec.vendor:lower()] then
+			missing[rec.vendor] = true
+		end
+	end
+	local nMissing = 0
+	for _ in pairs(missing) do nMissing = nMissing + 1 end
+	if nMissing == 0 then
+		MM:Print("|cff40d860Vendor locations: every named vendor has coordinates|r (%d committed, %d learned).",
+			committed, learned)
+	else
+		MM:Print("|cffffd84dVendor locations:|r %d vendors named by records have none.", nMissing)
+		for name in pairs(missing) do MM:Print("     %s", name) end
+		MM:Print("   Talk to them once, or look the npc up on Wowhead -- g_mapperData")
+		MM:Print("   on the npc page carries the zone and coordinates.")
+	end
+
+	-- 4. Trading Post rotation
+	if not MM.TradingPost.HasLiveData() then
+		MM:Print("|cffffd84dTrading Post:|r no rotation data.")
+		MM:Print("   NEEDS YOU -> open the Trading Post once this month. No API can")
+		MM:Print("   request it (C_PerksProgram has no manifest call); we then")
+		MM:Print("   remember it for every character until the rotation ends.")
+	end
+
+	-- 5. hearthstone destination
+	-- Use the SAME test Nav/Teleports uses. Checking only the learned cache
+	-- reported "map unknown" for a bind point of "Stormwind City", which is a
+	-- map name and resolves directly -- while the self-test three sections
+	-- earlier reported the same hearthstone as working. Two parts of one report
+	-- contradicting each other is worse than either answer alone.
+	local bind = GetBindLocation and GetBindLocation()
+	if bind and bind ~= "" then
+		local learned = MM.db.hearthMaps and MM.db.hearthMaps[bind]
+		local byName = MM.Util.ResolveMapByName and MM.Util.ResolveMapByName(bind)
+		if not (learned or byName) then
+			MM:Print("|cffffd84dHearthstone:|r bound to %q, which is not a map name.", bind)
+			MM:Print("   NEEDS YOU -> stand in it once; we learn the map and never ask again.")
+		end
+	end
+
+	-- 5b. drop rates we do not have
+	-- These are not cosmetic. A missing rate used to be scored as a CERTAINTY,
+	-- which is how an unrated Mythic+ mount outranked quick legacy drops. It is
+	-- now assumed to be a typical boss rate instead, but an assumption is still
+	-- an assumption -- every one of these is a real number sitting on Wowhead.
+	local unrated, chancy = {}, 0
+	for _, rec in pairs(MM.DBByName) do
+		if rec.category == "DROP" or rec.category == "RARE" or rec.category == "ZONEDROP" then
+			chancy = chancy + 1
+			if not rec.dropRate then unrated[#unrated + 1] = rec.name end
+		end
+	end
+	if #unrated > 0 then
+		table.sort(unrated)
+		MM:Print("|cffffd84dDrop rates:|r %d of %d drop/rare records have no rate; "
+			.. "they are ranked on an assumed 1%%.", #unrated, chancy)
+		for i = 1, math.min(#unrated, 12) do MM:Print("     %s", unrated[i]) end
+		if #unrated > 12 then MM:Print("     ...and %d more", #unrated - 12) end
+		MM:Print("   Wowhead's item page carries the observed rate under the drop source.")
+	end
+
+	-- 5c. purchases whose price we cannot read
+	-- These are why Bloodthirsty Dreadwing led the route: category CURRENCY with
+	-- the cost living only in prose, so the router saw a free guaranteed mount.
+	-- It now charges an unknown-cost penalty instead, which is the right answer
+	-- to "we don't know" and the wrong answer to "we could have looked it up".
+	local unpriced = {}
+	for _, rec in pairs(MM.DBByName) do
+		-- PROFESSION belongs here for the same reason the others do: a craft
+		-- needs materials, and a craft with no conditions block is a mount the
+		-- planner would otherwise treat as free. This is the list that turns
+		-- "charged as unknown" back into real data.
+		if (rec.category == "CURRENCY" or rec.category == "VENDOR"
+			or rec.category == "TIMEWALKING" or rec.category == "PROFESSION")
+			and not (rec.conditions and #rec.conditions > 0)
+			and not (rec.acquire)
+			and not (rec.source or ""):lower():find("gold") then
+			unpriced[#unpriced + 1] = rec.name
+		end
+	end
+	if #unpriced > 0 then
+		table.sort(unpriced)
+		MM:Print("|cffffd84dUnpriced purchases:|r %d vendor, currency and craft records carry no",
+			#unpriced)
+		MM:Print("   cost we can read, so they are ranked on a 4-hour assumption.")
+		for i = 1, math.min(#unpriced, 12) do MM:Print("     %s", unpriced[i]) end
+		if #unpriced > 12 then MM:Print("     ...and %d more", #unpriced - 12) end
+		MM:Print("   Each needs a conditions block: { type = \"CURRENCY\", id = N,")
+		MM:Print("   name = \"...\", amount = N }. The source text already names the price.")
+	end
+
+	-- 5d. achievements with no achievement attached, and the solo question
+	--
+	-- Requirement — are we sure every one of these achievements can be completed
+	-- solo? No, and we should stop implying otherwise. A raid meta from two
+	-- expansions ago usually is; a current-tier one, a rated PvP one or a
+	-- Keystone Master emphatically is not, and we infer that from the source
+	-- text rather than knowing it.
+	local unmodelled, soloUnknown = {}, 0
+	for _, rec in pairs(MM.DBByName) do
+		if rec.category == "ACHIEVEMENT" then
+			local modelled = false
+			for _, cond in ipairs(rec.conditions or {}) do
+				if cond.type == "ACHIEVEMENT" then modelled = true break end
+			end
+			if not modelled then unmodelled[#unmodelled + 1] = rec.name end
+			if rec.solo == nil then soloUnknown = soloUnknown + 1 end
+		end
+	end
+	if #unmodelled > 0 then
+		table.sort(unmodelled)
+		MM:Print("|cffffd84dUnmodelled achievements:|r %d records name an achievement",
+			#unmodelled)
+		MM:Print("   only in prose, so their progress cannot be read and they are")
+		MM:Print("   ranked on an assumed 6-hour meta.")
+		for i = 1, math.min(#unmodelled, 12) do MM:Print("     %s", unmodelled[i]) end
+		if #unmodelled > 12 then MM:Print("     ...and %d more", #unmodelled - 12) end
+		MM:Print("   Each needs { type = \"ACHIEVEMENT\", id = N, name = \"...\" };")
+		MM:Print("   the criteria then drive the estimate instead of a guess.")
+	end
+	if soloUnknown > 0 then
+		-- With an achievement id we can ask the client and be certain; without
+		-- one we are reading our own prose. Reporting the split shows exactly
+		-- what adding ids buys.
+		local classified, pvpOrGuild = 0, 0
+		for _, rec in pairs(MM.DBByName) do
+			if rec.category == "ACHIEVEMENT" then
+				local id = MM.Conditions.RecordAchievementID
+					and MM.Conditions.RecordAchievementID(rec)
+				local class = id and MM.Conditions.AchievementClass(id)
+				if class then
+					classified = classified + 1
+					if class.pvp or class.guild then pvpOrGuild = pvpOrGuild + 1 end
+				end
+			end
+		end
+		MM:Print("|cffffd84dSolo-ability:|r %d achievement records carry no `solo` flag.",
+			soloUnknown)
+		MM:Print("   %d name an achievement id; of those %d are PvP or guild, which",
+			classified, pvpOrGuild)
+		MM:Print("   the client settles outright — those are never solo.")
+		MM:Print("   |cff9a9a9aEverything else is genuinely NOT derivable. Legacy raids were|r")
+		MM:Print("   |cff9a9a9abuilt for groups and are often soloable anyway, depending on|r")
+		MM:Print("   |cff9a9a9aclass, gear and player — no API exposes that. `solo = false`|r")
+		MM:Print("   |cff9a9a9aper record is the only honest fix, one judgement at a time.|r")
+	end
+
+	-- 5e. secrets with no chain yet
+	local secretless = {}
+	for _, rec in pairs(MM.DBByName) do
+		if rec.category == "PUZZLE" and not (rec.acquire and rec.acquire.steps) then
+			secretless[#secretless + 1] = rec.name
+		end
+	end
+	if #secretless > 0 then
+		table.sort(secretless)
+		MM:Print("|cffffd84dSecrets with no chain:|r %d puzzle mounts have no step list,",
+			#secretless)
+		MM:Print("   so they are costed on their effort rating alone.")
+		for _, name in ipairs(secretless) do MM:Print("     %s", name) end
+		MM:Print("   Each needs acquire = { hours = N, steps = { { text = \"...\" } } }.")
+	end
+
+	-- 6. things only a person can look up
+	MM:Print("|cffffd84dNeeds a human lookup:|r")
+	if MM.TradingPost.travelersLog then
+		MM:Print("   - Traveler's Log: modelled. %d mount(s) among this month's rewards.",
+			#(MM.TradingPost.travelersLog.mounts or {}))
+	else
+		MM:Print("   - Traveler's Log: not read yet — open the Trading Post once.")
+	end
+	MM:Print("   - 12.1 records are provisional: achievement and npc ids could not")
+	MM:Print("     be verified because that content is not on live.")
+	MM:Print("   - Records with `needsSource = true` have a verified identity but no")
+	MM:Print("     confirmed source; Wowhead has no source table for them.")
+	local needsSource = 0
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.needsSource then needsSource = needsSource + 1 end
+	end
+	MM:Print("     (%d such records.)", needsSource)
+end)
+
+
+------------------------------------------------------------
+-- /mm release — is this shippable?
+------------------------------------------------------------
+-- Requirement — close all gaps, get everything to 100%, this is a prep for release
+-- situation.
+--
+-- The honest answer needs two questions kept apart, because conflating them is
+-- how software ships broken or never ships at all:
+--
+--   IS IT BROKEN?     a failing self-test, a syntax error, a missing file.
+--                     These block a release. There should be zero.
+--   IS IT COMPLETE?   a drop rate nobody has ever observed, a price only a
+--                     player standing at the vendor can read, whether a 2013
+--                     raid still solos. These are NOT defects, they are data
+--                     the world has not handed over yet, and every one of them
+--                     is already costed pessimistically so it cannot mislead
+--                     the ranking.
+--
+-- An addon that refuses to ship until 1,608 records are perfectly described
+-- will never ship. One that ships pretending they are is worse. This reports
+-- both numbers and lets the second be a known quantity rather than a surprise.
+MM:On("MM_RELEASE_DEBUG", function()
+	local blockers, warnings = {}, {}
+
+	-- 1. The self-test is the gate.
+	local t = MM.Tests and MM.Tests.lastRun
+	if not t and not D.inReport then
+		-- Run it rather than complain -- but NEVER while the full report is
+		-- being generated. The report's own first section runs the entire
+		-- self-test, and this ran it a second time: 87 checks twice, including
+		-- three route builds inside the cap test. That is what froze the
+		-- client, and it is the same mistake as Addendum 97 in a new costume.
+		if MM.Tests and MM.Tests.Run then pcall(MM.Tests.Run) end
+		t = MM.Tests and MM.Tests.lastRun
+	end
+	if not t then
+		blockers[#blockers + 1] = "self-test could not be run"
+	else
+		if (t.failed or 0) > 0 then
+			blockers[#blockers + 1] = ("%d self-test failure%s"):format(
+				t.failed, t.failed == 1 and "" or "s")
+		end
+		if (t.degraded or 0) > 0 then
+			warnings[#warnings + 1] = ("%d degraded (optional features this client lacks)")
+				:format(t.degraded)
+		end
+	end
+
+	-- 2. The database has to build and match its sources.
+	local n = 0
+	for _ in pairs(MM.DBByName or {}) do n = n + 1 end
+	if n < 1000 then
+		blockers[#blockers + 1] = ("database looks truncated: %d records"):format(n)
+	end
+
+	-- 3. Anything that would send a player somewhere useless.
+	--
+	-- "No position" is NOT the test, and reading it as one held the release
+	-- gate at "not shippable" over 16 stops that are working exactly as
+	-- designed. Router.lua deliberately puts the no-location goals into the
+	-- route flagged `noLocation`, so that skipping through cannot "finish"
+	-- while they sit unvisited; a queued goal has nowhere to point because
+	-- queueing IS how you reach it. Both are features.
+	--
+	-- What would actually send someone somewhere useless is a stop with no
+	-- position and no reason for it. That is the blocker.
+	local R = MM.Router
+	if R and R.route and #R.route > 0 then
+		local noWhere = 0
+		for _, stop in ipairs(R.route) do
+			local excused = MM.Router.PositionlessExcuse(stop)
+			if not stop.world and not excused then noWhere = noWhere + 1 end
+		end
+		if noWhere > 0 then
+			blockers[#blockers + 1] =
+				("%d routed stops have no position and no reason for it"):format(noWhere)
+		end
+	end
+
+	-- 4. Data completeness, reported but never a blocker.
+	local counts = MM.Contribute and select(2, MM.Contribute.Scan())
+	local gaps = 0
+	for _, v in pairs(counts or {}) do gaps = gaps + v end
+
+	MM:Print("|cffffd84dRELEASE READINESS|r")
+	if #blockers == 0 then
+		MM:Print("   |cff40d860No blockers.|r Nothing is broken.")
+	else
+		MM:Print("   |cffff4444%d BLOCKER%s — do not release:|r", #blockers,
+			#blockers == 1 and "" or "S")
+		for _, b in ipairs(blockers) do MM:Print("      %s", b) end
+	end
+	for _, w in ipairs(warnings) do MM:Print("   |cffff9a3cnote:|r %s", w) end
+
+	MM:Print("   Data completeness: %d known gaps.", gaps)
+	MM:Print("      These are not defects. Every one is costed pessimistically,")
+	MM:Print("      so an unpriced goal can never outrank real work -- the ORDER")
+	MM:Print("      is sound even where the TOTAL is an upper bound. /mm costs")
+	MM:Print("      and /mm timemodel show exactly where, /mm contribute exports")
+	MM:Print("      the subset a player can actually answer.")
+	MM:Print("   Verdict: |c%s%s|r", #blockers == 0 and "ff40d860" or "ffff4444",
+		#blockers == 0 and "shippable" or "not shippable")
+end)
+
+------------------------------------------------------------
+-- State that shapes the plan but had no voice in the report
+------------------------------------------------------------
+-- Requirement — make sure everything is integrated into diagnostics, i do not care
+-- about slash commands as long as its all captured.
+--
+-- An audit of the shipped modules found 23 with no section of their own. Most
+-- are infrastructure a self-test already covers. But several hold STATE that
+-- changes what the addon recommends, and a report that omits them cannot
+-- explain its own output:
+--
+--   lockouts   a saved raid removes a goal from tonight entirely
+--   warband    which character can finish what, and what they carry
+--   settings   forty switches, any of which changes the answer
+--
+-- A pasted report is a bug report. If it cannot say how the addon was
+-- configured when it produced that list, the reader is guessing.
+MM:On("MM_STATE_DEBUG", function()
+	------------------------------------------------------------
+	-- Lockouts
+	------------------------------------------------------------
+	local L = MM.Lockouts
+	local saved = (MM.db and MM.db.lockouts) or {}
+	local instances, encounters = 0, 0
+	for _, inst in pairs(saved) do
+		instances = instances + 1
+		if type(inst) == "table" then
+			for _ in pairs(inst) do encounters = encounters + 1 end
+		end
+	end
+	MM:Print("|cffffd84dLockouts|r  %d instance record%s, %d encounter save%s",
+		instances, instances == 1 and "" or "s",
+		encounters, encounters == 1 and "" or "s")
+	if instances == 0 then
+		MM:Print("   Nothing saved. A saved boss removes its mount from tonight,")
+		MM:Print("   so an empty roster means nothing is being held back for that reason.")
+	end
+
+	------------------------------------------------------------
+	-- Warband
+	------------------------------------------------------------
+	local alts = (MM.db and MM.db.alts) or {}
+	local n, withProf, withRep, withCur = 0, 0, 0, 0
+	for _, snap in pairs(alts) do
+		n = n + 1
+		if snap.skillLines and next(snap.skillLines) then withProf = withProf + 1
+		elseif snap.professions and next(snap.professions) then withProf = withProf + 1 end
+		if snap.rep and next(snap.rep) then withRep = withRep + 1 end
+		if snap.currency and next(snap.currency) then withCur = withCur + 1 end
+	end
+	MM:Print("|cffffd84dWarband|r  %d character%s snapshotted", n, n == 1 and "" or "s")
+	for key, snap in pairs(alts) do
+		MM:Print("   %-24s %s %s  rep:%d currency:%d prof:%s", key,
+			snap.class or "?", snap.faction or "?",
+			snap.rep and (function() local c=0 for _ in pairs(snap.rep) do c=c+1 end return c end)() or 0,
+			snap.currency and (function() local c=0 for _ in pairs(snap.currency) do c=c+1 end return c end)() or 0,
+			(snap.professions and next(snap.professions)) and "yes" or "no")
+	end
+	if n <= 1 then
+		MM:Print("   Only this character is known, so \"do this on X\" can only ever")
+		MM:Print("   answer \"you\". Log in on an alt once to widen it.")
+	end
+
+	------------------------------------------------------------
+	-- Settings
+	------------------------------------------------------------
+	-- Every switch, so a pasted report explains its own output. Sorted, and
+	-- nested tables summarised rather than dumped -- the point is "what was it
+	-- set to", not a serialisation.
+	local keys = {}
+	for k, v in pairs(MM.db or {}) do
+		local t = type(v)
+		if t == "string" and #v > 120 then
+			-- Summarise long strings, exactly as tables are summarised below.
+			--
+			-- The original guard covered nested TABLES but not long STRINGS, and
+			-- three settings hold enormous ones: idExport (the whole generated id
+			-- file), rareLootResult, and lastReport.
+			--
+			-- lastReport is the serious one. The report saves itself into MM.db,
+			-- and this loop printed MM.db in full -- so every report contained the
+			-- previous report, which contained the one before it. Each run roughly
+			-- doubled the file. That is how it reached 15,778 lines: not one big
+			-- report, but a stack of nested copies.
+			keys[#keys + 1] = ("%s=<%d chars>"):format(k, #v)
+		elseif t == "boolean" or t == "number" or t == "string" then
+			keys[#keys + 1] = ("%s=%s"):format(k, tostring(v))
+		elseif t == "table" then
+			local c = 0
+			for _ in pairs(v) do c = c + 1 end
+			keys[#keys + 1] = ("%s={%d}"):format(k, c)
+		end
+	end
+	table.sort(keys)
+	MM:Print("|cffffd84dSettings|r  %d stored", #keys)
+	-- Wrapped rather than one per line: forty switches is a paragraph, not a page.
+	local line = "   "
+	for _, k in ipairs(keys) do
+		if #line + #k > 92 then MM:Print(line); line = "   " end
+		line = line .. k .. "  "
+	end
+	if line ~= "   " then MM:Print(line) end
+end)
