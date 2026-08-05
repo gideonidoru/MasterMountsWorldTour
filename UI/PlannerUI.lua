@@ -448,6 +448,67 @@ function UI.BuildPlanner(panel)
 	routeButton:ClearAllPoints()
 	routeButton:SetPoint("BOTTOMLEFT", planBox, "BOTTOMLEFT", 76, -42)
 	routeButton:SetPoint("BOTTOMRIGHT", planBox, "BOTTOMRIGHT", -76, -42)
+
+	-- SESSION PICKER, under the button that uses it.
+	--
+	-- "Tell it you have 45 minutes" was reachable only from Options > Weights
+	-- & Priorities or by knowing /mm session exists. I first put it on the route
+	-- monitor, which is wrong: you choose a session length BEFORE starting, and
+	-- the monitor is about the route already running. This is where the decision
+	-- is actually made -- plan above, act below, and how long you have sits with
+	-- the acting.
+	panel.sessionLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	panel.sessionLabel:SetPoint("TOPLEFT", routeButton, "BOTTOMLEFT", 0, -8)
+	panel.sessionLabel:SetTextColor(0.6, 0.6, 0.6)
+	panel.sessionLabel:SetText("I have:")
+
+	panel.sessionBtns = {}
+	local sAnchor
+	for _, len in ipairs(MM.Session.LENGTHS) do
+		local short = len.minutes >= 180 and ("%dh"):format(len.minutes / 60)
+			or ("%dm"):format(len.minutes)
+		local b = UI.MakeButton(panel, short, 38)
+		b:SetHeight(20)
+		if sAnchor then
+			b:SetPoint("LEFT", sAnchor, "RIGHT", 3, 0)
+		else
+			b:SetPoint("LEFT", panel.sessionLabel, "RIGHT", 6, 0)
+		end
+		b.mmMinutes = len.minutes
+		b.mmTooltip = ("%s — %s"):format(len.label, len.blurb)
+		b:SetScript("OnClick", function(self) MM.Session.Start(self.mmMinutes) end)
+		sAnchor = b
+		panel.sessionBtns[#panel.sessionBtns + 1] = b
+	end
+
+	panel.sessionEnd = UI.MakeButton(panel, "End", 38)
+	panel.sessionEnd:SetHeight(20)
+	panel.sessionEnd:SetPoint("LEFT", panel.sessionLabel, "RIGHT", 6, 0)
+	panel.sessionEnd:SetScript("OnClick", function() MM.Session.Stop() end)
+	panel.sessionEnd:Hide()
+
+	function panel:RefreshSession()
+		local st = MM.Session and MM.Session.Active and MM.Session.Active()
+		for _, b in ipairs(self.sessionBtns) do
+			if st then b:Hide() else b:Show() end
+		end
+		if st then
+			local rem = MM.Session.Remaining and MM.Session.Remaining()
+			self.sessionLabel:SetText(rem
+				and ("Session: %d min left"):format(math.max(0, math.floor(rem)))
+				or "Session running")
+			self.sessionLabel:SetTextColor(1, 0.82, 0.2)
+			self.sessionEnd:Show()
+		else
+			self.sessionLabel:SetText("I have:")
+			self.sessionLabel:SetTextColor(0.6, 0.6, 0.6)
+			self.sessionEnd:Hide()
+		end
+	end
+	panel:RefreshSession()
+	MM:On("MM_SESSION_CHANGED", function()
+		if panel.RefreshSession then panel:RefreshSession() end
+	end)
 	routeButton:SetHeight(34)
 end
 

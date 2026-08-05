@@ -154,6 +154,30 @@ function S.Start(minutes)
 	st.plannedMounts = mounts
 	st.plannedMinutes = used
 
+	-- ACTUALLY REORDER THE ROUTE, do not just count.
+	--
+	-- Fit works out which stops fit in the time, and this used to keep only
+	-- #chosen and throw the list away -- so the addon announced "45 minutes:
+	-- 2 stops" and then walked you through all 106 in the ordinary order. The
+	-- promise was printed, never kept.
+	--
+	-- Reordered, not truncated: the chosen stops move to the front in Fit's
+	-- order, and everything else follows untouched. Nothing is lost, so ending
+	-- the session or running over just continues into the rest of the plan,
+	-- and the session boundary is a position rather than a deletion.
+	local R = MM.Router
+	if R and R.route and #chosen > 0 then
+		local inSession = {}
+		for _, stop in ipairs(chosen) do inSession[stop] = true end
+		local rest = {}
+		for _, stop in ipairs(R.route) do
+			if not inSession[stop] then rest[#rest + 1] = stop end
+		end
+		wipe(R.route)
+		for _, stop in ipairs(chosen) do R.route[#R.route + 1] = stop end
+		for _, stop in ipairs(rest) do R.route[#R.route + 1] = stop end
+	end
+
 	MM.cdb.routeActive = true
 	MM.cdb.routeIndex = 1
 	MM:Fire("MM_SESSION_CHANGED")
