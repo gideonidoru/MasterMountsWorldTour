@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.2
+
+Three fixes to the session picker, all reported from live play.
+
+- **Choosing a length no longer starts a route.** It flipped the route on and
+  threw the goal window on screen before you'd pressed Start Route. The picker
+  is a setting; `/mm session 45` still means go now, because there the verb is
+  explicit.
+- **The goal counter honours the session.** It read the whole plan
+  unconditionally, so picking "20 minutes" still announced 107 goals — the
+  session promised one thing and the counter said another.
+- **Removed the session row from the goal window.** It belongs on the Planner,
+  and having it in both places invited exactly the confusion above.
+
 ## 1.2.1
 
 - **Fixed: the session dropdown never showed your choice.** It kept reading

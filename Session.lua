@@ -143,7 +143,13 @@ end
 ------------------------------------------------------------
 -- Start / stop
 ------------------------------------------------------------
-function S.Start(minutes)
+-- setOnly: choose a length WITHOUT launching the route.
+--
+-- The Planner's picker is a setting, not a go button. Starting a session from
+-- it flipped routeActive and threw the goal window on screen before the player
+-- had pressed Start Route -- a dropdown that hijacks the UI is not a dropdown.
+-- /mm session 45 still means "go now", because there the verb is explicit.
+function S.Start(minutes, setOnly)
 	local st = state()
 	st.minutes = minutes or 60
 	st.startedAt = GetTime()
@@ -178,8 +184,14 @@ function S.Start(minutes)
 		for _, stop in ipairs(rest) do R.route[#R.route + 1] = stop end
 	end
 
-	MM.cdb.routeActive = true
-	MM.cdb.routeIndex = 1
+	-- Only take over the route if one is already running, or if the caller
+	-- actually asked to start.
+	if not setOnly then
+		MM.cdb.routeActive = true
+		MM.cdb.routeIndex = 1
+	elseif MM.cdb.routeActive then
+		MM.cdb.routeIndex = 1
+	end
 	MM:Fire("MM_SESSION_CHANGED")
 
 	if #chosen == 0 then
@@ -193,7 +205,7 @@ function S.Start(minutes)
 	MM:Print("   %s", S.NextLine() or "")
 	-- Same reasoning as a route: a session is a mode where the next stop is
 	-- the thing you want on screen.
-	if MM.UI and MM.UI.ShowMonitor then pcall(MM.UI.ShowMonitor) end
+	if not setOnly and MM.UI and MM.UI.ShowMonitor then pcall(MM.UI.ShowMonitor) end
 	return true
 end
 

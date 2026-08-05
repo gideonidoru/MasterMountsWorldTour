@@ -50,7 +50,7 @@ function UI.MakeSessionPicker(parent)
 			root:CreateTitle("How long have you got?")
 			for _, len in ipairs(S.LENGTHS) do
 				root:CreateButton(("%s — %s"):format(len.label, len.blurb), function()
-					S.Start(len.minutes)
+					S.Start(len.minutes, true)  -- a setting, not a launch
 				end)
 			end
 			if S.Active and S.Active() then
@@ -75,7 +75,7 @@ function UI.MakeSessionPicker(parent)
 		drop.mmIndex = 0
 		drop:SetScript("OnClick", function(self)
 			self.mmIndex = (self.mmIndex % #S.LENGTHS) + 1
-			S.Start(S.LENGTHS[self.mmIndex].minutes)
+			S.Start(S.LENGTHS[self.mmIndex].minutes, true)
 		end)
 		drop.mmSetLabel = function(self) self:SetText(label()) end
 	end
