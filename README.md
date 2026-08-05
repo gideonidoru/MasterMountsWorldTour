@@ -1,5 +1,9 @@
 # Master Mounts – World Tour
 
+[![CurseForge](https://img.shields.io/badge/CurseForge-Master%20Mounts%20World%20Tour-f16436)](https://www.curseforge.com/wow/addons/master-mounts-world-tour)
+
+**Download:** [CurseForge](https://www.curseforge.com/wow/addons/master-mounts-world-tour)
+
 A mount-collection addon for World of Warcraft retail that answers the question
 a checklist can't: **what should I actually do tonight?**
 
