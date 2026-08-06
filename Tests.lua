@@ -811,7 +811,7 @@ local function runLogic()
 		if before < 3 then return nil, "route too short to test" end
 		-- Start a chunked build and look at the route while it is in flight.
 		R.builtSignature, R.chartRank, R.builtRouteCount = nil, nil, nil
-		R:Build()
+		R:Build()   -- audit-allow: build-then-read is the assertion here
 		local during = #(R.route or {})
 		R:BuildSync()
 		local after = #(R.route or {})

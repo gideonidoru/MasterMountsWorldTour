@@ -3109,7 +3109,12 @@ end)
 -- Plan edits invalidate the route order.
 MM:On("MM_PLAN_CHANGED", function()
 	if MM.cdb.routeActive then
-		R:Build()
+		-- SYNCHRONOUS: the next line decides whether the route still exists.
+		-- Chunked, this read the PREVIOUS route -- so clearing the plan while a
+		-- route was running left it running, and pointed the arrow at a goal
+		-- that had just been removed. A plan edit is not a hot path; the frame
+		-- it costs is worth an answer that is about the plan you now have.
+		R:BuildSync()
 		if #R.route == 0 then R:Stop() return end
 		MM.Nav.SetWaypoint(R:Current())
 		MM:Fire("MM_ROUTE_ADVANCED")
