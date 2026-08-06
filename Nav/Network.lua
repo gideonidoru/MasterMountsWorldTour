@@ -153,10 +153,44 @@ local function usable(n)
 end
 
 -- Nearest network node on a given map, in yards, or nil if that map has none.
+--
+-- FALLS BACK TO THE CONTAINING MAP. There are no portals inside a raid, and
+-- there never will be -- Ny'alotha (2379), the Tazavesh instance (1989) and
+-- Sanctum of Domination (1543) all correctly have no network presence. But you
+-- do not travel to the inside of a raid; you travel to its DOOR, which is in
+-- the zone outside, which does have flight points and portals.
+--
+-- Without this every instanced goal reported "no node on map N" and the whole
+-- network sat unused on exactly the stops it would help most. Climbing the map
+-- parent chain finds the outdoor zone an instance sits in, for every instance,
+-- without hand-listing entrances.
+--
+-- Bounded at 3 hops so this reaches the containing zone and not the continent.
+local function nearestList(mapID)
+	if not mapID then return nil, nil end
+	local list = byMap and byMap[mapID]
+	if list then return list, mapID end
+	if not (C_Map and C_Map.GetMapInfo) then return nil, nil end
+	local cur = mapID
+	for _ = 1, 3 do
+		local info = C_Map.GetMapInfo(cur)
+		local parent = info and info.parentMapID
+		if not parent or parent == 0 then break end
+		local up = byMap and byMap[parent]
+		if up then return up, parent end
+		cur = parent
+	end
+	return nil, nil
+end
+
 function NW.Nearest(mapID, x, y)
 	build()
-	local list = byMap and byMap[mapID]
+	local list, onMap = nearestList(mapID)
 	if not list then return nil end
+	-- Coordinates belong to the ORIGINAL map; once we have climbed out of an
+	-- instance they mean nothing on the parent, so fall back to its centre.
+	if onMap ~= mapID then x, y = nil, nil end
+	mapID = onMap
 	if not (U and U.GetWorldPos and U.WorldDistance) then return list[1] end
 	local _, here = U.GetWorldPos(mapID, x or 50, y or 50)
 	if not here then return list[1] end

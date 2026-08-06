@@ -184,6 +184,31 @@ function TX.NodesFor(mapID)
 	-- flight master still routes to real places instead of zone centroids.
 	local base = baseline(mapID)
 	if base then cache[mapID] = base return base end
+
+	-- STILL NOTHING? CLIMB OUT OF THE INSTANCE.
+	--
+	-- Raids and dungeons have no flight masters and never will. But a goal
+	-- inside one is reached by flying to the zone OUTSIDE its door, and that
+	-- zone does have them. Without this, every instanced goal reported no taxi
+	-- option at all -- so 4,068 measured flight times went unused on precisely
+	-- the stops with the longest journeys.
+	--
+	-- Bounded at 3 hops: far enough to reach the containing zone, not so far
+	-- that it lands on the continent and picks a flight master a world away.
+	if C_Map and C_Map.GetMapInfo then
+		local cur = mapID
+		for _ = 1, 3 do
+			local info = C_Map.GetMapInfo(cur)
+			local parent = info and info.parentMapID
+			if not parent or parent == 0 then break end
+			local up = readLive(parent) or store()[parent] or baseline(parent)
+			if up and #up > 0 then
+				cache[mapID] = up
+				return up
+			end
+			cur = parent
+		end
+	end
 	return nil
 end
 
