@@ -445,7 +445,7 @@ MM:On("MM_GAPS_DEBUG", function()
 	-- the cost living only in prose, so the router saw a free guaranteed mount.
 	-- It now charges an unknown-cost penalty instead, which is the right answer
 	-- to "we don't know" and the wrong answer to "we could have looked it up".
-	local unpriced = {}
+	local unpriced, withNumber = {}, 0
 	for _, rec in pairs(MM.DBByName) do
 		-- PROFESSION belongs here for the same reason the others do: a craft
 		-- needs materials, and a craft with no conditions block is a mount the
@@ -457,6 +457,11 @@ MM:On("MM_GAPS_DEBUG", function()
 			and not (rec.acquire)
 			and not (rec.source or ""):lower():find("gold") then
 			unpriced[#unpriced + 1] = rec.name
+			-- Whether the source text actually states a figure. The closing
+			-- line used to promise it always does; for most of these it does
+			-- not, and sending someone to look for a price that was never
+			-- written down wastes the one resource this list is asking for.
+			if (rec.source or ""):find("%d") then withNumber = withNumber + 1 end
 		end
 	end
 	if #unpriced > 0 then
@@ -467,7 +472,10 @@ MM:On("MM_GAPS_DEBUG", function()
 		for i = 1, math.min(#unpriced, 12) do MM:Print("     %s", unpriced[i]) end
 		if #unpriced > 12 then MM:Print("     ...and %d more", #unpriced - 12) end
 		MM:Print("   Each needs a conditions block: { type = \"CURRENCY\", id = N,")
-		MM:Print("   name = \"...\", amount = N }. The source text already names the price.")
+		MM:Print("   name = \"...\", amount = N }.")
+		MM:Print("   %d of them state a figure in their source text; the other %d name",
+			withNumber, #unpriced - withNumber)
+		MM:Print("   no price at all and need someone standing at the vendor.")
 	end
 
 	-- 5d. achievements with no achievement attached, and the solo question

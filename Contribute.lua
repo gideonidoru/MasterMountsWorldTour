@@ -409,6 +409,17 @@ local COST_SIGNALS = {
 			return MM.Crafting and MM.Crafting.IsPriced
 				and MM.Crafting.IsPriced(rec)
 		end },
+	-- A STATED GOLD PRICE IS A MODELLED COST.
+	--
+	-- 86 records carry one and the planner prices them from it, checked against
+	-- what the character actually has. This list did not know, so the coverage
+	-- report went on calling them bare and the scorecard went on offering the
+	-- same points for fixing something already fixed.
+	--
+	-- A metric that cannot see a whole class of cost is not measuring coverage,
+	-- it is measuring the signals it happens to enumerate.
+	{ key = "gold",     label = "a stated gold price",
+		test = function(rec) return rec.goldCost ~= nil end },
 }
 
 function CO.CostCoverage()
