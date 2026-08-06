@@ -372,6 +372,13 @@ function J.AttachAudit(zone, x, y, mapID)
 		local c = mz and select(1, U.GetWorldPos(mz, n.x or 50, n.y or 50))
 		if c == hereC then same = same + 1 else other = other + 1 end
 	end
+	-- A ZERO STILL HAS TO EXPLAIN ITSELF. The reason was recorded and then only
+	-- returned when the origin continent was missing -- so the one case left
+	-- standing, "nothing anywhere shares its continent", printed as a bare 0 and
+	-- cost another round to identify.
+	if same == 0 and other == 0 then
+		return 0, 0, cached.why or "nearest elsewhere, but nothing qualified"
+	end
 	return same, other, "nearest elsewhere"
 end
 
