@@ -215,8 +215,11 @@ function MM.SetConditionIDByFaction(mountName, kind, condName, allianceID, horde
 	if not (rec and rec.conditions and allianceID and hordeID) then return false end
 	local want = condName and condName:lower()
 	for _, cond in ipairs(rec.conditions) do
-		if cond.type == kind and not cond.id
-			and cond.name and cond.name:lower() == want then
+		-- Deliberately not requiring the condition to be id-less. The common
+		-- case is a record that already names ONE side's copy, which is the
+		-- error being corrected rather than a reason to leave it alone.
+		if cond.type == kind and cond.name and cond.name:lower() == want
+			and (not cond.id or cond.id == allianceID or cond.id == hordeID) then
 			cond.idAlliance, cond.idHorde = allianceID, hordeID
 			return true
 		end
@@ -293,6 +296,161 @@ function MM.DropCondition(mountName, kind, condName)
 		end
 	end
 	return false
+end
+
+-- Put a factionID on a reputation requirement that only names its faction.
+--
+-- A REP condition without one is a string. With it, the client can answer what
+-- the standing actually is, whether the faction is in paragon, how much of the
+-- current bar is filled and what renown level the character has reached -- all
+-- of which the planner already knows how to use and none of which it can ask
+-- for by name.
+function MM.SetConditionFactionID(mountName, factionName, factionID, properName)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions and factionID) then return false end
+	local want = factionName and factionName:lower()
+	for _, cond in ipairs(rec.conditions) do
+		if cond.type == "REP" and not cond.factionID
+			and (cond.factionName or ""):lower() == want then
+			cond.factionID = factionID
+			if properName then cond.factionName = properName end
+			return true
+		end
+	end
+	return false
+end
+
+-- A reputation sold to each side by its own faction. Same shape as
+-- SetConditionIDByFaction, and the same reason it cannot be resolved here:
+-- the data layer runs before the player's faction is known.
+function MM.SetConditionFactionByFaction(mountName, factionName,
+		allianceID, allianceName, hordeID, hordeName)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions and allianceID and hordeID) then return false end
+	local want = factionName and factionName:lower()
+	for _, cond in ipairs(rec.conditions) do
+		if cond.type == "REP" and not cond.factionID
+			and (cond.factionName or ""):lower() == want then
+			cond.factionIDAlliance, cond.factionNameAlliance = allianceID, allianceName
+			cond.factionIDHorde, cond.factionNameHorde = hordeID, hordeName
+			return true
+		end
+	end
+	return false
+end
+
+-- ONE REPUTATION GATE, LISTED TWICE, CHARGED TWICE.
+--
+-- The cost model walks the condition list and prices every entry, so a record
+-- carrying the same faction under two spellings pays for the grind twice. Every
+-- Shadowlands covenant mount had one ("Venthyr" and "Venthyr Renown"), as did
+-- the Netherwing drakes and the nether rays -- and the id-less copy is the
+-- worse half, because with no factionID the client cannot measure it and the
+-- planner falls back to an assumed full grind ON TOP of the real, measured one.
+--
+-- They survived because the merge cannot see them: a condition is keyed by its
+-- id when it has one and by its name when it does not, so adding a factionID
+-- version alongside a name-only version produces two keys, not one update.
+--
+-- Merging rather than deleting: the id-less copy often carries the field that
+-- makes the estimate good -- perAction, how -- and throwing that away to fix a
+-- double-count would trade one wrong number for another.
+--
+-- ONLY when the standing matches. Two entries for one faction at DIFFERENT
+-- standings are not a duplicate; they are something this does not understand,
+-- and it leaves them alone rather than guessing which to keep.
+function MM.CollapseDuplicateReps()
+	local merged = 0
+	for _, rec in ipairs(MM.DBList) do
+		local conds = rec.conditions
+		if conds then
+			-- Group first, decide second. Merging as we walk means the survivor
+			-- can change after entries have already been folded into it.
+			local groups, order = {}, {}
+			for _, cond in ipairs(conds) do
+				if cond.type == "REP" or cond.type == "RENOWN" then
+					-- "Venthyr Renown" and "Venthyr" are one faction, as are a
+					-- REP row and a RENOWN row naming the same one.
+					local name = cond.factionName or cond.faction or cond.name or ""
+					local key = name:lower():gsub("%s+renown$", ""):gsub("%s*%(.-%)%s*$", "")
+					if not groups[key] then
+						groups[key] = {}
+						order[#order + 1] = key
+					end
+					tinsert(groups[key], cond)
+				end
+			end
+
+			local drop = {}
+			for _, key in ipairs(order) do
+				local group = groups[key]
+				if #group > 1 then
+					local function standingOf(c)
+						local s = c.standingName or (c.level and ("renown " .. c.level))
+							or c.standing
+						return tostring(s):lower()
+					end
+					local same = true
+					for i = 2, #group do
+						if standingOf(group[i]) ~= standingOf(group[1]) then same = false break end
+					end
+					if same then
+						-- Prefer the one the client can actually measure.
+						local survivor = group[1]
+						for _, c in ipairs(group) do
+							if c.factionID then survivor = c break end
+						end
+						for _, c in ipairs(group) do
+							if c ~= survivor then
+								for k, v in pairs(c) do
+									if survivor[k] == nil and k ~= "type" then survivor[k] = v end
+								end
+								drop[c] = true
+								merged = merged + 1
+							end
+						end
+					end
+				end
+			end
+
+			for i = #conds, 1, -1 do
+				if drop[conds[i]] then tremove(conds, i) end
+			end
+		end
+	end
+	return merged
+end
+
+-- Reputation requirements written with the wrong field names.
+--
+-- The database settled on factionID / factionName / standingName, and a few
+-- records use id / name / standing instead. Nothing errors -- the condition
+-- looks complete -- but every helper that reads a reputation looks for the
+-- canonical names, so those gates were invisible: no standing, no renown
+-- level, no progress, no estimate.
+--
+-- "Rank 17" and "Renown 17" are the same bar under two labels, and only one of
+-- them is the wording the progress helper matches.
+function MM.NormaliseRepFields()
+	local fixed = 0
+	for _, rec in ipairs(MM.DBList) do
+		for _, cond in ipairs(rec.conditions or {}) do
+			if cond.type == "REP" then
+				local before = cond.factionID
+				if not cond.factionID and type(cond.id) == "number" then
+					cond.factionID = cond.id
+				end
+				if not cond.factionName and type(cond.name) == "string" then
+					cond.factionName = cond.name
+				end
+				if not cond.standingName and type(cond.standing) == "string" then
+					cond.standingName = (cond.standing:gsub("^Rank ", "Renown "))
+				end
+				if cond.factionID and not before then fixed = fixed + 1 end
+			end
+		end
+	end
+	return fixed
 end
 
 -- Correct a requirement filed under the wrong kind, in place.
@@ -399,11 +557,24 @@ function MM.ResolveFactionVariants(playerFaction)
 		-- belongs to this player, and until it is chosen the condition carries
 		-- no id at all -- which is the state where the client cannot be asked
 		-- whether the requirement has been met.
-		for _, cond in ipairs(rec.conditions or {}) do
-			if not cond.id then
-				local pick = (playerFaction == "Alliance") and cond.idAlliance
-					or (playerFaction == "Horde") and cond.idHorde
-				if pick then cond.id = pick end
+		--
+		-- Reputations do this as often as items do: the Outland talbuks are
+		-- sold by the Mag'har to one side and the Kurenai to the other, and a
+		-- record naming both in one string can be read by nobody.
+		local side = (playerFaction == "Alliance" and "Alliance")
+			or (playerFaction == "Horde" and "Horde") or nil
+		if side then
+			for _, cond in ipairs(rec.conditions or {}) do
+				-- An explicit pair OVERRIDES a bare id. A record naming one
+				-- side's item is not neutral -- it is one side's answer given
+				-- to everybody, which is the thing the pair exists to correct.
+				if cond["id" .. side] then
+					cond.id = cond["id" .. side]
+				end
+				if not cond.factionID and cond["factionID" .. side] then
+					cond.factionID = cond["factionID" .. side]
+					cond.factionName = cond["factionName" .. side] or cond.factionName
+				end
 			end
 		end
 	end

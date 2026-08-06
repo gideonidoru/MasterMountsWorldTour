@@ -274,6 +274,62 @@ local function runData()
 		return bad == 0, example
 	end)
 
+	check("No reputation is required twice on one mount", function()
+		-- Forty-two records asked for one reputation under two spellings --
+		-- "Venthyr" and "Venthyr Renown", a Netherwing row with a factionID and
+		-- one without. The cost model prices every condition, so each of those
+		-- mounts paid for its grind twice, and the id-less half was the more
+		-- expensive one: with nothing to measure, it charges a full assumed
+		-- grind on top of the real, measured figure.
+		--
+		-- They were invisible to the merge, which keys a condition by its id
+		-- when it has one and by its name when it does not -- so the two rows
+		-- are two keys, and adding the second never updated the first.
+		if #recs == 0 then return nil, "no records loaded" end
+		local dupes, example = 0, nil
+		for _, r in ipairs(recs) do
+			local seen = {}
+			for _, c in ipairs(r.conditions or {}) do
+				if c.type == "REP" or c.type == "RENOWN" then
+					local name = c.factionName or c.faction or c.name or ""
+					local key = name:lower():gsub("%s+renown$", ""):gsub("%s*%(.-%)%s*$", "")
+					if seen[key] then
+						dupes = dupes + 1
+						example = example or (r.name .. ": " .. name)
+					end
+					seen[key] = true
+				end
+			end
+		end
+		if dupes > 0 then
+			return false, ("%d duplicated gates, e.g. %s"):format(dupes, example)
+		end
+		return true, "every mount names each reputation once"
+	end)
+
+	check("Reputation requirements use the fields that get read", function()
+		-- A condition written with `id`/`name`/`standing` instead of
+		-- `factionID`/`factionName`/`standingName` looks complete and is
+		-- invisible: every helper that reads a reputation looks for the
+		-- canonical names, so the gate reports no standing, no renown level and
+		-- no progress. Four mounts were in that state and nothing said so.
+		if #recs == 0 then return nil, "no records loaded" end
+		local bad, example, withID = 0, nil, 0
+		for _, r in ipairs(recs) do
+			for _, c in ipairs(r.conditions or {}) do
+				if c.type == "REP" then
+					if c.factionID then withID = withID + 1 end
+					if not c.factionName or (c.standing and not c.standingName) then
+						bad = bad + 1
+						example = example or (r.name .. ": " .. tostring(c.name or c.factionName))
+					end
+				end
+			end
+		end
+		if bad > 0 then return false, ("%d misnamed, e.g. %s"):format(bad, example) end
+		return true, ("%d reputation gates the client can measure"):format(withID)
+	end)
+
 	check("Nothing is charged for the same cost twice", function()
 		-- Seven records listed one cost under two spellings: an ITEM condition
 		-- naming the token and a CURRENCY condition naming its plural. The

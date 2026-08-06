@@ -2305,6 +2305,10 @@ MM.AddMounts({
 			{
 				factionID = 1015,
 				factionName = "Netherwing",
+				perAction = {
+					amount = 250,
+					label = "Netherwing dailies / egg turn-ins",
+				},
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -2312,15 +2316,6 @@ MM.AddMounts({
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
 				id = 11012,
 				type = "QUEST",
-			},
-			{
-				factionName = "Netherwing",
-				perAction = {
-					amount = 250,
-					label = "Netherwing dailies / egg turn-ins",
-				},
-				standingName = "Exalted",
-				type = "REP",
 			},
 			{
 				name = "Onyx Netherwing Drake",
@@ -2371,6 +2366,10 @@ MM.AddMounts({
 			{
 				factionID = 1015,
 				factionName = "Netherwing",
+				perAction = {
+					amount = 250,
+					label = "Netherwing dailies / egg turn-ins",
+				},
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -2378,15 +2377,6 @@ MM.AddMounts({
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
 				id = 11012,
 				type = "QUEST",
-			},
-			{
-				factionName = "Netherwing",
-				perAction = {
-					amount = 250,
-					label = "Netherwing dailies / egg turn-ins",
-				},
-				standingName = "Exalted",
-				type = "REP",
 			},
 			{
 				name = "Azure Netherwing Drake",
@@ -2437,6 +2427,10 @@ MM.AddMounts({
 			{
 				factionID = 1015,
 				factionName = "Netherwing",
+				perAction = {
+					amount = 250,
+					label = "Netherwing dailies / egg turn-ins",
+				},
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -2444,15 +2438,6 @@ MM.AddMounts({
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
 				id = 11012,
 				type = "QUEST",
-			},
-			{
-				factionName = "Netherwing",
-				perAction = {
-					amount = 250,
-					label = "Netherwing dailies / egg turn-ins",
-				},
-				standingName = "Exalted",
-				type = "REP",
 			},
 			{
 				name = "Cobalt Netherwing Drake",
@@ -2503,6 +2488,10 @@ MM.AddMounts({
 			{
 				factionID = 1015,
 				factionName = "Netherwing",
+				perAction = {
+					amount = 250,
+					label = "Netherwing dailies / egg turn-ins",
+				},
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -2510,15 +2499,6 @@ MM.AddMounts({
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
 				id = 11012,
 				type = "QUEST",
-			},
-			{
-				factionName = "Netherwing",
-				perAction = {
-					amount = 250,
-					label = "Netherwing dailies / egg turn-ins",
-				},
-				standingName = "Exalted",
-				type = "REP",
 			},
 			{
 				name = "Purple Netherwing Drake",
@@ -2569,6 +2549,10 @@ MM.AddMounts({
 			{
 				factionID = 1015,
 				factionName = "Netherwing",
+				perAction = {
+					amount = 250,
+					label = "Netherwing dailies / egg turn-ins",
+				},
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -2576,15 +2560,6 @@ MM.AddMounts({
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
 				id = 11012,
 				type = "QUEST",
-			},
-			{
-				factionName = "Netherwing",
-				perAction = {
-					amount = 250,
-					label = "Netherwing dailies / egg turn-ins",
-				},
-				standingName = "Exalted",
-				type = "REP",
 			},
 			{
 				name = "Veridian Netherwing Drake",
@@ -2635,6 +2610,10 @@ MM.AddMounts({
 			{
 				factionID = 1015,
 				factionName = "Netherwing",
+				perAction = {
+					amount = 250,
+					label = "Netherwing dailies / egg turn-ins",
+				},
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -2642,15 +2621,6 @@ MM.AddMounts({
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
 				id = 11012,
 				type = "QUEST",
-			},
-			{
-				factionName = "Netherwing",
-				perAction = {
-					amount = 250,
-					label = "Netherwing dailies / egg turn-ins",
-				},
-				standingName = "Exalted",
-				type = "REP",
 			},
 			{
 				name = "Violet Netherwing Drake",
@@ -2698,21 +2668,16 @@ MM.AddMounts({
 			{
 				factionID = 1031,
 				factionName = "Sha'tari Skyguard",
-				standingName = "Exalted",
-				type = "REP",
-			},
-			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
-				type = "QUEST",
-			},
-			{
-				factionName = "Sha'tari Skyguard",
 				perAction = {
 					amount = 350,
 					label = "Skettis / Ogri'la dailies",
 				},
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				type = "QUEST",
 			},
 			{
 				name = "Blue Riding Nether Ray",
@@ -2744,21 +2709,16 @@ MM.AddMounts({
 			{
 				factionID = 1031,
 				factionName = "Sha'tari Skyguard",
-				standingName = "Exalted",
-				type = "REP",
-			},
-			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
-				type = "QUEST",
-			},
-			{
-				factionName = "Sha'tari Skyguard",
 				perAction = {
 					amount = 350,
 					label = "Skettis / Ogri'la dailies",
 				},
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				type = "QUEST",
 			},
 			{
 				name = "Green Riding Nether Ray",
@@ -2790,21 +2750,16 @@ MM.AddMounts({
 			{
 				factionID = 1031,
 				factionName = "Sha'tari Skyguard",
-				standingName = "Exalted",
-				type = "REP",
-			},
-			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
-				type = "QUEST",
-			},
-			{
-				factionName = "Sha'tari Skyguard",
 				perAction = {
 					amount = 350,
 					label = "Skettis / Ogri'la dailies",
 				},
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				type = "QUEST",
 			},
 			{
 				name = "Purple Riding Nether Ray",
@@ -2836,21 +2791,16 @@ MM.AddMounts({
 			{
 				factionID = 1031,
 				factionName = "Sha'tari Skyguard",
-				standingName = "Exalted",
-				type = "REP",
-			},
-			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
-				type = "QUEST",
-			},
-			{
-				factionName = "Sha'tari Skyguard",
 				perAction = {
 					amount = 350,
 					label = "Skettis / Ogri'la dailies",
 				},
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				type = "QUEST",
 			},
 			{
 				name = "Red Riding Nether Ray",
@@ -2882,21 +2832,16 @@ MM.AddMounts({
 			{
 				factionID = 1031,
 				factionName = "Sha'tari Skyguard",
-				standingName = "Exalted",
-				type = "REP",
-			},
-			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
-				type = "QUEST",
-			},
-			{
-				factionName = "Sha'tari Skyguard",
 				perAction = {
 					amount = 350,
 					label = "Skettis / Ogri'la dailies",
 				},
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				type = "QUEST",
 			},
 			{
 				name = "Silver Riding Nether Ray",
@@ -2953,7 +2898,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -3054,7 +3003,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -3108,7 +3061,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -3162,7 +3119,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -3217,7 +3178,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -3318,7 +3283,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -3372,7 +3341,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -3426,7 +3399,11 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionIDAlliance = 978,
+				factionIDHorde = 941,
 				factionName = "Mag'har / Kurenai",
+				factionNameAlliance = "Kurenai",
+				factionNameHorde = "The Mag'har",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -4842,6 +4819,8 @@ MM.AddMounts({
 				name = "Reins of the Wooly Mammoth",
 				cost = "10000g",
 				id = 44230,
+				idAlliance = 44230,
+				idHorde = 44231,
 				type = "ITEM",
 			},
 		},
@@ -4869,6 +4848,8 @@ MM.AddMounts({
 				name = "Reins of the Armored Brown Bear",
 				cost = "750g",
 				id = 44225,
+				idAlliance = 44225,
+				idHorde = 44226,
 				type = "ITEM",
 			},
 		},
@@ -8060,6 +8041,7 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionID = 1492,
 				factionName = "Emperor Shaohao",
 				standingName = "Exalted",
 				type = "REP",
@@ -8550,7 +8532,9 @@ MM.AddMounts({
 				conditions = {
 					{
 						name = "The Lorewalkers",
+						factionName = "The Lorewalkers",
 						standing = "Exalted",
+						standingName = "Exalted",
 						type = "REP",
 					},
 				},
@@ -10004,19 +9988,48 @@ MM.AddMounts({
 		spellID = 190977,
 		itemID = 128526,
 		expansion = 5,
-		category = "RARE",
+		category = "VENDOR",
 		obtainable = true,
-		source = "Drop from Tanaan Jungle rare content (Hellbane rares / Rattling Iron Cage)",
+		source = "Sold for 2,000g at Exalted: Vindicator Krethos (Alliance) or Shadow Hunter Denjai (Horde), Tanaan Jungle.",
 		zone = {
 			mapID = 534,
 			x = 61.6,
 			y = 45.6,
 		},
+		conditions = {
+			{
+				factionIDAlliance = 1847,
+				factionIDHorde = 1848,
+				factionName = "Hand of the Prophet / Vol'jin's Headhunters",
+				factionNameAlliance = "Hand of the Prophet",
+				factionNameHorde = "Vol'jin's Headhunters",
+				standingName = "Exalted",
+				type = "REP",
+			},
+		},
+		factionOverlay = {
+			Alliance = {
+				zone = {
+					name = "Tanaan Jungle",
+					mapID = 534,
+					x = 58.4,
+					y = 60.4,
+				},
+			},
+			Horde = {
+				zone = {
+					name = "Tanaan Jungle",
+					mapID = 534,
+					x = 61.6,
+					y = 45.6,
+				},
+			},
+		},
 		attempts = "DAILY",
 		timePerAttempt = 10,
 		effort = 4,
-		notes = "Source data uncertain - verify the exact source line in the in-game Mount Journal. Farm the daily-lockout Tanaan rares alongside Armored Razorback, Tundra Icehoof and Warsong Direfang.",
-		goldCost = 2500,
+		notes = "Both quartermasters stand in their side's Tanaan outpost. Recorded for years as a rare drop; the item's own reputation requirement and the vendor listings both say otherwise.",
+		goldCost = 2000,
 	},
 	{
 		name = "Bristling Hellboar",
@@ -10109,6 +10122,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1710,
 				factionName = "Sha'tari Defense",
 				perAction = {
 					amount = 250,
@@ -10155,6 +10169,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1681,
 				factionName = "Vol'jin's Spear",
 				perAction = {
 					amount = 2500,
@@ -10281,6 +10296,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1731,
 				factionName = "Council of Exarchs",
 				standingName = "Exalted",
 				type = "REP",
@@ -10348,6 +10364,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1708,
 				factionName = "Laughing Skull Orcs",
 				perAction = {
 					amount = 250,
@@ -10394,6 +10411,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1682,
 				factionName = "Wrynn's Vanguard",
 				perAction = {
 					amount = 2500,
@@ -10436,6 +10454,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1711,
 				factionName = "Steamwheedle Preservation Society",
 				standingName = "Exalted",
 				type = "REP",
@@ -10464,6 +10483,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1711,
 				factionName = "Steamwheedle Preservation Society",
 				standingName = "Exalted",
 				type = "REP",
@@ -10488,6 +10508,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1731,
 				factionName = "Council of Exarchs",
 				standingName = "Exalted",
 				type = "REP",
@@ -10513,6 +10534,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1445,
 				factionName = "Frostwolf Orcs",
 				standingName = "Exalted",
 				type = "REP",
@@ -10861,6 +10883,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1358,
 				factionName = "Nat Pagle",
 				standingName = "Best Friend",
 				type = "REP",
@@ -12641,11 +12664,6 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				factionName = "Army of the Light",
-				standingName = "Paragon",
-				type = "REP",
-			},
-			{
 				amount = 20000,
 				id = 3252,
 				type = "CURRENCY",
@@ -12671,11 +12689,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				factionID = 2165,
-				factionName = "Army of the Light",
-				standingName = "Paragon",
-				type = "REP",
-			},
-			{
 				factionName = "Army of the Light",
 				standingName = "Paragon",
 				type = "REP",
@@ -12711,11 +12724,6 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				factionName = "Army of the Light",
-				standingName = "Paragon",
-				type = "REP",
-			},
-			{
 				amount = 20000,
 				id = 3252,
 				type = "CURRENCY",
@@ -12743,6 +12751,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2018,
 				factionName = "Talon's Vengeance",
 				standingName = "Exalted",
 				type = "REP",
@@ -14852,6 +14861,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2103,
 				factionName = "Zandalari Empire",
 				standingName = "Exalted",
 				type = "REP",
@@ -14878,6 +14888,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2156,
 				factionName = "Talanji's Expedition",
 				standingName = "Exalted",
 				type = "REP",
@@ -14902,6 +14913,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2158,
 				factionName = "Voldunai",
 				standingName = "Exalted",
 				type = "REP",
@@ -14918,15 +14930,20 @@ MM.AddMounts({
 		category = "REP",
 		obtainable = true,
 		faction = "Alliance",
-		source = "Sold by the Proudmoore Admiralty quartermaster in Boralus at Exalted",
+		source = "Sold by Sister Lilyana in Brennadam, Stormsong Valley, at Exalted with Storm's Wake.",
+		npc = {
+			name = "Sister Lilyana",
+			id = 135800,
+		},
 		zone = {
-			name = "Boralus",
-			x = 70.6,
-			y = 19.6,
+			name = "Stormsong Valley",
+			x = 59.2,
+			y = 69.4,
 		},
 		conditions = {
 			{
-				factionName = "Proudmoore Admiralty",
+				factionID = 2162,
+				factionName = "Storm's Wake",
 				standingName = "Exalted",
 				type = "REP",
 			},
@@ -14951,6 +14968,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2161,
 				factionName = "Order of Embers",
 				standingName = "Exalted",
 				type = "REP",
@@ -15000,6 +15018,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2395,
 				factionName = "Honeyback Hive",
 				type = "REP",
 			},
@@ -15023,11 +15042,6 @@ MM.AddMounts({
 			y = 55.6,
 		},
 		conditions = {
-			{
-				factionName = "Waveblade Ankoan",
-				standingName = "Exalted",
-				type = "REP",
-			},
 			{
 				name = "Send the Fleet (unlocks Nazjatar)",
 				id = 56043,
@@ -15066,11 +15080,6 @@ MM.AddMounts({
 			y = 62.2,
 		},
 		conditions = {
-			{
-				factionName = "The Unshackled",
-				standingName = "Exalted",
-				type = "REP",
-			},
 			{
 				name = "Send the Fleet (unlocks Nazjatar)",
 				id = 56044,
@@ -15114,6 +15123,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2391,
 				factionName = "Rustbolt Resistance",
 				standingName = "Exalted",
 				type = "REP",
@@ -15263,7 +15273,11 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionIDAlliance = 2400,
+				factionIDHorde = 2373,
 				factionName = "Waveblade Ankoan (A) / The Unshackled (H)",
+				factionNameAlliance = "Waveblade Ankoan",
+				factionNameHorde = "The Unshackled",
 				standingName = "Paragon",
 				type = "REP",
 			},
@@ -16953,6 +16967,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2439,
 				factionName = "The Avowed",
 				standingName = "Exalted",
 				type = "REP",
@@ -17082,11 +17097,6 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				factionName = "Venthyr Renown",
-				standingName = "Renown 23",
-				type = "REP",
-			},
-			{
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
@@ -17120,11 +17130,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Venthyr",
-				standingName = "Renown 39",
-				type = "REP",
-			},
-			{
-				factionName = "Venthyr Renown",
 				standingName = "Renown 39",
 				type = "REP",
 			},
@@ -17168,11 +17173,6 @@ MM.AddMounts({
 				standingName = "Renown 45",
 				type = "REP",
 			},
-			{
-				factionName = "Venthyr Renown",
-				standingName = "Renown 45",
-				type = "REP",
-			},
 		},
 		effort = 2,
 		access = "There is no vendor for this one. It drops into your bags automatically the moment you hit Venthyr Renown 45.",
@@ -17199,11 +17199,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Venthyr",
-				standingName = "Renown 70",
-				type = "REP",
-			},
-			{
-				factionName = "Venthyr Renown",
 				standingName = "Renown 70",
 				type = "REP",
 			},
@@ -17247,6 +17242,7 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionID = 2445,
 				factionName = "The Ember Court",
 				standingName = "Exalted",
 				type = "REP",
@@ -17611,11 +17607,6 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				factionName = "Kyrian Renown",
-				standingName = "Renown 23",
-				type = "REP",
-			},
-			{
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
@@ -17652,11 +17643,6 @@ MM.AddMounts({
 				standingName = "Renown 39",
 				type = "REP",
 			},
-			{
-				factionName = "Kyrian Renown",
-				standingName = "Renown 39",
-				type = "REP",
-			},
 		},
 		effort = 2,
 		access = "Auto-granted into your bags at Kyrian Renown 39 - you do not need to buy it. Adjutant Galos only sells a replacement copy.",
@@ -17684,11 +17670,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Kyrian",
-				standingName = "Renown 45",
-				type = "REP",
-			},
-			{
-				factionName = "Kyrian Renown",
 				standingName = "Renown 45",
 				type = "REP",
 			},
@@ -17721,11 +17702,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Kyrian",
-				standingName = "Renown 70",
-				type = "REP",
-			},
-			{
-				factionName = "Kyrian Renown",
 				standingName = "Renown 70",
 				type = "REP",
 			},
@@ -18038,11 +18014,6 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				factionName = "Necrolord Renown",
-				standingName = "Renown 23",
-				type = "REP",
-			},
-			{
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
@@ -18076,11 +18047,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Necrolord",
-				standingName = "Renown 39",
-				type = "REP",
-			},
-			{
-				factionName = "Necrolord Renown",
 				standingName = "Renown 39",
 				type = "REP",
 			},
@@ -18124,11 +18090,6 @@ MM.AddMounts({
 				standingName = "Renown 45",
 				type = "REP",
 			},
-			{
-				factionName = "Necrolord Renown",
-				standingName = "Renown 45",
-				type = "REP",
-			},
 		},
 		effort = 2,
 		access = "There is no vendor for this one. It drops into your bags automatically the moment you hit Necrolord Renown 45.",
@@ -18155,11 +18116,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Necrolord",
-				standingName = "Renown 70",
-				type = "REP",
-			},
-			{
-				factionName = "Necrolord Renown",
 				standingName = "Renown 70",
 				type = "REP",
 			},
@@ -18293,6 +18249,7 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionID = 2462,
 				factionName = "Stitchmasters",
 				standingName = "Exalted",
 				type = "REP",
@@ -18941,11 +18898,6 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				factionName = "Night Fae Renown",
-				standingName = "Renown 23",
-				type = "REP",
-			},
-			{
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
@@ -18979,11 +18931,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Night Fae",
-				standingName = "Renown 39",
-				type = "REP",
-			},
-			{
-				factionName = "Night Fae Renown",
 				standingName = "Renown 39",
 				type = "REP",
 			},
@@ -19027,11 +18974,6 @@ MM.AddMounts({
 				standingName = "Renown 45",
 				type = "REP",
 			},
-			{
-				factionName = "Night Fae Renown",
-				standingName = "Renown 45",
-				type = "REP",
-			},
 		},
 		effort = 2,
 		access = "There is no vendor for this one. It drops into your bags automatically the moment you hit Night Fae Renown 45.",
@@ -19061,11 +19003,6 @@ MM.AddMounts({
 			},
 			{
 				factionName = "Night Fae",
-				standingName = "Renown 70",
-				type = "REP",
-			},
-			{
-				factionName = "Night Fae Renown",
 				standingName = "Renown 70",
 				type = "REP",
 			},
@@ -19183,6 +19120,7 @@ MM.AddMounts({
 				type = "QUEST",
 			},
 			{
+				factionID = 2464,
 				factionName = "Court of Night",
 				standingName = "Revered",
 				type = "REP",
@@ -19218,6 +19156,7 @@ MM.AddMounts({
 				type = "QUEST",
 			},
 			{
+				factionID = 2464,
 				factionName = "Court of Night",
 				standingName = "Revered",
 				type = "REP",
@@ -19257,6 +19196,7 @@ MM.AddMounts({
 				type = "QUEST",
 			},
 			{
+				factionID = 2463,
 				factionName = "Marasmius",
 				standingName = "Revered",
 				type = "REP",
@@ -19293,6 +19233,7 @@ MM.AddMounts({
 				type = "QUEST",
 			},
 			{
+				factionID = 2463,
 				factionName = "Marasmius",
 				standingName = "Revered",
 				type = "REP",
@@ -22922,6 +22863,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2564,
 				factionName = "Loamm Niffen",
 				standingName = "Renown (high tier)",
 				type = "REP",
@@ -23250,6 +23192,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2574,
 				factionName = "Dream Wardens",
 				standingName = "Renown (mid tier)",
 				type = "REP",
@@ -23494,6 +23437,7 @@ MM.AddMounts({
 				name = "Plunder",
 				amount = 5000,
 				how = "Earned only inside Plunderstorm matches (looting, mobs, quests, placement) while a season is live.",
+				id = 2922,
 				type = "CURRENCY",
 			},
 		},
@@ -23787,8 +23731,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				faction = "Council of Dornogal",
 				factionID = 2590,
 				factionName = "Council of Dornogal",
+				level = 18,
 				standingName = "Renown 18",
 				type = "REP",
 			},
@@ -23797,11 +23743,6 @@ MM.AddMounts({
 				amount = 8125,
 				id = 2815,
 				type = "CURRENCY",
-			},
-			{
-				faction = "Council of Dornogal",
-				level = 18,
-				type = "RENOWN",
 			},
 		},
 		timePerAttempt = 5,
@@ -23829,8 +23770,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				faction = "Council of Dornogal",
 				factionID = 2590,
 				factionName = "Council of Dornogal",
+				level = 23,
 				standingName = "Renown 23",
 				type = "REP",
 			},
@@ -23839,11 +23782,6 @@ MM.AddMounts({
 				amount = 11375,
 				id = 2815,
 				type = "CURRENCY",
-			},
-			{
-				faction = "Council of Dornogal",
-				level = 23,
-				type = "RENOWN",
 			},
 		},
 		timePerAttempt = 5,
@@ -23953,8 +23891,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				faction = "Hallowfall Arathi",
 				factionID = 2570,
 				factionName = "Hallowfall Arathi",
+				level = 21,
 				standingName = "Renown 21",
 				type = "REP",
 			},
@@ -23963,11 +23903,6 @@ MM.AddMounts({
 				amount = 8125,
 				id = 2815,
 				type = "CURRENCY",
-			},
-			{
-				faction = "Hallowfall Arathi",
-				level = 21,
-				type = "RENOWN",
 			},
 		},
 		timePerAttempt = 5,
@@ -23995,8 +23930,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				faction = "Hallowfall Arathi",
 				factionID = 2570,
 				factionName = "Hallowfall Arathi",
+				level = 23,
 				standingName = "Renown 23",
 				type = "REP",
 			},
@@ -24005,11 +23942,6 @@ MM.AddMounts({
 				amount = 11375,
 				id = 2815,
 				type = "CURRENCY",
-			},
-			{
-				faction = "Hallowfall Arathi",
-				level = 23,
-				type = "RENOWN",
 			},
 		},
 		timePerAttempt = 5,
@@ -24089,6 +24021,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2601,
 				factionName = "The Weaver",
 				standingName = "Conspiration",
 				type = "REP",
@@ -24118,6 +24051,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2605,
 				factionName = "The General",
 				standingName = "Conspiration",
 				type = "REP",
@@ -24146,6 +24080,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2607,
 				factionName = "The Vizier",
 				standingName = "Conspiration",
 				type = "REP",
@@ -24962,6 +24897,7 @@ MM.AddMounts({
 				name = "Plunder",
 				amount = 5000,
 				how = "Earned only inside Plunderstorm matches (looting, mobs, quests, placement) while a season is live.",
+				id = 3139,
 				type = "CURRENCY",
 			},
 		},
@@ -24983,6 +24919,7 @@ MM.AddMounts({
 				name = "Plunder",
 				amount = 1500,
 				how = "Earned only inside Plunderstorm matches (looting, mobs, quests, placement) while a season is live.",
+				id = 3139,
 				type = "CURRENCY",
 			},
 		},
@@ -25003,6 +24940,7 @@ MM.AddMounts({
 				name = "Plunder",
 				amount = 5000,
 				how = "Earned only inside Plunderstorm matches (looting, mobs, quests, placement) while a season is live.",
+				id = 3139,
 				type = "CURRENCY",
 			},
 		},
@@ -25023,6 +24961,7 @@ MM.AddMounts({
 				name = "Plunder",
 				amount = 5000,
 				how = "Earned only inside Plunderstorm matches (looting, mobs, quests, placement) while a season is live.",
+				id = 3139,
 				type = "CURRENCY",
 			},
 		},
@@ -25643,6 +25582,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2673,
 				factionName = "Bilgewater Cartel",
 				standingName = "Exalted",
 				type = "REP",
@@ -25651,11 +25591,6 @@ MM.AddMounts({
 				name = "When Opportunity Explodes (unlocks Undermine)",
 				id = 83137,
 				type = "QUEST",
-			},
-			{
-				factionName = "Bilgewater Cartel (Undermine)",
-				standingName = "Exalted",
-				type = "REP",
 			},
 			{
 				name = "Resonance Crystals",
@@ -25687,6 +25622,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2673,
 				factionName = "Bilgewater Cartel",
 				standingName = "Exalted",
 				type = "REP",
@@ -25716,6 +25652,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2675,
 				factionName = "Blackwater Cartel",
 				standingName = "Exalted",
 				type = "REP",
@@ -25745,6 +25682,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2675,
 				factionName = "Blackwater Cartel",
 				standingName = "Exalted",
 				type = "REP",
@@ -25774,6 +25712,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2677,
 				factionName = "Steamwheedle Cartel",
 				standingName = "Exalted",
 				type = "REP",
@@ -25803,6 +25742,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2677,
 				factionName = "Steamwheedle Cartel",
 				standingName = "Exalted",
 				type = "REP",
@@ -25832,6 +25772,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2671,
 				factionName = "Venture Company",
 				standingName = "Exalted",
 				type = "REP",
@@ -25861,6 +25802,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2671,
 				factionName = "Venture Company",
 				standingName = "Exalted",
 				type = "REP",
@@ -25890,6 +25832,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2669,
 				factionName = "Darkfuse Solutions",
 				standingName = "Exalted",
 				type = "REP",
@@ -25920,6 +25863,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2669,
 				factionName = "Darkfuse Solutions",
 				standingName = "Exalted",
 				type = "REP",
@@ -25949,6 +25893,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2653,
 				factionName = "The Cartels of Undermine",
 				standingName = "Renown 15",
 				type = "REP",
@@ -25997,6 +25942,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2653,
 				factionName = "The Cartels of Undermine",
 				standingName = "Renown 19",
 				type = "REP",
@@ -26719,6 +26665,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2688,
 				factionName = "Flame's Radiance",
 				standingName = "Renown 9",
 				type = "REP",
@@ -27188,6 +27135,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2658,
 				factionName = "The K'aresh Trust",
 				standingName = "Renown 9",
 				type = "REP",
@@ -27237,6 +27185,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2736,
 				factionName = "Manaforge Vandals",
 				standingName = "Renown 8",
 				type = "REP",
@@ -27259,6 +27208,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2736,
 				factionName = "Manaforge Vandals",
 				standingName = "Renown 14",
 				type = "REP",
@@ -27278,11 +27228,6 @@ MM.AddMounts({
 			mapID = 2371,
 		},
 		conditions = {
-			{
-				factionName = "The K'aresh Trust",
-				standingName = "Renown 15",
-				type = "REP",
-			},
 			{
 				name = "A Shadowy Invitation (unlocks K'aresh)",
 				id = 84956,
@@ -27319,11 +27264,6 @@ MM.AddMounts({
 			mapID = 2371,
 		},
 		conditions = {
-			{
-				factionName = "The K'aresh Trust",
-				standingName = "Renown 19",
-				type = "REP",
-			},
 			{
 				name = "A Shadowy Invitation (unlocks K'aresh)",
 				id = 84956,
@@ -31970,6 +31910,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2710,
 				factionName = "Silvermoon Court",
 				standingName = "Renown 17",
 				type = "REP",
@@ -32009,6 +31950,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2710,
 				factionName = "Silvermoon Court",
 				standingName = "Renown 19",
 				type = "REP",
@@ -32048,6 +31990,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2696,
 				factionName = "Amani Tribe",
 				standingName = "Renown 17",
 				type = "REP",
@@ -32087,6 +32030,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2696,
 				factionName = "Amani Tribe",
 				standingName = "Renown 19",
 				type = "REP",
@@ -32126,6 +32070,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2704,
 				factionName = "The Hara'ti",
 				standingName = "Renown 17",
 				type = "REP",
@@ -32138,6 +32083,7 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionID = 2704,
 				factionName = "Hara'ti",
 				standingName = "Renown 16",
 				type = "REP",
@@ -32171,6 +32117,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2704,
 				factionName = "The Hara'ti",
 				standingName = "Renown 19",
 				type = "REP",
@@ -32183,6 +32130,7 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionID = 2704,
 				factionName = "Hara'ti",
 				standingName = "Renown 19",
 				type = "REP",
@@ -32215,6 +32163,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2699,
 				factionName = "The Singularity",
 				standingName = "Renown 17",
 				type = "REP",
@@ -32227,6 +32176,7 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionID = 2699,
 				factionName = "Singularity",
 				standingName = "Renown 17",
 				type = "REP",
@@ -32259,6 +32209,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2699,
 				factionName = "The Singularity",
 				standingName = "Renown 19",
 				type = "REP",
@@ -32271,6 +32222,7 @@ MM.AddMounts({
 				type = "CURRENCY",
 			},
 			{
+				factionID = 2699,
 				factionName = "Singularity",
 				standingName = "Renown 19",
 				type = "REP",
@@ -32386,6 +32338,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2770,
 				factionName = "Slayer's Duellum",
 				standingName = "Exalted",
 				type = "REP",
@@ -32424,6 +32377,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2770,
 				factionName = "Slayer's Duellum",
 				standingName = "Exalted",
 				type = "REP",
@@ -32751,6 +32705,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2792,
 				factionName = "Ritual Sites",
 				standingName = "Renown 8",
 				type = "REP",
@@ -33039,8 +32994,11 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Coiled Isle renown",
+				factionID = 2772,
+				factionName = "Coiled Isle renown",
 				id = 2772,
 				standing = "Rank 17",
+				standingName = "Renown 17",
 				type = "REP",
 			},
 			{
@@ -33081,8 +33039,11 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Coiled Isle renown",
+				factionID = 2772,
+				factionName = "Coiled Isle renown",
 				id = 2772,
 				standing = "Rank 19",
+				standingName = "Renown 19",
 				type = "REP",
 			},
 			{
@@ -33123,6 +33084,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Bloodsworn Crew",
+				factionID = 2773,
+				factionName = "Bloodsworn Crew",
 				id = 2773,
 				type = "REP",
 			},
@@ -33170,8 +33133,11 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Coiled Isle renown",
+				factionID = 2772,
+				factionName = "Coiled Isle renown",
 				id = 2772,
 				standing = "Rank 10",
+				standingName = "Renown 10",
 				type = "REP",
 			},
 		},
@@ -34324,11 +34290,6 @@ MM.AddMounts({
 				id = 241,
 				type = "CURRENCY",
 			},
-			{
-				factionName = "The Silver Covenant",
-				standingName = "Exalted",
-				type = "REP",
-			},
 		},
 		effort = 4,
 		access = "Hiren Loresong, Silver Covenant Pavilion, Icecrown 76.2/19.6 - 150 Champion's Seals, same Silver Covenant Exalted gate as the Quel'dorei Steed.",
@@ -34371,11 +34332,6 @@ MM.AddMounts({
 				how = "Argent Tournament dailies; requires the achievement The Sunreavers (Horde)",
 				id = 241,
 				type = "CURRENCY",
-			},
-			{
-				factionName = "The Sunreavers",
-				standingName = "Exalted",
-				type = "REP",
 			},
 		},
 		effort = 4,
@@ -34838,6 +34794,14 @@ MM.AddMounts({
 			x = 84,
 			y = 60,
 		},
+		conditions = {
+			{
+				factionID = 1376,
+				factionName = "Operation: Shieldwall",
+				standingName = "Exalted",
+				type = "REP",
+			},
+		},
 		effort = 3,
 		goldCost = 2000,
 	},
@@ -34854,6 +34818,14 @@ MM.AddMounts({
 			name = "Krasarang Wilds",
 			x = 27,
 			y = 76,
+		},
+		conditions = {
+			{
+				factionID = 1375,
+				factionName = "Dominance Offensive",
+				standingName = "Exalted",
+				type = "REP",
+			},
 		},
 		effort = 3,
 		goldCost = 2000,
@@ -35091,6 +35063,7 @@ MM.AddMounts({
 				name = "Bronze",
 				amount = 4400,
 				how = "Earned only on a timerunner character while a Remix event is live; destroyed when the event ends.",
+				id = 2778,
 				type = "CURRENCY",
 			},
 		},
@@ -35482,6 +35455,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1445,
 				factionName = "Frostwolf Orcs",
 				standingName = "Exalted",
 				type = "REP",
@@ -35822,6 +35796,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1975,
 				factionName = "Conjurer Margoss",
 				standingName = "Best Friend",
 				type = "REP",
@@ -36210,6 +36185,7 @@ MM.AddMounts({
 				name = "Bronze",
 				amount = 10000,
 				how = "Earned only on a timerunner character while a Remix event is live; destroyed when the event ends.",
+				id = 3372,
 				type = "CURRENCY",
 			},
 		},
@@ -36229,6 +36205,7 @@ MM.AddMounts({
 				name = "Bronze",
 				amount = 10000,
 				how = "Earned only on a timerunner character while a Remix event is live; destroyed when the event ends.",
+				id = 3372,
 				type = "CURRENCY",
 			},
 		},
@@ -36248,6 +36225,7 @@ MM.AddMounts({
 				name = "Bronze",
 				amount = 10000,
 				how = "Earned only on a timerunner character while a Remix event is live; destroyed when the event ends.",
+				id = 3372,
 				type = "CURRENCY",
 			},
 		},
@@ -36415,7 +36393,14 @@ MM.AddMounts({
 			x = 67.2,
 			y = 71.7,
 		},
-		timePerAttempt = 5,
+		conditions = {
+			{
+				factionID = 2103,
+				factionName = "Zandalari Empire",
+				standingName = "Exalted",
+				type = "REP",
+			},
+		},
 		effort = 4,
 		goldCost = 90000,
 	},
@@ -36468,6 +36453,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2161,
 				factionName = "Order of Embers",
 				standingName = "Exalted",
 				type = "REP",
@@ -36499,6 +36485,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2162,
 				factionName = "Storm's Wake",
 				standingName = "Exalted",
 				type = "REP",
@@ -36529,6 +36516,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2160,
 				factionName = "Proudmoore Admiralty",
 				standingName = "Exalted",
 				type = "REP",
@@ -36559,6 +36547,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2160,
 				factionName = "Proudmoore Admiralty",
 				standingName = "Exalted",
 				type = "REP",
@@ -36589,6 +36578,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2158,
 				factionName = "Voldunai",
 				standingName = "Exalted",
 				type = "REP",
@@ -36620,6 +36610,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2156,
 				factionName = "Talanji's Expedition",
 				standingName = "Exalted",
 				type = "REP",
@@ -36917,6 +36908,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2391,
 				factionName = "Rustbolt Resistance",
 				standingName = "Exalted",
 				type = "REP",
@@ -37040,6 +37032,14 @@ MM.AddMounts({
 			mapID = 249,
 			x = 54.4,
 			y = 32.6,
+		},
+		conditions = {
+			{
+				factionID = 2417,
+				factionName = "Uldum Accord",
+				standingName = "Exalted",
+				type = "REP",
+			},
 		},
 		effort = 3,
 		goldCost = 22800,
@@ -37300,6 +37300,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2507,
 				factionName = "Dragonscale Expedition",
 				standingName = "Renown 25",
 				type = "REP",
@@ -37342,6 +37343,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2507,
 				factionName = "Dragonscale Expedition",
 				standingName = "Renown 25",
 				type = "REP",
@@ -37689,6 +37691,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2564,
 				factionName = "Loamm Niffen",
 				standingName = "Renown 18",
 				type = "REP",
@@ -38300,6 +38303,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2574,
 				factionName = "Dream Wardens",
 				standingName = "Renown 18",
 				type = "REP",
@@ -38332,6 +38336,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2574,
 				factionName = "Dream Wardens",
 				standingName = "Renown 18",
 				type = "REP",
@@ -38364,6 +38369,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2574,
 				factionName = "Dream Wardens",
 				standingName = "Renown 18",
 				type = "REP",
@@ -38396,6 +38402,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 2574,
 				factionName = "Dream Wardens",
 				standingName = "Renown 17",
 				type = "REP",
@@ -42167,7 +42174,10 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Netherwing",
+				factionID = 1015,
+				factionName = "Netherwing",
 				standing = "Exalted",
+				standingName = "Exalted",
 				type = "REP",
 			},
 		},
