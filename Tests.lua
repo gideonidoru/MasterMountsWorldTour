@@ -1308,6 +1308,55 @@ local function runLogic()
 			goals, measured / total * 100, assumed / total * 100)
 	end)
 
+	check("A session's promise reaches the route", function()
+		-- THE TEST THAT WAS MISSING, and the reason to write it:
+		--
+		-- "A session promise is kept" passed for the entire time sessions were
+		-- broken. It checks S.Fit's ARITHMETIC -- that the chosen stops fit the
+		-- clock -- and never checked whether anything used the answer. S.Start
+		-- kept only #chosen and threw the list away, so the addon announced
+		-- "45 minutes: 2 stops" and then routed through all 106. Calculation
+		-- correct, effect absent, suite green.
+		--
+		-- So this asserts the EFFECT: after starting a session, the route's
+		-- leading stops must be exactly the ones Fit chose, and the count the
+		-- UI reads must be the fitted count. A test that cannot fail when the
+		-- feature is broken is not a test.
+		local S, R = MM.Session, MM.Router
+		if not (S and S.Fit and S.Start and R) then return false, "session mode missing" end
+		if not R.route or #R.route == 0 then return nil, "no route built to constrain" end
+
+		local wasActive = MM.cdb.routeActive
+		local prevIndex = MM.cdb.routeIndex
+		local restore = S.Active and S.Active()
+		local len = S.LENGTHS[2] or S.LENGTHS[1]
+		local chosen = S.Fit(len.minutes)
+		if #chosen == 0 then return nil, "nothing fits the sample length" end
+
+		S.Start(len.minutes, true)  -- setOnly: must not launch a route
+		local st = S.Active and S.Active()
+		local misplaced
+		for i, stop in ipairs(chosen) do
+			if R.route[i] ~= stop then
+				misplaced = ("stop %d of the session is not at route position %d"):format(i, i)
+				break
+			end
+		end
+		local counted = st and st.planned
+		-- put everything back before reporting
+		S.Stop(true)
+		MM.cdb.routeActive = wasActive
+		MM.cdb.routeIndex = prevIndex or 1
+		if restore then S.Start(restore.minutes, true) end
+
+		if misplaced then return false, misplaced end
+		if counted ~= #chosen then
+			return false, ("session recorded %s stops, fitted %d"):format(
+				tostring(counted), #chosen)
+		end
+		return true, ("%d min -> %d stops lead the route"):format(len.minutes, #chosen)
+	end)
+
 	check("A session promise is kept", function()
 		-- "we have 45 minutes" is a promise, not a lean. What the mode offers
 		-- must be measured with the SAME clock the router uses, or the addon
