@@ -611,7 +611,45 @@ function UI.BuildPlanner(panel)
 	routeButton:SetHeight(34)
 end
 
+-- ONE REFRESH PER FRAME, AND NEVER INSIDE ANOTHER.
+--
+-- Auto-Plan All adds 286 mounts and each one fires MM_PLAN_CHANGED. Every
+-- event refreshed the whole window, which builds the route, which fires
+-- MM_ROUTE_ADVANCED, which refreshes again -- re-entrantly, hundreds of times,
+-- each pass writing a data provider and an empty-state flag computed from a
+-- different moment.
+--
+-- The result was a window arguing with itself: rows in the missing list with
+-- "everything here is already on your plan" drawn over them, and a plan pane
+-- that was blank while its own header said 132 mounts across 101 stops. Both
+-- halves were correct when they were written and stale by the time they were
+-- seen. A reload fixed it because that ran exactly one refresh.
+--
+-- Collapsing a burst into a single pass on the next frame makes the whole
+-- class impossible: whatever the state settles to is what gets drawn, once.
+local refreshQueued, refreshing
+local function doRefresh()
+	refreshQueued = nil
+	if refreshing then return end
+	refreshing = true
+	local ok, err = pcall(UI.RefreshPlannerNow)
+	refreshing = nil
+	if not ok and MM.Print then
+		MM:Print("|cffff5555planner refresh failed|r -- %s", tostring(err):sub(-140))
+	end
+end
+
 function UI.RefreshPlanner()
+	if refreshQueued then return end
+	refreshQueued = true
+	if C_Timer and C_Timer.After then
+		C_Timer.After(0, doRefresh)
+	else
+		doRefresh()
+	end
+end
+
+function UI.RefreshPlannerNow()
 	if not missingBox then return end
 
 	-- THE TWO PANES ARE NOT CHOSEN AND CHOSEN.

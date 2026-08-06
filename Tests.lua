@@ -2921,6 +2921,29 @@ local function runLogic()
 			:format(O.SCHEMA, #owned)
 	end)
 
+	check("The window does not argue with itself", function()
+		-- The missing list showed rows with "everything here is already on your
+		-- plan" drawn over them, and the plan pane was blank while its header
+		-- said 132 mounts. Both halves were right when written and stale when
+		-- seen: hundreds of refreshes were running inside one another, each
+		-- writing state computed at a different moment.
+		local UI = MM.UI
+		if not (UI and UI.RefreshPlanner and UI.RefreshPlannerNow) then
+			return nil, "planner not built yet"
+		end
+		-- Asking many times in a row must not run many times in a row.
+		local ran = 0
+		local real = UI.RefreshPlannerNow
+		UI.RefreshPlannerNow = function() ran = ran + 1 end
+		for _ = 1, 25 do UI.RefreshPlanner() end
+		UI.RefreshPlannerNow = real
+		if ran > 1 then
+			return false, ("25 requests ran the refresh %d times"):format(ran)
+		end
+		return true, ("25 requests collapsed to %d immediate pass%s"):format(
+			ran, ran == 1 and "" or "es")
+	end)
+
 	check("Lists of choices are drawn as lists", function()
 		-- The filters were buttons that opened radio menus, sitting beside a
 		-- genuine dropdown for the session length -- the same gesture behind
