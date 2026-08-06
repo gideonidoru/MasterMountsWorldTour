@@ -237,13 +237,13 @@ local function withProfile(profile, fn)
 	-- a Cloak of Coordination it does not own. Clear it on the way in AND on the
 	-- way out, so no profile inherits another's cache and the player's real
 	-- session is not left holding the last profile's answers.
-	if MM.Journey and MM.Journey.Forget then MM.Journey.Forget() end
+	if MM.Journey and MM.Journey.ForgetPlans then MM.Journey.ForgetPlans() end
 
 	local ok, err = pcall(fn)
 	TP.Options, TP.Landings, TP.Refresh = realOptions, realLandings, realRefresh
 	TP.TravelMinutes = realTravel
 
-	if MM.Journey and MM.Journey.Forget then MM.Journey.Forget() end
+	if MM.Journey and MM.Journey.ForgetPlans then MM.Journey.ForgetPlans() end
 	if not ok then error(err, 0) end
 	return #allowed
 end

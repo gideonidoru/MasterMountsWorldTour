@@ -1675,11 +1675,16 @@ local function runLogic()
 						if not isFallback(part.label) then real = true break end
 					end
 					if bare[rec.name] then
+						-- ONE DIRECTION ONLY, and this is the reason.
+						--
+						-- "Bare" means we cannot price the ACQUISITION -- no drop
+						-- rate, no stated cost, no chain. The planner may still
+						-- charge real minutes for the VISIT, and should: an
+						-- untimed treasure in Zul'Aman is a run you have to make
+						-- whether or not anyone knows the odds. Asserting the
+						-- reverse called that a contradiction when it is correct
+						-- behaviour, and Ancestral War Bear said so.
 						checkedBare = checkedBare + 1
-						if real and not wrong then
-							wrong = ("%s is counted bare but the planner prices it")
-								:format(rec.name)
-						end
 					else
 						checkedModelled = checkedModelled + 1
 						if not real and not wrong then
@@ -1694,8 +1699,8 @@ local function runLogic()
 			return nil, "no plannable uncollected records to compare"
 		end
 		if wrong then return false, wrong end
-		return true, ("%d modelled and %d bare, and the planner agrees on every one")
-			:format(checkedModelled, checkedBare)
+		return true, ("%d counted modelled all get a real cost term (%d bare, "
+			.. "which may still cost a visit)"):format(checkedModelled, checkedBare)
 	end)
 
 	check("A command that breaks says so", function()

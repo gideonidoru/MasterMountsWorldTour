@@ -120,6 +120,21 @@ function J.Forget()
 	planWhy = {}
 end
 
+-- Throw away the ANSWERS but keep the map.
+--
+-- The graph does not depend on which teleports you own: build() lays down
+-- flight points, transit links and taxi edges, and Plan() wires the teleports
+-- into START each time it runs. So the capability harness was calling Forget()
+-- between profiles and rebuilding 29,593 within-zone edges, 1,360 transit links
+-- and 4,068 taxi hops eight times per run, to arrive at exactly the same graph.
+--
+-- That is what "script ran too long" was: not a slow search, a map redrawn from
+-- scratch for every question asked of it.
+function J.ForgetPlans()
+	planCache = {}
+	planWhy = {}
+end
+
 local function build()
 	if graph then return end
 	graph, byZone, edges = {}, {}, {}
