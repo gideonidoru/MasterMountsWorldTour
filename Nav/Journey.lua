@@ -73,10 +73,13 @@ local function nodeWorld(name, mapID, x, y)
 end
 
 -- Yards between two points, preferring the client's own world coordinates.
-local function yards(zoneA, ax, ay, zoneB, bx, by)
+-- mapA/mapB are optional and WIN over resolving the zone name. A node on a
+-- floor is on its own map: resolving its zone name gives the floor-0 map and
+-- measures its coordinate against the wrong one.
+local function yards(zoneA, ax, ay, zoneB, bx, by, mapA, mapB)
 	local U = MM.Util
 	if U and U.GetWorldPos and U.WorldDistance then
-		local ma, mb = mapFor(zoneA), mapFor(zoneB)
+		local ma, mb = mapA or mapFor(zoneA), mapB or mapFor(zoneB)
 		if ma and mb then
 			local ca, wa = U.GetWorldPos(ma, ax, ay)
 			local cb, wb = U.GetWorldPos(mb, bx, by)
@@ -186,10 +189,11 @@ local function build()
 	-- One-way stays one-way: a return trip that does not exist is not a saving.
 	local myFaction = UnitFactionGroup and UnitFactionGroup("player")
 	local linkCount, linkNodes, gatedOut = 0, 0, 0
-	local function transitNode(idx, side, zone, x, y)
+	local function transitNode(idx, side, zone, x, y, mapID)
 		local zl = zone:lower()
 		local key = ("\2%d%s"):format(idx, side)
-		graph[key] = { name = zone, zone = zl, x = x, y = y, kind = "transit" }
+		graph[key] = { name = zone, zone = zl, x = x, y = y, kind = "transit",
+			mapID = mapID }
 		byZone[zl] = byZone[zl] or {}
 		table.insert(byZone[zl], key)
 		linkNodes = linkNodes + 1
@@ -202,8 +206,8 @@ local function build()
 		-- Those doors are handled where instances are handled; placing a node
 		-- at the map's corner would measure every distance to it wrongly.
 		elseif not (L.ainside or L.binside) then
-			local ka = transitNode(i, "a", L.a, L.ax, L.ay)
-			local kb = transitNode(i, "b", L.b, L.bx, L.by)
+			local ka = transitNode(i, "a", L.a, L.ax, L.ay, L.amap)
+			local kb = transitNode(i, "b", L.b, L.bx, L.by, L.bmap)
 			local secs = (MM.TransitSeconds and MM.TransitSeconds[L.mode]) or 30
 			addEdge(ka, kb, secs, L.mode)
 			if not L.oneway then addEdge(kb, ka, secs, L.mode) end
@@ -304,7 +308,8 @@ local function build()
 		for i = 1, #names do
 			for k = i + 1, #names do
 				local a, b = graph[names[i]], graph[names[k]]
-				local secs = yards(a.zone, a.x, a.y, b.zone, b.x, b.y) / ypm * 60
+				local secs = yards(a.zone, a.x, a.y, b.zone, b.x, b.y,
+					a.mapID, b.mapID) / ypm * 60
 				addEdge(names[i], names[k], secs, "fly")
 				addEdge(names[k], names[i], secs, "fly")
 			end
@@ -439,8 +444,13 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
 		for _, name in ipairs(byZone[zone] or {}) do
 			local n = graph[name]
 			if n and n.x and n.y then
+				-- Each end against its OWN map. A node on floor 5 carries the
+				-- floor-5 map; measuring its coordinate against the zone's
+				-- floor-0 map is the same mistake as measuring across
+				-- continents, just quieter.
 				out[#out + 1] = { name = name,
-					d = yards(zone, x or 50, y or 50, zone, n.x, n.y) }
+					d = yards(zone, x or 50, y or 50, zone, n.x, n.y,
+						knownMapID, n.mapID) }
 			end
 		end
 		if #out > 0 then return out end
@@ -535,7 +545,8 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
 							-- You cannot fly to another continent. A candidate
 							-- on a different one is not near, however small the
 							-- arithmetic between their coordinates comes out.
-							local thereContinent, there = nodeWorld(name, mz, n.x, n.y)
+							local thereContinent, there =
+								nodeWorld(name, n.mapID or mz, n.x, n.y)
 							local d = there and thereContinent == hereContinent
 								and U.WorldDistance(here, there)
 							if d then best[#best + 1] = { name = name, d = d } end
