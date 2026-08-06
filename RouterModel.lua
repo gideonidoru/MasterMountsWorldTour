@@ -661,7 +661,7 @@ function RM.TravelReport()
 				local fi, ti = C_Map.GetMapInfo(a.mapID), C_Map.GetMapInfo(b.mapID)
 				if fi and ti and fi.name and ti.name then
 					journey, jlegs, jwhy = MM.Journey.Plan(fi.name, a.x, a.y,
-						ti.name, b.x, b.y, direct)
+						ti.name, b.x, b.y, direct, a.mapID, b.mapID)
 				else
 					jwhy = "this client cannot name one of these maps"
 				end
@@ -699,7 +699,7 @@ function RM.TravelReport()
 					-- what might be happening. This prints the fact.
 					local ti = C_Map.GetMapInfo(b.mapID)
 					if ti and ti.name and MM.Journey.AttachAudit then
-						local same, other, how = MM.Journey.AttachAudit(ti.name, b.x, b.y)
+						local same, other, how = MM.Journey.AttachAudit(ti.name, b.x, b.y, b.mapID)
 						w("      to %s (map %s): %s, %s entry point(s)%s",
 							ti.name, tostring(b.mapID), how or "not attached yet",
 							tostring(same or 0),

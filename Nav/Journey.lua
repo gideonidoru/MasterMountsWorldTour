@@ -345,14 +345,16 @@ end
 -- Exposed so a check can assert the invariant that broke: an entry point on
 -- another continent is not an entry point, however small the arithmetic
 -- between two continent-relative coordinates happens to come out.
-function J.AttachAudit(zone, x, y)
+function J.AttachAudit(zone, x, y, mapID)
 	build()
 	if not zone then return nil end
 	local U = MM.Util
 	local zl = zone:lower()
 	local own = byZone[zl]
 	if own and #own > 0 then return #own, 0, "own zone" end
-	local cached = nearZoneCache[zl]
+	-- Same key attachPoints used, including the map, or this reads someone
+	-- else's answer and reports on a plan that never happened.
+	local cached = nearZoneCache[zl .. "#" .. tostring(mapID or "?")]
 	if not cached then return nil end
 	-- THE CONTINENT attachPoints ACTUALLY MEASURED FROM.
 	--
@@ -382,13 +384,23 @@ function J.Stats()
 end
 
 -- Plan a journey. Returns total MINUTES and an ordered list of legs.
-function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
+-- fromMapID/toMapID are OPTIONAL but strongly preferred. The caller already
+-- knows which map it is routing to; resolving the zone NAME back to a map here
+-- can land on a different one. "The Forbidden Reach" is two maps, the router
+-- meant 2118, and the name resolved to the other -- which has no world
+-- position, so the destination could not be attached at all and every journey
+-- there reported "no way to reach the forbidden reach from the graph".
+function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
+		fromMapID, toMapID)
 	build()
 	planCache = planCache or {}
 	if not (fromZone and toZone) then return nil, nil, "no zone name at one end" end
 	fromZone, toZone = fromZone:lower(), toZone:lower()
 
-	local key = ("%s|%s"):format(fromZone, toZone)
+	-- Keyed by MAP where the caller gave one: two maps can share a name, and a
+	-- plan cached under the name alone would answer for the wrong one.
+	local key = ("%s#%s|%s#%s"):format(fromZone, tostring(fromMapID or "?"),
+		toZone, tostring(toMapID or "?"))
 	local hit = planCache[key]
 	if hit ~= nil then
 		if hit == false then return nil, nil, planWhy[key] end
@@ -415,7 +427,7 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 	-- coordinate is invented, because it only ever uses nodes we already ship.
 	-- Always { name = , d = }, whether the zone had its own points or we had to
 	-- reach outside it -- one shape, so the caller cannot mix them up.
-	local function attachPoints(zone, x, y)
+	local function attachPoints(zone, x, y, knownMapID)
 		local out = {}
 		for _, name in ipairs(byZone[zone] or {}) do
 			local n = graph[name]
@@ -425,7 +437,10 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 			end
 		end
 		if #out > 0 then return out end
-		local cached = nearZoneCache[zone]
+		-- Cache by the map actually used, not the name, for the same reason the
+		-- plan cache is.
+		local cacheKey = zone .. "#" .. tostring(knownMapID or "?")
+		local cached = nearZoneCache[cacheKey]
 		if cached then return cached end
 
 		-- MEASURED ACROSS ZONES, OR NOT AT ALL.
@@ -453,7 +468,8 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 		local here
 		-- mapFor is the file-level cached resolver; calling ResolveMapByName
 		-- per node would be 1,300 lookups per zone.
-		local originMap, ox, oy = mapFor(zone), x or 50, y or 50
+		-- The caller's map id wins over anything re-derived from the name.
+		local originMap, ox, oy = knownMapID or mapFor(zone), x or 50, y or 50
 		local info = originMap and C_Map and C_Map.GetMapInfo
 			and C_Map.GetMapInfo(originMap)
 		local worldly = info and Enum and Enum.UIMapType
@@ -517,18 +533,18 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 		-- not the interior -- and it will then report mismatches that are its
 		-- own. Store the value used; check against that.
 		out.originContinent = hereContinent
-		nearZoneCache[zone] = out
+		nearZoneCache[cacheKey] = out
 		return out
 	end
 
 	local fromCount, toCount = 0, 0
-	for _, p in ipairs(attachPoints(fromZone, fromX, fromY)) do
+	for _, p in ipairs(attachPoints(fromZone, fromX, fromY, fromMapID)) do
 		addEdge(START, p.name, p.d / ypm * 60, "fly")
 		fromCount = fromCount + 1
 	end
 	-- REMEMBER EXACTLY WHAT WAS ATTACHED, so exactly that can be removed.
 	local goalAttached = {}
-	for _, p in ipairs(attachPoints(toZone, toX, toY)) do
+	for _, p in ipairs(attachPoints(toZone, toX, toY, toMapID)) do
 		addEdge(p.name, GOAL, p.d / ypm * 60, "fly")
 		goalAttached[#goalAttached + 1] = p.name
 		toCount = toCount + 1

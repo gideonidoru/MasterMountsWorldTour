@@ -465,7 +465,7 @@ local function travelMinutes(state, step)
 		local ti = step.mapID and C_Map.GetMapInfo(step.mapID)
 		if fi and ti and fi.name and ti.name then
 			local mins, legs = MM.Journey.Plan(fi.name, state.x, state.y,
-				ti.name, step.x, step.y, flyMinutes)
+				ti.name, step.x, step.y, flyMinutes, state.mapID, step.mapID)
 			if mins then
 				best = mins
 				method = { key = "journey:" .. tostring(step.mapID), taxi = true,

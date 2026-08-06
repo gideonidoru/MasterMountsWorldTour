@@ -1477,8 +1477,10 @@ local function runLogic()
 			-- The audit reads what attaching actually chose, so something has to
 			-- have attached first. Without this the check reports "nothing to
 			-- audit" forever, which is a pass that proves nothing.
-			if J.Plan then J.Plan(zone, 50, 50, "Orgrimmar", 50, 50) end
-			local same, other = J.AttachAudit(zone, 50, 50)
+			local mapID = MM.Util and MM.Util.ResolveMapByName
+				and MM.Util.ResolveMapByName(zone)
+			if J.Plan then J.Plan(zone, 50, 50, "Orgrimmar", 50, 50, nil, mapID) end
+			local same, other = J.AttachAudit(zone, 50, 50, mapID)
 			if same then
 				checked = checked + 1
 				if (other or 0) > 0 then
