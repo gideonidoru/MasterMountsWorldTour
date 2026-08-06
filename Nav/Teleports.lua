@@ -265,6 +265,39 @@ for _, o in ipairs(MORE) do
 	}
 end
 
+-- DUNGEON AND RAID TELEPORTS.
+--
+-- The route is led by INSTANCE goals and these land you at the door, from
+-- anywhere, so for a player who has earned them they matter more to a route
+-- than any flight path. We modelled 19 teleport spells in total; this is 76
+-- more, and none of the ones that count.
+--
+-- OWNERSHIP IS ALWAYS ASKED, NEVER ASSUMED. Each carries a spell id and goes
+-- through the same IsPlayerSpell check as every other spell option below, so a
+-- teleport this character has not earned can never shorten its route. That is
+-- the whole reason to key them by spell id rather than by name.
+--
+-- Unlike the list above these know exactly where they land, so they hand back
+-- their real coordinate instead of the centre of the zone.
+for _, t in ipairs(MM.DungeonTeleports or {}) do
+	OPTIONS[#OPTIONS + 1] = {
+		key = "dungeontp_" .. t.spell .. (t.faction or ""),
+		spell = t.spell,
+		name = t.name,
+		requires = t.faction and { faction = t.faction } or nil,
+		verb = "Cast " .. t.name,
+		dest = function()
+			-- The map id is carried, but a client that has never heard of it is
+			-- the authority, not us: a stale id points somewhere that no longer
+			-- exists and every distance measured to it is fiction.
+			if not (C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(t.mapID)) then
+				return nil, ("this client has no map %d for %q"):format(t.mapID, t.place)
+			end
+			return t.mapID, t.x, t.y, t.place
+		end,
+	}
+end
+
 ------------------------------------------------------------
 -- Availability
 ------------------------------------------------------------

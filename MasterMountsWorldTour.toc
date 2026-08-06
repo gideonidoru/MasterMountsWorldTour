@@ -22,6 +22,8 @@ Data\Schema.lua
 Data\Mounts.lua
 Data\FlightSeconds.lua
 Data\TravelNetwork.lua
+Data\TransitLinks.lua
+Data\DungeonTeleports.lua
 
 Attempts.lua
 Scanner.lua

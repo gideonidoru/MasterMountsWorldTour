@@ -1429,6 +1429,90 @@ local function runLogic()
 			got, hops, J.transitNodes or 0)
 	end)
 
+	check("Most of the world is reachable from one place", function()
+		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
+		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%
+		-- of it -- so the router could not plan most legs and silently charged a
+		-- flat constant instead. Every count looked fine because every count was
+		-- fine; the connectivity was not.
+		local J = MM.Journey
+		if not (J and J.Reachable) then return nil, "travel layer not loaded" end
+		local from
+		for _, hub in ipairs({ "Orgrimmar", "Stormwind City", "Valdrakken", "Dornogal" }) do
+			if J.Node and J.Node(hub) then from = hub break end
+		end
+		if not from then return nil, "no known hub in the graph to start from" end
+		local reached, total = J.Reachable(from)
+		if not (reached and total and total > 0) then
+			return false, "the graph could not be walked at all"
+		end
+		local pct = reached / total * 100
+		if pct < 50 then
+			return false, ("only %.0f%% of the graph is reachable from %s -- "
+				.. "the rest is islands the router cannot plan through")
+				:format(pct, from)
+		end
+		return true, ("%.0f%% reachable from %s (%d of %d nodes), %d transit links")
+			:format(pct, from, reached, total, J.transitLinks or 0)
+	end)
+
+	check("A teleport you have not earned is never offered", function()
+		-- 76 dungeon teleports joined the option list, and almost nobody has
+		-- most of them. If ownership were assumed rather than asked, every route
+		-- would be planned around instant travel this character cannot do --
+		-- which is worse than no modelling at all, because it looks authoritative.
+		local list, TP = MM.DungeonTeleports, MM.Teleports
+		if not (list and TP and TP.Options) then return nil, "teleports not loaded" end
+		local total = 0
+		for _, t in ipairs(list) do
+			total = total + 1
+			if not t.spell then
+				return false, (t.name or "?") .. " has no spell id to check ownership with"
+			end
+		end
+		if total == 0 then return false, "no dungeon teleports loaded" end
+		-- Every one that IS offered must be a spell this character really knows.
+		local offered, wrong = 0, nil
+		for _, o in ipairs(TP.Options() or {}) do
+			if type(o.key) == "string" and o.key:find("^dungeontp_") then
+				offered = offered + 1
+				local known = IsPlayerSpell and IsPlayerSpell(o.spell)
+				if known == nil and IsSpellKnown then known = IsSpellKnown(o.spell) end
+				if not known then wrong = wrong or o.name end
+			end
+		end
+		if wrong then
+			return false, ("%s is offered but this character does not know it"):format(wrong)
+		end
+		return true, ("%d known of %d dungeon teleports, all verified with the client")
+			:format(offered, total)
+	end)
+
+	check("Portals and ships are priced, and never for free", function()
+		-- A zero-cost edge is teleportation to a shortest-path search: it will
+		-- chain a dozen of them across the world and report the trip as instant.
+		local links, secs = MM.TransitLinks, MM.TransitSeconds
+		if not (links and secs) then return nil, "transit links not loaded" end
+		local n, modes = 0, {}
+		for _, L in ipairs(links) do
+			n = n + 1
+			local cost = secs[L.mode]
+			if not cost or cost <= 0 then
+				return false, ("%s -> %s (%s) costs nothing"):format(L.a, L.b, L.mode)
+			end
+			modes[L.mode] = true
+			-- 0,0 means "inside the instance". If one ever arrives as a real
+			-- position the graph will measure distances to a map corner.
+			if L.ainside and (L.ax ~= 0 or L.ay ~= 0) then
+				return false, L.a .. " is marked inside but carries a position"
+			end
+		end
+		if n == 0 then return false, "no transit links loaded" end
+		local kinds = 0
+		for _ in pairs(modes) do kinds = kinds + 1 end
+		return true, ("%d links across %d modes, all priced"):format(n, kinds)
+	end)
+
 	check("A node with no position is never asked for one", function()
 		-- Transit-only nodes carry measured times but no x,y. That is safe for
 		-- exactly one reason: the three places that read a coordinate all walk

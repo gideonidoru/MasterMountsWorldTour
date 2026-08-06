@@ -150,6 +150,49 @@ local function build()
 	end
 	J.transitNodes = transit
 
+	-- PORTALS, SHIPS AND ZEPPELINS, AS EDGES IN THIS GRAPH.
+	--
+	-- The travel network held these already, but in a different module keyed by
+	-- its own node identifiers -- and Journey is what actually prices a route.
+	-- So the router had 4,068 measured flight hops and no way to cross an ocean
+	-- except by falling back to a flat constant, which is why "network 0" won
+	-- nothing and every awkward leg cost the same 8 minutes.
+	--
+	-- These state both ends as a zone name and a coordinate, so they join the
+	-- graph the same way a flight point does: added to byZone, they gain the
+	-- within-zone fly edges and can be reached from START and GOAL.
+	--
+	-- Faction gating is honoured. A Horde-only boat offered to an Alliance
+	-- character is a route that cannot be walked.
+	-- One-way stays one-way: a return trip that does not exist is not a saving.
+	local myFaction = UnitFactionGroup and UnitFactionGroup("player")
+	local linkCount, linkNodes, gatedOut = 0, 0, 0
+	local function transitNode(idx, side, zone, x, y)
+		local zl = zone:lower()
+		local key = ("\2%d%s"):format(idx, side)
+		graph[key] = { name = zone, zone = zl, x = x, y = y, kind = "transit" }
+		byZone[zl] = byZone[zl] or {}
+		table.insert(byZone[zl], key)
+		linkNodes = linkNodes + 1
+		return key
+	end
+	for i, L in ipairs(MM.TransitLinks or {}) do
+		if L.faction and myFaction and L.faction ~= myFaction then
+			gatedOut = gatedOut + 1
+		-- An end written 0,0 means "inside the instance", not a coordinate.
+		-- Those doors are handled where instances are handled; placing a node
+		-- at the map's corner would measure every distance to it wrongly.
+		elseif not (L.ainside or L.binside) then
+			local ka = transitNode(i, "a", L.a, L.ax, L.ay)
+			local kb = transitNode(i, "b", L.b, L.bx, L.by)
+			local secs = (MM.TransitSeconds and MM.TransitSeconds[L.mode]) or 30
+			addEdge(ka, kb, secs, L.mode)
+			if not L.oneway then addEdge(kb, ka, secs, L.mode) end
+			linkCount = linkCount + 1
+		end
+	end
+	J.transitLinks, J.transitLinkNodes, J.transitGated = linkCount, linkNodes, gatedOut
+
 	-- Taxi edges, at their measured seconds.
 	-- Edges are added against the CANONICAL key so an alias and its bare name
 	-- do not become two unconnected nodes.
@@ -254,6 +297,29 @@ end
 -- positionless transit nodes safe instead of taking it on faith.
 function J.NodesByZone() build() return byZone end
 function J.Node(name) build() return name and graph[name:lower()] end
+
+-- How much of the graph can be reached from one node.
+--
+-- The number that matters and the one nothing was watching: a graph can hold
+-- thousands of correct edges and still be a hundred islands, and a router on an
+-- island quietly falls back to a flat constant for every leg it cannot plan.
+-- Counting nodes and edges cannot see that. This can.
+function J.Reachable(fromName)
+	build()
+	local start = fromName and graph[fromName:lower()] and fromName:lower()
+	if not start then return nil end
+	local seen, stack, n = { [start] = true }, { start }, 0
+	while #stack > 0 do
+		local cur = table.remove(stack)
+		n = n + 1
+		for to in pairs(edges[cur] or {}) do
+			if not seen[to] then seen[to] = true stack[#stack + 1] = to end
+		end
+	end
+	local total = 0
+	for _ in pairs(graph) do total = total + 1 end
+	return n, total
+end
 
 function J.Stats()
 	build()
@@ -504,7 +570,8 @@ end
 
 -- One line a player can act on.
 local VERB = { taxi = "taxi to", fly = "fly to", SHIP = "ship to",
-	ZEPPELIN = "zeppelin to", PORTAL = "portal to", TRAM = "tram to" }
+	ZEPPELIN = "zeppelin to", PORTAL = "portal to", TRAM = "tram to",
+	WALK = "walk to", FLY = "fly to" }
 function J.Describe(legs)
 	if not legs or #legs == 0 then return nil end
 	local out = {}
