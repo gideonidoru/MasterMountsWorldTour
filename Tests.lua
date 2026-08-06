@@ -307,6 +307,39 @@ local function runData()
 			:format(listed, priced)
 	end)
 
+	check("The two unpriced lists agree with each other", function()
+		-- The contribution export and the diagnostic list both answer "which
+		-- records have no cost we can read", and they answered differently:
+		-- seven records carrying an explicit reason they cannot be priced --
+		-- fished, solved, dropped rather than sold -- were absent from one and
+		-- present in the other.
+		--
+		-- The predicate was pulled into a single function precisely so this
+		-- could not happen, and it still did, because the extraction copied the
+		-- old body verbatim and the old body never read the field. A shared
+		-- function is not agreement; being asked the same question is.
+		if #recs == 0 then return nil, "no records loaded" end
+		if not (MM.Diagnostics and MM.Diagnostics.IsUnpriced) then
+			return nil, "IsUnpriced not present"
+		end
+		local disagree, example, listed = 0, nil, 0
+		for _, r in ipairs(recs) do
+			local diag = MM.Diagnostics.IsUnpriced(r)
+			if diag then listed = listed + 1 end
+			-- Anything stating WHY it has no price must be absent from both.
+			if diag and r.unpriced then
+				disagree = disagree + 1
+				example = example or (r.name .. " — " .. tostring(r.unpriced))
+			end
+		end
+		if disagree > 0 then
+			return false, ("%d records say why they are unpriced and are asked anyway, e.g. %s")
+				:format(disagree, example)
+		end
+		return true, ("%d genuinely unpriced; every explained one is absent from both")
+			:format(listed)
+	end)
+
 	check("A mount locked to another class is not reported as missing", function()
 		-- The audit listed twenty records as "obtainable, this faction, and
 		-- still missing", which reads as twenty mounts the addon cannot see. A

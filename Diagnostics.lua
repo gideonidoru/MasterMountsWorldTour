@@ -50,6 +50,13 @@ function D.IsUnpriced(rec)
 		or cat == "TIMEWALKING" or cat == "PROFESSION") then return false end
 	if rec.conditions and #rec.conditions > 0 then return false end
 	if rec.goldCost then return false end
+	-- Records that carry a reason they have no price -- a rare drop filed
+	-- under Timewalking, a mount fished up rather than crafted. The
+	-- contribution counter has honoured this field since it was added and
+	-- this one did not, so the same seven records were absent from one list
+	-- and present in the other. Extracting the predicate was supposed to stop
+	-- exactly that and only stopped half of it.
+	if rec.unpriced then return false end
 	if rec.acquire then return false end
 	if (rec.source or ""):lower():find("gold") then return false end
 	if cat == "PROFESSION" and MM.Crafting and MM.Crafting.IsPriced
@@ -556,9 +563,15 @@ MM:On("MM_GAPS_DEBUG", function()
 		-- With an achievement id we can ask the client and be certain; without
 		-- one we are reading our own prose. Reporting the split shows exactly
 		-- what adding ids buys.
+		-- COUNTED OVER THE SAME RECORDS, or the sentence contradicts itself.
+		--
+		-- This walked every achievement record while the line above counted
+		-- only those WITHOUT a solo flag, so it read "114 carry no flag; 135
+		-- name an achievement id" -- a subset larger than the set it is a
+		-- subset of. Both halves were true and the sentence was nonsense.
 		local classified, pvpOrGuild = 0, 0
 		for _, rec in pairs(MM.DBByName) do
-			if rec.category == "ACHIEVEMENT" then
+			if rec.category == "ACHIEVEMENT" and rec.solo == nil then
 				local id = MM.Conditions.RecordAchievementID
 					and MM.Conditions.RecordAchievementID(rec)
 				local class = id and MM.Conditions.AchievementClass(id)
@@ -570,7 +583,7 @@ MM:On("MM_GAPS_DEBUG", function()
 		end
 		MM:Print("|cffffd84dSolo-ability:|r %d achievement records carry no `solo` flag.",
 			soloUnknown)
-		MM:Print("   %d name an achievement id; of those %d are PvP or guild, which",
+		MM:Print("   %d of those name an achievement id; %d are PvP or guild, which",
 			classified, pvpOrGuild)
 		MM:Print("   the client settles outright — those are never solo.")
 		MM:Print("   |cff9a9a9aEverything else is genuinely NOT derivable. Legacy raids were|r")

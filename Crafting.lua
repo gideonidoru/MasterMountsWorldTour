@@ -344,7 +344,11 @@ MM:On("MM_CRAFTING_DEBUG", function()
 	-- Crafted mounts, and whether their cost is real or still a guess.
 	local priced, guessed = {}, {}
 	for _, rec in pairs(MM.DBByName) do
-		if CR.IsCraft(rec) and rec.obtainable then
+		-- GATHERED IS NOT UNPRICED. Four of these are fished up and three are
+		-- archaeology solves; none has a reagent list anywhere, so they sat in
+		-- a list headed "open a profession window" that could never shorten by
+		-- doing so. They carry a reason now and this reads it.
+		if CR.IsCraft(rec) and rec.obtainable and not rec.unpriced then
 			local frac, mats = CR.Progress(rec)
 			if frac then
 				local short = 0
