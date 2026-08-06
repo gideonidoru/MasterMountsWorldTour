@@ -176,12 +176,24 @@ local function runData()
 	end)
 
 	check("Every record has a name", function()
+		-- An empty table satisfies "nothing is wrong". Every check here
+		-- counts defects and returns count == 0, which is TRUE for zero
+		-- records -- so a database that failed to load would report a
+		-- clean bill of health from all of them at once. Report nothing
+		-- rather than something reassuring.
+		if #recs == 0 then return nil, "no records loaded" end
 		local bad = 0
 		for _, r in ipairs(recs) do if not r.name or r.name == "" then bad = bad + 1 end end
 		return bad == 0, bad > 0 and (bad .. " unnamed") or nil
 	end)
 
 	check("No duplicate spellIDs", function()
+		-- An empty table satisfies "nothing is wrong". Every check here
+		-- counts defects and returns count == 0, which is TRUE for zero
+		-- records -- so a database that failed to load would report a
+		-- clean bill of health from all of them at once. Report nothing
+		-- rather than something reassuring.
+		if #recs == 0 then return nil, "no records loaded" end
 		local seen, dupes = {}, 0
 		for _, r in ipairs(recs) do
 			if r.spellID then
@@ -192,6 +204,12 @@ local function runData()
 	end)
 
 	check("Categories are known", function()
+		-- An empty table satisfies "nothing is wrong". Every check here
+		-- counts defects and returns count == 0, which is TRUE for zero
+		-- records -- so a database that failed to load would report a
+		-- clean bill of health from all of them at once. Report nothing
+		-- rather than something reassuring.
+		if #recs == 0 then return nil, "no records loaded" end
 		local bad, example = 0, nil
 		for _, r in ipairs(recs) do
 			if r.category and not VALID_CATEGORY[r.category] then
@@ -202,6 +220,12 @@ local function runData()
 	end)
 
 	check("Coordinates in range", function()
+		-- An empty table satisfies "nothing is wrong". Every check here
+		-- counts defects and returns count == 0, which is TRUE for zero
+		-- records -- so a database that failed to load would report a
+		-- clean bill of health from all of them at once. Report nothing
+		-- rather than something reassuring.
+		if #recs == 0 then return nil, "no records loaded" end
 		local bad, example = 0, nil
 		for _, r in ipairs(recs) do
 			local z = r.zone
@@ -216,6 +240,12 @@ local function runData()
 	end)
 
 	check("Drop rates are percentages", function()
+		-- An empty table satisfies "nothing is wrong". Every check here
+		-- counts defects and returns count == 0, which is TRUE for zero
+		-- records -- so a database that failed to load would report a
+		-- clean bill of health from all of them at once. Report nothing
+		-- rather than something reassuring.
+		if #recs == 0 then return nil, "no records loaded" end
 		local bad, example = 0, nil
 		for _, r in ipairs(recs) do
 			if r.dropRate and (type(r.dropRate) ~= "number"
@@ -227,6 +257,12 @@ local function runData()
 	end)
 
 	check("Conditions well-formed", function()
+		-- An empty table satisfies "nothing is wrong". Every check here
+		-- counts defects and returns count == 0, which is TRUE for zero
+		-- records -- so a database that failed to load would report a
+		-- clean bill of health from all of them at once. Report nothing
+		-- rather than something reassuring.
+		if #recs == 0 then return nil, "no records loaded" end
 		local bad, example = 0, nil
 		for _, r in ipairs(recs) do
 			for _, c in ipairs(r.conditions or {}) do
