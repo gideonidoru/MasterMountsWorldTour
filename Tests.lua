@@ -1698,6 +1698,36 @@ local function runLogic()
 			:format(checkedModelled, checkedBare)
 	end)
 
+	check("A command that breaks says so", function()
+		-- /mm routertest 300 printed "Modelling the router..." and then nothing.
+		-- No window, no output, no error. MM:Fire pcalls every handler and sent
+		-- the failure to geterrorhandler(), which retail hides by default -- so
+		-- the command looked like it simply did nothing.
+		--
+		-- Silence is the worst failure mode a diagnostic can have, and this file
+		-- has spent a day proving it. The dispatcher must speak.
+		local seen
+		local realPrint = MM.Print
+		MM.Print = function(_, fmt, ...) seen = tostring(fmt or ""):format(...) end
+		MM:On("MM_SELFTEST_FIRE_PROBE", function() error("deliberate", 0) end)
+		local realHandler = geterrorhandler
+		-- Swallow the error the dispatcher forwards; we are testing the CHAT
+		-- line, and this probe throws on purpose.
+		geterrorhandler = function() return function() end end
+		local ok = pcall(function() MM:Fire("MM_SELFTEST_FIRE_PROBE") end)
+		geterrorhandler = realHandler
+		MM.Print = realPrint
+
+		if not ok then return false, "Fire let a handler error escape" end
+		if not seen then
+			return false, "a handler threw and the dispatcher said nothing in chat"
+		end
+		if not seen:find("MM_SELFTEST_FIRE_PROBE", 1, true) then
+			return false, "the failure line does not name the command: " .. seen:sub(1, 60)
+		end
+		return true, "a thrown handler is reported in chat, naming the command"
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%

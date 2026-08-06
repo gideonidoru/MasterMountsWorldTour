@@ -42,7 +42,21 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
 	if not list then return end
 	for i = 1, #list do
 		local ok, err = pcall(list[i], ...)
-		if not ok then geterrorhandler()(err) end
+		if not ok then
+			-- SAY IT IN CHAT AS WELL AS TO THE ERROR HANDLER.
+			--
+			-- Retail hides Lua errors by default, so a handler that threw left
+			-- the user with nothing at all: /mm routertest printed "Modelling
+			-- the router..." and then silence -- no window, no output, no
+			-- error. The command looked like it did nothing, which is the
+			-- hardest kind of failure to report and the easiest to fix.
+			--
+			-- One line, naming which command broke. Errors here are rare; a
+			-- silent one costs far more than a noisy one.
+			MM:Print("|cffff5555%s failed:|r %s", tostring(message),
+				tostring(err):gsub("^.*[\\/]", ""):sub(1, 160))
+			geterrorhandler()(err)
+		end
 	end
 end)
 
@@ -123,7 +137,23 @@ function MM:Fire(message, ...)
 			row.calls = row.calls + 1
 			row.ms = row.ms + (clock() - startedAt)
 		end
-		if not ok then geterrorhandler()(err) end
+		if not ok then
+			-- SAY IT IN CHAT AS WELL AS TO THE ERROR HANDLER.
+			--
+			-- Retail hides Lua errors by default, so a handler that threw left
+			-- the user with nothing at all: /mm routertest printed "Modelling
+			-- the router..." and then silence. No window, no output, no error.
+			-- The command looked like it simply did nothing, which is the
+			-- hardest kind of failure to report and among the easiest to fix.
+			--
+			-- One line naming the command that broke. Errors here are rare; a
+			-- silent one costs far more than a noisy one.
+			if MM.Print then
+				MM:Print("|cffff5555%s failed|r -- %s", tostring(message),
+					tostring(err):sub(-160))
+			end
+			geterrorhandler()(err)
+		end
 	end
 end
 
