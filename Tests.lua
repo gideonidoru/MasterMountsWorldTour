@@ -473,6 +473,41 @@ local function runData()
 		return true, "no cost appears under two condition types"
 	end)
 
+	check("Every requirement can be asked about", function()
+		-- A condition that names something and carries no id is a string. The
+		-- client cannot be asked whether it is met, so the planner falls back to
+		-- an assumption for the whole thing.
+		--
+		-- Two of these were written off as unanswerable and neither was. The
+		-- covenants are not reputations, which was true and became an excuse --
+		-- C_CovenantSanctumUI reports renown directly. "Guild" matched two
+		-- factions, one of which is a header with no bar at all.
+		--
+		-- Asserted at zero rather than at a count, because a count that drifts
+		-- upward reads as normal.
+		if #recs == 0 then return nil, "no records loaded" end
+		local ASKABLE = { ITEM = true, CURRENCY = true, ACHIEVEMENT = true,
+			QUEST = true, COVENANT = true }
+		local bare, example = 0, nil
+		for _, r in ipairs(recs) do
+			for _, c in ipairs(r.conditions or {}) do
+				if ASKABLE[c.type] and not c.id and not c.idAlliance then
+					bare = bare + 1
+					example = example or ("%s: %s %s"):format(r.name, c.type, c.name or "?")
+				elseif c.type == "REP" and not c.factionID
+					and not c.factionIDAlliance then
+					bare = bare + 1
+					example = example or ("%s: REP %s")
+						:format(r.name, c.factionName or c.name or "?")
+				end
+			end
+		end
+		if bare > 0 then
+			return false, ("%d requirements have no id, e.g. %s"):format(bare, example)
+		end
+		return true, "every requirement carries an id the client can resolve"
+	end)
+
 	check("Promoting a faction variant keeps the ids it was given", function()
 		-- Every id, amount and factionID the data layers apply lands on the
 		-- CANONICAL record. Promoting the other faction's variant replaced that

@@ -494,15 +494,53 @@ end
 -- collector wants to be told, since the fix is a visit to Oribos.
 local COVENANTS = { [1] = "Kyrian", [2] = "Venthyr", [3] = "Night Fae", [4] = "Necrolord" }
 
+-- Renown too, when the condition asks for a level.
+--
+-- Covenant renown is NOT reputation and has no factionID, which is why 16
+-- conditions asking for "Venthyr, Renown 23" carried no id and were written
+-- off as unresolvable. C_CovenantSanctumUI.GetRenownLevel reports it directly.
+--
+-- It answers for the ACTIVE covenant only, so a level can be judged only while
+-- the player is in that covenant -- which is honest: renown in a covenant you
+-- have left is not progress toward this mount tonight.
+local function covenantRenown()
+	if not (C_CovenantSanctumUI and C_CovenantSanctumUI.GetRenownLevel) then return nil end
+	local ok, level = pcall(C_CovenantSanctumUI.GetRenownLevel)
+	if ok and type(level) == "number" then return level end
+	return nil
+end
+
 local function evalCovenant(cond)
 	local label = ("Covenant: %s"):format(cond.name or COVENANTS[cond.id] or "?")
+	if cond.renown then label = ("%s, Renown %d"):format(label, cond.renown) end
 	if not (cond.id and C_Covenants and C_Covenants.GetActiveCovenantID) then
 		return nil, label
 	end
 	local ok, active = pcall(C_Covenants.GetActiveCovenantID)
 	if not ok or not active or active == 0 then return nil, label end
-	if active == cond.id then return true, label .. " (active)" end
-	return false, ("%s — you are %s"):format(label, COVENANTS[active] or "another covenant")
+	if active ~= cond.id then
+		return false, ("%s — you are %s"):format(label, COVENANTS[active] or "another covenant")
+	end
+	if not cond.renown then return true, label .. " (active)" end
+	local have = covenantRenown()
+	if not have then return nil, label end
+	if have >= cond.renown then return true, ("%s (you are %d)"):format(label, have) end
+	return false, ("%s — you are Renown %d"):format(label, have)
+end
+
+-- How far through a covenant renown requirement, 0..1, or nil when it cannot
+-- be judged. Same shape as RepProgress so the planner can price it the same
+-- way rather than charging a flat unknown.
+function C.CovenantProgress(cond)
+	if not (cond and cond.type == "COVENANT" and cond.renown and cond.renown > 0) then
+		return nil
+	end
+	if not (C_Covenants and C_Covenants.GetActiveCovenantID) then return nil end
+	local ok, active = pcall(C_Covenants.GetActiveCovenantID)
+	if not (ok and active == cond.id) then return nil end
+	local have = covenantRenown()
+	if not have then return nil end
+	return math.min(have / cond.renown, 1)
 end
 
 local EVAL = {

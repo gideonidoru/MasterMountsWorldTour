@@ -285,12 +285,17 @@ end
 --
 -- Returns true only when something was actually removed, so a generated file
 -- cannot quietly drop nothing after a record is renamed.
+-- Matches on whichever field this kind of condition uses to name itself.
+-- A REP row carries factionName and usually no `name` at all, so a version
+-- that only read `name` silently removed nothing from every reputation it was
+-- pointed at -- and returned false to say so, which nothing was reading.
 function MM.DropCondition(mountName, kind, condName)
 	local rec = MM.DBByName[mountName:lower()]
 	if not (rec and rec.conditions) then return false end
 	local want = condName and condName:lower()
 	for i, cond in ipairs(rec.conditions) do
-		if cond.type == kind and cond.name and cond.name:lower() == want then
+		local named = cond.name or cond.factionName or cond.faction
+		if cond.type == kind and named and named:lower() == want then
 			tremove(rec.conditions, i)
 			return true
 		end
@@ -451,6 +456,25 @@ function MM.NormaliseRepFields()
 		end
 	end
 	return fixed
+end
+
+-- Put a renown level onto a covenant requirement that already names it.
+--
+-- The covenant and the level arrived from two different places: the covenant
+-- from a QUEST-typed condition, the level from a REP-typed one asking for
+-- "Venthyr, Renown 23". They are one gate, so the level is folded onto the
+-- covenant condition rather than kept as a second requirement that would be
+-- priced separately.
+function MM.SetConditionRenown(mountName, covenantID, level)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions and covenantID) then return false end
+	for _, cond in ipairs(rec.conditions) do
+		if cond.type == "COVENANT" and cond.id == covenantID then
+			if level then cond.renown = level end
+			return true
+		end
+	end
+	return false
 end
 
 -- Correct a requirement filed under the wrong kind, in place.

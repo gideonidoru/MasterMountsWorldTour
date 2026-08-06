@@ -5251,14 +5251,10 @@ MM.AddMounts({
 				id = 241,
 				type = "CURRENCY",
 			},
-			{
-				name = "Champion of any one city (Argent Tournament)",
-				type = "ACHIEVEMENT",
-			},
 		},
 		effort = 3,
 		access = "Any city tent at the Argent Tournament sells it for 150 Champion's Seals once you are Champion of that one city. No Crusader title needed.",
-		notes = "Every one of the ten city quartermasters stocks it, so you only need a single Champion of <city> title - roughly 8 days of dailies from a standing start. Widely and wrongly listed as a Crusader-title reward; that is the Argent Warhorse.",
+		notes = "Requires Champion status with any one city, which is also what unlocks the dailies that pay the Champion's Seals.",
 		solo = true,
 	},
 	{
@@ -5279,10 +5275,6 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Crusader",
-				type = "ACHIEVEMENT",
-			},
-			{
 				name = "Champion's Seal",
 				amount = 100,
 				how = "Argent Tournament dailies in Icecrown - 5/day as an Aspirant or Valiant, up to ~10-17/day once you are a Champion.",
@@ -5291,6 +5283,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Exalted Argent Champion of the Alliance / of the Horde (Crusader title)",
+				idAlliance = 2817,
+				idHorde = 2816,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -5319,6 +5313,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Crusader",
+				idAlliance = 2817,
+				idHorde = 2816,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -6878,6 +6874,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1168,
 				factionName = "Guild",
 				standingName = "Exalted",
 				type = "REP",
@@ -6908,6 +6905,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				factionID = 1168,
 				factionName = "Guild",
 				standingName = "Exalted",
 				type = "REP",
@@ -6938,6 +6936,7 @@ MM.AddMounts({
 				type = "ACHIEVEMENT",
 			},
 			{
+				factionID = 1168,
 				factionName = "Guild",
 				standingName = "Exalted",
 				type = "REP",
@@ -8215,10 +8214,6 @@ MM.AddMounts({
 				how = "Bones drop from dinosaurs on the Isle of Giants; turn in 9,999 to Ku'ma",
 				id = 94288,
 				type = "ITEM",
-			},
-			{
-				name = "A Mountain of Giant Dinosaur Bones",
-				type = "ACHIEVEMENT",
 			},
 		},
 		attempts = "NONE",
@@ -10584,12 +10579,7 @@ MM.AddMounts({
 			name = "Frostwall",
 			mapID = 590,
 		},
-		conditions = {
-			{
-				name = "Gold-rank garrison invasion victory (weekly quest 'Gold Victory')",
-				type = "ACHIEVEMENT",
-			},
-		},
+		conditions = {},
 		dropRate = 25,
 		attempts = "WEEKLY",
 		timePerAttempt = 15,
@@ -17514,12 +17504,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Venthyr",
 				id = 2,
+				renown = 23,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Venthyr",
-				standingName = "Renown 23",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -17552,12 +17538,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Venthyr",
 				id = 2,
+				renown = 39,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Venthyr",
-				standingName = "Renown 39",
-				type = "REP",
 			},
 			{
 				amount = 50,
@@ -17593,12 +17575,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Venthyr",
 				id = 2,
+				renown = 45,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Venthyr",
-				standingName = "Renown 45",
-				type = "REP",
 			},
 		},
 		effort = 2,
@@ -17623,12 +17601,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Venthyr",
 				id = 2,
+				renown = 70,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Venthyr",
-				standingName = "Renown 70",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -18036,12 +18010,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Kyrian",
 				id = 1,
+				renown = 23,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Kyrian",
-				standingName = "Renown 23",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -18074,12 +18044,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Kyrian",
 				id = 1,
+				renown = 39,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Kyrian",
-				standingName = "Renown 39",
-				type = "REP",
 			},
 		},
 		effort = 2,
@@ -18105,12 +18071,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Kyrian",
 				id = 1,
+				renown = 45,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Kyrian",
-				standingName = "Renown 45",
-				type = "REP",
 			},
 		},
 		effort = 2,
@@ -18138,12 +18100,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Kyrian",
 				id = 1,
+				renown = 70,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Kyrian",
-				standingName = "Renown 70",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -18453,12 +18411,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Necrolord",
 				id = 4,
+				renown = 23,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Necrolord",
-				standingName = "Renown 23",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -18491,12 +18445,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Necrolord",
 				id = 4,
+				renown = 39,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Necrolord",
-				standingName = "Renown 39",
-				type = "REP",
 			},
 			{
 				amount = 50,
@@ -18532,12 +18482,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Necrolord",
 				id = 4,
+				renown = 45,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Necrolord",
-				standingName = "Renown 45",
-				type = "REP",
 			},
 		},
 		effort = 2,
@@ -18562,12 +18508,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Necrolord",
 				id = 4,
+				renown = 70,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Necrolord",
-				standingName = "Renown 70",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -19350,12 +19292,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Night Fae",
 				id = 3,
+				renown = 23,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Night Fae",
-				standingName = "Renown 23",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -19388,12 +19326,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Night Fae",
 				id = 3,
+				renown = 39,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Night Fae",
-				standingName = "Renown 39",
-				type = "REP",
 			},
 			{
 				amount = 40,
@@ -19429,12 +19363,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Night Fae",
 				id = 3,
+				renown = 45,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Night Fae",
-				standingName = "Renown 45",
-				type = "REP",
 			},
 		},
 		effort = 2,
@@ -19462,12 +19392,8 @@ MM.AddMounts({
 			{
 				name = "Covenant: Night Fae",
 				id = 3,
+				renown = 70,
 				type = "COVENANT",
-			},
-			{
-				factionName = "Night Fae",
-				standingName = "Renown 70",
-				type = "REP",
 			},
 			{
 				name = "Reservoir Anima",
@@ -22921,16 +22847,12 @@ MM.AddMounts({
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
-		source = "Achievement: Big Slick in the City — feed Big Slick in Loamm, Zaralek Cavern, over multiple days",
+		source = "Feed Big Slick in Loamm, Zaralek Cavern, over several days.",
 		zone = {
 			name = "Zaralek Cavern",
 			mapID = 2133,
 		},
 		conditions = {
-			{
-				name = "Big Slick in the City",
-				type = "ACHIEVEMENT",
-			},
 			{
 				amount = 1000,
 				id = 202173,
@@ -33114,6 +33036,7 @@ MM.AddMounts({
 				name = "Glowing Moths",
 				amount = 50,
 				how = "Gather Glowing Moths from Hara'ti activities and moth-collecting around Harandar.",
+				id = 3375,
 				type = "CURRENCY",
 			},
 			{
@@ -33157,6 +33080,7 @@ MM.AddMounts({
 				name = "Glowing Moths",
 				amount = 120,
 				how = "Gather Glowing Moths from Hara'ti activities and moth-collecting around Harandar.",
+				id = 3375,
 				type = "CURRENCY",
 			},
 			{
