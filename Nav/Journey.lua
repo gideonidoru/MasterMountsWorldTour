@@ -41,6 +41,22 @@ local function mapFor(zone)
 	return id or nil
 end
 
+-- A node's world position, worked out once. The nearest-node scan asks for
+-- every node's position on each zone that has no flight point of its own, and
+-- those answers do not change while the graph stands.
+local nodeWorldCache = {}
+-- Nearest entry points for a zone that has no flight point of its own.
+-- Keyed by zone: every journey out of Tazavesh asks the same question.
+local nearZoneCache = {}
+local function nodeWorld(name, mapID, x, y)
+	local hit = nodeWorldCache[name]
+	if hit ~= nil then return hit or nil end
+	local U = MM.Util
+	local _, w = U.GetWorldPos(mapID, x, y)
+	nodeWorldCache[name] = w or false
+	return w
+end
+
 -- Yards between two points, preferring the client's own world coordinates.
 local function yards(zoneA, ax, ay, zoneB, bx, by)
 	local U = MM.Util
@@ -73,7 +89,14 @@ end
 -- previously computed route cached against a world that no longer exists --
 -- so a rebuild silently changed nothing, which is the worst kind of stale.
 local planCache
-function J.Forget() graph = nil planCache = {} end
+-- Clears the nearest-node caches too. They are derived from the graph, so a
+-- rebuild that left them standing would answer for nodes that no longer exist.
+function J.Forget()
+	graph = nil
+	planCache = {}
+	nodeWorldCache = {}
+	nearZoneCache = {}
+end
 
 local function build()
 	if graph then return end
@@ -255,16 +278,122 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 	local START, GOAL = "\1start", "\1goal"
 	local temp = { [START] = true, [GOAL] = true }
 	edges[START] = {}
-	local function flySecs(zone, ax, ay, bx, by)
-		return yards(zone, ax, ay, zone, bx, by) / ypm * 60
+	-- A ZONE WITH NO FLIGHT POINT IS NOT A ZONE YOU CANNOT LEAVE.
+	--
+	-- START only ever attached to nodes in its OWN zone. Tazavesh, Ny'alotha,
+	-- Sanctum of Domination and the Forbidden Reach have no flight master of
+	-- their own, so START had no edge into the graph at all and Plan returned
+	-- nil -- whereupon travelMinutes charged the flat CROSS_CONTINENT_MINUTES.
+	-- That constant is 8, cheaper than most genuine multi-leg routes, so the
+	-- guess then BEAT every real answer: /mm routertest reported "network 0"
+	-- across every leg while holding 4,068 measured hops.
+	--
+	-- A player in that situation flies to the nearest flight master. yards()
+	-- already resolves both zones to world coordinates, so the nearest node
+	-- anywhere is a real measured distance, not an approximation -- and no
+	-- coordinate is invented, because it only ever uses nodes we already ship.
+	-- Always { name = , d = }, whether the zone had its own points or we had to
+	-- reach outside it -- one shape, so the caller cannot mix them up.
+	local function attachPoints(zone, x, y)
+		local out = {}
+		for _, name in ipairs(byZone[zone] or {}) do
+			local n = graph[name]
+			if n and n.x and n.y then
+				out[#out + 1] = { name = name,
+					d = yards(zone, x or 50, y or 50, zone, n.x, n.y) }
+			end
+		end
+		if #out > 0 then return out end
+		local cached = nearZoneCache[zone]
+		if cached then return cached end
+
+		-- MEASURED ACROSS ZONES, OR NOT AT ALL.
+		--
+		-- yards() falls back to treating both points as if they were in one
+		-- zone when a name will not resolve to a map, which is fine WITHIN a
+		-- zone and nonsense between two. Six zone names do not resolve on this
+		-- client, and for those the fallback would hand back a small number for
+		-- an arbitrary far-away node -- a fabricated cheap edge, which Dijkstra
+		-- would seize on and route the player through.
+		--
+		-- No world position, no candidate. Leaving the list empty costs a flat
+		-- fallback for that leg; guessing costs a wrong route presented as fact.
+		-- ONLY FROM A REAL WORLD MAP.
+		--
+		-- A dungeon or raid interior has its own coordinate space, so a world
+		-- position taken inside one is not comparable to an outdoor node. A
+		-- wrong LARGE distance would merely be ignored; a wrong SMALL one
+		-- invents a cheap edge and Dijkstra routes the player straight through
+		-- it. Instances reach the world through their door, which is a separate
+		-- piece of data we already hold -- not through a coordinate guess.
+		--
+		-- Refusing here costs the flat fallback, which is what happens today.
+		local U = MM.Util
+		local here
+		-- mapFor is the file-level cached resolver; calling ResolveMapByName
+		-- per node would be 1,300 lookups per zone.
+		local originMap, ox, oy = mapFor(zone), x or 50, y or 50
+		local info = originMap and C_Map and C_Map.GetMapInfo
+			and C_Map.GetMapInfo(originMap)
+		local worldly = info and Enum and Enum.UIMapType
+			and (info.mapType == Enum.UIMapType.Zone
+				or info.mapType == Enum.UIMapType.Continent)
+
+		-- AN INSTANCE LEAVES BY ITS DOOR.
+		--
+		-- Its interior has a private coordinate space, so measuring from inside
+		-- it to an outdoor flight master is meaningless -- and a meaningless
+		-- SMALL answer invents a cheap edge that Dijkstra will happily route
+		-- through. But the door is a real outdoor place we already ship a map
+		-- and a coordinate for, and it is where the player actually stands on
+		-- the way out. Measure from there instead of refusing.
+		if not worldly and MM.Network and MM.Network.EntranceNode then
+			local key = MM.Network.EntranceNode(zone)
+			local door = key and MM.TravelNodes and MM.TravelNodes[key]
+			if door and door.mapID and door.x and door.y then
+				local dx, dy = tonumber(door.x), tonumber(door.y)
+				-- TravelNodes store 0..1; everything here is 0..100.
+				if dx and dy then
+					originMap = door.mapID
+					ox = dx <= 1.0 and dx * 100 or dx
+					oy = dy <= 1.0 and dy * 100 or dy
+					worldly = true
+				end
+			end
+		end
+
+		if worldly and U and U.GetWorldPos and U.WorldDistance and originMap then
+			_, here = U.GetWorldPos(originMap, ox, oy)
+		end
+		local best = {}
+		if here then
+			for z, names in pairs(byZone) do
+				local mz = mapFor(z)
+				if mz then
+					for _, name in ipairs(names) do
+						local n = graph[name]
+						if n and n.x and n.y then
+							local there = nodeWorld(name, mz, n.x, n.y)
+							local d = there and U.WorldDistance(here, there)
+							if d then best[#best + 1] = { name = name, d = d } end
+						end
+					end
+				end
+			end
+		end
+		table.sort(best, function(a, b) return a.d < b.d end)
+		-- A handful is enough. The graph decides which is genuinely worth the
+		-- flight; carrying all of them only widens the search.
+		for i = 1, math.min(#best, 8) do out[i] = best[i] end
+		nearZoneCache[zone] = out
+		return out
 	end
-	for _, name in ipairs(byZone[fromZone] or {}) do
-		local n = graph[name]
-		addEdge(START, name, flySecs(fromZone, fromX or 50, fromY or 50, n.x, n.y), "fly")
+
+	for _, p in ipairs(attachPoints(fromZone, fromX, fromY)) do
+		addEdge(START, p.name, p.d / ypm * 60, "fly")
 	end
-	for _, name in ipairs(byZone[toZone] or {}) do
-		local n = graph[name]
-		addEdge(name, GOAL, flySecs(toZone, toX or 50, toY or 50, n.x, n.y), "fly")
+	for _, p in ipairs(attachPoints(toZone, toX, toY)) do
+		addEdge(p.name, GOAL, p.d / ypm * 60, "fly")
 	end
 	-- Flying the whole way is always on the table, never assumed.
 	if directFlyMinutes then addEdge(START, GOAL, directFlyMinutes * 60, "fly") end
