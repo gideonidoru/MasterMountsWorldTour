@@ -460,12 +460,14 @@ local function measured()
 	for id, nb in pairs(secs) do
 		local from = idToName[id]
 		if from then
-			local row = g[from] or {}
+			local row = g[from:lower()] or {}
 			for otherID, s in pairs(nb) do
 				local to = idToName[otherID]
-				if to then row[to] = s edges = edges + 1 end
+				-- Lowercased on both sides: TripSeconds compares lowercase, and
+				-- a graph keyed in mixed case would never match it.
+				if to then row[to:lower()] = s edges = edges + 1 end
 			end
-			g[from] = row
+			g[from:lower()] = row
 		end
 	end
 	measuredGraph = edges > 0 and g or false
@@ -473,10 +475,31 @@ local function measured()
 end
 TX.MeasuredGraph = measured
 
+-- Any known spelling of a flight master -> the one the graph is keyed by.
+--
+-- THE BUG THIS FIXES. Flight-point data names a master "Darkbreak Cove"; the
+-- duration graph names it "Darkbreak Cove, Azsuna". TX.Nearest returned the
+-- bare form, TripSeconds looked it up in a zone-qualified graph, missed, and
+-- returned nil -- on every leg, so 4,068 measured hops were loaded and never
+-- once used. /mm routertest said "taxi 0" for eight legs straight.
+--
+-- MM.FlightNodeByName already indexes BOTH forms against the same nodeID, so
+-- this is a two-hop lookup rather than new data.
+local function canonical(name)
+	if not name then return nil end
+	local low = name:lower()
+	local byName, byID = MM.FlightNodeByName, MM.FlightNodeName
+	if not (byName and byID) then return low end
+	local id = byName[low]
+	local canon = id and byID[id]
+	return canon and canon:lower() or low
+end
+TX.CanonicalNodeName = canonical
+
 function TX.TripSeconds(fromName, toName)
 	local g = measured() or MM.TaxiGraphData
 	if not (g and fromName and toName) then return nil end
-	local a, b = fromName:lower(), toName:lower()
+	local a, b = canonical(fromName), canonical(toName)
 	if a == b then return 0 end
 	if not (g[a] and g[b]) then return nil end
 

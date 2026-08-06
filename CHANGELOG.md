@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.5.0
+
+**The measured flight times were never actually being used.** `/mm routertest`
+reported `direct 8 · taxi 0 · network 0` -- eight legs, zero uses -- which is
+what loaded-but-inert looks like from outside.
+
+Two naming faults, both mine:
+
+- **Bare versus zone-qualified names.** Flight-point data calls a master
+  "Darkbreak Cove"; the duration graph calls it "Darkbreak Cove, Vashj'ir".
+  Every lookup missed, on every leg. Names are now normalised through the index,
+  which already held both forms.
+- **Contested bare names went to the wrong node.** Several places exist twice --
+  "Astranaar" and "Astranaar, Ashenvale" -- and one of the pair is a stub with
+  no edges. First-seen won, so routes through it returned "no path" while the
+  real node sat there fully connected. The better-connected node now wins,
+  because that is exactly the property that matters.
+
+Also removed a duplicate flight-point dataset I had built without noticing that
+`Nav/FlightPointData.lua` already shipped the same 813 points.
+
 ## 1.4.0
 
 **Chat discipline, and a Timewalking mount that was telling you to wait for the
