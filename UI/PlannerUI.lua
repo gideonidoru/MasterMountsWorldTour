@@ -580,6 +580,33 @@ function UI.BuildPlanner(panel)
 	summaryText:SetJustifyH("RIGHT")
 	summaryText:SetWordWrap(false)
 
+	-- THE SUMMARY TRUNCATES, SO IT HAS TO BE READABLE SOME OTHER WAY.
+	--
+	-- "2d 8h · ~22.5 mounts (30d 15h to finish all) · 132 mounts · 101 sto..."
+	-- is the densest line in the addon and the first thing to lose its tail
+	-- when the window is anything but wide. Wrapping it would cost a row of
+	-- height on every plan; a tooltip costs nothing until it is wanted.
+	--
+	-- A FontString cannot take mouse input, so an invisible frame sits over it.
+	local summaryHit = CreateFrame("Frame", nil, panel)
+	summaryHit:SetPoint("TOPLEFT", summaryText, "TOPLEFT", 0, 2)
+	summaryHit:SetPoint("BOTTOMRIGHT", summaryText, "BOTTOMRIGHT", 0, -2)
+	summaryHit:EnableMouse(true)
+	summaryHit:SetScript("OnEnter", function(self)
+		local full = summaryText.mmFull or summaryText:GetText()
+		if not full or full == "" then return end
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetText("This plan", 1, 0.82, 0.2)
+		-- Split on the separator it is already built with, so each fact gets
+		-- its own line instead of one long wrapped paragraph.
+		for chunk in (full .. " \194\183 "):gmatch("(.-) \194\183 ") do
+			local line = chunk:gsub("^%s+", ""):gsub("%s+$", "")
+			if line ~= "" then GameTooltip:AddLine(line, 1, 1, 1, true) end
+		end
+		GameTooltip:Show()
+	end)
+	summaryHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 	planBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
 	planBox:SetPoint("TOPLEFT", 470, -66)
 	planBox:SetPoint("BOTTOMRIGHT", -26, 48)
@@ -767,6 +794,14 @@ function UI.RefreshPlannerNow()
 			U.FormatSeconds((t.routeMinutes or t.minutes) * 60), mountText,
 			U.FormatSeconds(t.minutes * 60))
 	end
+	-- Kept whole for the tooltip. SetText draws it truncated; GetText hands
+	-- back what was SET, so this is belt and braces -- but the tooltip must
+	-- never be at the mercy of how the label happens to render.
+	summaryText.mmFull = head .. ("%d mounts · %d stops · %d zones%s%s%s"):format(
+		goalCount, limit or #MM.Router.route, zoneCount,
+		hiddenBySession > 0 and (" · " .. hiddenBySession .. " beyond this session") or "",
+		offRoute > 0 and (" · " .. offRoute .. " unplaced") or "",
+		waiting > 0 and (" · " .. waiting .. " waiting") or "")
 	summaryText:SetText(head .. ("%d mounts · %d stops · %d zones%s%s%s"):format(
 		goalCount, limit or #MM.Router.route, zoneCount,
 		hiddenBySession > 0 and (" · " .. hiddenBySession .. " beyond this session") or "",

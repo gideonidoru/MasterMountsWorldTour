@@ -134,9 +134,12 @@ end
 function UI.MakeRowAction(row)
 	local b = CreateFrame("Button", nil, row)
 	b:SetSize(22, 22)
-	b.glyph = b:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	b.glyph = b:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
 	b.glyph:SetPoint("CENTER")
-	b:SetAlpha(0.22)
+	-- Quiet, not invisible. 0.22 got out of the way so thoroughly that the
+	-- control had to be hunted for; the point was to stop three hundred red
+	-- buttons shouting, not to hide the only thing on the row you can click.
+	b:SetAlpha(0.55)
 	-- STILL + AND -, NOT A CROSS.
 	--
 	-- A cross was tried here before and deliberately replaced: [x] reads as
@@ -147,10 +150,10 @@ function UI.MakeRowAction(row)
 	b.mmSet = function(self, inPlan)
 		if inPlan then
 			self.glyph:SetText("-")
-			self.glyph:SetTextColor(0.95, 0.55, 0.5)
+			self.glyph:SetTextColor(1, 0.45, 0.4)
 		else
 			self.glyph:SetText("+")
-			self.glyph:SetTextColor(0.55, 0.85, 0.55)
+			self.glyph:SetTextColor(0.45, 1, 0.5)
 		end
 	end
 	b:SetScript("OnEnter", function(self)
@@ -160,17 +163,17 @@ function UI.MakeRowAction(row)
 		GameTooltip:Show()
 	end)
 	b:SetScript("OnLeave", function(self)
-		self:SetAlpha(row.mmHover and 0.75 or 0.22)
+		self:SetAlpha(row.mmHover and 0.9 or 0.55)
 		GameTooltip:Hide()
 	end)
 	-- Hooked, not replaced: the row's own tooltip handlers still run.
 	row:HookScript("OnEnter", function()
 		row.mmHover = true
-		b:SetAlpha(0.75)
+		b:SetAlpha(0.9)
 	end)
 	row:HookScript("OnLeave", function()
 		row.mmHover = false
-		b:SetAlpha(0.22)
+		b:SetAlpha(0.55)
 	end)
 	return b
 end
