@@ -271,6 +271,12 @@ local function buildPanel()
 				if v == "auto" then
 					labelText = labelText .. " ("
 						.. (MM.Theme.HasElvUI() and "ElvUI" or "Blizzard") .. ")"
+				elseif v == "elvui" and not MM.Theme.HasElvUI() then
+					-- Offered on purpose, and honest about what it gives you.
+					-- The palette is ours; only ElvUI's own skinning of
+					-- Blizzard widgets needs ElvUI present. Hiding the option
+					-- would take away a look that works perfectly well.
+					labelText = labelText .. " (colours only)"
 				end
 				root:CreateRadio(labelText,
 					function() return (MM.db.theme or "auto") == v end,

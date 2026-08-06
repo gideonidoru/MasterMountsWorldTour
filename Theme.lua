@@ -665,7 +665,19 @@ MM:On("MM_LOGIN", function()
 end)
 
 MM:On("MM_THEME_DEBUG", function()
-	MM:Print("Theme: %s (ElvUI %s, skins module %s)", T.Active(),
+	-- "Theme: elvui (ElvUI absent)" reads as a contradiction and is not one.
+	-- The PALETTE is ours and applies on any client; what needs ElvUI present
+	-- is its own skinning module, which restyles Blizzard's widgets. Choosing
+	-- the ElvUI look without ElvUI installed is a legitimate cosmetic choice,
+	-- and the line now says which half is running rather than leaving the
+	-- reader to reconcile two facts that look opposed.
+	local palette = T.Active()
+	if palette == "elvui" and not T.HasElvUI() then
+		MM:Print("Theme: elvui palette (ElvUI is not installed, so its skinning"
+			.. " is not applied -- the colours are ours and work regardless)")
+		return
+	end
+	MM:Print("Theme: %s (ElvUI %s, skins module %s)", palette,
 		T.HasElvUI() and "detected" or "absent",
 		elvSkins() and "available" or "unavailable")
 end)
