@@ -3073,13 +3073,46 @@ local function runLogic()
 		local applied = CO.Import(text)
 		local wrote = 0
 		for _ in pairs(MM.db.contributions) do wrote = wrote + 1 end
-		MM.db.contributions = saved
-		pcall(CO.Apply)
 		if applied > 0 or wrote > 0 then
+			MM.db.contributions = saved
+			pcall(CO.Apply)
 			return false, ("its own export wrote %d records back — placeholders "
 				.. "are being treated as data"):format(wrote)
 		end
-		return true, ("%d gaps exported, round-trips as a no-op"):format(total)
+
+		-- A NO-OP PROVES NOTHING ON ITS OWN.
+		--
+		-- This test passed for the entire life of the feature while the import
+		-- was incapable of applying anything: the export writes the display
+		-- name and the import looked it up in a table keyed by the LOWERCASED
+		-- name, so every line resolved to "unknown mount". An unrecognised
+		-- name is a no-op and an untouched placeholder is a no-op, and the
+		-- test could not tell them apart.
+		--
+		-- So it now fills one line in and checks the value actually lands.
+		local target
+		for name in text:gmatch("([^\n|]+)|%s*dropRate") do
+			target = strtrim(name)
+			break
+		end
+		if not target then
+			MM.db.contributions = saved
+			pcall(CO.Apply)
+			return nil, "no drop-rate line in the export to test with"
+		end
+		MM.db.contributions = {}
+		local ok = CO.Import(("%s | dropRate = 3.5"):format(target))
+		local stored = MM.db.contributions[target] and MM.db.contributions[target].dropRate
+		MM.db.contributions = saved
+		pcall(CO.Apply)
+
+		if ok < 1 or stored ~= 3.5 then
+			return false, ("a filled line for %q applied %d and stored %s — the "
+				.. "import cannot recognise its own export"):format(
+				target, ok, tostring(stored))
+		end
+		return true, ("%d gaps exported; placeholders no-op and a filled line lands")
+			:format(total)
 	end)
 
 	check("Reagents are priced by how you get them", function()

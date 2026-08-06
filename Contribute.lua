@@ -328,8 +328,14 @@ function CO.Import(text)
 			local name, rest = line:match("^(.-)%s*|%s*(.+)$")
 			if not name then
 				skipped = skipped + 1
-			elseif not MM.DBByName[name] then
-				-- A paste cannot invent mounts.
+			elseif not MM.DBByName[name:lower()] then
+				-- A PASTE CANNOT INVENT MOUNTS -- and could not name a real one
+				-- either. DBByName is keyed by the lowercased name, and the
+				-- export writes the display name, so every single line of the
+				-- file this feature generates resolved to "unknown mount". The
+				-- round-trip test passed the whole time because an untouched
+				-- template IS a no-op, and an unrecognised name is also a
+				-- no-op -- two different reasons for the same silence.
 				skipped = skipped + 1
 				if #problems < 8 then
 					problems[#problems + 1] = ("unknown mount %q"):format(name)
@@ -356,7 +362,10 @@ function CO.Import(text)
 						problems[#problems + 1] = ("%s — %s"):format(name, bad)
 					end
 				elseif next(fields) then
-					db[name] = db[name] or {}
+					-- Stored under the same key CO.Apply reads back.
+					local canonical = MM.DBByName[name:lower()].name or name
+					db[canonical] = db[canonical] or {}
+					name = canonical
 					for k, v in pairs(fields) do db[name][k] = v end
 					applied = applied + 1
 				else
@@ -381,7 +390,9 @@ function CO.Apply()
 	if not db then return 0 end
 	local n = 0
 	for name, fields in pairs(db) do
-		local rec = MM.DBByName[name]
+		-- Lowercased for the same reason the importer is: this table is keyed
+		-- by the lowered name and stored contributions carry the display one.
+		local rec = MM.DBByName[name:lower()]
 		if rec then
 			n = n + 1
 			if fields.zone then
