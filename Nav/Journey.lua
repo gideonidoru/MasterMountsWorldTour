@@ -51,13 +51,25 @@ local nearZoneCache = {}
 -- Why a plan failed, kept beside the plan cache so a repeat query gets the
 -- reason and not just another silent nil.
 local planWhy = {}
+-- Returns CONTINENT and position, never position alone.
+--
+-- A world position is continent-relative, so subtracting two of them across
+-- continents is not a distance -- it is two unrelated numbers differenced, and
+-- it usually comes out SMALL. Dropping the continent here made Bastion look
+-- six seconds from The Maw and had the graph pick "nearest" nodes an ocean
+-- away. Router.lua has always compared continents before measuring; this did
+-- not, and the moment name resolution started working the mistake went live.
 local function nodeWorld(name, mapID, x, y)
 	local hit = nodeWorldCache[name]
-	if hit ~= nil then return hit or nil end
+	if hit ~= nil then
+		if hit == false then return nil end
+		return hit.continent, hit.world
+	end
 	local U = MM.Util
-	local _, w = U.GetWorldPos(mapID, x, y)
-	nodeWorldCache[name] = w or false
-	return w
+	local c, w = U.GetWorldPos(mapID, x, y)
+	nodeWorldCache[name] = w and { continent = c, world = w } or false
+	if not w then return nil end
+	return c, w
 end
 
 -- Yards between two points, preferring the client's own world coordinates.
@@ -66,9 +78,12 @@ local function yards(zoneA, ax, ay, zoneB, bx, by)
 	if U and U.GetWorldPos and U.WorldDistance then
 		local ma, mb = mapFor(zoneA), mapFor(zoneB)
 		if ma and mb then
-			local _, wa = U.GetWorldPos(ma, ax, ay)
-			local _, wb = U.GetWorldPos(mb, bx, by)
-			if wa and wb then
+			local ca, wa = U.GetWorldPos(ma, ax, ay)
+			local cb, wb = U.GetWorldPos(mb, bx, by)
+			-- SAME CONTINENT, OR THE MEASUREMENT IS MEANINGLESS.
+			-- Two continent-relative positions differenced across continents
+			-- produce a number, and that number is not a distance.
+			if wa and wb and ca == cb then
 				local d = U.WorldDistance(wa, wb)
 				if d then return d end
 			end
@@ -325,6 +340,33 @@ function J.Reachable(fromName)
 	return n, total
 end
 
+-- The attachment candidates for a zone, with the continent each sits on.
+--
+-- Exposed so a check can assert the invariant that broke: an entry point on
+-- another continent is not an entry point, however small the arithmetic
+-- between two continent-relative coordinates happens to come out.
+function J.AttachAudit(zone, x, y)
+	build()
+	if not zone then return nil end
+	local U = MM.Util
+	local zl = zone:lower()
+	local own = byZone[zl]
+	if own and #own > 0 then return #own, 0, "own zone" end
+	local m = mapFor(zl)
+	local hereC = m and select(1, U.GetWorldPos(m, x or 50, y or 50))
+	if not hereC then return 0, 0, "origin has no world position" end
+	local cached = nearZoneCache[zl]
+	if not cached then return nil end
+	local same, other = 0, 0
+	for _, p in ipairs(cached) do
+		local n = graph[p.name]
+		local mz = n and n.zone and mapFor(n.zone)
+		local c = mz and select(1, U.GetWorldPos(mz, n.x or 50, n.y or 50))
+		if c == hereC then same = same + 1 else other = other + 1 end
+	end
+	return same, other, "nearest elsewhere"
+end
+
 function J.Stats()
 	build()
 	local n, e = 0, 0
@@ -435,8 +477,9 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 			end
 		end
 
+		local hereContinent
 		if worldly and U and U.GetWorldPos and U.WorldDistance and originMap then
-			_, here = U.GetWorldPos(originMap, ox, oy)
+			hereContinent, here = U.GetWorldPos(originMap, ox, oy)
 		end
 		local best = {}
 		if here then
@@ -446,8 +489,12 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 					for _, name in ipairs(names) do
 						local n = graph[name]
 						if n and n.x and n.y then
-							local there = nodeWorld(name, mz, n.x, n.y)
-							local d = there and U.WorldDistance(here, there)
+							-- You cannot fly to another continent. A candidate
+							-- on a different one is not near, however small the
+							-- arithmetic between their coordinates comes out.
+							local thereContinent, there = nodeWorld(name, mz, n.x, n.y)
+							local d = there and thereContinent == hereContinent
+								and U.WorldDistance(here, there)
 							if d then best[#best + 1] = { name = name, d = d } end
 						end
 					end

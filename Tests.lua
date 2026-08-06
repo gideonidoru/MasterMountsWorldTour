@@ -1459,6 +1459,39 @@ local function runLogic()
 		return true, ("%d zones resolve identically in any case"):format(checked)
 	end)
 
+	check("Nowhere on another continent is ever called nearby", function()
+		-- The bug this exists for: a world position is CONTINENT-RELATIVE, so
+		-- differencing two of them across continents is not a distance. It is
+		-- two unrelated numbers subtracted, and it comes out small. The graph
+		-- duly decided Bastion was six seconds from The Maw, routed a Tazavesh
+		-- goal to a raid door in Nazmir, and collapsed every profile to the
+		-- same three minutes -- all of it stated with total confidence.
+		--
+		-- Cheap wrong answers are the dangerous kind: they win the comparison.
+		local J = MM.Journey
+		if not (J and J.AttachAudit) then return nil, "travel layer not loaded" end
+		local probes = { "Tazavesh, the Veiled Market", "Ny'alotha, the Waking City",
+			"The Forbidden Reach", "Sanctum of Domination" }
+		local checked, offending, example = 0, 0, nil
+		for _, zone in ipairs(probes) do
+			local same, other = J.AttachAudit(zone, 50, 50)
+			if same then
+				checked = checked + 1
+				if (other or 0) > 0 then
+					offending = offending + other
+					example = example or zone
+				end
+			end
+		end
+		if checked == 0 then return nil, "no probe zone could be audited yet" end
+		if offending > 0 then
+			return false, ("%d attachment(s) sit on another continent, e.g. %s")
+				:format(offending, example)
+		end
+		return true, ("%d zones audited, every entry point on the right continent")
+			:format(checked)
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%
