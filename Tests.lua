@@ -2549,6 +2549,34 @@ local function runLogic()
 		return true, ("%d crafts, %d with real reagent data"):format(crafts, priced)
 	end)
 
+	check("A snapshot never empties what it cannot read", function()
+		-- The warband row went "prof:yes" to "prof:no" between two runs minutes
+		-- apart on the same character. Nothing was unlearned -- the refresh
+		-- cleared the table before reading, so one quiet login overwrote real
+		-- data with nothing.
+		local A = MM.Alts
+		if not (A and A.Snapshot) then return nil, "no snapshot to test" end
+		local db = MM.db and MM.db.alts
+		if not db then return nil, "no warband data yet" end
+		local before = 0
+		for _, snap in pairs(db) do
+			local p = snap.professions
+			if p and next(p) then before = before + 1 end
+		end
+		pcall(A.Snapshot)
+		local after = 0
+		for _, snap in pairs(db) do
+			local p = snap.professions
+			if p and next(p) then after = after + 1 end
+		end
+		if after < before then
+			return false, ("a refresh LOST professions: %d characters -> %d")
+				:format(before, after)
+		end
+		return true, ("%d character(s) with professions, kept across a refresh")
+			:format(after)
+	end)
+
 	check("Warband counts, not just this character", function()
 		-- Reagents in the warband bank are available to everyone, which is what
 		-- makes "who should craft this" answerable at all. A count that only

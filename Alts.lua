@@ -56,14 +56,32 @@ function A.Snapshot()
 	end
 	-- Fallback: GetProfessions reports the primaries even when skillLevel
 	-- reads 0, which it does for every line on 12.0.
-	me.professions = {}
+	-- NEVER CLEAR BEFORE READING.
+	--
+	-- This assigned an empty table and then refilled it, so any login where
+	-- GetProfessions had nothing to say -- it is not always ready this early --
+	-- saved the character as having no professions and threw away what was
+	-- already known. Build aside, and only commit a result that found something.
+	--
+	-- GetProfessions returns SIX values with HOLES in them: two primaries, then
+	-- archaeology, fishing, cooking, first aid, any of which may be nil. A table
+	-- constructor keeps the holes and ipairs stops dead at the first one, so a
+	-- character with no first primary but with cooking lost the lot. select()
+	-- walks all six positions regardless of what is missing.
 	if GetProfessions and GetProfessionInfo then
-		for _, index in ipairs({ GetProfessions() }) do
+		local found = {}
+		local any = false
+		local n = select("#", GetProfessions())
+		for i = 1, n do
+			local index = select(i, GetProfessions())
 			if index then
 				local name = GetProfessionInfo(index)
-				if name then me.professions[name] = true end
+				if name then found[name] = true; any = true end
 			end
 		end
+		if any or not me.professions then me.professions = found end
+	elseif not me.professions then
+		me.professions = {}
 	end
 
 	-- Only snapshot what the database actually cares about; scanning every
