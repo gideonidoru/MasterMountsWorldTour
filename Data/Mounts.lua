@@ -21421,6 +21421,13 @@ MM.AddMounts({
 			x = 34,
 			y = 59.8,
 		},
+		conditions = {
+			{
+				amount = 100000,
+				id = 2118,
+				type = "CURRENCY",
+			},
+		},
 		attempts = "DAILY",
 		timePerAttempt = 15,
 		effort = 3,
@@ -32686,6 +32693,12 @@ MM.AddMounts({
 			difficulty = "25 Heroic",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				id = 4156,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 2,
 	},
 	{
@@ -32707,6 +32720,12 @@ MM.AddMounts({
 			name = "Trial of the Grand Crusader",
 			difficulty = "25 Heroic",
 			lockout = "WEEKLY",
+		},
+		conditions = {
+			{
+				id = 4079,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 2,
 	},
@@ -33516,6 +33535,12 @@ MM.AddMounts({
 			x = 51.7,
 			y = 29,
 		},
+		conditions = {
+			{
+				id = 8985,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 		solo = true,
 	},
@@ -33837,6 +33862,12 @@ MM.AddMounts({
 			x = 52,
 			y = 70,
 		},
+		conditions = {
+			{
+				id = 9909,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 	},
 	{
@@ -34022,6 +34053,13 @@ MM.AddMounts({
 			mapID = 650,
 			x = 44.4,
 			y = 45.6,
+		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		effort = 4,
 		notes = "Only offered when the quest is in rotation.",
@@ -34893,6 +34931,13 @@ MM.AddMounts({
 			x = 70,
 			y = 20,
 		},
+		conditions = {
+			{
+				amount = 350,
+				id = 1717,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 	},
 	{
@@ -35475,6 +35520,12 @@ MM.AddMounts({
 			x = 50,
 			y = 50,
 		},
+		conditions = {
+			{
+				id = 20501,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 5,
 	},
 	{
@@ -35972,6 +36023,12 @@ MM.AddMounts({
 			mapID = 2025,
 			x = 61,
 			y = 76,
+		},
+		conditions = {
+			{
+				id = 16355,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 3,
 	},
