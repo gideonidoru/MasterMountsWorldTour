@@ -137,8 +137,29 @@ local GAPS = {
 			.. "depending on class, gear and patch. It is a judgement, and it "
 			.. "is the kind of judgement a collector makes every week.",
 		want = "solo = true   -- or false",
+		-- TWO EXPANSIONS OLD IS SOLOABLE, AND WE ALREADY ACT AS IF IT IS.
+		--
+		-- A record with no solo flag is ALREADY treated as soloable unless its
+		-- wording says otherwise -- rated, keystone, arena, battleground. So
+		-- for old content this was asking players to confirm a judgement the
+		-- planner had already made and would not change: content two
+		-- expansions back falls over to one player at current gear, and that
+		-- has been true of every expansion in turn.
+		--
+		-- What is NOT settled by age is the current tier and the one before it,
+		-- where a raid genuinely may need a group. Those are worth asking about;
+		-- Dragonflight and earlier are not.
+		--
+		-- The rule is deliberately not written INTO the records. It is one
+		-- judgement applied uniformly and stated once, not 106 invented
+		-- per-mount facts -- and if it is wrong it is wrong visibly, in one
+		-- place, rather than baked in a hundred times.
 		test = function(rec)
-			return rec.obtainable and rec.category == "ACHIEVEMENT" and rec.solo == nil
+			if not (rec.obtainable and rec.category == "ACHIEVEMENT") then return false end
+			if rec.solo ~= nil then return false end
+			local exp = rec.expansion
+			if exp and (MM.MAX_EXPANSION - exp) >= 2 then return false end
+			return true
 		end,
 	},
 	{

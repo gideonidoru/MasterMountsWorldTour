@@ -1864,6 +1864,28 @@ local function runLogic()
 			got, hops, J.transitNodes or 0)
 	end)
 
+	check("A place we ship a flight point for is not an unknown place", function()
+		-- A Hearthstone binds to an INN, and an inn is not a map, so a bind in
+		-- "Har'athir" resolved to nothing and the addon asked the player to go
+		-- and stand there. We already shipped that name -- a flight master in
+		-- Harandar -- and nothing was looking at it.
+		local U = MM.Util
+		if not (U and U.ResolveMapByName and MM.FlightPointMapForName) then
+			return nil, "no flight point index"
+		end
+		local id = MM.FlightPointMapForName("Har'athir")
+		if not id then return nil, "that flight point is not in this build" end
+		local viaResolve = U.ResolveMapByName("Har'athir")
+		if viaResolve ~= id then
+			return false, ("flight point says map %s, resolver says %s")
+				:format(tostring(id), tostring(viaResolve))
+		end
+		-- A real map name must still win outright.
+		local org = U.ResolveMapByName("Orgrimmar")
+		if not org then return false, "a real map name stopped resolving" end
+		return true, ("Har'athir -> map %d, and map names still win"):format(id)
+	end)
+
 	check("A zone name resolves whatever its case", function()
 		-- The travel graph keys its zones lowercase and then asked the map
 		-- index, which the client fills with proper-cased names. Every one of

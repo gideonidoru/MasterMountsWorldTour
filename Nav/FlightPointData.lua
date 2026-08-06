@@ -1165,3 +1165,22 @@ MM.FlightPointData = {
 		{ name = "Seeker's Outpost", npc = "Scroll of Flight", x = 70.45, y = 65.31, faction = "B", continent = 875 },
 	},
 }
+
+-- Name -> map, for anything that names a PLACE we happen to have a flight
+-- point for: a Hearthstone binding, a vendor's town, a source that says where
+-- without saying which zone. Built once, on demand.
+local byName
+function MM.FlightPointMapForName(name)
+	if not name or name == "" then return nil end
+	if not byName then
+		byName = {}
+		for _, list in pairs(MM.FlightPointData or {}) do
+			for _, fp in ipairs(list or {}) do
+				if fp.name and fp.continent then
+					byName[fp.name:lower()] = byName[fp.name:lower()] or fp.continent
+				end
+			end
+		end
+	end
+	return byName[name:lower()]
+end

@@ -269,6 +269,20 @@ function U.ResolveMapByName(name)
 		local id = lowerToMap[candidate:lower()]
 		if id then return routableMap(candidate, id) end
 	end
+	-- LAST: a FLIGHT POINT by that name.
+	--
+	-- A Hearthstone is bound to an inn, and an inn is not a map -- so a bind
+	-- in "Har'athir" resolved to nothing and the addon asked the player to go
+	-- and stand there. We already ship that name: it is a flight master in
+	-- Harandar, in our own flight-point table, and nobody was looking.
+	--
+	-- Tried only after every map-name match has failed, so a real map always
+	-- wins. A flight point tells us the ZONE, which is what the router needs;
+	-- it does not pretend to be the inn.
+	if MM.FlightPointMapForName then
+		local id = MM.FlightPointMapForName(name)
+		if id then return id end
+	end
 	return nil
 end
 
