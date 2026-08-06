@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.1.0 — unreleased
+
+**Titan Panel**
+
+- Completes the LibDataBroker contract Titan actually reads. Titan turns every
+  LDB data source into a plugin of its own, so a second, native registration
+  would have put Master Mounts in your bar twice — the fix was to say more, not
+  to register again.
+- `label` added, so a display addon can show the name and the value separately
+  rather than falling back to the object's id and rendering "MasterMounts".
+- `tocname` added, and this one was a real defect: Titan resolves a plugin's
+  category, version and notes with `GetAddOnMetadata(tocname or objectName)`.
+  The object is named `MasterMounts`, the folder is `MasterMountsWorldTour`, so
+  every lookup returned nil and the plugin would have appeared uncategorised and
+  versionless.
+- `X-Category: Information` in the toc, which is the field Titan reads for
+  category. `Category-enUS` is Blizzard's and Titan never looks at it.
+- A self-test now verifies the broker against the live client: the type a
+  display addon can map, the four fields it needs, both handlers, and that
+  `tocname` names an addon this client actually has whose version matches
+  `MM.VERSION`. The folder-name mismatch above is the same shape that once broke
+  four textures silently, and it is checkable.
+
+Also benefits Bazooka, ChocolateBar and ElvUI datatexts, which read the same
+object.
+
 ## 1.0.0 — 2026-08-05
 
 First release.

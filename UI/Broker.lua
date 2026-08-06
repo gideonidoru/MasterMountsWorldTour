@@ -67,6 +67,20 @@ if LDB then
 		type = "data source",
 		text = "Master Mounts",
 		icon = ICON,
+		-- WHAT A DISPLAY ADDON SHOWS AS THE NAME, separately from the value.
+		-- Titan lets the user toggle label and text independently; with no
+		-- label it falls back to the data object's name and reads
+		-- "MasterMounts", jammed together, in someone's top bar.
+		label = "Master Mounts",
+		-- THE ADDON FOLDER, WHICH IS NOT THE DATA OBJECT'S NAME.
+		--
+		-- Titan resolves a plugin's category, version and notes with
+		-- GetAddOnMetadata(obj.tocname or objectName). The object is called
+		-- "MasterMounts" and the folder is "MasterMountsWorldTour", so every
+		-- one of those lookups returned nil and the plugin would have appeared
+		-- in Titan's config uncategorised and with no version -- the same
+		-- folder-name mismatch that once silently broke four textures.
+		tocname = "MasterMountsWorldTour",
 		OnClick = function(self, button)
 			if button == "RightButton" then quickMenu(self) else MM:Fire("MM_TOGGLE_MAIN") end
 		end,

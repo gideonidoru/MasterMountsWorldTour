@@ -1533,6 +1533,52 @@ local function runLogic()
 			:format(#pairs_, 2, costs[1], costs[2])
 	end)
 
+	check("The broker gives a display addon everything it needs", function()
+		-- Titan, Bazooka and ElvUI datatexts all build their plugin from this
+		-- one object, and every field they cannot find degrades silently: a
+		-- missing label reads as "MasterMounts" jammed together in the top bar,
+		-- and a tocname that does not name the addon FOLDER makes Titan's
+		-- category, version and notes lookups all return nil.
+		--
+		-- That last one is the folder-name mismatch that once broke four
+		-- textures without erroring. It is checkable, so check it.
+		local LDB = LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true)
+		if not LDB then return nil, "LibDataBroker not loaded" end
+		local obj
+		for name, dataobj in LDB:DataObjectIterator() do
+			if name == "MasterMounts" then obj = dataobj break end
+		end
+		if not obj then return false, "no data object registered" end
+
+		if obj.type ~= "data source" then
+			return false, ("type is %q, which no display addon maps"):format(tostring(obj.type))
+		end
+		for _, field in ipairs({ "text", "icon", "label", "tocname" }) do
+			if obj[field] == nil or obj[field] == "" then
+				return false, "the broker carries no " .. field
+			end
+		end
+		if type(obj.OnClick) ~= "function" or type(obj.OnTooltipShow) ~= "function" then
+			return false, "the broker has no click or tooltip handler"
+		end
+
+		-- The real test: does tocname actually name an addon this client has?
+		local meta = C_AddOns and C_AddOns.GetAddOnMetadata
+		if not meta then return nil, "no addon metadata API on this client" end
+		local version = meta(obj.tocname, "Version")
+		if not version then
+			return false, ("tocname %q is not an addon folder on this client, so "
+				.. "Titan resolves no category or version"):format(tostring(obj.tocname))
+		end
+		if version ~= MM.VERSION then
+			return false, ("the toc says %s and MM.VERSION says %s"):format(
+				version, tostring(MM.VERSION))
+		end
+		local category = meta(obj.tocname, "X-Category")
+		return true, ("data source, label %q, resolves to %s v%s, category %s")
+			:format(obj.label, obj.tocname, version, tostring(category or "none"))
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%
