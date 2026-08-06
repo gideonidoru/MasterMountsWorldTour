@@ -526,8 +526,11 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 		addEdge(START, p.name, p.d / ypm * 60, "fly")
 		fromCount = fromCount + 1
 	end
+	-- REMEMBER EXACTLY WHAT WAS ATTACHED, so exactly that can be removed.
+	local goalAttached = {}
 	for _, p in ipairs(attachPoints(toZone, toX, toY)) do
 		addEdge(p.name, GOAL, p.d / ypm * 60, "fly")
+		goalAttached[#goalAttached + 1] = p.name
 		toCount = toCount + 1
 	end
 	-- Flying the whole way is always on the table, never assumed.
@@ -620,8 +623,21 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 		end
 	end
 
+	-- TEAR DOWN EVERY GOAL EDGE THIS PLAN ADDED, not just the ones in the
+	-- destination's own zone.
+	--
+	-- The cleanup walked byZone[toZone]. When the goal attached through the
+	-- nearest-elsewhere fallback, its entry points are by definition NOT in
+	-- that zone -- so their "-> GOAL" edges were never removed and stayed in
+	-- the graph for the rest of the session. Every later plan then found a
+	-- stale, cheap edge to a goal that no longer existed and routed to it.
+	--
+	-- That is why four legs with different origins AND different destinations
+	-- came back with the same route and the same 1.7 minutes, and why a
+	-- destination with 21 entry points of its own still ended at a node in the
+	-- Emerald Dream: the graph was answering a question from several plans ago.
 	edges[START] = nil
-	for _, name in ipairs(byZone[toZone] or {}) do
+	for _, name in ipairs(goalAttached) do
 		if edges[name] then edges[name][GOAL] = nil end
 	end
 	-- SAY WHY, and say which of the three it was.

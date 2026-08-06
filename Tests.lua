@@ -1496,6 +1496,41 @@ local function runLogic()
 			:format(checked)
 	end)
 
+	check("A plan is torn down after it is made", function()
+		-- START and GOAL are temporary nodes wired into the graph for one plan
+		-- and removed after. The removal walked the destination zone's own
+		-- nodes, so whenever the goal attached through the nearest-elsewhere
+		-- fallback -- whose entry points are by definition NOT in that zone --
+		-- its "-> GOAL" edges were left behind for the rest of the session.
+		--
+		-- Every later plan then found a stale cheap edge to a goal that no
+		-- longer existed. Four legs with different origins and destinations came
+		-- back with the same route and the same 1.7 minutes, and a destination
+		-- with 21 entry points of its own still ended at a node in the Emerald
+		-- Dream. Nothing errored; the graph was answering an older question.
+		local J = MM.Journey
+		if not (J and J.Plan and J.Node) then return nil, "travel layer not loaded" end
+		-- Two destinations far apart, planned from the same origin. If a leftover
+		-- goal edge survives the first, the second will reuse it and agree.
+		local pairs_ = {
+			{ "Orgrimmar", "Tanaris" },
+			{ "Orgrimmar", "The Maw" },
+		}
+		local seen, costs = {}, {}
+		for i, pr in ipairs(pairs_) do
+			local mins, legs = J.Plan(pr[1], 50, 50, pr[2], 50, 50)
+			if not mins then return nil, ("could not plan %s -> %s"):format(pr[1], pr[2]) end
+			costs[i] = mins
+			seen[i] = (J.Describe and J.Describe(legs)) or tostring(mins)
+		end
+		if seen[1] == seen[2] then
+			return false, ("two different destinations returned the same route: %s")
+				:format((seen[1] or ""):sub(1, 80))
+		end
+		return true, ("%d destinations, %d distinct routes (%.1fm vs %.1fm)")
+			:format(#pairs_, 2, costs[1], costs[2])
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%
