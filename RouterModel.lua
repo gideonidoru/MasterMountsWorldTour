@@ -178,7 +178,9 @@ function RM.Sample(n)
 			end
 		end
 	end
-	return out
+	-- Second return: how many candidates EXISTED, so the caller can tell
+	-- "there were only 20" from "I truncated to 20".
+	return out, #pool
 end
 
 ------------------------------------------------------------
@@ -337,7 +339,8 @@ local function checkInvariants(results, sample)
 end
 
 function RM.Run(n)
-	local sample = RM.Sample(n)
+	local sample, eligible = RM.Sample(n)
+	local asked = n
 	if #sample == 0 then
 		MM:Print("Nothing to model — no uncollected high-risk goals found.")
 		return nil
@@ -359,7 +362,8 @@ function RM.Run(n)
 	-- Leave the player looking at their own route, not the model's.
 	MM.Router:Build()
 	local fails, exercised = checkInvariants(results, sample)
-	return { sample = sample, results = results, fails = fails, exercised = exercised }
+	return { sample = sample, results = results, fails = fails, exercised = exercised,
+		asked = asked, eligible = eligible }
 end
 
 ------------------------------------------------------------
@@ -380,7 +384,24 @@ function RM.Format(run)
 
 	w("# Master Mounts router model")
 	w("")
-	w("## Goals chosen (highest routing risk first)")
+	-- SAY WHAT WAS ASKED FOR AND WHAT WAS AVAILABLE.
+	--
+	-- `/mm routertest 300` returning 20 goals looks like a truncation bug. It is
+	-- not: only goals with a ROUTING RISK are worth modelling, and once the data
+	-- is good most goals have none. Asking for 300 cannot conjure 300 problems.
+	--
+	-- Silently ignoring the number is what made it look broken, so the number
+	-- asked for, the number eligible and the number taken are all stated.
+	if run.asked then
+		w("## Goals chosen (highest routing risk first)")
+		w("   %d of %d eligible%s. Only goals with a routing RISK are modelled --",
+			#run.sample, run.eligible or #run.sample,
+			run.asked > (run.eligible or 0)
+				and (", asked for " .. run.asked) or "")
+		w("   a goal the router places correctly has nothing to test.")
+	else
+		w("## Goals chosen (highest routing risk first)")
+	end
 	for i, c in ipairs(run.sample) do
 		w("%2d. %-34s [%s] %s — %s", i, c.entry.name, c.rec.category or "?",
 			riskWord(c.risk), c.why)
@@ -490,6 +511,14 @@ function RM.TravelReport()
 	if not (tn and te) then
 		w("  |cffff4444Travel network: NOT LOADED|r")
 	else
+		-- FORCE THE LAZY BUILD FIRST.
+		--
+		-- autoEdges is set at the END of Network.build(), and build() only runs
+		-- when something routes. Reading the counter before that reported "0
+		-- generated" for a graph that had simply not been built yet -- a
+		-- diagnostic describing a state its own act of measuring had not
+		-- reached. Coverage() triggers the build, so ask it before reporting.
+		if MM.Network and MM.Network.Coverage then MM.Network.Coverage() end
 		local n, byMethod, zero = 0, {}, 0
 		for _ in pairs(tn) do n = n + 1 end
 		for _, e in ipairs(te) do
