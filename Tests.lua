@@ -747,9 +747,23 @@ local function runLogic()
 		-- anything, so the only symptom was a player waiting.
 		local R = MM.Router
 		if not debugprofilestop then return nil, "no timer on this client" end
+		-- TIME A REAL BUILD, NOT A CACHE HIT.
+		--
+		-- This reported "0 ms for 286 goals" in the same run where the route
+		-- section said "built in 1483 ms -- too slow, this is a freeze". Both
+		-- measured the same function. Build returns early when builtSignature
+		-- still matches the plan, and by the time the checks run it always
+		-- does, so the check that exists to catch the freeze was timing a
+		-- return statement and passing on it.
+		--
+		-- Clearing the signature first is what every other honest caller of
+		-- Build has had to learn to do.
+		local savedSig, savedRank = R.builtSignature, R.chartRank
+		R.builtSignature, R.chartRank = nil, nil
 		local before = debugprofilestop()
 		R:Build()
 		local ms = debugprofilestop() - before
+		R.builtSignature, R.chartRank = savedSig, savedRank
 		local goals = #MM.Planner:GetPlan()
 		if ms > 400 then
 			return false, ("%.0f ms for %d goals — that is a visible freeze"):format(ms, goals)
