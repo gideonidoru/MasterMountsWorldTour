@@ -106,15 +106,43 @@ local function build()
 		if not g then return nil end
 		return g.name:lower()
 	end
-	for from, ns in pairs(MM.TaxiGraphData or {}) do
+	-- MEASURED FLIGHT TIMES FIRST, shipped graph as the fallback.
+	--
+	-- THE MISSING WIRE. Everything else was built -- 4,068 observed hop times,
+	-- 795 nodes, a name index, a 100% projection -- and this line still read the
+	-- old shipped graph. The router's real travel pricing runs through
+	-- Journey.Plan, so the measured data was loaded, correct, verified and fed
+	-- nothing that decided a route. `/mm routertest` said "taxi 0 · network 0"
+	-- for six runs and it was right every time.
+	--
+	-- MeasuredGraph is the same name-keyed shape, so this is a source swap
+	-- rather than new logic. Where it has no entry, TaxiGraphData still answers.
+	local taxiSource = (MM.Taxi and MM.Taxi.MeasuredGraph and MM.Taxi.MeasuredGraph())
+		or MM.TaxiGraphData or {}
+	local measuredEdges = 0
+	for from, ns in pairs(taxiSource) do
 		local a = canon(from)
 		if a then
 			for to, secs in pairs(ns) do
 				local b = canon(to)
-				if b then addEdge(a, b, secs, "taxi") end
+				if b then addEdge(a, b, secs, "taxi") measuredEdges = measuredEdges + 1 end
 			end
 		end
 	end
+	-- Anything the measured set does not cover still comes from the shipped
+	-- graph: coverage is a gradient, not a switch.
+	if taxiSource ~= MM.TaxiGraphData then
+		for from, ns in pairs(MM.TaxiGraphData or {}) do
+			local a = canon(from)
+			if a then
+				for to, secs in pairs(ns) do
+					local b = canon(to)
+					if b then addEdge(a, b, secs, "taxi") end
+				end
+			end
+		end
+	end
+	MM.Journey.measuredEdges = measuredEdges
 
 	-- Transit endpoints become nodes in their own right: a dock is a place you
 	-- have to physically reach, not a property of the zone.

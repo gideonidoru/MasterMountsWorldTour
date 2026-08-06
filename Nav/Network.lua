@@ -205,6 +205,40 @@ function NW.Nearest(mapID, x, y)
 	return best, bestD
 end
 
+-- INSTANCE NAME -> ITS DOOR.
+--
+-- Raid and dungeon interiors have no travel infrastructure and no useful map
+-- parent -- climbing the parent chain does not escape an instance, which is why
+-- that attempt changed nothing. But the network already carries 184 entrance
+-- nodes named after the instances they open:
+--
+--   "Tazavesh, the Veiled Market" -> TAZAVESH_THE_VEILED_MARKET_DUNGEON (map 2472)
+--   "Ny'alotha, the Waking City"  -> NYALOTHA_THE_WAKING_CITY_RAID_ULDUM
+--
+-- Those nodes sit OUTSIDE, in the zone you actually fly to. Matching the
+-- record's instance name against them routes to the door, which is the thing
+-- the player travels to.
+local doorIndex
+local function normaliseName(s)
+	return (s or ""):upper():gsub("[^A-Z0-9]+", "_"):gsub("^_+", ""):gsub("_+$", "")
+end
+
+function NW.EntranceNode(instanceName)
+	build()
+	if not (instanceName and MM.TravelNodes) then return nil end
+	if not doorIndex then
+		doorIndex = {}
+		for key, n in pairs(MM.TravelNodes) do
+			-- Index by the node's own NAME, which is the instance's real name,
+			-- rather than by parsing the key -- the key carries a _DUNGEON or
+			-- _RAID_ZONE suffix that the record never has.
+			local norm = normaliseName(n.name)
+			if norm ~= "" and not doorIndex[norm] then doorIndex[norm] = key end
+		end
+	end
+	return doorIndex[normaliseName(instanceName)]
+end
+
 local cache = {}
 
 -- Seconds to get from one node to another across the network, plus the path.
@@ -261,11 +295,24 @@ end
 -- A nil here has four distinct causes and they need different fixes: no node
 -- near the start, none near the end, both ends resolving to the same node, or
 -- genuinely no path between them. The diagnostic prints whichever it was.
-function NW.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
+-- toInstance: the instance this goal is inside, if any. When the destination
+-- map has no network presence -- every raid and dungeon interior -- the door
+-- named after that instance is the real destination.
+function NW.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY, toInstance, fromInstance)
 	build()
 	if not (graph and fromMapID and toMapID) then return nil, "no graph or map" end
 	local depart = NW.Nearest(fromMapID, fromX, fromY)
 	local arrive = NW.Nearest(toMapID, toX, toY)
+
+	if not depart and fromInstance then
+		local k = NW.EntranceNode(fromInstance)
+		depart = k and MM.TravelNodes[k]
+	end
+	if not arrive and toInstance then
+		local k = NW.EntranceNode(toInstance)
+		arrive = k and MM.TravelNodes[k]
+	end
+
 	if not depart then return nil, ("no node on map %s"):format(tostring(fromMapID)) end
 	if not arrive then return nil, ("no node on map %s"):format(tostring(toMapID)) end
 	if depart.key == arrive.key then return nil, "same node both ends" end

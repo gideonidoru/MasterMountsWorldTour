@@ -513,6 +513,14 @@ function RM.TravelReport()
 		end
 		w("  Flight times   %d nodes, %d measured hops, %d projected (%.1f%%)",
 			nodes, hops, projected, hops > 0 and (projected / hops * 100) or 0)
+		-- Loaded is not the same as WIRED. This says how many of those hops the
+		-- route planner actually took as edges -- the number that was silently
+		-- zero while everything else read healthy.
+		local wired = MM.Journey and MM.Journey.measuredEdges
+		if wired then
+			w("     %d fed into the route planner%s", wired,
+				wired == 0 and " |cffff4444 -- loaded but NOT WIRED|r" or "")
+		end
 		if projected < hops then
 			w("     |cffff4444%d hops have no name mapping and cannot be routed|r",
 				hops - projected)
@@ -569,12 +577,18 @@ function RM.TravelReport()
 				local d = U.WorldDistance(a.world, b.world)
 				direct = d and (d / ypm)
 			end
+			-- An instanced goal is reached by its DOOR, so the instance name has
+			-- to travel with the query or both datasets look at an interior map
+			-- with no flight points and correctly find nothing.
+			local aInst = a.rec and a.rec.instance and a.rec.instance.name
+			local bInst = b.rec and b.rec.instance and b.rec.instance.name
 			local taxi = MM.Taxi and MM.Taxi.TravelMinutes
-				and MM.Taxi.TravelMinutes(a.mapID, a.x, a.y, b.mapID, b.x, b.y, true)
+				and MM.Taxi.TravelMinutes(a.mapID, a.x, a.y, b.mapID, b.x, b.y, true,
+					bInst, aInst)
 			local net, netWhy
 			if MM.Network and MM.Network.TravelMinutes then
 				net, netWhy = MM.Network.TravelMinutes(a.mapID, a.x, a.y,
-					b.mapID, b.x, b.y)
+					b.mapID, b.x, b.y, bInst, aInst)
 			end
 			local best, who = direct, "direct"
 			if taxi and (not best or taxi < best) then best, who = taxi, "flight" end

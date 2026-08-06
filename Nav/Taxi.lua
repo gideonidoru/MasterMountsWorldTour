@@ -572,7 +572,8 @@ function TX.ForgetRoutes() wipe(routeCache) wipe(tripCache) end
 -- a comparison whose columns already contain each other cannot show which one
 -- is doing the work. /mm routertest needs the unmixed number to prove the
 -- network is earning its place rather than merely loaded.
-function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY, skipNetwork)
+function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY, skipNetwork,
+		toInstance, fromInstance)
 	local U = MM.Util
 	if not (U and fromMapID and toMapID) then return nil end
 
@@ -583,6 +584,7 @@ function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY, skipNetwor
 	-- Separate cache line for the unmixed answer, or the diagnostic would poison
 	-- the routing cache with taxi-only numbers.
 	local key = fromMapID .. "\1" .. toMapID .. (skipNetwork and "\1n" or "")
+		.. "\1" .. (toInstance or "") .. "\1" .. (fromInstance or "")
 	local c = routeCache[key]
 	if c ~= nil then
 		if c == false then return nil end
@@ -625,7 +627,8 @@ function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY, skipNetwor
 	-- taxi graph already had a real route.
 	if not skipNetwork and MM.Network and MM.Network.TravelMinutes then
 		local nMin, nDesc, nDep, nArr =
-			MM.Network.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
+			MM.Network.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY,
+				toInstance, fromInstance)
 		if nMin and nMin < total then
 			total, desc, depart, arrive = nMin, nDesc or desc, nDep or depart, nArr or arrive
 		end
