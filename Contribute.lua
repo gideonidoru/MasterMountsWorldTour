@@ -48,6 +48,15 @@ end
 ------------------------------------------------------------
 -- Each gap knows how to describe itself and what a filled-in line looks like,
 -- so the export is a template rather than a complaint.
+-- Categories where a location is not missing data, it is a category error.
+-- The mount is bought, granted, crafted, coded or awarded -- there is no place
+-- a player could stand and tell us about.
+local PLACELESS = {
+	STORE = true, PROMOTION = true, TCG = true, ACHIEVEMENT = true,
+	PROFESSION = true, PVP = true, CLASS = true, REMOVED = true,
+	TRADINGPOST = true,
+}
+
 local GAPS = {
 	{
 		key = "location",
@@ -56,8 +65,21 @@ local GAPS = {
 			.. "can never be routed at all, which makes it the most valuable "
 			.. "line in this file.",
 		want = 'zone = "Zone Name", x = 00.0, y = 00.0',
+		-- NOT EVERY MOUNT HAS A PLACE.
+		--
+		-- This counted any obtainable record without a zone, and reported 182
+		-- "missing locations" as though someone could go and find them. Most of
+		-- them cannot exist: 68 Store mounts are bought from Blizzard, 22
+		-- Promotion mounts are granted, 3 came from trading cards, 35 arrive
+		-- with an achievement, 18 are crafted wherever you stand, and 13 are
+		-- honor-level rewards. There is nowhere to go for any of them.
+		--
+		-- Asking players to supply a coordinate for a Celestial Steed is asking
+		-- for something that does not exist, and burying the thirty that ARE
+		-- findable under a hundred and fifty that are not.
 		test = function(rec)
-			return rec.obtainable and not rec.zone and not rec.vendor
+			if not rec.obtainable or rec.zone or rec.vendor then return false end
+			return not PLACELESS[rec.category]
 		end,
 	},
 	{

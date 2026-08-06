@@ -8233,6 +8233,11 @@ MM.AddMounts({
 		npc = {
 			id = 60530,
 		},
+		zone = {
+			mapID = 390,
+			x = 63.2,
+			y = 22,
+		},
 		conditions = {
 			{
 				factionID = 1269,
@@ -8274,6 +8279,11 @@ MM.AddMounts({
 		source = "Sold by Jaluu the Generous at Golden Lotus exalted (Vale of Eternal Blossoms)",
 		npc = {
 			id = 60530,
+		},
+		zone = {
+			mapID = 390,
+			x = 63.2,
+			y = 22,
 		},
 		conditions = {
 			{
@@ -8498,6 +8508,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8527,6 +8542,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8559,6 +8579,11 @@ MM.AddMounts({
 		npc = {
 			id = 66022,
 		},
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8588,6 +8613,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8617,6 +8647,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8646,6 +8681,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8675,6 +8715,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8704,6 +8749,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8733,6 +8783,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8762,6 +8817,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8791,6 +8851,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -8820,6 +8885,11 @@ MM.AddMounts({
 		category = "VENDOR",
 		obtainable = true,
 		source = "Pandaren racial mount vendors (Old Whitenose / Turtlemaster Odai)",
+		zone = {
+			mapID = 85,
+			x = 69.8,
+			y = 41,
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
