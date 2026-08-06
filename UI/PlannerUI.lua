@@ -29,14 +29,25 @@ local function initMissingRow(row, entry)
 		row.icon:SetPoint("LEFT", 6, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
-		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0)
+		-- THE NAME AND ITS LINE ARE ONE BLOCK.
+		--
+		-- The name was pinned to the icon's TOP and the description to its
+		-- BOTTOM. With a 32px icon in a 34px row that put one at each edge, so
+		-- the gap between a mount and its own description was larger than the
+		-- gap between rows -- and every name read as belonging to the
+		-- description above it.
+		--
+		-- The description now hangs off the NAME, not off the icon, so the two
+		-- stay together whatever the icon does. The row is taller to give them
+		-- somewhere to sit.
+		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 8, -1)
 		row.name:SetPoint("RIGHT", -46, 0)
 		row.name:SetJustifyH("LEFT")
 		row.name:SetWordWrap(false)
 
 		row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		row.sub:SetPoint("BOTTOMLEFT", row.icon, "BOTTOMRIGHT", 6, 0)
+		row.sub:SetPoint("TOPLEFT", row.name, "BOTTOMLEFT", 0, -2)
 		row.sub:SetPoint("RIGHT", -46, 0)
 		row.sub:SetJustifyH("LEFT")
 		row.sub:SetTextColor(0.6, 0.6, 0.6)
@@ -99,8 +110,8 @@ local function initPlanRow(row, data)
 		row.icon:SetPoint("LEFT", 40, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
-		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, -1)
+		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 8, -1)
 		-- 66px was three buttons wide. With the arrows gone only the
 		-- [-] remains, so the name gets 20px back -- these truncate.
 		row.name:SetPoint("RIGHT", -46, 0)
@@ -108,7 +119,7 @@ local function initPlanRow(row, data)
 		row.name:SetWordWrap(false)
 
 		row.est = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		row.est:SetPoint("BOTTOMLEFT", row.icon, "BOTTOMRIGHT", 6, 1)
+		row.est:SetPoint("TOPLEFT", row.name, "BOTTOMLEFT", 0, -2)
 		row.est:SetPoint("RIGHT", -46, 0)
 		row.est:SetJustifyH("LEFT")
 		row.est:SetTextColor(0.4, 0.8, 1)
@@ -379,7 +390,10 @@ function UI.BuildPlanner(panel)
 	missingBar:SetPoint("BOTTOMLEFT", missingBox, "BOTTOMRIGHT", 4, 0)
 
 	local mview = CreateScrollBoxListLinearView()
-	mview:SetElementExtent(34)
+	-- Room for a 32px icon and a two-line block without either touching an
+	-- edge. 34 left no margin at all once the icons matched the rest of the
+	-- addon.
+	mview:SetElementExtent(46)
 	mview:SetElementInitializer("Button", initMissingRow)
 	ScrollUtil.InitScrollBoxListWithScrollBar(missingBox, missingBar, mview)
 	missingBox.emptyText = panel.missingEmpty
@@ -546,7 +560,7 @@ function UI.BuildPlanner(panel)
 	planBar:SetPoint("BOTTOMLEFT", planBox, "BOTTOMRIGHT", 6, 0)
 
 	local pview = CreateScrollBoxListLinearView()
-	pview:SetElementExtent(36)
+	pview:SetElementExtent(46)
 	pview:SetElementInitializer("Button", initPlanRow)
 	ScrollUtil.InitScrollBoxListWithScrollBar(planBox, planBar, pview)
 	planBox.emptyText = panel.planEmpty

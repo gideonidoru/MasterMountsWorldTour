@@ -54,8 +54,13 @@ local function initRow(row, entry)
 		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 8, -2)
 		row.name:SetJustifyH("LEFT")
 
+		-- Hung off the NAME, not off the icon. Anchoring one line to the icon's
+		-- top and the other to its bottom makes the pair drift apart the moment
+		-- the icon or the row height changes -- which is exactly how the
+		-- planner ended up with a mount's description further from its name
+		-- than from the next mount's.
 		row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		row.sub:SetPoint("BOTTOMLEFT", row.icon, "BOTTOMRIGHT", 8, 2)
+		row.sub:SetPoint("TOPLEFT", row.name, "BOTTOMLEFT", 0, -2)
 		row.sub:SetPoint("RIGHT", row, "RIGHT", -180, 0)
 		row.sub:SetJustifyH("LEFT")
 		row.sub:SetTextColor(0.65, 0.65, 0.65)
