@@ -79,13 +79,32 @@ local GAPS = {
 		blurb = "What it costs, as a currency condition. These are charged a "
 			.. "flat four-hour guess today.",
 		want = 'currency = 0, currencyName = "Name", currencyID = 0',
+		-- A CONDITION IS NOT A PRICE.
+		--
+		-- This treated ANY condition as evidence the record was priced, so a
+		-- mount carrying a reputation requirement and no cost was not counted,
+		-- and a currency condition that named its cost without an AMOUNT was
+		-- not counted either. It measured "has no conditions" while reporting
+		-- itself as "has no price".
+		--
+		-- That mattered when a few hundred prices were imported: the real
+		-- coverage more than doubled while this number moved by three, which
+		-- reads as data that did not land. It had landed; the counter was
+		-- looking at the wrong thing.
 		test = function(rec)
 			if not rec.obtainable then return false end
 			local priced = rec.category == "VENDOR" or rec.category == "CURRENCY"
 				or rec.category == "TIMEWALKING" or rec.category == "PROFESSION"
 			if not priced then return false end
-			if rec.conditions and #rec.conditions > 0 then return false end
-			return not (rec.source or ""):lower():find("gold")
+			if (rec.source or ""):lower():find("gold") then return false end
+			-- Gold is a field rather than a condition.
+			if rec.goldCost then return false end
+			for _, cond in ipairs(rec.conditions or {}) do
+				if (cond.type == "CURRENCY" or cond.type == "ITEM") and cond.amount then
+					return false
+				end
+			end
+			return true
 		end,
 	},
 	{
