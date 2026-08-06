@@ -1728,6 +1728,45 @@ local function runLogic()
 		return true, "a thrown handler is reported in chat, naming the command"
 	end)
 
+	check("Easiest means easiest, not whatever you put first", function()
+		-- The easiest list ranked tiers by the user's OWN priority order, so it
+		-- returned "the highest in the order you already set" and called it
+		-- difficulty. Put INSTANCE first and a vendor mount you could buy
+		-- standing still ranked below a dungeon.
+		--
+		-- Reordering priorities must move the ROUTE and must not move this.
+		local P, W = MM.Planner, MM.Weights
+		if not (P and P.Easiest and W and W.Order and W.Move) then
+			return nil, "planner or weights not loaded"
+		end
+		local before = P:Easiest(10)
+		if #before < 3 then return nil, "too few plannable mounts to compare" end
+		local function names(list)
+			local out = {}
+			for _, e in ipairs(list) do out[#out + 1] = e.name or "?" end
+			return table.concat(out, "|")
+		end
+		local was = names(before)
+
+		-- W.Move is the only way the order changes, so use it -- a test that
+		-- writes the store directly would not prove the real path is safe.
+		local depth = #W.Order() - 1
+		for i = 1, depth do W.Move(i, 1) end          -- rotate the whole order
+		local after = names(P:Easiest(10))
+		for i = depth, 1, -1 do W.Move(i, 1) end      -- and rotate it back
+		local restored = names(P:Easiest(10))
+		local saved = W.Order()
+
+		if was ~= after then
+			return false, "rotating your priority order changed the EASIEST list"
+		end
+		if restored ~= was then
+			return false, "restoring the order did not restore the list"
+		end
+		return true, ("%d easiest, unchanged by rotating all %d priorities")
+			:format(#before, #saved)
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%

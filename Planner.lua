@@ -485,9 +485,34 @@ end
 -- someone who puts rares above achievements means it absolutely, so no
 -- achievement subscore may cross the boundary. P.TIER values stay fixed as
 -- identities, which is what the router's semantic thresholds compare against.
+-- EASE IS NOT PREFERENCE.
+--
+-- This used MM.Weights.TierRank, which orders tiers by the user's OWN
+-- configured priority. So "the 10 easiest" was really "the 10 highest in the
+-- order you already set", and a vendor mount you could buy standing still
+-- ranked below a dungeon if you had put INSTANCE first. The button could only
+-- ever tell you what you had already told it.
+--
+-- The DEFAULT order is the objective one -- pickup, instance, rare, field, rep,
+-- grind, achievement, group -- roughly ascending in what the game asks of you.
+-- Ease uses that; the ROUTE still uses your order, because which of two equally
+-- easy things you want first is exactly the preference the route exists to
+-- honour. Two different questions, two different orderings.
+local DEFAULT_TIER_RANK
+local function objectiveTierRank(tier)
+	if not DEFAULT_TIER_RANK then
+		DEFAULT_TIER_RANK = {}
+		for i, key in ipairs(MM.Weights.DEFAULT_ORDER) do
+			DEFAULT_TIER_RANK[P.TIER[key]] = i
+		end
+	end
+	if tier == P.TIER.BLOCKED then return #MM.Weights.DEFAULT_ORDER + 1 end
+	return DEFAULT_TIER_RANK[tier] or (#MM.Weights.DEFAULT_ORDER + 1)
+end
+
 local function easeScore(entry)
 	local tier, sub = P.Rank(entry)
-	return MM.Weights.TierRank(tier) * 100000 + sub
+	return objectiveTierRank(tier) * 100000 + sub
 end
 
 ------------------------------------------------------------
