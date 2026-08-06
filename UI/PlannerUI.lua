@@ -256,6 +256,20 @@ function UI.BuildPlanner(panel)
 		if UI.RefreshPlanner then UI.RefreshPlanner() end
 	end)
 
+	-- THE PANES SWAP ON ANY PLAN CHANGE, not just on a click in this window.
+	--
+	-- Now that a planned mount leaves the missing list, the list has to be
+	-- rebuilt whenever the plan moves -- and clicking a row is only one of the
+	-- ways it moves. A goal retired for a lockout, a mount collected, a plan
+	-- edit from a slash command: each of those has to hand the mount back, or
+	-- it stays hidden from both panes and looks like the addon lost it.
+	--
+	-- Guarded on visibility so a plan edit while the window is shut costs
+	-- nothing; opening it refreshes anyway.
+	MM:On("MM_PLAN_CHANGED", function()
+		if panel:IsShown() and UI.RefreshPlanner then UI.RefreshPlanner() end
+	end)
+
 	local clearBtn = UI.MakeButton(panel, "Clear Plan")
 	clearBtn:SetPoint("LEFT", easyBtn, "RIGHT", 6, 0)
 
@@ -557,10 +571,36 @@ end
 function UI.RefreshPlanner()
 	if not missingBox then return end
 
-	local missing = MM.Planner:GetMissing()
+	-- THE TWO PANES ARE NOT CHOSEN AND CHOSEN.
+	--
+	-- The missing list used to show everything you do not own, INCLUDING what
+	-- was already on the plan -- so a player who had planned most of their
+	-- list looked at a left pane where every single row said "IN PLAN" and
+	-- offered to remove it. The pane meant to answer "what could I add" was
+	-- answering "what have you already added", which the right pane was
+	-- answering better, in route order, at the same time.
+	--
+	-- Moving it across takes it out of the left list; taking it off the plan
+	-- puts it back. One mount is in exactly one place, the [-] on this side
+	-- becomes unreachable by construction, and the panes stop competing to
+	-- describe the same thing.
+	local all = MM.Planner:GetMissing()
+	local missing = {}
+	for _, entry in ipairs(all) do
+		if not MM.Planner:InPlan(entry.spellID) then missing[#missing + 1] = entry end
+	end
 	missingBox:SetDataProvider(CreateDataProvider(missing),
 		ScrollBoxConstants.RetainScrollPosition)
-	if missingBox.emptyText then missingBox.emptyText:SetShown(#missing == 0) end
+	if missingBox.emptyText then
+		missingBox.emptyText:SetShown(#missing == 0)
+		-- An empty list here means something GOOD -- everything reachable is
+		-- planned -- and it has to say so, or it reads as a filter that broke.
+		if #missing == 0 and missingBox.emptyText.SetText then
+			missingBox.emptyText:SetText(#all > 0
+				and "Everything here is already on your plan."
+				or "Nothing matches those filters.")
+		end
+	end
 
 	-- ordered as the route would run it
 	MM.Router:Build()

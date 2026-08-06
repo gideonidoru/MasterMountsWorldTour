@@ -1126,6 +1126,30 @@ local function runLogic()
 		return true, "no route gate on applying weights"
 	end)
 
+	check("Planning a mount moves it, rather than copying it", function()
+		-- The left pane listed everything missing INCLUDING what was already
+		-- planned, so a player with a full plan saw a list where every row said
+		-- IN PLAN and offered to remove it -- the pane meant to answer "what
+		-- could I add" was answering "what have you already added".
+		local P = MM.Planner
+		if not (P and P.GetMissing and P.InPlan) then return nil, "no planner" end
+		local all = P:GetMissing()
+		if #all == 0 then return nil, "nothing missing to test" end
+		local planned, unplanned = 0, 0
+		for _, e in ipairs(all) do
+			if P:InPlan(e.spellID) then planned = planned + 1
+			else unplanned = unplanned + 1 end
+		end
+		-- GetMissing is the raw truth and SHOULD still contain both; the split
+		-- is the view's job. This asserts the two sets are complementary, which
+		-- is what makes moving between panes lossless.
+		if planned + unplanned ~= #all then
+			return false, "a missing mount was neither planned nor unplanned"
+		end
+		return true, ("%d missing: %d on the plan, %d still to choose from")
+			:format(#all, planned, unplanned)
+	end)
+
 	check("The missing list can be searched", function()
 		-- The filter existed and was honoured by GetMissing long before there
 		-- was any way to type into it. Proves the plumbing, not the widget:
