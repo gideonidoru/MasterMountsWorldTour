@@ -75,8 +75,12 @@ function A.Snapshot()
 		for i = 1, n do
 			local index = select(i, GetProfessions())
 			if index then
-				local name = GetProfessionInfo(index)
-				if name then found[name] = true; any = true end
+				-- LEVEL, NOT A FLAG. A mount can want Blacksmithing 300, and
+				-- "has Blacksmithing" cannot answer that -- an apprentice would
+				-- read as qualified and the plan would send them to a recipe
+				-- they cannot learn. GetProfessionInfo gives the rank third.
+				local name, _, level = GetProfessionInfo(index)
+				if name then found[name] = level or 0; any = true end
 			end
 		end
 		if any or not me.professions then me.professions = found end
@@ -153,12 +157,24 @@ local function scoreCondition(snapshot, cond)
 	end
 	if cond.type == "PROFESSION" and cond.name then
 		local profs = snapshot.professions or {}
-		local lines = snapshot.skillLines or {}
-		if profs[cond.name] then return COMPLETION_BONUS end
-		for _, level in pairs(lines) do
-			if level and level > 0 then return COMPLETION_BONUS * 0.5 end
+		local have = profs[cond.name]
+		-- Snapshots taken before levels were stored hold `true`. Treat that as
+		-- "has it, rank unknown" rather than as a level of zero, which would
+		-- read as unskilled and hide a character who can actually craft it.
+		if have == true then return COMPLETION_BONUS, nil, nil end
+		if not have then
+			-- NO CREDIT FOR A DIFFERENT PROFESSION. This used to award half the
+			-- completion bonus if the character had ANY skill line above zero,
+			-- so someone whose only trade was fishing scored halfway to a
+			-- blacksmithing mount and could be suggested as the best alt.
+			return 0
 		end
-		return 0
+		local want = cond.amount or cond.skillLevel
+		if not want or want <= 0 then return COMPLETION_BONUS, have, nil end
+		if have >= want then return COMPLETION_BONUS, have, want end
+		-- Has the trade but not the rank: proportional, and always below the
+		-- cliff so anyone who can actually craft it ranks higher.
+		return (have / want) * (COMPLETION_BONUS * 0.9), have, want
 	end
 	if cond.type == "REP" and cond.factionID then
 		local renownTarget = cond.standingName and cond.standingName:match("^Renown (%d+)$")
@@ -180,6 +196,9 @@ local function scoreCondition(snapshot, cond)
 	end
 	return 0
 end
+
+-- Exposed so the profession ranking can be asserted rather than trusted.
+A.ScoreCondition = scoreCondition
 
 ------------------------------------------------------------
 -- The recommendation

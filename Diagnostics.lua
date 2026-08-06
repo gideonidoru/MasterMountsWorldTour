@@ -746,7 +746,22 @@ MM:On("MM_STATE_DEBUG", function()
 			snap.class or "?", snap.faction or "?",
 			snap.rep and (function() local c=0 for _ in pairs(snap.rep) do c=c+1 end return c end)() or 0,
 			snap.currency and (function() local c=0 for _ in pairs(snap.currency) do c=c+1 end return c end)() or 0,
-			(snap.professions and next(snap.professions)) and "yes" or "no")
+			-- Name the trade and the rank. "yes" cannot answer the question a
+			-- craft mount actually asks, which is whether THIS character is
+			-- skilled enough -- and it hid a bug where the data was being
+			-- wiped, because "no" looks like a character without professions
+			-- rather than one whose professions were lost.
+			(function()
+				local profs = snap.professions
+				if not (profs and next(profs)) then return "none recorded" end
+				local out = {}
+				for name, level in pairs(profs) do
+					out[#out + 1] = (type(level) == "number" and level > 0)
+						and ("%s %d"):format(name, level) or name
+				end
+				table.sort(out)
+				return table.concat(out, ", ")
+			end)())
 	end
 	if n <= 1 then
 		MM:Print("   Only this character is known, so \"do this on X\" can only ever")

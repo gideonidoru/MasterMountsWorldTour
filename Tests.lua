@@ -2577,6 +2577,27 @@ local function runLogic()
 			:format(after)
 	end)
 
+	check("A profession is a rank, not a yes", function()
+		-- A craft mount can want Blacksmithing 300. "Has blacksmithing" cannot
+		-- answer that, and the old scorer also gave half credit for ANY skill
+		-- line -- so a character whose only trade was fishing could be
+		-- suggested as the best alt for a blacksmithing mount.
+		local A = MM.Alts
+		if not (A and A.ScoreCondition) then return nil, "scorer not exposed" end
+		local cond = { type = "PROFESSION", name = "Blacksmithing", amount = 300 }
+		local skilled = { professions = { Blacksmithing = 300 } }
+		local green   = { professions = { Blacksmithing = 75 } }
+		local angler  = { professions = { Fishing = 300 }, skillLines = { [1] = 300 } }
+		local a = A.ScoreCondition(skilled, cond)
+		local b = A.ScoreCondition(green, cond)
+		local c = A.ScoreCondition(angler, cond)
+		if not (a > b) then return false, "300 must beat 75" end
+		if c ~= 0 then
+			return false, ("a different trade scored %.0f, must be 0"):format(c)
+		end
+		return true, ("skilled %.0f, part-way %.0f, wrong trade %.0f"):format(a, b, c)
+	end)
+
 	check("Warband counts, not just this character", function()
 		-- Reagents in the warband bank are available to everyone, which is what
 		-- makes "who should craft this" answerable at all. A count that only
