@@ -171,18 +171,18 @@ function S.Start(minutes, setOnly)
 	-- order, and everything else follows untouched. Nothing is lost, so ending
 	-- the session or running over just continues into the rest of the plan,
 	-- and the session boundary is a position rather than a deletion.
-	local R = MM.Router
-	if R and R.route and #chosen > 0 then
-		local inSession = {}
-		for _, stop in ipairs(chosen) do inSession[stop] = true end
-		local rest = {}
-		for _, stop in ipairs(R.route) do
-			if not inSession[stop] then rest[#rest + 1] = stop end
-		end
-		wipe(R.route)
-		for _, stop in ipairs(chosen) do R.route[#R.route + 1] = stop end
-		for _, stop in ipairs(rest) do R.route[#R.route + 1] = stop end
-	end
+	-- The REORDER LIVES IN Build(), not here.
+	--
+	-- Doing it here reordered the route and then fired MM_SESSION_CHANGED, whose
+	-- listener refreshes the Planner, which calls Router:Build(), which rebuilds
+	-- the route from scratch and threw the ordering away microseconds later. The
+	-- self-test caught it: "stop 1 of the session is not at route position 1".
+	--
+	-- Anything that only survives until the next rebuild is not a property of
+	-- the route. Build() applies it as its final step, so every rebuild -- from
+	-- a UI refresh, a plan change, a reload -- produces a route that already
+	-- honours the session.
+	if MM.Router and MM.Router.ApplySession then MM.Router.ApplySession() end
 
 	-- Only take over the route if one is already running, or if the caller
 	-- actually asked to start.

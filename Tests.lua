@@ -1406,11 +1406,22 @@ local function runLogic()
 			end
 		end
 		local counted = st and st.planned
-		-- put everything back before reporting
+		-- PUT EVERYTHING BACK, INCLUDING THE ROUTE.
+		--
+		-- S.Start and S.Stop each fire MM_SESSION_CHANGED, whose listener
+		-- refreshes the Planner, which rebuilds the route. So this test does not
+		-- merely read shared state, it churns it -- and the checks that run
+		-- afterwards saw whatever it left behind. "Every layer records its
+		-- ordering" started failing with 4 stops missing layer history, which
+		-- was this test's wake, not a routing bug.
+		--
+		-- A test that mutates global state has to restore it, and for a route
+		-- that means rebuilding, not just resetting the flags around it.
 		S.Stop(true)
 		MM.cdb.routeActive = wasActive
 		MM.cdb.routeIndex = prevIndex or 1
 		if restore then S.Start(restore.minutes, true) end
+		if R.Build then R:Build() end
 
 		if misplaced then return false, misplaced end
 		if counted ~= #chosen then

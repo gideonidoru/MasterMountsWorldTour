@@ -1463,6 +1463,32 @@ function R:Build()
 		end
 	end
 
+	-- A SESSION REORDERS THE FINISHED ROUTE.
+	--
+	-- Last, after every other layer, because it is a promise about what the next
+	-- N minutes contain and it must not be undone by anything downstream. It
+	-- used to live in Session.Start, where the very next rebuild discarded it.
+	--
+	-- Reordered, not truncated: the rest of the plan follows, so running over or
+	-- ending early simply continues.
+	R.ApplySession = function()
+		local S = MM.Session
+		local st = S and S.Active and S.Active()
+		if not (st and S.Fit and R.route and #R.route > 0) then return end
+		local chosen = S.Fit(st.minutes)
+		if not chosen or #chosen == 0 then return end
+		local inSession = {}
+		for _, stop in ipairs(chosen) do inSession[stop] = true end
+		local rest = {}
+		for _, stop in ipairs(R.route) do
+			if not inSession[stop] then rest[#rest + 1] = stop end
+		end
+		wipe(R.route)
+		for _, stop in ipairs(chosen) do R.route[#R.route + 1] = stop end
+		for _, stop in ipairs(rest) do R.route[#R.route + 1] = stop end
+		st.planned = #chosen
+	end
+
 	-- Goals with no map location still belong in the sequence — otherwise
 	-- skipping through the route "finishes" while they sit unvisited.
 	table.sort(R.unrouted, function(a, b)
@@ -1514,6 +1540,10 @@ function R:Build()
 			if e and e.spellID then R.stopBySpell[e.spellID] = stop end
 		end
 	end
+
+	-- The session's promise, applied AFTER every other layer and after the
+	-- stopBySpell index is built -- it only reorders, so the index stays valid.
+	if R.ApplySession then R.ApplySession() end
 
 	if MM.cdb.routeIndex > #R.route then MM.cdb.routeIndex = 1 end
 	-- Measured, not assumed. A route build froze the client for minutes and
