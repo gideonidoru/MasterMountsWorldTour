@@ -157,7 +157,10 @@ function WX.Run(scenario, n)
 	end
 	MM.db.weights = weights
 	MM:Fire("MM_WEIGHTS_CHANGED")
-	MM.Router:Build()
+	-- SYNCHRONOUS: the very next line reads the route this produced. A chunked
+	-- build returns with the work in flight, so this would score the PREVIOUS
+	-- weights and attribute the result to the new ones.
+	MM.Router:BuildSync()
 	return topGoals(n or TOP_N), MM.Router.totals
 end
 
@@ -223,7 +226,10 @@ local function finish(state)
 	MM.db.weights = state.savedWeights
 	if MM.cdb then MM.cdb.routeActive = state.savedRouteActive end
 	MM:Fire("MM_WEIGHTS_CHANGED")
-	pcall(function() MM.Router:Build() end)
+	-- Restoring the player's real route after the matrix has been swapping
+	-- weights underneath it. Must complete before we hand control back, or the
+	-- next thing to draw shows the matrix's last experiment.
+	pcall(function() MM.Router:BuildSync() end)
 	running = nil
 
 	emit(state, " ")
