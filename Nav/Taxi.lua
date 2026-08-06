@@ -592,6 +592,30 @@ function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY, skipNetwor
 	end
 	local depart = TX.Nearest(fromMapID, fromX, fromY)
 	local arrive = TX.Nearest(toMapID, toX, toY)
+
+	-- THE SAME DOOR FALLBACK THE NETWORK GOT, which I gave it and not this.
+	--
+	-- A raid interior has no flight master, and its map has no parent to climb
+	-- to. But the travel network carries a node named after each instance,
+	-- sitting in the zone OUTSIDE -- Tazavesh's door is on map 2472, Ny'alotha's
+	-- is in Uldum. Resolve the door, then look for flight points on ITS map.
+	--
+	-- Without this every instanced goal reported no taxi option, so the measured
+	-- flight times were unusable on exactly the stops that fly furthest.
+	local NW = MM.Network
+	if NW and NW.EntranceNode then
+		if not depart and fromInstance then
+			local k = NW.EntranceNode(fromInstance)
+			local node = k and MM.TravelNodes and MM.TravelNodes[k]
+			if node then depart = TX.Nearest(tonumber(node.mapID), node.x, node.y) end
+		end
+		if not arrive and toInstance then
+			local k = NW.EntranceNode(toInstance)
+			local node = k and MM.TravelNodes and MM.TravelNodes[k]
+			if node then arrive = TX.Nearest(tonumber(node.mapID), node.x, node.y) end
+		end
+	end
+
 	if not (depart and arrive) then routeCache[key] = false return nil end
 
 	local secs = TX.TripSeconds(depart.name, arrive.name)
