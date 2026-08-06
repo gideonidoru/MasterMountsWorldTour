@@ -84,6 +84,64 @@ local function build()
 		graph[e.from] = graph[e.from] or {}
 		graph[e.from][e.to] = { seconds = s, method = e.method }
 	end
+
+	-- SELF-FLIGHT EDGES BETWEEN NEARBY NODES.
+	--
+	-- Without these the network is islands. The 238 recorded connections are
+	-- only the ones distance CANNOT derive -- portals, boats, zeppelins -- so on
+	-- their own the largest connected component was six nodes out of 1,156, and
+	-- NodeSeconds returned nil for essentially every pair. The data was correct
+	-- and the graph was useless.
+	--
+	-- Two nodes close enough to fly between are connected, priced by the real
+	-- distance. That is what makes a portal reachable: you fly to the portal,
+	-- step through, and fly on from the far side.
+	--
+	-- Same-continent only, and capped: connecting everything to everything would
+	-- be 1,156^2 comparisons and would also claim you can fly between continents.
+	-- COST: 46 groups, 54,329 pair comparisons, 1,156 position lookups. The
+	-- lookups are once per NODE (cached below), not once per pair, so the pair
+	-- loop is arithmetic only. Built lazily on first route, never at login --
+	-- the one time this addon froze a client it was a loop like this running
+	-- eagerly in a handler.
+	local MAX_YARDS = 3000
+	if not (U and U.GetWorldPos and U.WorldDistance) then return end
+	local ypm = MM.YARDS_PER_MINUTE or 1500
+	local byGroup = {}
+	for key, n in pairs(nodes) do
+		if not n.interior and n.group then
+			byGroup[n.group] = byGroup[n.group] or {}
+			local g = byGroup[n.group]
+			g[#g + 1] = { key = key, node = n }
+		end
+	end
+	local added = 0
+	for _, list in pairs(byGroup) do
+		-- Cache world positions once per node rather than per comparison.
+		for _, item in ipairs(list) do
+			local _, w = U.GetWorldPos(item.node.mapID, item.node.x, item.node.y)
+			item.world = w
+		end
+		for i = 1, #list do
+			for j = i + 1, #list do
+				local a2, b2 = list[i], list[j]
+				if a2.world and b2.world
+					and not (graph[a2.key] and graph[a2.key][b2.key])
+					and not (graph[b2.key] and graph[b2.key][a2.key]) then
+					local d = U.WorldDistance(a2.world, b2.world)
+					if d and d <= MAX_YARDS then
+						local secs = math.max(5, (d / ypm) * 60)
+						graph[a2.key] = graph[a2.key] or {}
+						graph[b2.key] = graph[b2.key] or {}
+						graph[a2.key][b2.key] = { seconds = secs, method = "fly" }
+						graph[b2.key][a2.key] = { seconds = secs, method = "fly" }
+						added = added + 2
+					end
+				end
+			end
+		end
+	end
+	NW.autoEdges = added
 end
 
 -- Nodes usable by this character. A faction-locked portal is not a shortcut.

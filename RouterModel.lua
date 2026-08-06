@@ -500,7 +500,8 @@ function RM.TravelReport()
 		local parts = {}
 		for m, c in pairs(byMethod) do parts[#parts + 1] = ("%s %d"):format(m, c) end
 		table.sort(parts)
-		w("  Travel network %d endpoints, %d connections", n, #te)
+		w("  Travel network %d endpoints, %d recorded + %d generated connections",
+			n, #te, (MM.Network and MM.Network.autoEdges) or 0)
 		w("     %s", table.concat(parts, " · "))
 		if zero > 0 then
 			w("     |cffff4444%d edges priced at ZERO -- free teleportation|r", zero)

@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.6.0
+
+**The travel network was 91 disconnected islands.**
+
+The 238 recorded connections are only the ones distance cannot derive -- portals,
+boats, zeppelins. On their own the largest connected component was 29 nodes out
+of 1,156, so almost every pair had no path and the network returned nothing on
+every leg. The data was correct and the graph was useless.
+
+Nodes close enough to fly between are now connected, priced by real distance --
+which is what makes a portal reachable at all: fly to it, step through, fly on
+from the far side. Same continent only, capped at 3,000 yards.
+
+    before   132 nodes in graph ·  91 components · largest  29
+    after   1135 nodes in graph ·  84 components · largest 563
+
+Built lazily on the first route, never at login: 1,156 position lookups once per
+node, not per pair.
+
+`/mm routertest` now reports recorded and generated connections separately.
+
 ## 1.5.0
 
 **The measured flight times were never actually being used.** `/mm routertest`
