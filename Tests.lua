@@ -1634,6 +1634,70 @@ local function runLogic()
 			priced, U.Comma(cheapest), U.Comma(dearest))
 	end)
 
+	check("The coverage metric agrees with what the planner actually does", function()
+		-- THE CLASS OF BUG THIS EXISTS FOR, and it is not hypothetical: 86
+		-- records were given a real gold price, the planner priced them from it,
+		-- and the coverage report went on calling them bare -- still offering
+		-- points for fixing something already fixed. Nothing failed. The metric
+		-- had simply never been told about a whole kind of cost.
+		--
+		-- A count that is not checked against the behaviour it claims to
+		-- describe is a number that drifts. So: whatever CostCoverage calls
+		-- MODELLED must actually receive a real cost term, and whatever it calls
+		-- BARE must not. Disagreement in either direction is the metric lying.
+		local CO, P = MM.Contribute, MM.Planner
+		if not (CO and CO.CostCoverage and P and P.TimeCommitment) then
+			return nil, "coverage or planner not loaded"
+		end
+		-- The labels the planner uses when it has nothing real to go on.
+		local FALLBACK = {
+			["cost not yet modelled"] = true,
+			["achievement not yet modelled"] = true,
+		}
+		local function isFallback(label)
+			return FALLBACK[label] or (label or ""):find("^effort rating ") ~= nil
+		end
+
+		local byCat = CO.CostCoverage()
+		local bare = {}
+		for _, d in pairs(byCat) do
+			for _, name in ipairs(d.bare or {}) do bare[name] = true end
+		end
+
+		local checkedModelled, checkedBare, wrong = 0, 0, nil
+		for _, entry in ipairs(MM.Scanner and MM.Scanner.mounts or {}) do
+			local rec = entry.rec
+			if rec and rec.obtainable and MM.PLANNABLE[rec.category] and not entry.collected then
+				local ok, _, parts = pcall(P.TimeCommitment, entry)
+				if ok and parts then
+					local real = false
+					for _, part in ipairs(parts) do
+						if not isFallback(part.label) then real = true break end
+					end
+					if bare[rec.name] then
+						checkedBare = checkedBare + 1
+						if real and not wrong then
+							wrong = ("%s is counted bare but the planner prices it")
+								:format(rec.name)
+						end
+					else
+						checkedModelled = checkedModelled + 1
+						if not real and not wrong then
+							wrong = ("%s is counted modelled but gets only a fallback")
+								:format(rec.name)
+						end
+					end
+				end
+			end
+		end
+		if checkedModelled + checkedBare == 0 then
+			return nil, "no plannable uncollected records to compare"
+		end
+		if wrong then return false, wrong end
+		return true, ("%d modelled and %d bare, and the planner agrees on every one")
+			:format(checkedModelled, checkedBare)
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%
