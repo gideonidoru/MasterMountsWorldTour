@@ -1471,15 +1471,37 @@ local function runLogic()
 			end
 		end
 		if total == 0 then return false, "no dungeon teleports loaded" end
-		-- Every one that IS offered must be a spell this character really knows.
-		local offered, wrong = 0, nil
+		-- Ask the CLIENT, through whichever call this build actually has.
+		--
+		-- The bare IsSpellKnown is a deprecated shim over C_SpellBook and it
+		-- raises rather than returning nil when handed anything but a number --
+		-- which is what this check did on its first run, because a landing
+		-- carries no spell id and the nil went straight through. Guarded and
+		-- pcall'd: a check that cannot read ownership must say so, not explode
+		-- and not quietly pass.
+		local function knowsSpell(id)
+			if type(id) ~= "number" then return nil end
+			if C_SpellBook and C_SpellBook.IsSpellKnown then
+				local ok, res = pcall(C_SpellBook.IsSpellKnown, id)
+				if ok then return res end
+			end
+			if IsPlayerSpell then
+				local ok, res = pcall(IsPlayerSpell, id)
+				if ok then return res end
+			end
+			return nil
+		end
+		local offered, wrong, unreadable = 0, nil, 0
 		for _, o in ipairs(TP.Options() or {}) do
 			if type(o.key) == "string" and o.key:find("^dungeontp_") then
 				offered = offered + 1
-				local known = IsPlayerSpell and IsPlayerSpell(o.spell)
-				if known == nil and IsSpellKnown then known = IsSpellKnown(o.spell) end
-				if not known then wrong = wrong or o.name end
+				local known = knowsSpell(o.spell)
+				if known == nil then unreadable = unreadable + 1
+				elseif not known then wrong = wrong or o.name end
 			end
+		end
+		if unreadable > 0 then
+			return nil, ("%d offered teleports carry no readable spell id"):format(unreadable)
 		end
 		if wrong then
 			return false, ("%s is offered but this character does not know it"):format(wrong)

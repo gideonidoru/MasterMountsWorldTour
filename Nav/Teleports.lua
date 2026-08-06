@@ -550,6 +550,12 @@ function TP.Snapshot()
 						key = option.key, name = option.name, verb = option.verb,
 						continent = continent, world = world, place = placeName,
 						waitMinutes = cooldownRemaining(option) / 60,
+						-- What it actually IS, carried through. A landing named
+						-- only by its key cannot be audited: a check asking
+						-- "does this character really have this" had nothing to
+						-- ask the client about, and re-deriving the id from the
+						-- key string is guessing at our own data.
+						spell = option.spell, item = option.item,
 					}
 				end
 			end
