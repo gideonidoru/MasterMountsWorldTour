@@ -658,8 +658,11 @@ end
 -- Wiring
 ------------------------------------------------------------
 MM:On("MM_LOGIN", function()
+	-- Once per install, not once per login. The theme is visible the moment a
+	-- window opens; the only thing chat adds is where to change it, and that is
+	-- worth saying exactly one time.
 	if MM.db.theme == nil and T.HasElvUI() then
-		MM:Print("ElvUI detected — using the ElvUI theme. Change it in Options.")
+		MM:PrintOnce("elvui", "ElvUI detected — using the ElvUI theme. Change it in Options.")
 	end
 	C_Timer.After(1, T.ReskinAll)
 end)

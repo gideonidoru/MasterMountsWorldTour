@@ -277,7 +277,22 @@ function TX.Harvest()
 		if i <= #maps then C_Timer.After(0, step)
 		else
 			wipe(cache)
-			MM:Print("Flight points: learned %d zones from this flight master.", learned)
+			-- ONCE, AND ONLY WHEN IT MATTERED.
+			--
+			-- This fired on every TAXIMAP_OPENED, which is every flight master
+			-- in the game, forever -- usually to report that it learned nothing
+			-- because the first visit had already harvested the lot. A line in
+			-- chat should tell you something you did not know and cannot see.
+			--
+			-- The first successful harvest IS worth saying, because the report
+			-- spends a paragraph explaining that nothing has been learned yet
+			-- and to go and speak to a flight master. This is the answer to
+			-- that. After it, /mm flightpoints has the numbers.
+			if learned > 0 then
+				MM:PrintOnce("taxiHarvested",
+					"Flight points learned from this flight master — %d zones. "
+					.. "That is the last time you will see this.", learned)
+			end
 		end
 	end
 	step()

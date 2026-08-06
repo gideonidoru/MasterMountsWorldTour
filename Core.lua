@@ -18,9 +18,43 @@ MM.MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\"
 MM.VERSION = "1.1.0"
 MM.PREFIX = "|cff33c1ffMaster Mounts|r: "
 
+-- WHEN THIS IS THE RIGHT TOOL, AND WHEN IT IS NOT.
+--
+-- Chat is shared with the guild, the group, loot, combat and everyone else's
+-- addons. Every line spent here is a line of someone else's conversation
+-- pushed off the screen, so a line has to earn its place. Three things do:
+--
+--   1. You asked. Everything under /mm is a direct answer to a command.
+--   2. Something happened that you would want to know and cannot see -- a
+--      mount dropped, a rare is up, the route moved on.
+--   3. Something failed, or did nothing, where silence and success look
+--      identical. A button that plays no sound is the example: without a
+--      line, a working setting and a broken one read the same.
+--
+-- What does NOT earn a line: narrating a window that is already on screen,
+-- confirming an action whose own effect is the confirmation, or repeating at
+-- every login something that was true the first time. Each of those has been
+-- written here at some point and each has been taken out again.
 function MM:Print(msg, ...)
 	if select("#", ...) > 0 then msg = msg:format(...) end
 	print(MM.PREFIX .. tostring(msg))
+end
+
+-- Say it once, ever, on this account.
+--
+-- For the notices that are genuinely useful the first time and pure noise
+-- afterwards: which theme was picked up, that flight points have now been
+-- harvested. Written to SavedVariables rather than a local, because "once per
+-- session" is still once per login and that was the complaint.
+--
+-- Returns true if it actually printed, so callers can tell the difference.
+function MM:PrintOnce(key, msg, ...)
+	if not (key and MM.db) then return false end
+	MM.db.saidOnce = MM.db.saidOnce or {}
+	if MM.db.saidOnce[key] then return false end
+	MM.db.saidOnce[key] = true
+	MM:Print(msg, ...)
+	return true
 end
 
 ------------------------------------------------------------

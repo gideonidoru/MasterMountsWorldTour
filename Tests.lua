@@ -274,6 +274,33 @@ local function runData()
 		return bad == 0, example
 	end)
 
+	check("A once-only notice is said once, not once per login", function()
+		-- Chat is shared with the guild, the group, loot and every other addon,
+		-- so a line has to earn its place. Two notices were being repeated at
+		-- every login and at every flight master, saying something that was
+		-- only new the first time.
+		--
+		-- The failure mode if this regresses is invisible to the person who
+		-- wrote it -- their own client has already said it -- and obvious to
+		-- everyone else, every session. So it is asserted rather than trusted.
+		if not MM.PrintOnce then return false, "PrintOnce not present" end
+		local saved = MM.db.saidOnce
+		MM.db.saidOnce = nil
+
+		local key = "mm-selftest-once"
+		local first = MM:PrintOnce(key, " ")
+		local second = MM:PrintOnce(key, " ")
+		local third = MM:PrintOnce(key, " ")
+		local latched = MM.db.saidOnce and MM.db.saidOnce[key]
+
+		MM.db.saidOnce = saved
+
+		if not first then return false, "the first call said nothing" end
+		if second or third then return false, "it repeated after the first call" end
+		if not latched then return false, "nothing was written down, so a reload repeats it" end
+		return true, "first call prints, every call after it is silent"
+	end)
+
 	check("No reputation is required twice on one mount", function()
 		-- Forty-two records asked for one reputation under two spellings --
 		-- "Venthyr" and "Venthyr Renown", a Netherwing row with a factionID and

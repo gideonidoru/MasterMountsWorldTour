@@ -351,15 +351,20 @@ local function buildPanel()
 	playBtn:SetText("Play")
 	playBtn:SetScript("OnClick", function()
 		local played = MM.RareAlert.PlaySound(MM.db.rareAlertSoundKey)
-		-- Report the resolved id, not just the name. Six menu entries that all
-		-- produced the same noise is exactly the bug this replaced, and identical
-		-- ids across entries is how you would spot it recurring.
+		-- SILENCE ON SUCCESS. You pressed Play and you heard it; a chat line
+		-- saying so is the addon talking to itself.
+		--
+		-- The failure case is the opposite: nothing playing is indistinguishable
+		-- from a broken button, so that one is worth a line. The resolved id
+		-- goes with it, because six menu entries sharing one id is the bug this
+		-- list replaced and identical ids are how you would spot it returning.
+		if played then return end
 		local s
 		for _, e in ipairs(MM.RareAlert.SOUNDS) do
 			if e.key == (MM.db.rareAlertSoundKey or MM.RareAlert.SOUNDS[1].key) then s = e end
 		end
-		MM:Print(played and ("Alert sound: %s (id %s)."):format(played, tostring(s and s.id))
-			or "That sound is not available on this client - pick another.")
+		MM:Print("That sound did not play on this client (id %s) - pick another.",
+			tostring(s and (s.id or s.file)))
 	end)
 
 	label("Shows a rare you still need, so the preview matches the real thing. Works even with alerts switched off.")
