@@ -687,7 +687,7 @@ local function runLogic()
 		-- into the planner.
 		local R = MM.Router
 		if not (R and R.Build) then return nil, "no router" end
-		R:Build()
+		R:BuildSync()
 		local real = #(R.route or {})
 		if real < 3 then return nil, "route too short to test" end
 		-- Replace the route WITHOUT touching the signature, exactly as the
@@ -695,7 +695,7 @@ local function runLogic()
 		local stolen = {}
 		for i = 1, 2 do stolen[i] = R.route[i] end
 		R.route = stolen
-		R:Build()
+		R:BuildSync()
 		local after = #(R.route or {})
 		if after <= 2 then
 			return false, ("Build accepted a swapped %d-stop route as current"):format(after)
@@ -713,7 +713,7 @@ local function runLogic()
 		if not (R and R.Build and MM.RouterModel and MM.RouterModel.Run) then
 			return nil, "router model not available"
 		end
-		R:Build()
+		R:BuildSync()
 		local before = #(R.route or {})
 		if before < 2 then return nil, "no route to protect" end
 		local ok = pcall(MM.RouterModel.Run)
@@ -751,13 +751,41 @@ local function runLogic()
 		return true, ("standing-here work leads at position %d"):format(firstHere)
 	end)
 
+	check("A chunked build never shows a partial route", function()
+		-- Chunking was off because RunBuild cleared R.route before refilling
+		-- it, so a reader during a build saw an empty list and drew it. The
+		-- route is assembled into a local now and swapped in once, after every
+		-- yield. This asserts the property directly: pump a build one frame at
+		-- a time and check the route is never shorter than it started.
+		local R = MM.Router
+		if not (R and R.BuildSync and R.Build) then return nil, "no router" end
+		R:BuildSync()
+		local before = #(R.route or {})
+		if before < 3 then return nil, "route too short to test" end
+		-- Start a chunked build and look at the route while it is in flight.
+		R.builtSignature, R.chartRank, R.builtRouteCount = nil, nil, nil
+		R:Build()
+		local during = #(R.route or {})
+		R:BuildSync()
+		local after = #(R.route or {})
+		if during == 0 then
+			return false, "the route was EMPTY while a build was in flight"
+		end
+		if during < before then
+			return false, ("partial route visible mid-build: %d of %d")
+				:format(during, before)
+		end
+		return true, ("%d stops before, %d visible mid-build, %d after")
+			:format(before, during, after)
+	end)
+
 	check("The route builds cleanly", function()
 		-- A one-line omission broke every route build in the addon and 57 checks
 		-- did not notice, because every one of them tested a PIECE. Nothing ran
 		-- the pipeline. This does, and it is the check that should have existed
 		-- first.
 		local R = MM.Router
-		local ok, err = pcall(function() return R:Build() end)
+		local ok, err = pcall(function() return R:BuildSync() end)
 		if not ok then return false, "Router:Build() threw: " .. tostring(err) end
 
 		local planned = #MM.Planner:GetPlan()
@@ -810,7 +838,7 @@ local function runLogic()
 		local savedSig, savedRank = R.builtSignature, R.chartRank
 		R.builtSignature, R.chartRank = nil, nil
 		local before = debugprofilestop()
-		R:Build()
+		R:BuildSync()
 		local ms = debugprofilestop() - before
 		R.builtSignature, R.chartRank = savedSig, savedRank
 		local goals = #MM.Planner:GetPlan()
@@ -949,14 +977,14 @@ local function runLogic()
 			w.orderCap = capValue
 			MM.db.weights = w
 			MM:Fire("MM_WEIGHTS_CHANGED")
-			R:Build()
+			R:BuildSync()
 			return R.totals and R.totals.minutes or 0, R.capReport
 		end
 		local free = build(0)
 		local capped, rep = build(8)
 		MM.db.weights = saved
         MM:Fire("MM_WEIGHTS_CHANGED")
-		R:Build()
+		R:BuildSync()
 		if capped < free * 0.999 then
 			return false, ("capping made the route FASTER (%d vs %d) — the cap is "
 				.. "not constraining anything"):format(capped, free)
@@ -2442,7 +2470,7 @@ local function runLogic()
 		MM.cdb.routeActive = wasActive
 		MM.cdb.routeIndex = prevIndex or 1
 		if restore then S.Start(restore.minutes, true) end
-		if R.Build then R:Build() end
+		if R.Build then R:BuildSync() end
 
 		if planned == 0 then return nil, "nothing fits the sample length" end
 		if counted < planned then
@@ -3687,7 +3715,7 @@ function T.RunSync()
 	end
 	local stops = #(MM.Router.route or {})
 	if #plan > 0 and stops == 0 then
-		pcall(function() MM.Router:Build() end)
+		pcall(function() MM.Router:BuildSync() end)
 		stops = #(MM.Router.route or {})
 	end
 	line("PLAN", ("%d goals · %d stops%s"):format(#plan, stops,

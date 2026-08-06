@@ -466,7 +466,7 @@ function RM.Run(n)
 			-- simply taken after it had been switched off.
 			local obs
 			local count, keysig = withProfile(profile, function()
-				MM.Router:Build()
+				MM.Router:BuildSync()
 				obs = observe(sample)
 			end)
 			results[#results + 1] = {
@@ -490,7 +490,7 @@ function RM.Run(n)
 	-- that claim is not true.
 	local R = MM.Router
 	if R then R.builtSignature, R.chartRank = nil, nil end
-	MM.Router:Build()
+	MM.Router:BuildSync()
 	local fails, exercised = checkInvariants(results, sample)
 	return { sample = sample, results = results, fails = fails, exercised = exercised,
 		asked = asked, eligible = eligible }

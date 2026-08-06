@@ -1432,7 +1432,19 @@ function R.Yield()
 	end
 end
 
-function R:Build(force)
+-- Drive a build to completion before returning.
+--
+-- Chunking makes Build return with the work still in flight, which is right
+-- for the game -- the previous route stays on screen and the frame is handed
+-- back -- and wrong for anything that asks a question about the result on the
+-- very next line. The checks and the router model both do exactly that: build,
+-- then measure what was built. Without this they would measure the PREVIOUS
+-- route and quietly report on the wrong thing.
+function R:BuildSync(force)
+	return self:Build(force, true)
+end
+
+function R:Build(force, sync)
 	-- A build already in flight owns R.route; asking again just lets it finish.
 	if building and coroutine.status(building) == "suspended" then return end
 	local sig = buildSignature()
@@ -1495,21 +1507,26 @@ function R:Build(force)
 	local n = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
 	R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
 	building = coroutine.create(function() R.RunBuild(sig) end)
-	-- CHUNKING IS OFF, DELIBERATELY.
+	-- CHUNKING IS ON.
 	--
-	-- RunBuild wipes R.route before it refills it, and Build returns early
-	-- while a coroutine is still suspended. So any second call during a
-	-- chunked build -- opening the window, a plan edit, a scan -- saw an empty
-	-- or half-filled route and drew it: six mounts after a login, nothing at
-	-- all after reopening the window. A plan that loses its goals is far worse
-	-- than a plan that takes a moment to appear.
+	-- It was off because RunBuild cleared R.route before it refilled it, so any
+	-- reader during a chunked build -- opening the window, a plan edit, a scan
+	-- -- saw an empty or half-filled route and drew it. A plan that loses its
+	-- goals is far worse than one that takes a moment to appear, so the whole
+	-- build ran in a single frame instead, and froze the client for a second
+	-- and a half.
 	--
-	-- Making this safe needs the route built into a SCRATCH list and swapped in
-	-- only when complete, so a partial state is never observable. That is the
-	-- fix, and it is not a flag flip -- so until it is written, every build
-	-- runs to completion in one frame exactly as it always did.
-	local chunked = false
+	-- The route is now assembled into a LOCAL list and swapped into R.route in
+	-- one go, after every yield is behind it. During a build a reader sees the
+	-- PREVIOUS complete route rather than a partial one: an answer that is one
+	-- build stale, which is a far better thing to show than an empty list, and
+	-- briefer than the freeze it replaces.
+	--
+	-- The frame budget is CHUNK_MS, checked in nearestChain, which is where the
+	-- graph searches are and the only place that yields.
+	local chunked = true
 
+	-- A caller that needs the answer now drives it to completion regardless.
 	local function pump()
 		if not building then return end
 		R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
@@ -1525,10 +1542,13 @@ function R:Build(force)
 			MM:Fire("MM_ROUTE_ADVANCED")
 			return
 		end
-		if chunked then C_Timer.After(0, pump) end
+		-- Only the chunked path schedules itself. A synchronous caller is
+		-- already looping on pump, and a timer as well would drive the same
+		-- coroutine twice.
+		if chunked and not sync then C_Timer.After(0, pump) end
 	end
 
-	if chunked then
+	if chunked and not sync then
 		pump()
 	else
 		-- Small plan: drive it to completion before returning, so every
@@ -1554,7 +1574,21 @@ function R.RunBuild(sig)
 		R.chartRank = rank
 	end
 	local startedAt = debugprofilestop and debugprofilestop() or nil
-	wipe(R.route); wipe(R.unrouted); wipe(R.deferred)
+	-- R.route IS NOT CLEARED HERE.
+	--
+	-- It used to be, and that single line is why chunking had to stay off. The
+	-- expensive work below -- the graph searches in nearestChain -- is the only
+	-- thing that yields, and it builds LOCAL chains; it never touches R.route.
+	-- So clearing the route up front bought nothing and cost everything: across
+	-- a yield the plan was observably empty, and anything that looked at it
+	-- meanwhile drew an empty list. Six mounts after a login, nothing at all
+	-- after reopening the window.
+	--
+	-- The old route stays visible and intact right up to the assembly below,
+	-- which is synchronous. A reader during a chunked build now sees the
+	-- PREVIOUS route -- one build stale, which is a far better answer than
+	-- none, and briefer than the freeze it replaces.
+	wipe(R.unrouted); wipe(R.deferred)
 
 	-- Refresh the travel snapshot ONCE for this whole build. Every travel-time
 	-- question below then reads a plain table instead of the toybox.
@@ -1814,9 +1848,15 @@ function R.RunBuild(sig)
 	local cursor = playerWorld
 	local chain
 	chain, cursor = routePool(bands[1], playerContinent, cursor)
-	for _, s in ipairs(chain) do tinsert(R.route, s) end
+	-- ASSEMBLED INTO A LOCAL, swapped in at the end.
+	--
+	-- The two routePool calls below also run graph searches, and those YIELD.
+	-- Filling R.route as we go would put a half-built plan on screen across
+	-- every one of those yields, which is the failure that kept chunking off.
+	local built = {}
+	for _, s in ipairs(chain) do tinsert(built, s) end
 	for _, s in ipairs(nearby) do
-		tinsert(R.route, s)
+		tinsert(built, s)
 		cursor = s.world or cursor
 	end
 
@@ -1830,7 +1870,7 @@ function R.RunBuild(sig)
 	-- into the middle of a drops-only route.
 	local main
 	main, cursor = routePool(bands[2], playerContinent, cursor)
-	for _, s in ipairs(main) do tinsert(R.route, s) end
+	for _, s in ipairs(main) do tinsert(built, s) end
 
 	-- WEAVE: rare spawns slotted in wherever they cost the least detour. This is
 	-- genuine opportunism -- something you pass on the way -- and nothing else.
@@ -1841,12 +1881,18 @@ function R.RunBuild(sig)
 	local leftovers = opportunistic
 	if not strictOrdering() then
 		table.sort(opportunistic, function(a, b) return R.StopValue(a) > R.StopValue(b) end)
-		leftovers = weaveOpportunistic(R.route, opportunistic, playerWorld, playerContinent)
+		leftovers = weaveOpportunistic(built, opportunistic, playerWorld, playerContinent)
 	end
 
 	-- Whatever could not ride along still belongs in the sequence.
 	local tail = routePool(leftovers, playerContinent, cursor)
-	for _, s in ipairs(tail) do tinsert(R.route, s) end
+	for _, s in ipairs(tail) do tinsert(built, s) end
+
+	-- THE SWAP, and the only moment R.route changes in a chunked build. Every
+	-- yield is behind us, so the route goes from the previous complete plan to
+	-- this one with nothing observable in between.
+	wipe(R.route)
+	for _, s in ipairs(built) do tinsert(R.route, s) end
 
 	-- DON'T LEAVE AND COME BACK.
 	--
