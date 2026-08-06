@@ -7747,6 +7747,12 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Reward from the achievement Lord of the Reins.",
+		conditions = {
+			{
+				name = "Lord of the Reins",
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 5,
 		blackmarket = true,
 		notes = "Never sold or dropped in-game; appears only on the Black Market AH.",
@@ -7762,6 +7768,12 @@ MM.AddMounts({
 		source = "Reward from Glory of the Pandaria Raider (Tier 14 raid meta-achievement).",
 		npc = {
 			id = 52167,
+		},
+		conditions = {
+			{
+				name = "Glory of the Pandaria Raider",
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 5,
 		blackmarket = true,
@@ -20828,6 +20840,12 @@ MM.AddMounts({
 			name = "Zaralek Cavern",
 			mapID = 2133,
 		},
+		conditions = {
+			{
+				name = "Big Slick in the City",
+				type = "ACHIEVEMENT",
+			},
+		},
 		attempts = "DAILY",
 		timePerAttempt = 5,
 		effort = 2,
@@ -32776,6 +32794,12 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Reward from the Awake the Drakes achievement (collect the listed drake mounts).",
+		conditions = {
+			{
+				name = "Awake the Drakes",
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
@@ -33016,6 +33040,12 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Reward from We're Going to Need More Saddles (150 mounts collected).",
+		conditions = {
+			{
+				name = "We're Going to Need More Saddles",
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
@@ -40353,6 +40383,12 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Reward from the achievement Que Zara(lek), Zara(lek).",
+		conditions = {
+			{
+				name = "Que Zara",
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 		notes = "Owned by 8.9% of players.",
 		needsSource = true,
@@ -40366,6 +40402,12 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Reward from the achievement Whodunnit? (Secrets of Azeroth).",
+		conditions = {
+			{
+				name = "Whodunnit?",
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 		notes = "Owned by 11.4% of players.",
 		needsSource = true,
