@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.4.0
+
+**Chat discipline, and a Timewalking mount that was telling you to wait for the
+wrong week.**
+
+- **Infinite Timereaver is no longer labelled "Warlords of Draenor".** It drops
+  from any Timewalking boss in any era; its record said so in prose but carried
+  no `anyEra` flag, so the era logic fell back to the expansion it was added in.
+  Waiting for the wrong era is a month of not farming something available the
+  whole time.
+- **Three copies of the era rule are now one.** Router.lua checked for "every
+  era" and missed "any era"; Availability.lua handled both; Timewalking.lua had
+  a third. They disagreed. All three now call one resolver.
+- **The session dropdown no longer offers "End session".** It sets a length, it
+  never starts anything — offering to end implies it started. "No limit" is the
+  off state.
+- **Chat is much quieter.** Choosing a session length is silent: the dropdown
+  reads the length and the plan list already shows only what fits, so two more
+  lines narrated what you were looking at. A route resume prints one line
+  instead of three. The MountsRarity notice is said once, ever, not at every
+  login.
+
 ## 1.3.0
 
 - **`/mm routertest` is now verbose about travel data.** It answers the three

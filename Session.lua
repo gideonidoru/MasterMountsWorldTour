@@ -195,14 +195,27 @@ function S.Start(minutes, setOnly)
 	MM:Fire("MM_SESSION_CHANGED")
 
 	if #chosen == 0 then
+		-- Worth saying even from the UI: an empty plan looks like a broken
+		-- picker, and the reason is not visible anywhere on screen.
 		MM:Print("|cffff9a3cNothing in your plan fits %d minutes.|r "
 			.. "Everything reachable needs longer than that right now.", st.minutes)
 		return false
 	end
-	MM:Print("|cff40d860Session %s: %d minutes.|r %d stops, ~%.1f mounts expected, "
-		.. "%s of work planned.", setOnly and "set" or "started", st.minutes,
-		#chosen, mounts, U.FormatSeconds(used * 60))
-	MM:Print("   %s", S.NextLine() or "")
+	-- SILENT WHEN SET FROM THE UI.
+	--
+	-- The dropdown already reads "45 minutes" and the plan list already shows
+	-- only what fits. Printing two more lines into chat every time the picker
+	-- moves narrates something the player is looking at, and a control people
+	-- adjust a few times in a row turns that into a wall.
+	--
+	-- /mm session 45 still reports, because there chat IS the interface and
+	-- silence would look like nothing happened.
+	if not setOnly then
+		MM:Print("|cff40d860Session started: %d minutes.|r %d stops, ~%.1f mounts "
+			.. "expected, %s of work planned.", st.minutes, #chosen, mounts,
+			U.FormatSeconds(used * 60))
+		MM:Print("   %s", S.NextLine() or "")
+	end
 	-- Same reasoning as a route: a session is a mode where the next stop is
 	-- the thing you want on screen.
 	if not setOnly and MM.UI and MM.UI.ShowMonitor then pcall(MM.UI.ShowMonitor) end

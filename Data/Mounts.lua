@@ -27011,6 +27011,7 @@ MM.AddMounts({
 		attempts = "NONE",
 		timePerAttempt = 20,
 		effort = 4,
+		anyEra = true,
 		notes = "Only during a Timewalking Dungeon Event week. Every dungeon boss (and TW raid bosses) has a chance.",
 		noLocationReason = "Drops from ANY Timewalking boss, weekly cache or the Quantum Courser -- no single source to route to",
 	},

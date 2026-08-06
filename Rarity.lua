@@ -19,7 +19,16 @@ local lib
 local function get()
 	if lib ~= nil then return lib or nil end
 	lib = (LibStub and LibStub("MountsRarity-2.0", true)) or false
-	if lib then MM:Print("Rarity data detected — difficulty now uses real ownership rates.") end
+	-- ONCE, not every login. This is a capability notice: useful the first time
+-- MountsRarity is seen, noise on the four hundredth. The flag lives in saved
+-- variables so it survives reloads, which is where the repetition came from.
+if lib then
+	MM.db = MM.db or {}
+	if not MM.db.rarityNoticed then
+		MM.db.rarityNoticed = true
+		MM:Print("Rarity data detected — difficulty now uses real ownership rates.")
+	end
+end
 	return lib or nil
 end
 

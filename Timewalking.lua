@@ -104,12 +104,39 @@ TW.ERA_BY_EXPANSION = {
 -- fall back to the expansion only when the text says nothing. Deriving it beats
 -- hand-maintaining a second field on 49 records, and it stays right when a
 -- record's prose is corrected.
+-- Returned instead of an era when the record drops during EVERY Timewalking
+-- week. Infinite Timereaver is the case: "any Timewalking dungeon or raid boss,
+-- any era". It has expansion 5, so the expansion fallback below labelled it
+-- "Warlords of Draenor" -- naming one era for a mount that ignores all of them,
+-- and telling the player to wait for a week that is not required.
+TW.ANY_ERA = "ANY"
+
 function TW.EraForRecord(rec)
 	if not rec then return nil end
 	if rec.twEra then return rec.twEra end -- explicit override always wins
-	local fromText = TW.ParseEra(((rec.source or "") .. " " .. (rec.notes or "")):lower())
+
+	if rec.anyEra then return TW.ANY_ERA end -- the explicit data flag
+
+	local text = ((rec.source or "") .. " " .. (rec.notes or "")):lower()
+	-- Checked BEFORE the parse and before the fallback: "any era" is a
+	-- statement that no era applies, not a failure to name one.
+	if text:find("any era", 1, true) or text:find("any timewalking", 1, true)
+		or text:find("every era", 1, true) then
+		return TW.ANY_ERA
+	end
+
+	local fromText = TW.ParseEra(text)
 	if fromText then return fromText end
+
+	-- Expansion is the patch the mount was ADDED in, not the era it drops in.
+	-- Only reached when the prose says nothing at all.
 	return TW.ERA_BY_EXPANSION[rec.expansion]
+end
+
+-- True when this record needs no particular era, only that SOME Timewalking
+-- week is running.
+function TW.IsAnyEra(rec)
+	return TW.EraForRecord(rec) == TW.ANY_ERA
 end
 
 -- Where each era's Timewalking vendor stands (faction-aware where needed).

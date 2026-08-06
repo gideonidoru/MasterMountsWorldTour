@@ -53,12 +53,13 @@ function UI.MakeSessionPicker(parent)
 					S.Start(len.minutes, true)  -- a setting, not a launch
 				end)
 			end
-			if S.Active and S.Active() then
-				root:CreateDivider()
-				root:CreateButton("End session", function() S.Stop() end)
-			else
-				root:CreateButton("No limit", function() S.Stop(true) end)
-			end
+			-- No "End session" here. This control SETS a length, it does not
+			-- start anything -- offering to end a session implies it started
+			-- one, which is exactly the confusion the setOnly split existed to
+			-- remove. "No limit" is the off state, and reads as a choice rather
+			-- than an undo.
+			root:CreateDivider()
+			root:CreateButton("No limit", function() S.Stop(true) end)
 		end)
 		-- A DropdownButton is NOT a Button: SetText does nothing on it, which is
 		-- why the toolbar kept saying "No limit" after a length was picked. The

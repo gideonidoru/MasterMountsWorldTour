@@ -480,11 +480,11 @@ function A.ComputeStatus(entry)
 		-- TW vendor stock is era-locked: badges spend only during the RIGHT
 		-- week — EXCEPT the Turbulent Timeways rewards, which every era's
 		-- vendor sells (rec.anyEra, or "every era" in the source text).
-		local srcText = (rec.source or ""):lower()
-		if rec.category == "TIMEWALKING" and rec.conditions and not rec.anyEra
-			and not srcText:find("every era", 1, true)
-			and not srcText:find("any era", 1, true)
-			and not srcText:find("any timewalking vendor", 1, true) then
+		-- Third copy of this rule, now retired. This one already handled "any
+		-- era"; Router.lua's did not, and they disagreed for months on Infinite
+		-- Timereaver. One resolver means they cannot drift apart again.
+		if rec.category == "TIMEWALKING" and rec.conditions
+			and not (MM.Timewalking.IsAnyEra and MM.Timewalking.IsAnyEra(rec)) then
 			local badgeVendor = false
 			for _, c in ipairs(rec.conditions) do
 				if c.type == "CURRENCY" and c.id == MM.Timewalking.CURRENCY_ID then

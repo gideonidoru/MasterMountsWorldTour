@@ -55,11 +55,19 @@ local function makeStep(entry)
 	if rec.category == "TIMEWALKING" and MM.Timewalking.IsActive() then
 		local loc, vendorName = MM.Timewalking.VendorLocation()
 		if loc then
-			local eraOk = rec.anyEra
-				or (rec.source or ""):lower():find("every era", 1, true)
+			-- ONE resolver, not a second copy of the rule.
+			--
+			-- This checked for "every era" and missed "any era", so Infinite
+			-- Timereaver -- which drops from any TW boss in any era -- fell
+			-- through to ERA_BY_EXPANSION[5] and was labelled Warlords of
+			-- Draenor: one era named for a mount that ignores all of them.
+			-- Availability.lua had its own near-identical copy. Two copies of a
+			-- rule are two chances for it to be subtly different, and it was.
+			local TWk = MM.Timewalking
+			local eraOk = TWk.IsAnyEra and TWk.IsAnyEra(rec)
 			if not eraOk then
-				local needed = MM.Timewalking.ERA_BY_EXPANSION[rec.expansion]
-				local active = MM.Timewalking.ActiveEra()
+				local needed = TWk.EraForRecord and TWk.EraForRecord(rec)
+				local active = TWk.ActiveEra()
 				eraOk = needed and active
 					and (active:find(needed, 1, true) or needed:find(active, 1, true))
 			end
@@ -2194,6 +2202,14 @@ MM:On("MM_SCANNED", function()
 	-- thinks the addon froze reloads and pays the cost twice. The message is
 	-- printed first, and the build deferred one frame so the client can actually
 	-- draw it rather than queueing it behind the very work it describes.
+	-- ONE line for a resume, not three.
+	--
+	-- This printed "planning travel...", then "Route planned in 4.3s", then
+	-- "Route resumed — goal 1 of 143" -- three messages at every single login
+	-- describing one thing the player did not ask for. The monitor window opens
+	-- and shows the goal, so chat was narrating a window that is already on
+	-- screen. The wait notice stays, because seconds of silence during a freeze
+	-- genuinely does look broken; the other two go.
 	MM:Print("Resuming your route — planning travel, this takes a moment...")
 
 	-- WAIT FOR THE MAP BEFORE PLANNING.
@@ -2223,7 +2239,9 @@ MM:On("MM_SCANNED", function()
 		R:Build()
 		if startedAt and debugprofilestop then
 			local secs = (debugprofilestop() - startedAt) / 1000
-			if secs > 1.5 then
+			-- Only when it was slow enough to have looked broken. Below that
+			-- the player never noticed a pause and does not need a receipt.
+			if secs > 4 then
 				MM:Print("Route planned in %.1fs — %d goals.", secs, #R.route)
 			end
 		end
@@ -2251,7 +2269,8 @@ function R.FinishResume()
 	MM.Nav.SetWaypoint(R:Current())
 	MM:Fire("MM_ROUTE_STARTED")
 	MM:Fire("MM_ROUTE_ADVANCED")
-	MM:Print("Route resumed — goal %d of %d.", MM.cdb.routeIndex, #R.route)
+	-- Silent: MM_ROUTE_STARTED above opens the monitor, which states the goal
+	-- and the count in the window the player is now looking at.
 end
 
 ------------------------------------------------------------
