@@ -2921,6 +2921,32 @@ local function runLogic()
 			:format(O.SCHEMA, #owned)
 	end)
 
+	check("The plan summary keeps what the label drops", function()
+		-- The header line was long enough to truncate, so the two facts a
+		-- collector is deciding on -- how long, and do I end with a mount --
+		-- were losing to stop and zone counts. The label carries those two and
+		-- the tooltip carries everything, which only works if everything is
+		-- actually there.
+		local UI = MM.UI
+		if not (UI and UI.SummaryLines) then return nil, "planner not built yet" end
+		local lines = UI.SummaryLines()
+		if not lines or #lines == 0 then return nil, "no plan to summarise" end
+		local seen = {}
+		for _, pair in ipairs(lines) do
+			if type(pair[1]) ~= "string" or type(pair[2]) ~= "string" then
+				return false, "a summary line is not a label/value pair"
+			end
+			if seen[pair[1]] then
+				return false, "the summary says '" .. pair[1] .. "' twice"
+			end
+			seen[pair[1]] = true
+		end
+		if not (seen["Mounts on this plan"] and seen["Stops"]) then
+			return false, "the counts dropped from the label are not in the tooltip"
+		end
+		return true, ("%d facts, none duplicated"):format(#lines)
+	end)
+
 	check("The window does not argue with itself", function()
 		-- The missing list showed rows with "everything here is already on your
 		-- plan" drawn over them, and the plan pane was blank while its header

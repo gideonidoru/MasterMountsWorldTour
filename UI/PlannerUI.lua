@@ -593,16 +593,17 @@ function UI.BuildPlanner(panel)
 	summaryHit:SetPoint("BOTTOMRIGHT", summaryText, "BOTTOMRIGHT", 0, -2)
 	summaryHit:EnableMouse(true)
 	summaryHit:SetScript("OnEnter", function(self)
-		local full = summaryText.mmFull or summaryText:GetText()
-		if not full or full == "" then return end
+		if not (summaryText.mmLines and #summaryText.mmLines > 0) then return end
 		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 		GameTooltip:SetText("This plan", 1, 0.82, 0.2)
-		-- Split on the separator it is already built with, so each fact gets
-		-- its own line instead of one long wrapped paragraph.
-		for chunk in (full .. " \194\183 "):gmatch("(.-) \194\183 ") do
-			local line = chunk:gsub("^%s+", ""):gsub("%s+$", "")
-			if line ~= "" then GameTooltip:AddLine(line, 1, 1, 1, true) end
+		for _, pair in ipairs(summaryText.mmLines or {}) do
+			GameTooltip:AddDoubleLine(pair[1], pair[2],
+				0.75, 0.75, 0.8, 1, 1, 1)
 		end
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Times are what it takes YOU where we have watched,"
+			.. " and a pessimistic guess where we have not -- so the order is"
+			.. " sound even when the total is a ceiling.", 0.6, 0.6, 0.65, true)
 		GameTooltip:Show()
 	end)
 	summaryHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -674,6 +675,12 @@ function UI.RefreshPlanner()
 	else
 		doRefresh()
 	end
+end
+
+-- Exposed so the check can assert the tooltip actually carries what the label
+-- stopped saying, rather than trusting that it does.
+function UI.SummaryLines()
+	return summaryText and summaryText.mmLines
 end
 
 function UI.RefreshPlannerNow()
@@ -775,38 +782,86 @@ function UI.RefreshPlannerNow()
 	local zoneCount = 0
 	for _ in pairs(zones) do zoneCount = zoneCount + 1 end
 	local goalCount = 0
+	-- Gathered in the walk that was already happening. A second pass over a
+	-- hundred stops to fill a tooltip nobody may open is work for nothing.
+	local firstStop, sharedStops, urgentCount = nil, 0, 0
 	for i, step in ipairs(MM.Router.route) do
 		if limit and i > limit then break end
-		goalCount = goalCount + #(step.members or { step })
+		local members = step.members or { step }
+		goalCount = goalCount + #members
+		if #members > 1 then sharedStops = sharedStops + 1 end
+		if not firstStop then
+			local m = members[1]
+			firstStop = (m and m.entry and m.entry.name)
+				or (step.entry and step.entry.name)
+		end
+		for _, m in ipairs(members) do
+			local e = m.entry or m
+			-- EXPIRING or LOCKOUT only. There is no URGENCY.NONE -- the tiers
+			-- are EXPIRING, LOCKOUT, ANYTIME and BLOCKED -- so testing against
+			-- one would have counted every goal as urgent and made the line
+			-- meaningless in the most confident possible way.
+			local u = e and MM.Planner.Urgency and select(1, MM.Planner.Urgency(e))
+			if u == MM.Planner.URGENCY.EXPIRING or u == MM.Planner.URGENCY.LOCKOUT then
+				urgentCount = urgentCount + 1
+			end
+		end
 	end
 	-- "153 stops" answers a question nobody asked. What a collector wants to
 	-- know before committing an evening is how long it takes and whether they
 	-- end it with a mount, so lead with time and expectation and keep the counts
 	-- as supporting detail.
+	-- THE LABEL ANSWERS ONE QUESTION. THE TOOLTIP ANSWERS THE REST.
+	--
+	-- "how long, and do I end it with a mount" is what a collector is deciding
+	-- before committing an evening. Everything else -- stops, zones, what is
+	-- held back and why -- is supporting detail that was making the line long
+	-- enough to truncate, which cost the two facts that mattered.
 	local t = MM.Router.totals
-	local head = ""
+	local stopCount = limit or #MM.Router.route
 	if t and t.stops > 0 then
-		local mountText = t.mounts >= 1 and ("~%.1f mounts"):format(t.mounts)
-			or ("~%d%% for a mount"):format(math.min(99, math.floor(t.mounts * 100 + 0.5)))
-		-- Time on the route leads: that is the question a collector is asking.
-		-- The full commitment sits behind it, not instead of it.
-		head = ("|cffffd84d%s · %s|r |cff9a9a9a(%s to finish all)|r · "):format(
-			U.FormatSeconds((t.routeMinutes or t.minutes) * 60), mountText,
-			U.FormatSeconds(t.minutes * 60))
+		local mountText = t.mounts >= 1
+			and ("~%.1f mounts"):format(t.mounts)
+			or ("~%d%% chance of a mount"):format(
+				math.min(99, math.floor(t.mounts * 100 + 0.5)))
+		summaryText:SetText(("|cffffd84d%s · %s|r"):format(
+			U.FormatSeconds((t.routeMinutes or t.minutes) * 60), mountText))
+	else
+		summaryText:SetText("")
 	end
-	-- Kept whole for the tooltip. SetText draws it truncated; GetText hands
-	-- back what was SET, so this is belt and braces -- but the tooltip must
-	-- never be at the mercy of how the label happens to render.
-	summaryText.mmFull = head .. ("%d mounts · %d stops · %d zones%s%s%s"):format(
-		goalCount, limit or #MM.Router.route, zoneCount,
-		hiddenBySession > 0 and (" · " .. hiddenBySession .. " beyond this session") or "",
-		offRoute > 0 and (" · " .. offRoute .. " unplaced") or "",
-		waiting > 0 and (" · " .. waiting .. " waiting") or "")
-	summaryText:SetText(head .. ("%d mounts · %d stops · %d zones%s%s%s"):format(
-		goalCount, limit or #MM.Router.route, zoneCount,
-		hiddenBySession > 0 and (" · " .. hiddenBySession .. " beyond this session") or "",
-		offRoute > 0 and (" · " .. offRoute .. " unplaced") or "",
-		waiting > 0 and (" · " .. waiting .. " waiting") or ""))
+
+	-- Built as label/value pairs rather than one string split on a separator:
+	-- the tooltip can then align them, and a value containing the separator
+	-- cannot break the layout.
+	local lines = {}
+	local function add(k, v) lines[#lines + 1] = { k, v } end
+	if t and t.stops > 0 then
+		add("On the route", U.FormatSeconds((t.routeMinutes or t.minutes) * 60))
+		local travel = (t.minutes or 0) - (t.routeMinutes or t.minutes or 0)
+		if travel > 1 then
+			add("Of which travel", U.FormatSeconds(travel * 60))
+		end
+		add("Expected mounts", ("%.1f"):format(t.mounts or 0))
+		add("To finish everything", U.FormatSeconds((t.minutes or 0) * 60))
+	end
+	add("Mounts on this plan", tostring(goalCount))
+	add("Stops", tostring(stopCount))
+	add("Zones", tostring(zoneCount))
+	if firstStop then add("Starts with", firstStop) end
+	if sharedStops > 0 then
+		add("Stops with more than one mount", tostring(sharedStops))
+	end
+	if urgentCount > 0 then
+		-- The one number that changes what you do TONIGHT rather than
+		-- eventually: work whose window closes before the next reset.
+		add("Resets soon \226\128\148 do these first", tostring(urgentCount))
+	end
+	if hiddenBySession > 0 then
+		add("Beyond this session", tostring(hiddenBySession))
+	end
+	if offRoute > 0 then add("No location to route to", tostring(offRoute)) end
+	if waiting > 0 then add("Waiting on something", tostring(waiting)) end
+	summaryText.mmLines = lines
 	routeButton:SetRouteState(MM.cdb.routeActive)
 	-- NOTHING TO ROUTE, NOTHING TO START.
 	--
