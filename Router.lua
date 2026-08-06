@@ -2235,6 +2235,7 @@ end
 -- the pinned stops is left as the earlier layers arranged it, and everything
 -- else keeps the clock's ordering; only the boundary moves.
 function R.PinHereNow()
+	R.pinReport = nil
 	local route = R.route
 	if not route or #route < 2 then return 0 end
 	local here, rest = {}, {}
@@ -2248,10 +2249,20 @@ function R.PinHereNow()
 		end
 	end
 	if #here == 0 or #rest == 0 then return 0 end
-	local moved = 0
+	local moved, worst = 0, 0
+	local before = {}
+	for i, stop in ipairs(route) do before[stop] = i end
 	for i = 1, #here do
-		if route[i] ~= here[i] then moved = moved + 1 end
+		if route[i] ~= here[i] then
+			moved = moved + 1
+			local from = before[here[i]] or i
+			if from - i > worst then worst = from - i end
+		end
 	end
+	-- Recorded so the cap can say it was OVERRULED rather than claim a
+	-- guarantee it no longer keeps. Standing-here work is exempt on purpose;
+	-- a report that hides the exemption is how a number stops being trusted.
+	R.pinReport = { moved = moved, worst = worst, pinned = #here }
 	wipe(route)
 	for _, stop in ipairs(here) do route[#route + 1] = stop end
 	for _, stop in ipairs(rest) do route[#route + 1] = stop end
@@ -2589,9 +2600,15 @@ MM:On("MM_LAYERS_DEBUG", function()
 		end
 	end
 	local capRep = R.capReport
+	local pinRep = R.pinReport
 	if capRep then
 		MM:Print("  Layer 3 reorders for speed, but no goal lands more than |cffffd84d%d|r places", capRep.cap)
 		MM:Print("  from where layer 1 put it. Worst actual displacement: %d.", capRep.worst)
+		if pinRep and pinRep.moved > 0 then
+			MM:Print("  The cap does NOT bind %d stop%s you are standing on: those are"
+				.. " pinned to the front afterwards (largest jump %d places).",
+				pinRep.pinned, pinRep.pinned == 1 and "" or "s", pinRep.worst)
+		end
 	else
 		MM:Print("  Layer 3 overrides layers 1 and 2 whenever it is faster overall,")
 		MM:Print("  without limit — Options > Weights sets a cap if you want one.")
