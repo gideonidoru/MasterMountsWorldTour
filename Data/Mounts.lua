@@ -20696,6 +20696,13 @@ MM.AddMounts({
 			x = 36.9,
 			y = 78.2,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 450,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft; schematic and reagents come from Zereth Mortis rares, treasures and creatures.",
 	},
@@ -20712,6 +20719,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 68.5,
 			y = 30.1,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -20730,6 +20744,13 @@ MM.AddMounts({
 			x = 50.6,
 			y = 31.8,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -20746,6 +20767,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 68.5,
 			y = 30.1,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 500,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -20764,6 +20792,13 @@ MM.AddMounts({
 			x = 68.5,
 			y = 30.1,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -20780,6 +20815,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 64.1,
 			y = 35.6,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 450,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -20798,6 +20840,13 @@ MM.AddMounts({
 			x = 68.5,
 			y = 30.1,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 450,
+				type = "CURRENCY",
+			},
+		},
 		effort = 4,
 		notes = "Protoform Synthesis craft; schematic is a rare drop.",
 	},
@@ -20814,6 +20863,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 62,
 			y = 43.5,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -20848,6 +20904,13 @@ MM.AddMounts({
 			x = 31.5,
 			y = 50.3,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -20864,6 +20927,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 68.5,
 			y = 30.1,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -20882,6 +20952,13 @@ MM.AddMounts({
 			x = 68.5,
 			y = 30.1,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 500,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -20897,6 +20974,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 34.6,
 			y = 48.8,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 500,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -20932,6 +21016,13 @@ MM.AddMounts({
 			x = 68.5,
 			y = 30.1,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -20948,6 +21039,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 67,
 			y = 69.4,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -20966,6 +21064,13 @@ MM.AddMounts({
 			x = 67.4,
 			y = 40.1,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 450,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -20982,6 +21087,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 68.5,
 			y = 30.1,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 350,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -21000,6 +21112,13 @@ MM.AddMounts({
 			x = 47.7,
 			y = 9.5,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 350,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -21016,6 +21135,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 68.5,
 			y = 30.1,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 500,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
@@ -21034,6 +21160,13 @@ MM.AddMounts({
 			x = 60.5,
 			y = 30.5,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 300,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -21051,6 +21184,13 @@ MM.AddMounts({
 			x = 68.5,
 			y = 30.1,
 		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 450,
+				type = "CURRENCY",
+			},
+		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
 	},
@@ -21067,6 +21207,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 68.5,
 			y = 30.1,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 300,
+				type = "CURRENCY",
+			},
 		},
 		altSources = {
 			{
@@ -21099,6 +21246,13 @@ MM.AddMounts({
 			mapID = 1970,
 			x = 50.3,
 			y = 27,
+		},
+		conditions = {
+			{
+				name = "Genesis Mote",
+				amount = 400,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
