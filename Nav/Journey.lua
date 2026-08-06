@@ -352,11 +352,17 @@ function J.AttachAudit(zone, x, y)
 	local zl = zone:lower()
 	local own = byZone[zl]
 	if own and #own > 0 then return #own, 0, "own zone" end
-	local m = mapFor(zl)
-	local hereC = m and select(1, U.GetWorldPos(m, x or 50, y or 50))
-	if not hereC then return 0, 0, "origin has no world position" end
 	local cached = nearZoneCache[zl]
 	if not cached then return nil end
+	-- THE CONTINENT attachPoints ACTUALLY MEASURED FROM.
+	--
+	-- For an instance that is its DOOR's outdoor map, not the interior. This
+	-- check first re-derived it from the zone name, got the interior, and
+	-- reported 16 attachments on "another continent" that were entirely its own
+	-- doing -- a false alarm on working code, which costs as much trust as a
+	-- missed fault. Read the value that was used; never reconstruct it.
+	local hereC = cached.originContinent
+	if not hereC then return 0, 0, "no origin continent recorded" end
 	local same, other = 0, 0
 	for _, p in ipairs(cached) do
 		local n = graph[p.name]
@@ -505,6 +511,12 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 		-- A handful is enough. The graph decides which is genuinely worth the
 		-- flight; carrying all of them only widens the search.
 		for i = 1, math.min(#best, 8) do out[i] = best[i] end
+		-- Record the continent this actually measured from. An audit that
+		-- re-derives it independently will get a DIFFERENT answer for an
+		-- instance, because the origin used here is the door's outdoor map and
+		-- not the interior -- and it will then report mismatches that are its
+		-- own. Store the value used; check against that.
+		out.originContinent = hereContinent
 		nearZoneCache[zone] = out
 		return out
 	end

@@ -1474,6 +1474,10 @@ local function runLogic()
 			"The Forbidden Reach", "Sanctum of Domination" }
 		local checked, offending, example = 0, 0, nil
 		for _, zone in ipairs(probes) do
+			-- The audit reads what attaching actually chose, so something has to
+			-- have attached first. Without this the check reports "nothing to
+			-- audit" forever, which is a pass that proves nothing.
+			if J.Plan then J.Plan(zone, 50, 50, "Orgrimmar", 50, 50) end
 			local same, other = J.AttachAudit(zone, 50, 50)
 			if same then
 				checked = checked + 1
