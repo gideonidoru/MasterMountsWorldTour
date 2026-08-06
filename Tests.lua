@@ -1398,11 +1398,24 @@ local function runLogic()
 		local st = S.Active and S.Active()
 		local planned = st and st.planned or 0
 
-		local total, counted = 0, 0
+		-- MEASURE FIRST. travelMinutes is populated by R.Measure(), which runs
+		-- AFTER Build -- so reading it straight after Start summed zero and then
+		-- compared zero against a budget. A check that passes because it added
+		-- up nothing is worse than one that fails.
+		if R.Measure then R.Measure() end
+
+		local total, counted, priced = 0, 0, 0
 		if planned > 0 then
 			for i = 1, math.min(planned, #R.route) do
 				local stop = R.route[i]
-				total = total + (stop.travelMinutes or 0) + (stop.workMinutes or 0)
+				local travel = stop.travelMinutes or 0
+				-- `or 15` matches what S.Fit itself assumes for a stop with no
+				-- stated work, so the test costs the route the same way the
+				-- session costed it. Using 0 here would let an unpriced stop
+				-- silently satisfy any budget.
+				local work = stop.workMinutes or 15
+				if stop.travelMinutes or stop.workMinutes then priced = priced + 1 end
+				total = total + travel + work
 				counted = counted + 1
 			end
 		end
@@ -1419,6 +1432,12 @@ local function runLogic()
 		if counted < planned then
 			return false, ("session claims %d stops, route has %d"):format(planned, counted)
 		end
+		-- The sum has to come from somewhere. If not one leading stop carries a
+		-- real cost, this check is adding up defaults and proving nothing --
+		-- which is exactly how it passed at "0 min of work".
+		if priced == 0 then
+			return false, ("%d leading stops carry no measured cost at all"):format(counted)
+		end
 		-- One stop may overrun on its own -- Fit takes the first thing that fits
 		-- and a single long run can exceed the budget by itself. The promise is
 		-- about the SET, so allow the last stop to spill.
@@ -1426,8 +1445,8 @@ local function runLogic()
 			return false, ("%d leading stops total %.0f min for a %d min session")
 				:format(counted, total, len.minutes)
 		end
-		return true, ("%d min -> %d stops leading, %.0f min of work"):format(
-			len.minutes, counted, total)
+		return true, ("%d min -> %d stops leading, %.0f min total (%d priced)"):format(
+			len.minutes, counted, total, priced)
 	end)
 
 	check("A session promise is kept", function()
