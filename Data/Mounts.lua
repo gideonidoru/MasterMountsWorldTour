@@ -20705,6 +20705,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft; schematic and reagents come from Zereth Mortis rares, treasures and creatures.",
+		schematic = {
+			mapID = 1970,
+			x = 36,
+			y = 78,
+		},
 	},
 	{
 		name = "Bronze Helicid",
@@ -20753,6 +20758,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 50,
+			y = 31,
+		},
 	},
 	{
 		name = "Buzz",
@@ -20825,6 +20835,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 64,
+			y = 35,
+		},
 	},
 	{
 		name = "Deathrunner",
@@ -20873,6 +20888,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 62,
+			y = 43,
+		},
 	},
 	{
 		name = "Forged Spiteflyer",
@@ -20913,6 +20933,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 31,
+			y = 50,
+		},
 	},
 	{
 		name = "Goldplate Bufonid",
@@ -20961,6 +20986,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 51,
+			y = 62,
+		},
 	},
 	{
 		name = "Ineffable Skitterer",
@@ -21049,6 +21079,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 67,
+			y = 69,
+		},
 	},
 	{
 		name = "Raptora Swooper",
@@ -21073,6 +21108,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 65,
+			y = 35,
+		},
 	},
 	{
 		name = "Russet Bufonid",
@@ -21121,6 +21161,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 47,
+			y = 9,
+		},
 	},
 	{
 		name = "Serenade",
@@ -21169,6 +21214,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 60,
+			y = 30,
+		},
 	},
 	{
 		name = "Tarachnid Creeper",
@@ -21193,6 +21243,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 62,
+			y = 22,
+		},
 	},
 	{
 		name = "Unsuccessful Prototype Fleetpod",
@@ -21232,6 +21287,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 51,
+			y = 32,
+		},
 	},
 	{
 		name = "Vespoid Flutterer",
@@ -21256,6 +21316,11 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Protoform Synthesis craft.",
+		schematic = {
+			mapID = 1970,
+			x = 50,
+			y = 27,
+		},
 	},
 	{
 		name = "Vicious War Spider",
