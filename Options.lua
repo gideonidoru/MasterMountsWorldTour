@@ -233,44 +233,62 @@ local function buildPanel()
 	heading("|cffffd84dAppearance|r")
 	local THEMES = { "auto", "blizzard", "elvui" }
 	local THEME_LABEL = { auto = "Auto", blizzard = "Blizzard", elvui = "ElvUI" }
-	local themeBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-	themeBtn:SetSize(240, 24)
-	local function themeText()
+	-- A DROPDOWN, like every other list of choices in the addon.
+	--
+	-- This was a button that opened a radio menu -- the same gesture the
+	-- planner and collection filters used, and the same problem: a control that
+	-- opens a list should look like one. The "(ElvUI)" suffix on Auto stays,
+	-- because Auto without saying what it resolved to is a setting you cannot
+	-- check.
+	local themeBtn
+	local function themeLabel()
 		local set = MM.db.theme
 		local text = THEME_LABEL[set or "auto"] or "Auto"
 		if not set then
 			text = text .. " (" .. (MM.Theme.HasElvUI() and "ElvUI" or "Blizzard") .. ")"
 		end
-		themeBtn:SetText("Theme: " .. text)
+		return "Theme: " .. text
+	end
+	local function themeText()
+		if not themeBtn then return end
+		if themeBtn.SetDefaultText then themeBtn:SetDefaultText(themeLabel())
+		elseif themeBtn.SetText then themeBtn:SetText(themeLabel()) end
 	end
 	local function setTheme(value)
 		MM.db.theme = (value ~= "auto") and value or nil
 		MM.Theme.ReskinAll()
 		themeText()
 	end
-	themeBtn:SetScript("OnClick", function(self)
-		if MenuUtil and MenuUtil.CreateContextMenu then
-			MenuUtil.CreateContextMenu(self, function(_, root)
-				root:CreateTitle("Theme")
-				for _, v in ipairs(THEMES) do
-					local labelText = THEME_LABEL[v]
-					if v == "auto" then
-						labelText = labelText .. " ("
-							.. (MM.Theme.HasElvUI() and "ElvUI" or "Blizzard") .. ")"
-					end
-					root:CreateRadio(labelText,
-						function() return (MM.db.theme or "auto") == v end,
-						function() setTheme(v) end)
+	local ok, drop = pcall(CreateFrame, "DropdownButton", nil, content,
+		"WowStyle1DropdownTemplate")
+	if ok and drop and drop.SetupMenu then
+		themeBtn = drop
+		themeBtn:SetSize(240, 24)
+		themeBtn:SetupMenu(function(_, root)
+			root:CreateTitle("Theme")
+			for _, v in ipairs(THEMES) do
+				local labelText = THEME_LABEL[v]
+				if v == "auto" then
+					labelText = labelText .. " ("
+						.. (MM.Theme.HasElvUI() and "ElvUI" or "Blizzard") .. ")"
 				end
-			end)
-		else
-			-- pre-menu clients: fall back to cycling
+				root:CreateRadio(labelText,
+					function() return (MM.db.theme or "auto") == v end,
+					function() setTheme(v) end)
+			end
+		end)
+	else
+		-- pre-dropdown clients: a button that cycles. Same reach, fewer
+		-- affordances, and it still says what it is set to.
+		themeBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+		themeBtn:SetSize(240, 24)
+		themeBtn:SetScript("OnClick", function()
 			local cur = MM.db.theme or "auto"
 			local i = 1
 			for n, v in ipairs(THEMES) do if v == cur then i = n end end
 			setTheme(THEMES[(i % #THEMES) + 1])
-		end
-	end)
+		end)
+	end
 	themeBtn:SetScript("OnShow", themeText)
 	themeText()
 	place(themeBtn, 26)

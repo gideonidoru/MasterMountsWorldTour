@@ -166,13 +166,12 @@ function UI.BuildCollection(panel)
 		tinsert(expValues, i)
 		expLabels[i] = MM.EXPANSIONS[i]
 	end
-	local expBtn = UI.MakeCycler(panel, "Expansion", expValues, expLabels, function(v)
+	local expBtn = UI.MakePicker(panel, "Expansion", expValues, expLabels, function(v)
 		filters.expansion = v
 		MM.db.ui.colExpansion = v or false
 		UI.RefreshCollection()
-	end, filters.expansion)
+	end, filters.expansion, "All", 170)
 	expBtn:SetPoint("LEFT", search, "RIGHT", 12, 0)
-	expBtn:SetWidth(180)
 
 	local catValues = { "GROUP_DROPS", "GROUP_BUY", "GROUP_ACH" }
 	local catLabels = {}
@@ -181,22 +180,20 @@ function UI.BuildCollection(panel)
 		tinsert(catValues, c.key)
 		catLabels[c.key] = c.label
 	end
-	local catBtn = UI.MakeCycler(panel, "Type", catValues, catLabels, function(v)
+	local catBtn = UI.MakePicker(panel, "Type", catValues, catLabels, function(v)
 		filters.category = v
 		MM.db.ui.colCategory = v or false
 		UI.RefreshCollection()
-	end, filters.category)
+	end, filters.category, "All", 140)
 	catBtn:SetPoint("LEFT", expBtn, "RIGHT", 6, 0)
-	catBtn:SetWidth(150)
 
-	local sortBtn = UI.MakeCycler(panel, "Sort", { "EASE", "STATUS", "EXPANSION" },
+	local sortBtn = UI.MakePicker(panel, "Sort", { "EASE", "STATUS", "EXPANSION" },
 		{ EASE = "Easiest", STATUS = "Status", EXPANSION = "Expansion" }, function(v)
 			filters.sort = v
 			MM.db.ui.colSort = v or false
 			UI.RefreshCollection()
-		end, filters.sort, "Name")
+		end, filters.sort, "Name", 130)
 	sortBtn:SetPoint("LEFT", catBtn, "RIGHT", 6, 0)
-	sortBtn:SetWidth(126)
 
 	local missing = UI.MakeCheck(panel, "Missing only", function(v)
 		filters.missingOnly = v

@@ -2850,6 +2850,29 @@ local function runLogic()
 			:format(O.SCHEMA, #owned)
 	end)
 
+	check("Lists of choices are drawn as lists", function()
+		-- The filters were buttons that opened radio menus, sitting beside a
+		-- genuine dropdown for the session length -- the same gesture behind
+		-- two different affordances, only one of which announced itself.
+		local UI = MM.UI
+		if not (UI and UI.MakePicker) then return false, "no picker builder" end
+		local host = CreateFrame("Frame")
+		local seen
+		local pick = UI.MakePicker(host, "Type", { "A", "B" },
+			{ A = "Alpha", B = "Beta" }, function(v) seen = v end, "B", "All", 140)
+		if not pick then return false, "picker did not build" end
+		if not pick.mmSetLabel then
+			-- The cycler fallback is a legitimate outcome on older clients.
+			return nil, "fell back to the cycler: no dropdown template here"
+		end
+		-- Building must NOT fire onChange -- the caller already applied the
+		-- saved value, and re-firing it would rewrite the filters on open.
+		if seen ~= nil then
+			return false, "building the picker changed the setting to " .. tostring(seen)
+		end
+		return true, "dropdown built, initial value applied without firing"
+	end)
+
 	check("Every onboarding step draws", function()
 		-- Steps are only reachable by clicking in-game, so a bad field
 		-- reference inside one card could sit unnoticed until a new player --

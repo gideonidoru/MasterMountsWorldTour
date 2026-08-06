@@ -252,8 +252,16 @@ function UI.BuildPlanner(panel)
 	local clearBtn = UI.MakeButton(panel, "Clear Plan")
 	clearBtn:SetPoint("LEFT", easyBtn, "RIGHT", 6, 0)
 
+	-- SESSION SITS OVER THE PLAN, because that is what it changes.
+	--
+	-- It used to sit in the middle of the toolbar, between the plan buttons and
+	-- the list filters, on the reasoning that it was neither. But the two
+	-- filters beside it act on the LEFT pane and the session acts on the RIGHT
+	-- one, so the toolbar read as one row of unrelated controls and the only
+	-- way to learn which did what was to try them. Each group now sits above
+	-- the pane it affects.
 	local sessionDrop = UI.MakeSessionPicker(panel)
-	sessionDrop:SetPoint("LEFT", clearBtn, "RIGHT", 14, 0)
+	sessionDrop:SetPoint("TOPLEFT", panel, "TOPLEFT", 446, -2)
 	panel.sessionDrop = sessionDrop
 	clearBtn:SetScript("OnClick", function() MM.Planner:Clear() end)
 
@@ -262,7 +270,7 @@ function UI.BuildPlanner(panel)
 		MM.db.ui.plnAvailable = v
 		UI.RefreshPlanner()
 	end)
-	availChk:SetPoint("LEFT", sessionDrop, "RIGHT", 14, 0)
+	availChk:SetPoint("LEFT", clearBtn, "RIGHT", 14, 0)
 	availChk:SetChecked(MM.Planner.filters.onlyAvailable)
 
 	local catValues = { "GROUP_DROPS", "GROUP_BUY", "GROUP_ACH" }
@@ -274,22 +282,20 @@ function UI.BuildPlanner(panel)
 			catLabels[c.key] = c.label
 		end
 	end
-	local catBtn = UI.MakeCycler(panel, "Type", catValues, catLabels, function(v)
+	local catBtn = UI.MakePicker(panel, "Type", catValues, catLabels, function(v)
 		MM.Planner.filters.category = v
 		MM.db.ui.plnCategory = v or false
 		UI.RefreshPlanner()
-	end, MM.Planner.filters.category)
+	end, MM.Planner.filters.category, "All", 140)
 	catBtn:SetPoint("LEFT", availChk.labelText, "RIGHT", 12, 0)
-	catBtn:SetWidth(150)
 
-	local sortBtn = UI.MakeCycler(panel, "Sort", { "EASE", "STATUS", "EXPANSION" },
+	local sortBtn = UI.MakePicker(panel, "Sort", { "EASE", "STATUS", "EXPANSION" },
 		{ EASE = "Easiest", STATUS = "Status", EXPANSION = "Expansion" }, function(v)
 			MM.Planner.filters.sort = v
 			MM.db.ui.plnSort = v or false
 			UI.RefreshPlanner()
-		end, MM.Planner.filters.sort, "Name")
+		end, MM.Planner.filters.sort, "Name", 130)
 	sortBtn:SetPoint("LEFT", catBtn, "RIGHT", 6, 0)
-	sortBtn:SetWidth(120)
 
 	-- left pane: missing
 	-- A header ROW rather than free-floating anchors. Two widgets that must sit

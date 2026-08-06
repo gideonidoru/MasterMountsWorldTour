@@ -110,6 +110,62 @@ end
 
 -- A cycling filter button: click = next value, right-click = reset to "All".
 -- `initial` restores a persisted selection.
+-- A real dropdown, with the same contract as MakeCycler.
+--
+-- The cyclers already opened a radio menu on click, but they LOOKED like
+-- buttons -- "Type: All" next to a genuine dropdown for the session length --
+-- so the same gesture was hidden behind two different affordances and only one
+-- of them announced itself. A control that opens a list should look like a
+-- list.
+--
+-- Falls back to the cycler when the template is missing, which keeps one code
+-- path for every caller rather than each deciding what to do without it.
+function UI.MakePicker(parent, prefix, values, labels, onChange, initial, allLabel, width)
+	local ok, drop = pcall(CreateFrame, "DropdownButton", nil, parent,
+		"WowStyle1DropdownTemplate")
+	if not (ok and drop and drop.SetupMenu) then
+		return UI.MakeCycler(parent, prefix, values, labels, onChange, initial, allLabel)
+	end
+	drop:SetSize(width or 150, 22)
+	drop.mmIndex = 0
+	if initial ~= nil and initial ~= false then
+		for i, v in ipairs(values) do
+			if v == initial then drop.mmIndex = i break end
+		end
+	end
+	local function text()
+		local v = values[drop.mmIndex]
+		return prefix .. ": " .. (v and labels[v] or allLabel or "All")
+	end
+	-- SetText does nothing on a DropdownButton; the label setter is
+	-- SetDefaultText. Same trap the session picker hit.
+	drop.mmSetLabel = function(self)
+		if self.SetDefaultText then self:SetDefaultText(text())
+		elseif self.SetText then self:SetText(text()) end
+	end
+	local function select(i)
+		drop.mmIndex = i
+		drop:mmSetLabel()
+		onChange(values[i])
+	end
+	drop:SetupMenu(function(_, root)
+		root:CreateTitle(prefix)
+		root:CreateRadio(allLabel or "All",
+			function() return drop.mmIndex == 0 end,
+			function() select(0) end)
+		for i, v in ipairs(values) do
+			root:CreateRadio(labels[v] or tostring(v),
+				function() return drop.mmIndex == i end,
+				function() select(i) end)
+		end
+	end)
+	drop:mmSetLabel()
+	-- The initial value is already applied by the caller's saved settings, so
+	-- this only publishes it -- it must NOT be treated as a change the player
+	-- just made, or opening the window would rewrite their filters.
+	return drop
+end
+
 function UI.MakeCycler(parent, prefix, values, labels, onChange, initial, allLabel)
 	local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
 	b:SetSize(150, 22)
