@@ -17,9 +17,16 @@ local function initMissingRow(row, entry)
 		row.hl:SetAllPoints()
 		row.hl:SetColorTexture(1, 0.82, 0.2, 0.08)
 
+		-- ONE ICON SIZE ACROSS THE ADDON.
+		--
+		-- The missing list drew 28, the plan drew 30 and the collection window
+		-- 36, so the same mount changed size depending on which pane it sat in
+		-- and the two halves of one window read as two different addons. 32 in
+		-- both planner panes matches the collection's proportions without
+		-- touching row height -- the spacing is deliberate and stays.
 		row.icon = row:CreateTexture(nil, "ARTWORK")
-		row.icon:SetSize(28, 28)
-		row.icon:SetPoint("LEFT", 4, 0)
+		row.icon:SetSize(32, 32)
+		row.icon:SetPoint("LEFT", 6, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
 		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -35,10 +42,8 @@ local function initMissingRow(row, entry)
 		row.sub:SetTextColor(0.6, 0.6, 0.6)
 		row.sub:SetWordWrap(false)
 
-		row.add = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-		row.add:SetSize(38, 20)
-		row.add:SetPoint("RIGHT", -4, 0)
-		MM.Theme.Register(row.add, "button")
+		row.add = UI.MakeRowAction(row)
+		row.add:SetPoint("RIGHT", -6, 0)
 		row.add:SetScript("OnClick", function(self)
 			local e = self:GetParent().entry
 			if MM.Planner:InPlan(e.spellID) then
@@ -59,7 +64,7 @@ local function initMissingRow(row, entry)
 	local status = MM.Availability.GetStatus(entry)
 	row.sub:SetText(U.Color(status, U.STATUS_LABEL[status] or status)
 		.. "|cff9a9a9a — " .. (entry.rec.source or "") .. "|r")
-	row.add:SetText(MM.Planner:InPlan(entry.spellID) and "-" or "+")
+	row.add:mmSet(MM.Planner:InPlan(entry.spellID))
 end
 
 ------------------------------------------------------------
@@ -90,7 +95,7 @@ local function initPlanRow(row, data)
 		row.num:SetJustifyH("RIGHT")
 
 		row.icon = row:CreateTexture(nil, "ARTWORK")
-		row.icon:SetSize(30, 30)
+		row.icon:SetSize(32, 32)
 		row.icon:SetPoint("LEFT", 40, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
@@ -113,15 +118,13 @@ local function initPlanRow(row, data)
 		-- thing everywhere: [+] puts a mount on the plan, [-] takes it off.
 		-- This was an [x] close glyph, which reads as "dismiss this row"
 		-- rather than "take this off the plan".
-		row.remove = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-		row.remove:SetSize(38, 20)
-		row.remove:SetPoint("RIGHT", -4, 0)
-		row.remove:SetText("-")
+		row.remove = UI.MakeRowAction(row)
+		row.remove:SetPoint("RIGHT", -6, 0)
+		row.remove:mmSet(true)
 		row.remove.mmTooltip = "Remove from plan"
 		row.remove:SetScript("OnClick", function(self)
 			MM.Planner:Remove(self:GetParent().entry.spellID)
 		end)
-		MM.Theme.Register(row.remove, "button")
 
 		-- NO UP/DOWN ARROWS.
 		--

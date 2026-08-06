@@ -120,6 +120,61 @@ end
 --
 -- Falls back to the cycler when the template is missing, which keeps one code
 -- path for every caller rather than each deciding what to do without it.
+-- The add/remove control, drawn quietly.
+--
+-- This was a red UIPanelButton with a "+" or "-" in it, repeated on every
+-- visible row. Three hundred red pills made the most aggressive thing on the
+-- screen also the least informative -- the eye went to the buttons instead of
+-- the mounts, and a "-" is a poor word for "take this off my plan".
+--
+-- Now it is a glyph that rests at low alpha and comes up when the pointer is
+-- on its row, so the control is there when it is wanted and out of the way
+-- when it is not. The row already had OnEnter and OnLeave for the tooltip, so
+-- this rides on hover the row was tracking anyway.
+function UI.MakeRowAction(row)
+	local b = CreateFrame("Button", nil, row)
+	b:SetSize(22, 22)
+	b.glyph = b:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	b.glyph:SetPoint("CENTER")
+	b:SetAlpha(0.22)
+	-- STILL + AND -, NOT A CROSS.
+	--
+	-- A cross was tried here before and deliberately replaced: [x] reads as
+	-- "dismiss this row", which is not what the control does -- it takes the
+	-- mount off the plan, and the row stays. The pair stays [+] and [-] so one
+	-- gesture means one thing in both panes. What was wrong was never the
+	-- glyph, it was the red button around it.
+	b.mmSet = function(self, inPlan)
+		if inPlan then
+			self.glyph:SetText("-")
+			self.glyph:SetTextColor(0.95, 0.55, 0.5)
+		else
+			self.glyph:SetText("+")
+			self.glyph:SetTextColor(0.55, 0.85, 0.55)
+		end
+	end
+	b:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:SetText("Add / remove from farm plan")
+		GameTooltip:Show()
+	end)
+	b:SetScript("OnLeave", function(self)
+		self:SetAlpha(row.mmHover and 0.75 or 0.22)
+		GameTooltip:Hide()
+	end)
+	-- Hooked, not replaced: the row's own tooltip handlers still run.
+	row:HookScript("OnEnter", function()
+		row.mmHover = true
+		b:SetAlpha(0.75)
+	end)
+	row:HookScript("OnLeave", function()
+		row.mmHover = false
+		b:SetAlpha(0.22)
+	end)
+	return b
+end
+
 function UI.MakePicker(parent, prefix, values, labels, onChange, initial, allLabel, width)
 	local ok, drop = pcall(CreateFrame, "DropdownButton", nil, parent,
 		"WowStyle1DropdownTemplate")

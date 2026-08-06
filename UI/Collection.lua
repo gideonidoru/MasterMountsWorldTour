@@ -44,7 +44,7 @@ local function initRow(row, entry)
 		row.iconPlate:SetColorTexture(0, 0, 0, 0.55)
 
 		row.icon = row:CreateTexture(nil, "ARTWORK")
-		row.icon:SetSize(36, 36)
+		row.icon:SetSize(32, 32)
 		row.icon:SetPoint("LEFT", 10, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 		row.iconPlate:SetPoint("TOPLEFT", row.icon, -2, 2)
@@ -61,19 +61,11 @@ local function initRow(row, entry)
 		row.sub:SetTextColor(0.65, 0.65, 0.65)
 		row.sub:SetWordWrap(false)
 
-		row.add = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-		row.add:SetSize(26, 22)
-		row.add:SetPoint("RIGHT", -8, 0)
+		row.add = UI.MakeRowAction(row)
+		row.add:SetPoint("RIGHT", -10, 0)
 		row.add:SetScript("OnClick", function(self)
 			MM.UI.TogglePlan(self:GetParent().entry)
 		end)
-		row.add:SetScript("OnEnter", function(self)
-			GameTooltip:SetOwner(self, "ANCHOR_TOP")
-			GameTooltip:SetText("Add / remove from farm plan")
-			GameTooltip:Show()
-		end)
-		row.add:SetScript("OnLeave", function() GameTooltip:Hide() end)
-		MM.Theme.Register(row.add, "button")
 
 		row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 		row.status:SetPoint("RIGHT", -42, 6)
@@ -106,12 +98,18 @@ local function initRow(row, entry)
 		meta = "|cff8888c8" .. MM.EXPANSIONS[rec.expansion] .. " · "
 			.. (MM.CATEGORY_LABEL[rec.category] or rec.category or "?") .. "|r — "
 	end
-	-- when ranking by ease, show the priority tier that produced the order
-	if filters.sort == "EASE" and not entry.collected then
-		local tier = MM.Planner.Rank(entry)
-		meta = ("|cffffd84d[%d %s]|r ")
-			:format(MM.Weights.TierRank(tier), MM.Planner.TIER_LABEL[tier] or "?") .. meta
-	end
+	-- THE TIER TAG IS GONE.
+	--
+	-- "[1 Dungeon / legacy raid]" opened every row, in the brightest colour on
+	-- screen, before anything worth reading. Three hundred times it said the
+	-- same thing, the leading number read as a count rather than a rank, and on
+	-- an Island Expedition it was simply wrong -- those share the tier with
+	-- dungeons and inherited its name.
+	--
+	-- The order is already visible: the list IS sorted by ease, so position
+	-- carries the rank. Printing it on every row spent the eye's first stop on
+	-- something it could see for free. The expansion and source breadcrumb that
+	-- follows is the part that says where to go.
 	row.sub:SetText(meta .. (rec and rec.source or ""))
 
 	local status = MM.Availability.GetStatus(entry)
@@ -123,13 +121,22 @@ local function initRow(row, entry)
 	else
 		row.edge:SetColorTexture(U.StatusRGB(status))
 	end
-	row.status:SetText(U.Color(status, U.STATUS_LABEL[status] or status))
+	-- "Available" is said on nearly every row, in a list that is usually
+	-- filtered to available things. Three hundred repetitions of the expected
+	-- case buries the handful that say something -- Requirements, Locked,
+	-- Rotation -- which are the only ones worth a glance.
+	--
+	-- So the unremarkable case is silent and the exceptions still speak. The
+	-- status colour stays on the row edge either way, so nothing is lost: the
+	-- edge already carries it without spending a word.
+	row.status:SetText(status == "AVAILABLE" and ""
+		or U.Color(status, U.STATUS_LABEL[status] or status))
 	row.planned:SetText((not entry.collected and MM.Planner:InPlan(entry.spellID)) and "IN PLAN" or "")
 	if entry.collected then
 		row.add:Hide()
 	else
 		row.add:Show()
-		row.add:SetText(MM.Planner:InPlan(entry.spellID) and "-" or "+")
+		row.add:mmSet(MM.Planner:InPlan(entry.spellID))
 	end
 end
 
