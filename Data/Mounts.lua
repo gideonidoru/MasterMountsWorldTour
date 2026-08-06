@@ -2709,6 +2709,7 @@ MM.AddMounts({
 			{
 				name = "Blue Riding Nether Ray",
 				cost = "200g, reduced to 160g by the Exalted reputation discount",
+				id = 32319,
 				type = "ITEM",
 			},
 		},
@@ -2754,6 +2755,7 @@ MM.AddMounts({
 			{
 				name = "Green Riding Nether Ray",
 				cost = "200g, reduced to 160g by the Exalted reputation discount",
+				id = 32314,
 				type = "ITEM",
 			},
 		},
@@ -2799,6 +2801,7 @@ MM.AddMounts({
 			{
 				name = "Purple Riding Nether Ray",
 				cost = "200g, reduced to 160g by the Exalted reputation discount",
+				id = 32316,
 				type = "ITEM",
 			},
 		},
@@ -2844,6 +2847,7 @@ MM.AddMounts({
 			{
 				name = "Red Riding Nether Ray",
 				cost = "200g, reduced to 160g by the Exalted reputation discount",
+				id = 32317,
 				type = "ITEM",
 			},
 		},
@@ -4692,6 +4696,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Red Drake",
 				cost = "2000 gold (before discounts)",
+				id = 43955,
 				type = "ITEM",
 			},
 		},
@@ -4772,6 +4777,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Traveler's Tundra Mammoth",
 				cost = "20000g (16000g at Kirin Tor Exalted)",
+				id = 44234,
 				type = "ITEM",
 			},
 		},
@@ -4799,6 +4805,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Wooly Mammoth",
 				cost = "10000g",
+				id = 44230,
 				type = "ITEM",
 			},
 		},
@@ -4824,6 +4831,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Armored Brown Bear",
 				cost = "750g",
+				id = 44225,
 				type = "ITEM",
 			},
 		},
@@ -4852,6 +4860,7 @@ MM.AddMounts({
 			{
 				name = "Armored Snowy Gryphon",
 				cost = "2000g",
+				id = 44689,
 				type = "ITEM",
 			},
 		},
@@ -6640,6 +6649,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Golden King",
 				cost = "1500g",
+				id = 62298,
 				type = "ITEM",
 			},
 		},
@@ -6669,6 +6679,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Kor'kron Annihilator",
 				cost = "1500g",
+				id = 67107,
 				type = "ITEM",
 			},
 		},
@@ -6697,6 +6708,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Dark Phoenix",
 				cost = "3000g",
+				id = 63125,
 				type = "ITEM",
 			},
 		},
@@ -8512,6 +8524,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Grand Expedition Yak",
 				cost = "120000g",
+				id = 84101,
 				type = "ITEM",
 			},
 		},
@@ -9943,6 +9956,7 @@ MM.AddMounts({
 			{
 				name = "Blackfang Claw",
 				cost = "5000",
+				id = 124099,
 				type = "ITEM",
 			},
 			{
@@ -10038,6 +10052,7 @@ MM.AddMounts({
 			{
 				name = "Armored Irontusk",
 				cost = "5,000g + 5,000 Apexis Crystals",
+				id = 116665,
 				type = "ITEM",
 			},
 		},
@@ -10083,6 +10098,7 @@ MM.AddMounts({
 			{
 				name = "Breezestrider Stallion",
 				cost = "5,000g (about 4,750g with the Bilgewater Cartel Exalted discount)",
+				id = 116775,
 				type = "ITEM",
 			},
 		},
@@ -10270,6 +10286,7 @@ MM.AddMounts({
 			{
 				name = "Ironside Warwolf",
 				cost = "5,000g + 5,000 Apexis Crystals",
+				id = 116782,
 				type = "ITEM",
 			},
 		},
@@ -10315,6 +10332,7 @@ MM.AddMounts({
 			{
 				name = "Pale Thorngrazer",
 				cost = "5,000g (about 4,750g with the Stormwind Exalted discount)",
+				id = 116776,
 				type = "ITEM",
 			},
 		},
@@ -12510,6 +12528,7 @@ MM.AddMounts({
 			{
 				name = "Lightforged Warframe",
 				cost = "500000g",
+				id = 152098,
 				type = "ITEM",
 			},
 		},
@@ -15082,6 +15101,7 @@ MM.AddMounts({
 			{
 				name = "Crimson Tidestallion",
 				cost = "4x Cultist Pinky Finger + 2x Pulsating Blood Stone + 1x Hungry Herald's Tentacle Taco",
+				id = 169202,
 				type = "ITEM",
 			},
 		},
@@ -33604,6 +33624,7 @@ MM.AddMounts({
 			{
 				name = "Great Golden Kodo",
 				cost = "500g",
+				id = 46750,
 				type = "ITEM",
 			},
 		},
@@ -33641,6 +33662,7 @@ MM.AddMounts({
 			{
 				name = "Great Red Elekk",
 				cost = "500g",
+				id = 46745,
 				type = "ITEM",
 			},
 		},
@@ -34952,6 +34974,7 @@ MM.AddMounts({
 			{
 				name = "Rocktusk Battleboar",
 				cost = "10,000 gold",
+				id = 116667,
 				type = "ITEM",
 			},
 		},
@@ -35105,6 +35128,7 @@ MM.AddMounts({
 			{
 				name = "Mosshide Riverwallow",
 				cost = "50,000 gold + 5,000 Apexis Crystals",
+				id = 116768,
 				type = "ITEM",
 			},
 		},

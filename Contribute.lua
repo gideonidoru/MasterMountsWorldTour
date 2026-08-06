@@ -636,7 +636,11 @@ MM:On("MM_KNOWN_DEBUG", function()
 		CURRENCY    = { "selfclosing", "the currency id space is walked once and cached" },
 		REP         = { "selfclosing", "the faction id space is walked once and cached" },
 		PROFESSION  = { "selfclosing", "matched by name; no id is needed" },
-		ITEM        = { "nobody", "WoW exposes NO reverse item-name to id lookup" },
+		-- The CLIENT cannot do this. The client's DATA can, and saying "nobody"
+		-- stopped anyone looking: ItemSparse carries every item id beside its
+		-- name and is published as CSV, which is where 24 of these came from.
+		ITEM        = { "player", "no reverse lookup in-game; the client's own"
+			.. " ItemSparse table has them, published at wago.tools" },
 		QUEST       = { "nobody", "WoW exposes NO reverse quest-name to id lookup" },
 	}
 	local cov = conditionCoverage()
