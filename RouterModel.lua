@@ -239,32 +239,11 @@ local function withProfile(profile, fn)
 	-- session is not left holding the last profile's answers.
 	if MM.Journey and MM.Journey.Forget then MM.Journey.Forget() end
 
-	-- AND the per-stop teleport costs, which are the fast path and therefore the
-	-- one that actually decides the leg.
-	--
-	-- R.PrecomputeTravel caches a sorted landing list on every stop so the
-	-- improvement pass does not re-walk the teleport list thousands of times.
-	-- It runs inside Build, once, against the player's REAL teleports -- and
-	-- travelMinutes reads that cache before it ever consults the overridden
-	-- TP.TravelMinutes. So swapping the teleport layer changed only the slow
-	-- fallback, every profile replayed the same cached costs, and "no teleports
-	-- at all (fresh character)" routed via a Cloak of Coordination it does not
-	-- own. All four profiles reported an identical 33 minutes, which is how the
-	-- bug hid: the monotonicity invariant compared four copies of one answer and
-	-- passed every time.
-	--
-	-- Recomputing it here costs one pass over the route and is the only way the
-	-- profile reaches the decision. Recomputed again on the way out so the
-	-- player's real session does not keep the last profile's impoverished list.
-	local R = MM.Router
-	if R and R.PrecomputeTravel and R.route then R.PrecomputeTravel(R.route) end
-
 	local ok, err = pcall(fn)
 	TP.Options, TP.Landings, TP.Refresh = realOptions, realLandings, realRefresh
 	TP.TravelMinutes = realTravel
 
 	if MM.Journey and MM.Journey.Forget then MM.Journey.Forget() end
-	if R and R.PrecomputeTravel and R.route then R.PrecomputeTravel(R.route) end
 	if not ok then error(err, 0) end
 	return #allowed
 end
@@ -285,7 +264,25 @@ local function observe(sample)
 		local need, have = RM.Precision(rec)
 		local members = stop.members or { stop }
 		obs.goals = obs.goals + #members
-		if stop.arriveBy then obs.teleports = obs.teleports + 1 end
+		-- A TELEPORT, not merely "a method".
+		--
+		-- arriveBy is set for any priced arrival, and a multi-leg taxi route
+		-- sets it too -- so counting it counted flights as teleports and the
+		-- zero-teleport assertion could fire on a profile that had behaved
+		-- perfectly. A direct teleport is a landing (Measure marks it spent
+		-- precisely because it is not a taxi); a planned journey counts only if
+		-- one of its own legs is a teleport.
+		local by = stop.arriveBy
+		if by then
+			local isTeleport = not by.taxi
+			for _, leg in ipairs(by.legs or {}) do
+				if type(leg.mode) == "string" and leg.mode:find("^teleport") then
+					isTeleport = true
+					break
+				end
+			end
+			if isTeleport then obs.teleports = obs.teleports + 1 end
+		end
 		obs.stops[#obs.stops + 1] = {
 			order = i,
 			excuse = MM.Router.PositionlessExcuse(stop),
@@ -400,11 +397,25 @@ function RM.Run(n)
 	local results = {}
 	withPlan(entries, function()
 		for _, profile in ipairs(PROFILES) do
+			-- OBSERVE INSIDE THE PROFILE.
+			--
+			-- Build ran inside it and honoured the filter; observe() did not,
+			-- and observe() is where the numbers come from. It calls R.Measure,
+			-- which re-walks the route spending teleports as it goes -- so every
+			-- profile was measured against the player's REAL teleports, restored
+			-- moments earlier by withProfile's own cleanup. All four reported an
+			-- identical 33 minutes and "no teleports at all (fresh character)"
+			-- was measured taking a Cloak of Coordination it does not own.
+			--
+			-- Nothing was wrong with the capability filter. The measurement was
+			-- simply taken after it had been switched off.
+			local obs
 			local count = withProfile(profile, function()
 				MM.Router:Build()
+				obs = observe(sample)
 			end)
 			results[#results + 1] = {
-				profile = profile, landings = count or 0, obs = observe(sample),
+				profile = profile, landings = count or 0, obs = obs or observe(sample),
 			}
 		end
 	end)
