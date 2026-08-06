@@ -217,12 +217,26 @@ local function build()
 	for i, L in ipairs(MM.TransitLinks or {}) do
 		if L.faction and myFaction and L.faction ~= myFaction then
 			gatedOut = gatedOut + 1
-		-- An end written 0,0 means "inside the instance", not a coordinate.
-		-- Those doors are handled where instances are handled; placing a node
-		-- at the map's corner would measure every distance to it wrongly.
-		elseif not (L.ainside or L.binside) then
-			local ka = transitNode(i, "a", L.a, L.ax, L.ay, L.amap)
-			local kb = transitNode(i, "b", L.b, L.bx, L.by, L.bmap)
+		else
+			-- AN "INSIDE" END IS AT ITS DOOR.
+			--
+			-- 0,0 means "inside the instance" rather than a coordinate, and
+			-- these links were skipped entirely to avoid planting a node in the
+			-- map's corner. But skipping them threw away the DOORS -- the only
+			-- edges connecting the outdoor world to an instance -- so a goal in
+			-- Tazavesh, the Veiled Market could be left and never entered. The
+			-- report said it plainly: 14 goal attachments and no path.
+			--
+			-- Where you stand to enter is the far end of the link. So an inside
+			-- end takes the outside end's map and coordinate: not invented, just
+			-- the door's own position, which is the honest answer to "where do I
+			-- go for this".
+			local ax, ay, amap = L.ax, L.ay, L.amap
+			local bx, by, bmap = L.bx, L.by, L.bmap
+			if L.ainside then ax, ay, amap = bx, by, bmap end
+			if L.binside then bx, by, bmap = L.ax, L.ay, L.amap end
+			local ka = transitNode(i, "a", L.a, ax, ay, amap)
+			local kb = transitNode(i, "b", L.b, bx, by, bmap)
 			local secs = (MM.TransitSeconds and MM.TransitSeconds[L.mode]) or 30
 			addEdge(ka, kb, secs, L.mode)
 			if not L.oneway then addEdge(kb, ka, secs, L.mode) end

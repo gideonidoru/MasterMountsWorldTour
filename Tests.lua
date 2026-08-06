@@ -1809,6 +1809,37 @@ local function runLogic()
 			db.routeGoal and (", resuming at " .. tostring(db.routeGoal)) or "")
 	end)
 
+	check("An instance can be entered, not only left", function()
+		-- Links with an end marked "inside" were skipped entirely, to avoid
+		-- planting a node at a map's corner. Those links are the DOORS -- the
+		-- only edges joining the outdoor world to an instance -- so a goal in
+		-- Tazavesh could be routed FROM and never TO. Both directions existed,
+		-- so no count noticed; the travel report said it outright, with 14 goal
+		-- attachments and no path.
+		--
+		-- Asymmetry is the thing to assert. A place you can leave and cannot
+		-- reach is not a routing preference, it is a hole.
+		local J = MM.Journey
+		if not (J and J.Plan and MM.Util) then return nil, "travel layer not loaded" end
+		local probes = { "Tazavesh, the Veiled Market", "Ny'alotha, the Waking City" }
+		local hub = "Orgrimmar"
+		local checked, oneWay = 0, nil
+		for _, zone in ipairs(probes) do
+			local mapID = MM.Util.ResolveMapByName and MM.Util.ResolveMapByName(zone)
+			local out = J.Plan(zone, 50, 50, hub, 50, 50, nil, mapID)
+			local back = J.Plan(hub, 50, 50, zone, 50, 50, nil, nil, mapID)
+			if out or back then
+				checked = checked + 1
+				if out and not back then
+					oneWay = oneWay or (zone .. " can be left but not reached")
+				end
+			end
+		end
+		if checked == 0 then return nil, "no probe instance is routable at all yet" end
+		if oneWay then return false, oneWay end
+		return true, ("%d instances reachable in both directions"):format(checked)
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%
