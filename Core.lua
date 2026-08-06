@@ -40,20 +40,40 @@ function MM:Print(msg, ...)
 	print(MM.PREFIX .. tostring(msg))
 end
 
--- Say it once, ever, on this account.
+-- Say it when there is something new to say.
 --
--- For the notices that are genuinely useful the first time and pure noise
--- afterwards: which theme was picked up, that flight points have now been
--- harvested. Written to SavedVariables rather than a local, because "once per
--- session" is still once per login and that was the complaint.
+-- For notices that are useful the first time and noise on repeat: which theme
+-- was picked up, that flight points have now been harvested.
+--
+-- NOT "once, ever". Silencing a line permanently is its own bug: a player who
+-- learns flight points in a new expansion, or comes back after a year, gets
+-- nothing -- and the reason they get nothing is a decision taken months ago
+-- that they cannot see. Two things lift the silence:
+--
+--   * THE MESSAGE CHANGED. Different text means different news. "learned 40
+--     zones" after "learned 12" is worth saying; the same sentence twice is
+--     not. This is what makes the flight-point notice self-managing.
+--   * ENOUGH TIME PASSED. For text that never varies, this is the only thing
+--     that can ever repeat it. A month is long enough that nobody reads it as
+--     spam and short enough that a returning player is re-oriented.
+--
+-- Written to SavedVariables rather than a local, because "once per session" is
+-- still once per login and that was the original complaint.
 --
 -- Returns true if it actually printed, so callers can tell the difference.
-function MM:PrintOnce(key, msg, ...)
+local REPEAT_AFTER = 30 * 24 * 60 * 60
+
+function MM:PrintIfNew(key, msg, ...)
 	if not (key and MM.db) then return false end
-	MM.db.saidOnce = MM.db.saidOnce or {}
-	if MM.db.saidOnce[key] then return false end
-	MM.db.saidOnce[key] = true
-	MM:Print(msg, ...)
+	if select("#", ...) > 0 then msg = msg:format(...) end
+	MM.db.saidBefore = MM.db.saidBefore or {}
+	local last = MM.db.saidBefore[key]
+	local now = (time and time()) or 0
+	if last and last.msg == msg and now - (last.at or 0) < REPEAT_AFTER then
+		return false
+	end
+	MM.db.saidBefore[key] = { msg = msg, at = now }
+	MM:Print(msg)
 	return true
 end
 

@@ -274,31 +274,41 @@ local function runData()
 		return bad == 0, example
 	end)
 
-	check("A once-only notice is said once, not once per login", function()
+	check("A repeated notice stays quiet, a changed one speaks", function()
 		-- Chat is shared with the guild, the group, loot and every other addon,
-		-- so a line has to earn its place. Two notices were being repeated at
-		-- every login and at every flight master, saying something that was
-		-- only new the first time.
+		-- so a line has to earn its place. Two notices were repeating at every
+		-- login and at every flight master, saying what was only news once.
 		--
-		-- The failure mode if this regresses is invisible to the person who
-		-- wrote it -- their own client has already said it -- and obvious to
-		-- everyone else, every session. So it is asserted rather than trusted.
-		if not MM.PrintOnce then return false, "PrintOnce not present" end
-		local saved = MM.db.saidOnce
-		MM.db.saidOnce = nil
+		-- Silencing them FOREVER is the opposite mistake, and a quieter one: a
+		-- player who learns flight points in a new expansion would be told
+		-- nothing, for a reason decided months earlier that they cannot see.
+		-- So this asserts both halves -- the same sentence twice is silent, a
+		-- different sentence is not.
+		--
+		-- The failure mode is invisible to whoever writes the line, because
+		-- their own client has already said it, and obvious to everyone else.
+		if not MM.PrintIfNew then return false, "PrintIfNew not present" end
+		local saved = MM.db.saidBefore
+		MM.db.saidBefore = nil
 
-		local key = "mm-selftest-once"
-		local first = MM:PrintOnce(key, " ")
-		local second = MM:PrintOnce(key, " ")
-		local third = MM:PrintOnce(key, " ")
-		local latched = MM.db.saidOnce and MM.db.saidOnce[key]
+		local key = "mm-selftest-notice"
+		local first = MM:PrintIfNew(key, " ")
+		local repeated = MM:PrintIfNew(key, " ")
+		local changed = MM:PrintIfNew(key, "  ")
+		local repeatedAgain = MM:PrintIfNew(key, "  ")
+		local stored = MM.db.saidBefore and MM.db.saidBefore[key]
 
-		MM.db.saidOnce = saved
+		MM.db.saidBefore = saved
 
 		if not first then return false, "the first call said nothing" end
-		if second or third then return false, "it repeated after the first call" end
-		if not latched then return false, "nothing was written down, so a reload repeats it" end
-		return true, "first call prints, every call after it is silent"
+		if repeated then return false, "the same message printed twice" end
+		if not changed then return false, "a changed message was swallowed" end
+		if repeatedAgain then return false, "the changed message then repeated" end
+		-- Written down, or a reload starts the whole cycle again.
+		if not (stored and stored.msg and stored.at) then
+			return false, "nothing was persisted, so a reload repeats it"
+		end
+		return true, "same message silent, changed message speaks, both remembered"
 	end)
 
 	check("No reputation is required twice on one mount", function()

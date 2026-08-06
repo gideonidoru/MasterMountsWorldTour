@@ -277,21 +277,21 @@ function TX.Harvest()
 		if i <= #maps then C_Timer.After(0, step)
 		else
 			wipe(cache)
-			-- ONCE, AND ONLY WHEN IT MATTERED.
+			-- ONLY WHEN THE NUMBER CHANGES.
 			--
-			-- This fired on every TAXIMAP_OPENED, which is every flight master
-			-- in the game, forever -- usually to report that it learned nothing
-			-- because the first visit had already harvested the lot. A line in
-			-- chat should tell you something you did not know and cannot see.
+			-- This fired on every TAXIMAP_OPENED -- every flight master in the
+			-- game, forever -- usually to report that it learned nothing,
+			-- because the first visit had already harvested the lot.
 			--
-			-- The first successful harvest IS worth saying, because the report
-			-- spends a paragraph explaining that nothing has been learned yet
-			-- and to go and speak to a flight master. This is the answer to
-			-- that. After it, /mm flightpoints has the numbers.
+			-- The first harvest IS worth saying: the report spends a paragraph
+			-- explaining that nothing has been learned yet and to go and speak
+			-- to a flight master, and this is the answer to that. So is a
+			-- LATER harvest that finds more, which is what happens when an
+			-- expansion adds zones. PrintIfNew keys on the message, so a
+			-- changed count speaks and a repeated one does not.
 			if learned > 0 then
-				MM:PrintOnce("taxiHarvested",
-					"Flight points learned from this flight master — %d zones. "
-					.. "That is the last time you will see this.", learned)
+				MM:PrintIfNew("taxiHarvested",
+					"Flight points learned from this flight master — %d zones.", learned)
 			end
 		end
 	end
