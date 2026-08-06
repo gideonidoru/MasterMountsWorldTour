@@ -4035,6 +4035,7 @@ MM.AddMounts({
 		timePerAttempt = 3,
 		effort = 4,
 		notes = "Queue via the Dungeon Finder holiday event. One daily chest per character during the event.",
+		goldCost = 100,
 	},
 	{
 		name = "Great Brewfest Kodo",
@@ -4837,6 +4838,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 2000,
 	},
 	{
 		name = "Armored Blue Wind Rider",
@@ -4860,6 +4862,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 2000,
 	},
 	{
 		name = "Red Proto-Drake",
@@ -5665,6 +5668,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Death Knight only.",
+		goldCost = 1000,
 		noLocationReason = "Class mount -- learned automatically or from your own trainer",
 	},
 	{
@@ -5874,6 +5878,13 @@ MM.AddMounts({
 		category = "STORE",
 		obtainable = true,
 		source = "Blizzard Shop purchase (introduced in patch 3.3.3, 2010)",
+		conditions = {
+			{
+				amount = 900,
+				id = 2032,
+				type = "CURRENCY",
+			},
+		},
 		effort = 1,
 		notes = "First-ever store mount.",
 		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
@@ -7261,6 +7272,13 @@ MM.AddMounts({
 			x = 54.4,
 			y = 63.2,
 		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 0.275,
 		attempts = "WEEKLY",
 		timePerAttempt = 5,
@@ -7288,6 +7306,13 @@ MM.AddMounts({
 			mapID = 376,
 			x = 71.6,
 			y = 64.4,
+		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 0.256,
 		attempts = "WEEKLY",
@@ -7317,6 +7342,13 @@ MM.AddMounts({
 			x = 60.5,
 			y = 37.3,
 		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 0.333,
 		attempts = "WEEKLY",
 		timePerAttempt = 5,
@@ -7344,6 +7376,13 @@ MM.AddMounts({
 			mapID = 507,
 			x = 49.9,
 			y = 54,
+		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 0.388,
 		attempts = "WEEKLY",
@@ -7378,6 +7417,13 @@ MM.AddMounts({
 			difficulty = "Any",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				amount = 18700,
+				id = 2778,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 3.97,
 		attempts = "WEEKLY",
 		timePerAttempt = 15,
@@ -7411,6 +7457,13 @@ MM.AddMounts({
 			difficulty = "Any",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 2,
 		attempts = "WEEKLY",
 		timePerAttempt = 20,
@@ -7440,6 +7493,13 @@ MM.AddMounts({
 			difficulty = "Any",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 1.5152,
 		attempts = "WEEKLY",
 		timePerAttempt = 15,
@@ -7467,6 +7527,13 @@ MM.AddMounts({
 			name = "Siege of Orgrimmar",
 			difficulty = "Mythic",
 			lockout = "WEEKLY",
+		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 0.894,
 		attempts = "WEEKLY",
@@ -7524,6 +7591,13 @@ MM.AddMounts({
 			x = 57.4,
 			y = 57.8,
 		},
+		conditions = {
+			{
+				amount = 38500,
+				id = 2778,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 0.893,
 		attempts = "NONE",
 		timePerAttempt = 30,
@@ -7550,6 +7624,13 @@ MM.AddMounts({
 			mapID = 418,
 			x = 38.4,
 			y = 67,
+		},
+		conditions = {
+			{
+				amount = 18700,
+				id = 2778,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -7606,6 +7687,13 @@ MM.AddMounts({
 		},
 		zone = {
 			name = "Pandaria (Warbringer patrol points in most zones)",
+		},
+		conditions = {
+			{
+				amount = 18700,
+				id = 2778,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -7691,6 +7779,13 @@ MM.AddMounts({
 			mapID = 418,
 			x = 38.4,
 			y = 67,
+		},
+		conditions = {
+			{
+				amount = 18700,
+				id = 2778,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -9738,6 +9833,7 @@ MM.AddMounts({
 		timePerAttempt = 10,
 		effort = 4,
 		notes = "Source data uncertain - verify the exact source line in the in-game Mount Journal. Farm the daily-lockout Tanaan rares alongside Armored Razorback, Tundra Icehoof and Warsong Direfang.",
+		goldCost = 2500,
 	},
 	{
 		name = "Bristling Hellboar",
@@ -10875,6 +10971,13 @@ MM.AddMounts({
 			difficulty = "Mythic",
 			lockout = "DAILY",
 		},
+		conditions = {
+			{
+				amount = 100000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 0.942,
 		attempts = "DAILY",
 		timePerAttempt = 10,
@@ -10936,6 +11039,13 @@ MM.AddMounts({
 			difficulty = "Normal/Heroic/Mythic",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				amount = 100000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 0.436,
 		attempts = "WEEKLY",
 		timePerAttempt = 20,
@@ -10970,6 +11080,13 @@ MM.AddMounts({
 			difficulty = "Mythic",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				amount = 100000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 8.026,
 		attempts = "WEEKLY",
 		timePerAttempt = 30,
@@ -11001,6 +11118,13 @@ MM.AddMounts({
 			name = "Tomb of Sargeras",
 			difficulty = "Any",
 			lockout = "WEEKLY",
+		},
+		conditions = {
+			{
+				amount = 100000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 0.224,
 		attempts = "WEEKLY",
@@ -11034,6 +11158,13 @@ MM.AddMounts({
 			difficulty = "Any",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				amount = 100000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 1,
 		attempts = "WEEKLY",
 		timePerAttempt = 15,
@@ -11063,6 +11194,13 @@ MM.AddMounts({
 			difficulty = "Mythic",
 			lockout = "WEEKLY",
 		},
+		conditions = {
+			{
+				amount = 100000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 0.787,
 		attempts = "WEEKLY",
 		timePerAttempt = 45,
@@ -11090,6 +11228,13 @@ MM.AddMounts({
 			mapID = 885,
 			x = 63.2,
 			y = 23.6,
+		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 3.3333,
 		attempts = "DAILY",
@@ -11129,6 +11274,13 @@ MM.AddMounts({
 			mapID = 885,
 			x = 53.2,
 			y = 35.8,
+		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 3.3333,
 		attempts = "DAILY",
@@ -11175,6 +11327,13 @@ MM.AddMounts({
 			x = 61.4,
 			y = 36.8,
 		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 3.3333,
 		attempts = "DAILY",
 		timePerAttempt = 5,
@@ -11197,6 +11356,13 @@ MM.AddMounts({
 			mapID = 882,
 			x = 47.4,
 			y = 9,
+		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 3.3333,
 		attempts = "DAILY",
@@ -11221,6 +11387,13 @@ MM.AddMounts({
 			x = 33.2,
 			y = 47.4,
 		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 3.3333,
 		attempts = "DAILY",
 		timePerAttempt = 5,
@@ -11239,6 +11412,13 @@ MM.AddMounts({
 			mapID = 882,
 			x = 44.1,
 			y = 49.7,
+		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 6.25,
 		attempts = "DAILY",
@@ -11287,6 +11467,13 @@ MM.AddMounts({
 			x = 44.1,
 			y = 49.7,
 		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 6.25,
 		attempts = "DAILY",
 		timePerAttempt = 15,
@@ -11334,6 +11521,13 @@ MM.AddMounts({
 			x = 44.1,
 			y = 49.7,
 		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 6.25,
 		attempts = "DAILY",
 		timePerAttempt = 15,
@@ -11380,6 +11574,13 @@ MM.AddMounts({
 			mapID = 882,
 			x = 44.1,
 			y = 49.7,
+		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 6.25,
 		attempts = "DAILY",
@@ -11439,6 +11640,13 @@ MM.AddMounts({
 				{
 					text = "All five within EIGHT HOURS and WITHOUT DYING — either resets you",
 				},
+			},
+		},
+		conditions = {
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
 			},
 		},
 		attempts = "NONE",
@@ -11533,6 +11741,13 @@ MM.AddMounts({
 				{
 					text = "Complete his World Quest — the kill itself drops nothing",
 				},
+			},
+		},
+		conditions = {
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
 			},
 		},
 		attempts = "WEEKLY",
@@ -12942,6 +13157,13 @@ MM.AddMounts({
 			x = 58.8,
 			y = 31.8,
 		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
+		},
 		attempts = "NONE",
 		effort = 3,
 		notes = "Hunter only. Green variant; originally tied to fully unlocking the Survival artifact weapon.",
@@ -12958,6 +13180,13 @@ MM.AddMounts({
 			mapID = 739,
 			x = 58.8,
 			y = 31.8,
+		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -13046,6 +13275,13 @@ MM.AddMounts({
 			x = 75,
 			y = 52,
 		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
+		},
 		attempts = "NONE",
 		effort = 3,
 		notes = "Paladin only. Purchasable after earning the Golden Charger.",
@@ -13066,6 +13302,13 @@ MM.AddMounts({
 			x = 75,
 			y = 52,
 		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
+		},
 		attempts = "NONE",
 		effort = 3,
 		notes = "Paladin only. Purchasable after earning the Golden Charger.",
@@ -13085,6 +13328,13 @@ MM.AddMounts({
 			mapID = 23,
 			x = 75,
 			y = 52,
+		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -13150,6 +13400,13 @@ MM.AddMounts({
 			x = 42.5,
 			y = 82.2,
 		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
+		},
 		attempts = "NONE",
 		effort = 3,
 		notes = "Rogue only. Purchasable after earning the Murderous Omen.",
@@ -13171,6 +13428,13 @@ MM.AddMounts({
 			x = 42.5,
 			y = 82.2,
 		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
+		},
 		attempts = "NONE",
 		effort = 3,
 		notes = "Rogue only. Purchasable after earning the Murderous Omen.",
@@ -13191,6 +13455,13 @@ MM.AddMounts({
 			mapID = 626,
 			x = 42.5,
 			y = 82.2,
+		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -13276,6 +13547,13 @@ MM.AddMounts({
 			mapID = 717,
 			x = 37.7,
 			y = 31,
+		},
+		conditions = {
+			{
+				amount = 1000,
+				id = 1220,
+				type = "CURRENCY",
+			},
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -13594,6 +13872,13 @@ MM.AddMounts({
 			name = "Ny'alotha, the Waking City",
 			difficulty = "Any",
 			lockout = "WEEKLY",
+		},
+		conditions = {
+			{
+				amount = 1,
+				id = 275436,
+				type = "ITEM",
+			},
 		},
 		attempts = "WEEKLY",
 		timePerAttempt = 45,
@@ -14771,6 +15056,13 @@ MM.AddMounts({
 			x = 70.6,
 			y = 50.6,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 157782,
+				type = "ITEM",
+			},
+		},
 		timePerAttempt = 10,
 		effort = 3,
 		notes = "Horde only. Time-gated daily chain hatching and raising Kua'fon until he learns to fly; taught by Kua'fon's Harness.",
@@ -15304,6 +15596,13 @@ MM.AddMounts({
 			x = 25.6,
 			y = 29.4,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 122674,
+				type = "ITEM",
+			},
+		},
 		attempts = "DAILY",
 		timePerAttempt = 15,
 		effort = 3,
@@ -15347,6 +15646,11 @@ MM.AddMounts({
 			{
 				name = "Periodic Destruction",
 				type = "ACHIEVEMENT",
+			},
+			{
+				amount = 150,
+				id = 168802,
+				type = "ITEM",
 			},
 		},
 		timePerAttempt = 15,
@@ -16045,6 +16349,13 @@ MM.AddMounts({
 			x = 49.15,
 			y = 78.31,
 		},
+		conditions = {
+			{
+				amount = 750,
+				id = 2032,
+				type = "CURRENCY",
+			},
+		},
 		altSources = {
 			{
 				name = "The Dreadwake",
@@ -16241,6 +16552,13 @@ MM.AddMounts({
 			x = 57.5,
 			y = 39.8,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 180583,
+				type = "ITEM",
+			},
+		},
 		effort = 2,
 		notes = "Worldedge Gorger must be summoned; after adopting the spawn you feed it over multiple weekly visits before it becomes a mount.",
 	},
@@ -16325,6 +16643,16 @@ MM.AddMounts({
 			{
 				name = "Covenant: Venthyr (for the drop; vendor alternative exists)",
 				type = "QUEST",
+			},
+			{
+				amount = 100,
+				id = 1885,
+				type = "CURRENCY",
+			},
+			{
+				amount = 5000,
+				id = 1813,
+				type = "CURRENCY",
 			},
 		},
 		dropRate = 2.122,
@@ -16769,6 +17097,11 @@ MM.AddMounts({
 				name = "Covenant: Venthyr",
 				type = "QUEST",
 			},
+			{
+				amount = 1000,
+				id = 1767,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "9.1 Maw Covenant Assault achievement; the mount awarded matches your covenant.",
@@ -16935,6 +17268,11 @@ MM.AddMounts({
 				name = "Covenant: Kyrian",
 				type = "QUEST",
 			},
+			{
+				amount = 2500,
+				id = 1813,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -16981,6 +17319,11 @@ MM.AddMounts({
 			{
 				name = "Covenant: Kyrian",
 				type = "QUEST",
+			},
+			{
+				amount = 2500,
+				id = 1813,
+				type = "CURRENCY",
 			},
 		},
 		effort = 3,
@@ -17283,6 +17626,11 @@ MM.AddMounts({
 				name = "Covenant: Kyrian",
 				type = "QUEST",
 			},
+			{
+				amount = 1000,
+				id = 1767,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -17339,6 +17687,16 @@ MM.AddMounts({
 			{
 				name = "Covenant: Necrolord (for the drop; vendor alternative exists)",
 				type = "QUEST",
+			},
+			{
+				amount = 100,
+				id = 1885,
+				type = "CURRENCY",
+			},
+			{
+				amount = 5000,
+				id = 1813,
+				type = "CURRENCY",
 			},
 		},
 		dropRate = 0.477,
@@ -17625,6 +17983,21 @@ MM.AddMounts({
 			{
 				name = "Covenant: Necrolord",
 				type = "QUEST",
+			},
+			{
+				amount = 3500,
+				id = 1813,
+				type = "CURRENCY",
+			},
+			{
+				amount = 5,
+				id = 183744,
+				type = "ITEM",
+			},
+			{
+				amount = 50,
+				id = 178061,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -18036,6 +18409,11 @@ MM.AddMounts({
 				name = "Covenant: Necrolord",
 				type = "QUEST",
 			},
+			{
+				amount = 1000,
+				id = 1767,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -18205,6 +18583,16 @@ MM.AddMounts({
 			{
 				name = "Covenant: Night Fae (for the drop; vendor alternative exists)",
 				type = "QUEST",
+			},
+			{
+				amount = 75,
+				id = 1885,
+				type = "CURRENCY",
+			},
+			{
+				amount = 5000,
+				id = 1813,
+				type = "CURRENCY",
 			},
 		},
 		dropRate = 1.074,
@@ -18441,6 +18829,26 @@ MM.AddMounts({
 				name = "Covenant: Night Fae",
 				type = "QUEST",
 			},
+			{
+				amount = 1,
+				id = 177700,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 177699,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 177698,
+				type = "ITEM",
+			},
+			{
+				amount = 2,
+				id = 176832,
+				type = "ITEM",
+			},
 		},
 		effort = 3,
 		notes = "Grown by planting wildseed spirits with the right catalysts in the Queen's Conservatory.",
@@ -18462,6 +18870,26 @@ MM.AddMounts({
 			{
 				name = "Covenant: Night Fae",
 				type = "QUEST",
+			},
+			{
+				amount = 1,
+				id = 177700,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 177699,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 177698,
+				type = "ITEM",
+			},
+			{
+				amount = 4,
+				id = 176832,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -18675,6 +19103,11 @@ MM.AddMounts({
 				name = "Ardenweald's a Stage",
 				type = "ACHIEVEMENT",
 			},
+			{
+				amount = 5000,
+				id = 1813,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Complete the Star Lake Amphitheater theater performances in all roles.",
@@ -18796,6 +19229,11 @@ MM.AddMounts({
 			{
 				name = "Covenant: Night Fae",
 				type = "QUEST",
+			},
+			{
+				amount = 1000,
+				id = 1767,
+				type = "CURRENCY",
 			},
 		},
 		effort = 3,
@@ -19967,6 +20405,11 @@ MM.AddMounts({
 			{
 				name = "Fates of the Shadowlands Raids",
 				type = "ACHIEVEMENT",
+			},
+			{
+				amount = 3,
+				id = 213089,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21233,6 +21676,11 @@ MM.AddMounts({
 				name = "Big Slick in the City",
 				type = "ACHIEVEMENT",
 			},
+			{
+				amount = 1000,
+				id = 202173,
+				type = "ITEM",
+			},
 		},
 		attempts = "DAILY",
 		timePerAttempt = 5,
@@ -21775,6 +22223,23 @@ MM.AddMounts({
 				},
 			},
 		},
+		conditions = {
+			{
+				amount = 20,
+				id = 201420,
+				type = "ITEM",
+			},
+			{
+				amount = 20,
+				id = 201421,
+				type = "ITEM",
+			},
+			{
+				amount = 20,
+				id = 201422,
+				type = "ITEM",
+			},
+		},
 		attempts = "DAILY",
 		timePerAttempt = 15,
 		effort = 2,
@@ -21946,6 +22411,13 @@ MM.AddMounts({
 				},
 			},
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 201883,
+				type = "ITEM",
+			},
+		},
 		timePerAttempt = 20,
 		effort = 2,
 		notes = "Community-discovered secret snail mount; requires an item drop from nearby Zaralek creatures.",
@@ -22112,6 +22584,13 @@ MM.AddMounts({
 			x = 49.8,
 			y = 62.2,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 211376,
+				type = "ITEM",
+			},
+		},
 		attempts = "NONE",
 		timePerAttempt = 10,
 		effort = 3,
@@ -22127,6 +22606,13 @@ MM.AddMounts({
 			mapID = 2200,
 			x = 49.8,
 			y = 62.2,
+		},
+		conditions = {
+			{
+				amount = 1,
+				id = 211376,
+				type = "ITEM",
+			},
 		},
 		attempts = "NONE",
 		timePerAttempt = 10,
@@ -22185,6 +22671,18 @@ MM.AddMounts({
 		zone = {
 			name = "The Forbidden Reach",
 			mapID = 2107,
+		},
+		conditions = {
+			{
+				amount = 1,
+				id = 204374,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 204367,
+				type = "ITEM",
+			},
 		},
 		attempts = "NONE",
 		timePerAttempt = 15,
@@ -22300,6 +22798,13 @@ MM.AddMounts({
 			x = 49.15,
 			y = 78.31,
 		},
+		conditions = {
+			{
+				amount = 900,
+				id = 2032,
+				type = "CURRENCY",
+			},
+		},
 		effort = 2,
 		notes = "Trading Post rotation — availability varies.",
 		spawns = {
@@ -22338,6 +22843,13 @@ MM.AddMounts({
 			mapID = 2393,
 			x = 49.15,
 			y = 78.31,
+		},
+		conditions = {
+			{
+				amount = 750,
+				id = 2032,
+				type = "CURRENCY",
+			},
 		},
 		effort = 2,
 		notes = "Trading Post rotation — availability varies.",
@@ -23103,6 +23615,13 @@ MM.AddMounts({
 			name = "The Stonevault",
 			difficulty = "Mythic",
 			lockout = "DAILY",
+		},
+		conditions = {
+			{
+				amount = 1,
+				id = 226683,
+				type = "ITEM",
+			},
 		},
 		effort = 4,
 		solo = false,
@@ -24259,6 +24778,13 @@ MM.AddMounts({
 			x = 53,
 			y = 35,
 		},
+		conditions = {
+			{
+				amount = 75,
+				id = 21100,
+				type = "ITEM",
+			},
+		},
 		effort = 2,
 		notes = "Available during the annual Lunar Festival.",
 	},
@@ -25090,6 +25616,13 @@ MM.AddMounts({
 			mapID = 2339,
 			x = 47.4,
 			y = 44.4,
+		},
+		conditions = {
+			{
+				amount = 10000,
+				id = 2815,
+				type = "CURRENCY",
+			},
 		},
 		effort = 1,
 		notes = "Customizable goblin gyrocopter; additional customizations earned through Season 2 delve content.",
@@ -25972,6 +26505,13 @@ MM.AddMounts({
 			x = 71.4,
 			y = 27.6,
 		},
+		conditions = {
+			{
+				amount = 20,
+				id = 246240,
+				type = "ITEM",
+			},
+		},
 		effort = 3,
 		poolRares = {
 			"Korgoth the Hungerer",
@@ -26572,6 +27112,13 @@ MM.AddMounts({
 			mapID = 2393,
 			x = 49.15,
 			y = 78.31,
+		},
+		conditions = {
+			{
+				amount = 575,
+				id = 2032,
+				type = "CURRENCY",
+			},
 		},
 		effort = 2,
 		notes = "Trading Post stock rotates monthly.",
@@ -29512,6 +30059,13 @@ MM.AddMounts({
 			x = 50,
 			y = 50,
 		},
+		conditions = {
+			{
+				amount = 500,
+				id = 255826,
+				type = "ITEM",
+			},
+		},
 		altSources = {
 			{
 				name = "Echo of Aln'sharan",
@@ -30006,6 +30560,11 @@ MM.AddMounts({
 				name = "A Trip Around the Stars",
 				type = "ACHIEVEMENT",
 			},
+			{
+				amount = 15,
+				id = 3316,
+				type = "CURRENCY",
+			},
 		},
 		effort = 4,
 		notes = "Requires completing the 12.0.7 Showdown zone achievement sets.",
@@ -30081,6 +30640,11 @@ MM.AddMounts({
 			{
 				name = "Heroic Showdowns",
 				type = "ACHIEVEMENT",
+			},
+			{
+				amount = 15,
+				id = 3316,
+				type = "CURRENCY",
 			},
 		},
 		effort = 4,
@@ -30672,6 +31236,13 @@ MM.AddMounts({
 			name = "Sporefall",
 			difficulty = "Any",
 			lockout = "WEEKLY",
+		},
+		conditions = {
+			{
+				amount = 4,
+				id = 269245,
+				type = "ITEM",
+			},
 		},
 		altSources = {
 			{
@@ -34076,6 +34647,7 @@ MM.AddMounts({
 		effort = 2,
 		access = "Inside your own garrison: upgrade the Town Hall to level 3, then buy from Trader Araanda (A) / Trader Darakk (H) for 10,000 gold.",
 		notes = "Level 3 garrison Town Hall. The vendor moves as the garrison levels, so only the garrison itself is recorded.",
+		goldCost = 10000,
 		paths = {
 			{
 				faction = "Alliance",
@@ -34509,6 +35081,13 @@ MM.AddMounts({
 			mapID = 882,
 			x = 55.53,
 			y = 60.15,
+		},
+		conditions = {
+			{
+				amount = 40000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 3.3333,
 		attempts = "DAILY",
@@ -36785,6 +37364,13 @@ MM.AddMounts({
 			x = 51,
 			y = 56.6,
 		},
+		conditions = {
+			{
+				amount = 3000,
+				id = 2594,
+				type = "CURRENCY",
+			},
+		},
 		dropRate = 0.2,
 		effort = 4,
 		paths = {
@@ -36817,6 +37403,13 @@ MM.AddMounts({
 			mapID = 2025,
 			x = 51,
 			y = 56.6,
+		},
+		conditions = {
+			{
+				amount = 3000,
+				id = 2594,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 0.2,
 		effort = 4,
@@ -39901,6 +40494,13 @@ MM.AddMounts({
 			x = 49.15,
 			y = 78.31,
 		},
+		conditions = {
+			{
+				amount = 500,
+				id = 2032,
+				type = "CURRENCY",
+			},
+		},
 		effort = 2,
 		spawns = {
 			{
@@ -39937,6 +40537,13 @@ MM.AddMounts({
 			mapID = 2393,
 			x = 49.15,
 			y = 78.31,
+		},
+		conditions = {
+			{
+				amount = 500,
+				id = 2032,
+				type = "CURRENCY",
+			},
 		},
 		effort = 2,
 		spawns = {
@@ -40829,6 +41436,13 @@ MM.AddMounts({
 			name = "Silithus",
 			mapID = 81,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 143865,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
 		holidayGate = "Call of the Scarab",
 		notes = "Runs once a year. Rideable only inside Ahn'Qiraj.",
@@ -40843,6 +41457,13 @@ MM.AddMounts({
 		zone = {
 			name = "Silithus",
 			mapID = 81,
+		},
+		conditions = {
+			{
+				amount = 1,
+				id = 143865,
+				type = "ITEM",
+			},
 		},
 		effort = 4,
 		holidayGate = "Call of the Scarab",
@@ -40983,6 +41604,13 @@ MM.AddMounts({
 			mapID = 2393,
 			x = 49.15,
 			y = 78.31,
+		},
+		conditions = {
+			{
+				amount = 450,
+				id = 2032,
+				type = "CURRENCY",
+			},
 		},
 		effort = 2,
 		spawns = {
