@@ -376,8 +376,13 @@ function MM.CollapseDuplicateReps()
 				if cond.type == "REP" or cond.type == "RENOWN" then
 					-- "Venthyr Renown" and "Venthyr" are one faction, as are a
 					-- REP row and a RENOWN row naming the same one.
+					-- A LEADING ARTICLE IS NOT A DIFFERENT FACTION. Two records
+					-- carried both "The Assembly of the Deeps" as a REP and
+					-- "Assembly of the Deeps" as a RENOWN -- one gate, keyed
+					-- apart by a single word, and charged twice.
 					local name = cond.factionName or cond.faction or cond.name or ""
 					local key = name:lower():gsub("%s+renown$", ""):gsub("%s*%(.-%)%s*$", "")
+					key = key:gsub("^the%s+", "")
 					if not groups[key] then
 						groups[key] = {}
 						order[#order + 1] = key

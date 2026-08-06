@@ -539,7 +539,13 @@ MM:On("MM_GAPS_DEBUG", function()
 	-- text rather than knowing it.
 	local unmodelled, soloUnknown = {}, 0
 	for _, rec in pairs(MM.DBByName) do
-		if rec.category == "ACHIEVEMENT" then
+		-- OBTAINABLE, like the drop-rate list three blocks up, whose comment
+		-- already says it: "a mount that no longer drops is not a gap anyone
+		-- can close, and listing it makes the backlog look larger than the work
+		-- actually is". This loop never applied it, so seven records nobody can
+		-- obtain -- a Brawler's Guild season, a Remix, four expired Keystone
+		-- seasons -- sat in a list of work to do.
+		if rec.category == "ACHIEVEMENT" and rec.obtainable then
 			local modelled = false
 			for _, cond in ipairs(rec.conditions or {}) do
 				if cond.type == "ACHIEVEMENT" then modelled = true break end

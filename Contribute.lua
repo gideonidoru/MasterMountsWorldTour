@@ -99,9 +99,14 @@ local GAPS = {
 			.. "an assumed 1%, which flatters the rare ones and punishes the "
 			.. "common ones.",
 		want = "dropRate = 0.0",
+		-- ZONEDROP TOO. The diagnostic list counted it and this one did not, so
+		-- the report said 37 in one section and 36 in another and both were
+		-- right about their own question. A zone drop is a drop with a rate,
+		-- and a player standing there can supply it like any other.
 		test = function(rec)
-			return rec.obtainable and (rec.category == "DROP" or rec.category == "RARE")
-				and not rec.dropRate
+			return rec.obtainable and not rec.dropRate
+				and (rec.category == "DROP" or rec.category == "RARE"
+					or rec.category == "ZONEDROP")
 		end,
 	},
 	{
@@ -680,6 +685,12 @@ MM:On("MM_KNOWN_DEBUG", function()
 		ITEM        = { "player", "no reverse lookup in-game; the client's own"
 			.. " ItemSparse table has them, published at wago.tools" },
 		QUEST       = { "nobody", "WoW exposes NO reverse quest-name to id lookup" },
+		-- Answered outright by C_Covenants, which is what these were retyped
+		-- from QUEST to reach.
+		COVENANT    = { "selfclosing", "C_Covenants reports the active covenant" },
+		-- Reagents come from the client's own crafting tables, joined offline.
+		MATERIAL    = { "selfclosing", "read from SpellReagents and ItemSparse" },
+		RENOWN      = { "selfclosing", "the faction id space is walked once and cached" },
 	}
 	local cov = conditionCoverage()
 	local rows = {}
@@ -695,8 +706,12 @@ MM:On("MM_KNOWN_DEBUG", function()
 	MM:Print("|cffffd84dRequirement ids|r")
 	for _, r in ipairs(rows) do
 		local missing = r.d.total - r.d.withID
+		-- A VERDICT ON A GAP THAT IS CLOSED READS AS A STANDING FAILURE.
+		-- "QUEST 47 total, 0 without an id -- nobody can" is true twice over
+		-- and says the wrong thing: nothing is outstanding, and the line that
+		-- explains who could help belongs to a row that still needs help.
 		MM:Print("   %-12s %4d total, %4d without an id   %s", r.t, r.d.total,
-			missing, VERDICT[r.verdict].tag)
+			missing, missing > 0 and VERDICT[r.verdict].tag or "|cff40d860all resolved|r")
 		if missing > 0 then MM:Print("                %s", r.why) end
 	end
 

@@ -24745,8 +24745,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				faction = "Assembly of the Deeps",
 				factionID = 2594,
 				factionName = "The Assembly of the Deeps",
+				level = 19,
 				standingName = "Renown 19",
 				type = "REP",
 			},
@@ -24755,11 +24757,6 @@ MM.AddMounts({
 				amount = 8125,
 				id = 2815,
 				type = "CURRENCY",
-			},
-			{
-				faction = "Assembly of the Deeps",
-				level = 19,
-				type = "RENOWN",
 			},
 		},
 		timePerAttempt = 5,
@@ -24786,8 +24783,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				faction = "Assembly of the Deeps",
 				factionID = 2594,
 				factionName = "The Assembly of the Deeps",
+				level = 23,
 				standingName = "Renown 23",
 				type = "REP",
 			},
@@ -24796,11 +24795,6 @@ MM.AddMounts({
 				amount = 11375,
 				id = 2815,
 				type = "CURRENCY",
-			},
-			{
-				faction = "Assembly of the Deeps",
-				level = 23,
-				type = "RENOWN",
 			},
 		},
 		timePerAttempt = 5,
@@ -26857,12 +26851,6 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				factionID = 2653,
-				factionName = "The Cartels of Undermine",
-				standingName = "Renown 15",
-				type = "REP",
-			},
-			{
 				name = "When Opportunity Explodes (unlocks Undermine)",
 				id = 83137,
 				type = "QUEST",
@@ -26905,12 +26893,6 @@ MM.AddMounts({
 			y = 50.2,
 		},
 		conditions = {
-			{
-				factionID = 2653,
-				factionName = "The Cartels of Undermine",
-				standingName = "Renown 19",
-				type = "REP",
-			},
 			{
 				name = "When Opportunity Explodes (unlocks Undermine)",
 				id = 83137,
@@ -33167,12 +33149,6 @@ MM.AddMounts({
 				id = 3316,
 				type = "CURRENCY",
 			},
-			{
-				factionID = 2704,
-				factionName = "Hara'ti",
-				standingName = "Renown 19",
-				type = "REP",
-			},
 		},
 		altSources = {
 			{
@@ -33213,12 +33189,6 @@ MM.AddMounts({
 				id = 3316,
 				type = "CURRENCY",
 			},
-			{
-				factionID = 2699,
-				factionName = "Singularity",
-				standingName = "Renown 17",
-				type = "REP",
-			},
 		},
 		altSources = {
 			{
@@ -33258,12 +33228,6 @@ MM.AddMounts({
 				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Void Researcher Anowin",
 				id = 3316,
 				type = "CURRENCY",
-			},
-			{
-				factionID = 2699,
-				factionName = "Singularity",
-				standingName = "Renown 19",
-				type = "REP",
 			},
 		},
 		altSources = {
@@ -36062,6 +36026,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = false,
 		source = "MoP Remix: reward for reaching level 20 on a Timerunner (Time Trial).",
+		conditions = {
+			{
+				name = "Time Trial",
+				id = 20593,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 		notes = "Remix event has ended.",
 	},
@@ -38528,6 +38499,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = false,
 		source = "Shadowlands Keystone Master: Season One.",
+		conditions = {
+			{
+				name = "Shadowlands Keystone Master: Season One",
+				id = 14532,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		notes = "Seasonal reward, no longer earnable.",
 	},
@@ -38537,6 +38515,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = false,
 		source = "Shadowlands Keystone Master: Season Two.",
+		conditions = {
+			{
+				name = "Shadowlands Keystone Master: Season Two",
+				id = 15078,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		notes = "Seasonal reward, no longer earnable.",
 	},
@@ -38546,6 +38531,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = false,
 		source = "Shadowlands Keystone Master: Season Three.",
+		conditions = {
+			{
+				name = "Shadowlands Keystone Master: Season Three",
+				id = 15499,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		notes = "Seasonal reward, no longer earnable.",
 	},
@@ -38555,6 +38547,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = false,
 		source = "Shadowlands Keystone Master: Season Four.",
+		conditions = {
+			{
+				name = "Shadowlands Keystone Master: Season Four",
+				id = 15690,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		notes = "Seasonal reward, no longer earnable.",
 	},
@@ -42675,6 +42674,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = false,
 		source = "Umbral Champion: Midnight Season 1.",
+		conditions = {
+			{
+				name = "Umbral Champion: Midnight Season 1",
+				id = 63104,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 5,
 		notes = "Seasonal reward.",
 	},
