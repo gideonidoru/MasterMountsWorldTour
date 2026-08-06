@@ -1385,6 +1385,63 @@ local function runLogic()
 			nodes, hops, n, e)
 	end)
 
+	check("Every measured hop actually reaches the pathfinder", function()
+		-- The check above proves the DATA is complete. This proves the ROUTER
+		-- received it, which is a different claim and the one that kept being
+		-- false: 4,068 hops loaded, named and verified, while the graph quietly
+		-- discarded 903 of them because it had no coordinates for one end.
+		--
+		-- A number that only counts what survived cannot notice what did not.
+		local J, fs, named = MM.Journey, MM.FlightSeconds, MM.FlightNodeName
+		if not (J and J.Stats and fs and named) then
+			return nil, "travel layer not loaded yet"
+		end
+		J.Stats() -- forces the graph to build
+		local hops = 0
+		for _, nb in pairs(fs) do for _ in pairs(nb) do hops = hops + 1 end end
+		if hops == 0 then return false, "no measured hops to feed it" end
+		local got = J.measuredEdges or 0
+		if got == 0 then
+			return false, "the graph took none of the measured flight times"
+		end
+		-- Same-name collisions are genuine duplicates and are expected to merge;
+		-- anything beyond a small fraction is data being dropped, not deduped.
+		local lost = hops - got
+		if lost > hops * 0.05 then
+			return false, ("%d of %d measured hops never reached the graph"):format(
+				lost, hops)
+		end
+		return true, ("%d of %d hops routable, %d transit-only nodes"):format(
+			got, hops, J.transitNodes or 0)
+	end)
+
+	check("A node with no position is never asked for one", function()
+		-- Transit-only nodes carry measured times but no x,y. That is safe for
+		-- exactly one reason: the three places that read a coordinate all walk
+		-- byZone, never the graph. If a positionless node ever lands in byZone
+		-- the distance maths gets nil and the route dies mid-plan -- so assert
+		-- the separation rather than trusting it to stay true.
+		local J = MM.Journey
+		if not (J and J.NodesByZone) then return nil, "graph not inspectable" end
+		local zones = J.NodesByZone()
+		if not zones then return nil, "graph not built yet" end
+		local checked, bad = 0, nil
+		for _, names in pairs(zones) do
+			for _, n in ipairs(names) do
+				local node = J.Node and J.Node(n)
+				if node then
+					checked = checked + 1
+					if not (node.x and node.y) then bad = bad or node.name end
+				end
+			end
+		end
+		if checked == 0 then return nil, "no positioned nodes to check" end
+		if bad then
+			return false, ("%s is used for distance but has no position"):format(bad)
+		end
+		return true, ("%d positioned nodes, none of them placeless"):format(checked)
+	end)
+
 	check("Network legs are priced, and never for free", function()
 		-- A portal is fast, not instant. An edge that costs nothing makes the
 		-- router teleport through the world at zero charge and reorder the whole

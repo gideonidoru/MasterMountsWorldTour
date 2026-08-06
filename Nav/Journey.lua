@@ -98,6 +98,35 @@ local function build()
 		end
 	end
 
+	-- TRANSIT-ONLY NODES: flight masters we have measured times for but no
+	-- position for.
+	--
+	-- canon() below returns nil for any name not already in the graph, and the
+	-- graph was built purely from the 813 positioned flight points. So a hop
+	-- between two real, named, measured flight masters was DISCARDED whenever
+	-- either end lacked coordinates -- 903 of 3,964 usable hops, thrown away
+	-- for want of an x,y that the route never actually needed.
+	--
+	-- It never needed it because a middle hop is not a place you stand. You buy
+	-- one ticket and the taxi carries you through; the only nodes whose position
+	-- matters are the one you board at and the one you get off at, and those are
+	-- reached from byZone, which this deliberately does NOT join. A positionless
+	-- node is therefore unreachable from START, cannot connect to GOAL, and is
+	-- skipped by the within-zone fly edges -- all three read byZone, not graph.
+	-- It can only ever sit in the middle of a taxi chain, priced at measured
+	-- seconds, which is exactly what it is.
+	--
+	-- No coordinate is invented here. A node with no position keeps no position.
+	local transit = 0
+	for _, nodeName in pairs(MM.FlightNodeName or {}) do
+		local key = nodeName:lower()
+		if not graph[key] then
+			graph[key] = { name = nodeName, kind = "transit" }
+			transit = transit + 1
+		end
+	end
+	J.transitNodes = transit
+
 	-- Taxi edges, at their measured seconds.
 	-- Edges are added against the CANONICAL key so an alias and its bare name
 	-- do not become two unconnected nodes.
@@ -197,6 +226,11 @@ local function build()
 		end
 	end
 end
+
+-- Read-only views of the graph, so a test can assert the invariant that keeps
+-- positionless transit nodes safe instead of taking it on faith.
+function J.NodesByZone() build() return byZone end
+function J.Node(name) build() return name and graph[name:lower()] end
 
 function J.Stats()
 	build()
