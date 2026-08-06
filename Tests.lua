@@ -1308,6 +1308,69 @@ local function runLogic()
 			goals, measured / total * 100, assumed / total * 100)
 	end)
 
+	check("Travel data is loaded and routable", function()
+		-- Two datasets now decide most of the route's cost, and both fail the
+		-- same silent way: a file left out of the .toc loads nothing, errors
+		-- never, and the router quietly falls back to straight-line estimates
+		-- that look plausible. Counting them is the only way that shows up.
+		--
+		-- Thresholds are deliberately well below the real figures. This is a
+		-- "did it load at all" check, not a fingerprint of one build.
+		local fs, tn, te = MM.FlightSeconds, MM.TravelNodes, MM.TravelEdges
+		if not fs then return false, "no measured flight times loaded" end
+		local nodes, hops = 0, 0
+		for _, nb in pairs(fs) do
+			nodes = nodes + 1
+			for _ in pairs(nb) do hops = hops + 1 end
+		end
+		if hops < 3000 then
+			return false, ("only %d flight hops loaded"):format(hops)
+		end
+		-- Every hop must be reachable by name, or the pathfinder cannot use it.
+		local named = MM.FlightNodeName
+		if not named then return false, "no nodeID->name map" end
+		local projected = 0
+		for id, nb in pairs(fs) do
+			if named[id] then
+				for oid in pairs(nb) do if named[oid] then projected = projected + 1 end end
+			end
+		end
+		if projected < hops then
+			return false, ("%d of %d hops have no name mapping"):format(hops - projected, hops)
+		end
+		if not (tn and te) then return false, "no travel network loaded" end
+		local n, e = 0, 0
+		for _ in pairs(tn) do n = n + 1 end
+		for _ in pairs(te) do e = e + 1 end
+		if n < 500 or e < 150 then
+			return false, ("travel network thin: %d nodes, %d edges"):format(n, e)
+		end
+		return true, ("%d nodes / %d hops, all projected; network %d/%d"):format(
+			nodes, hops, n, e)
+	end)
+
+	check("Network legs are priced, and never for free", function()
+		-- A portal is fast, not instant. An edge that costs nothing makes the
+		-- router teleport through the world at zero charge and reorder the whole
+		-- plan around a leg that does not exist.
+		local NW = MM.Network
+		if not (NW and NW.EdgeSeconds and MM.TravelEdges) then
+			return nil, "network module absent"
+		end
+		local zero, worst = 0, nil
+		for _, e in ipairs(MM.TravelEdges) do
+			local s = NW.EdgeSeconds(e)
+			if not s or s <= 0 then
+				zero = zero + 1
+				worst = worst or ((e.method or "?") .. ": " .. (e.from or "?"))
+			end
+		end
+		if zero > 0 then
+			return false, ("%d edges priced at zero, e.g. %s"):format(zero, worst)
+		end
+		return true, ("%d edges, all priced"):format(#MM.TravelEdges)
+	end)
+
 	check("A session's promise reaches the route", function()
 		-- THE TEST THAT WAS MISSING, and the reason to write it:
 		--

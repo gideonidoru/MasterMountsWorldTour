@@ -5,7 +5,7 @@
 -- path with turns, altitude changes and a takeoff, so a straight-line
 -- guess is wrong in both directions and never by a consistent factor.
 --
--- 785 nodes, 4054 edges, 64 of them one-way (flight paths genuinely are).
+-- 795 nodes, 4068 edges, 66 of them one-way (flight paths genuinely are).
 --
 -- Join key is the nodeID from C_TaxiMap.GetAllTaxiNodes, so this needs no
 -- name matching and cannot drift when a zone is renamed.
@@ -14,6 +14,16 @@
 local _, MM = ...
 
 MM.FlightSeconds = {
+	[-12]={[-11]=44}, -- Mathystra's Post
+	[-11]={[-12]=49}, -- Astranaar
+	[-8]={[27]=151}, -- Nighthaven
+	[-7]={[-6]=245,[22]=400}, -- Blackwing Landing, Terokkar Forest
+	[-6]={[-7]=245}, -- Skyguard Outpost, Blade's Edge Mountains
+	[-5]={[-2]=53}, -- Bashal'Aran
+	[-4]={[-1]=115}, -- Shatterspear Vale
+	[-3]={[-4]=75,[-1]=50}, -- Ruins of Mathystra
+	[-2]={[-5]=53}, -- Lor'danel
+	[-1]={[-3]=50}, -- Lor'danel
 	[2]={[4]=78,[5]=113,[6]=216,[12]=117,[19]=199,[45]=176,[71]=150,[74]=133,[195]=93,[582]=32,[584]=50}, -- Stormwind, Elwynn
 	[4]={[2]=86,[5]=130,[12]=91,[19]=186,[195]=62,[583]=25,[584]=33,[622]=31}, -- Sentinel Hill, Westfall
 	[5]={[2]=113,[4]=134,[12]=61,[71]=61,[589]=39,[600]=47,[615]=21}, -- Lakeshire, Redridge
@@ -197,7 +207,7 @@ MM.FlightSeconds = {
 	[457]={[27]=109,[456]=62}, -- Darnassus, Teldrassil
 	[458]={[23]=60,[25]=65,[354]=58}, -- Nozzlepot's Outpost, Northern Barrens
 	[460]={[11]=59,[384]=45,[645]=45}, -- Brill, Tirisfal Glades
-	[513]={[31]=180,[39]=43,[179]=72}, -- Fizzle & Pozzik's Speedbarge, Thousand Needles
+	[513]={[30]=132,[31]=180,[39]=43,[40]=39,[179]=72}, -- Fizzle & Pozzik's Speedbarge, Thousand Needles
 	[521]={[522]=84,[609]=43}, -- Smuggler's Scar, Vashj'ir
 	[522]={[521]=72,[523]=44,[525]=49,[607]=58,[609]=36}, -- Silver Tide Hollow, Vashj'ir
 	[523]={[522]=44,[524]=69,[611]=60}, -- Tranquil Wash, Vashj'ir
@@ -848,7 +858,7 @@ MM.FlightNodeByName = {
 	["ashen strand, nazjatar"]=2410,
 	["aspirant's rest"]=2519,
 	["aspirant's rest, bastion"]=2519,
-	["astranaar"]=28,
+	["astranaar"]=-11,
 	["astranaar, ashenvale"]=28,
 	["atal'aman"]=3128,
 	["atal'dazar"]=2046,
@@ -866,6 +876,7 @@ MM.FlightNodeByName = {
 	["bambala, stranglethorn"]=593,
 	["barbthorn ridge"]=2037,
 	["barbthorn ridge, drustvar"]=2037,
+	["bashal'aran"]=-5,
 	["bastion rise"]=1511,
 	["bastion rise, gorgrond"]=1511,
 	["beastwatch"]=1442,
@@ -879,6 +890,8 @@ MM.FlightNodeByName = {
 	["binan village, kun-lai summit"]=1017,
 	["blackfathom camp"]=338,
 	["blackfathom camp, ashenvale"]=338,
+	["blackwing landing"]=-7,
+	["blackwing landing, terokkar forest"]=-7,
 	["bladespire citadel"]=1387,
 	["bladespire citadel, frostfire ridge"]=1387,
 	["bleak redoubt"]=2398,
@@ -1362,7 +1375,7 @@ MM.FlightNodeByName = {
 	["longying outpost"]=1053,
 	["longying outpost, townlong steppes"]=1053,
 	["lookout breach"]=2876,
-	["lor'danel"]=26,
+	["lor'danel"]=-2,
 	["lor'danel, darkshore"]=26,
 	["lorel's crossing"]=2943,
 	["lorlathil"]=1673,
@@ -1386,6 +1399,7 @@ MM.FlightNodeByName = {
 	["marshtide watch, swamp of sorrows"]=598,
 	["maruukai"]=2792,
 	["master's perch. voidstorm"]=3123,
+	["mathystra's post"]=-12,
 	["mear's farm"]=3074,
 	["menagerie of the master"]=2517,
 	["menagerie of the master, revendreth"]=2517,
@@ -1442,6 +1456,7 @@ MM.FlightNodeByName = {
 	["newhome"]=2404,
 	["newhome, nazjatar"]=2404,
 	["nexus port"]=3279,
+	["nighthaven"]=-8,
 	["nijel's point"]=37,
 	["nijel's point, desolace"]=37,
 	["nivek's overlook"]=1573,
@@ -1561,6 +1576,7 @@ MM.FlightNodeByName = {
 	["roughneck camp, tiragarde sound"]=2102,
 	["ruby life pools"]=2807,
 	["rubyscale outpost"]=2842,
+	["ruins of mathystra"]=-3,
 	["ruins of southshore"]=667,
 	["ruins of southshore, hillsbrad"]=667,
 	["ruins of yaathron"]=3163,
@@ -1637,6 +1653,7 @@ MM.FlightNodeByName = {
 	["shattered fields, krokuun"]=1967,
 	["shattered landing"]=1537,
 	["shattered sun staging area"]=213,
+	["shatterspear vale"]=-4,
 	["shatterstone harbor"]=2110,
 	["shatterstone harbor, vol'dun"]=2110,
 	["shattrath"]=128,
@@ -1666,6 +1683,8 @@ MM.FlightNodeByName = {
 	["sinfall, revendreth"]=2548,
 	["skyfire triage camp"]=1747,
 	["skyfire triage camp, stormheim"]=1747,
+	["skyguard outpost"]=-6,
+	["skyguard outpost, blade's edge mountains"]=-6,
 	["skyhorn"]=1753,
 	["skyhorn, highmountain"]=1753,
 	["skysea ridge"]=1539,
@@ -2113,6 +2132,16 @@ MM.FlightNodeByName = {
 }
 
 MM.FlightNodeName = {
+	[-12]="Mathystra's Post",
+	[-11]="Astranaar",
+	[-8]="Nighthaven",
+	[-7]="Blackwing Landing, Terokkar Forest",
+	[-6]="Skyguard Outpost, Blade's Edge Mountains",
+	[-5]="Bashal'Aran",
+	[-4]="Shatterspear Vale",
+	[-3]="Ruins of Mathystra",
+	[-2]="Lor'danel",
+	[-1]="Lor'danel",
 	[2]="Stormwind, Elwynn",
 	[4]="Sentinel Hill, Westfall",
 	[5]="Lakeshire, Redridge",

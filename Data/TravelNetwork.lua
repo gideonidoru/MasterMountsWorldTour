@@ -15,8 +15,8 @@
 local _, MM = ...
 
 MM.TravelDefaultSeconds = {
-	["flight"]=0,
-	["fly"]=0,
+	["flight"]=60,
+	["fly"]=45,
 	["portal"]=15,
 	["ship"]=120,
 	["tram"]=90,

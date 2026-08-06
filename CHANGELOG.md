@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.2.0
+
+Completes the travel-data work in 1.1.0 after a full re-audit of both sources.
+
+- **Flight data was under-parsed.** Nodes with NEGATIVE ids (Nighthaven and ten
+  others) were never seen at all -- the pattern could not match a minus sign --
+  and ten duplicate node ids overwrote each other instead of merging. Now
+  795 nodes and 4,068 hops, with every one of the 4,157 entries in the source
+  accounted for: 4,068 captured, 84 zero-valued, 1 duplicate merged, 4 outside
+  any block.
+- **No network edge is free.** `fly` and `flight` edges had no stated cost, and
+  a zero-weight edge inside a shortest-path search is teleportation -- the
+  router would chain them across the world at no charge. They are now priced
+  from the real distance between endpoints, with a non-zero floor.
+- **Two new self-tests** assert both datasets loaded, that every flight hop is
+  reachable by name, and that no edge is priced at zero. All three failures
+  above were silent; none of them errored.
+
 ## 1.1.0
 
 **Routing now runs on measured times instead of straight-line guesses.**

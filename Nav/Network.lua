@@ -27,13 +27,37 @@ end
 
 local byMap, graph, built
 
--- Seconds for one edge: whatever the record states, else the labelled default
--- for its method, else a conservative stand-in.
+-- Seconds for one edge: whatever the record states, else priced from the real
+-- distance between its endpoints, else the labelled per-method default.
+--
+-- NEVER ZERO. `fly` and `flight` edges have no stated cost because the router
+-- prices self-flight by distance elsewhere -- but inside a shortest-path search
+-- a zero-weight edge is free teleportation, and Dijkstra will happily chain
+-- them across the world at no charge and reorder the whole plan around a leg
+-- that costs nothing because nobody priced it. The suite asserts this.
+local FLOOR = 5
+
 function NW.EdgeSeconds(edge)
 	if not edge then return nil end
-	if edge.cost then return edge.cost end
+	if edge.cost and edge.cost > 0 then return edge.cost end
+
+	local method = edge.method
+	if method == "fly" or method == "flight" or method == "walk" then
+		local a = MM.TravelNodes and MM.TravelNodes[edge.from]
+		local b = MM.TravelNodes and MM.TravelNodes[edge.to]
+		if a and b and U and U.GetWorldPos and U.WorldDistance then
+			local _, wa = U.GetWorldPos(tonumber(a.mapID), pct(a.x), pct(a.y))
+			local _, wb = U.GetWorldPos(tonumber(b.mapID), pct(b.x), pct(b.y))
+			local dist = wa and wb and U.WorldDistance(wa, wb)
+			if dist then
+				local ypm = MM.YARDS_PER_MINUTE or 1500
+				return math.max(FLOOR, (dist / ypm) * 60)
+			end
+		end
+	end
+
 	local d = MM.TravelDefaultSeconds
-	return (d and d[edge.method]) or 60
+	return math.max(FLOOR, (d and d[method]) or 60)
 end
 
 local function build()
