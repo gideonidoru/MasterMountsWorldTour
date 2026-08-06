@@ -154,7 +154,14 @@ local function initPlanRow(row, data)
 	end
 
 	row.entry = entry
-	row.num:SetText(index .. ".")
+	-- ONE NUMBER PER STOP, not per mount.
+	--
+	-- Five mounts sharing the Dazar'alor trip all carried "1.", so the column
+	-- read "1. 1. 1. 1. 1." and looked like a counter that had stuck. The
+	-- number means TRIPS, and repeating it said the opposite of what it meant.
+	-- Only the first row of a group is numbered; the rest sit blank beneath it,
+	-- which is what "these are one stop" looks like.
+	row.num:SetText(data.sameStopAsPrevious and "" or (index .. "."))
 	row.icon:SetTexture(entry.icon or 134400)
 	row.icon:SetDesaturated(data.waiting and true or false)
 	row.name:SetText(entry.name)
@@ -165,9 +172,16 @@ local function initPlanRow(row, data)
 	-- only when we have neither.
 	local detail = MM.Planner:EstimateLine(entry)
 		or (entry.rec and entry.rec.source) or reason or ""
+	-- THE TIER LABEL IS GONE FROM THE ROW.
+	--
+	-- "[Dungeon / legacy raid]" opened every line, said the same thing a
+	-- hundred times, and was wrong on the Island Expedition rows -- those share
+	-- a tier with dungeons and inherited its name. The route order already
+	-- expresses the ranking, and the estimate that follows is what the line is
+	-- for. It is still used to spot a detail that merely restates it.
 	local tierLabel = MM.Planner.TIER_LABEL[tier] or "?"
 	if U.Restates(detail, tierLabel) then detail = (entry.rec and entry.rec.source) or "" end
-	local est = ("|cff8888c8[%s]|r %s"):format(tierLabel, detail)
+	local est = detail
 	-- urgency drives the route order, so lead with it when it's the reason
 	local urgency, urgencyReason = MM.Planner.Urgency(entry)
 	if urgency == MM.Planner.URGENCY.EXPIRING then
@@ -278,6 +292,21 @@ function UI.BuildPlanner(panel)
 	-- Guarded on visibility so a plan edit while the window is shut costs
 	-- nothing; opening it refreshes anyway.
 	MM:On("MM_PLAN_CHANGED", function()
+		if panel:IsShown() and UI.RefreshPlanner then UI.RefreshPlanner() end
+	end)
+
+	-- THE ROUTE ARRIVES LATER THAN THE REQUEST.
+	--
+	-- Build is chunked: it returns with the work still in flight, so the plan
+	-- pane painted from a route that had not been built yet. After Clear Plan
+	-- that route was EMPTY, so Auto-Plan All moved every mount out of the left
+	-- list and then showed "your farm plan is empty" -- with 286 goals in the
+	-- plan. Changing tabs appeared to fix it only because that re-rendered
+	-- after the build had finished.
+	--
+	-- The router says when it lands. Repainting then is what makes an async
+	-- build invisible instead of confusing.
+	MM:On("MM_ROUTE_ADVANCED", function()
 		if panel:IsShown() and UI.RefreshPlanner then UI.RefreshPlanner() end
 	end)
 
@@ -636,9 +665,11 @@ function UI.RefreshPlanner()
 		if limit and i > limit then break end
 		-- one stop, every mount it yields — sharing the stop's index so the
 		-- numbering reflects trips made rather than mounts wanted
-		for _, m in ipairs(step.members or { step }) do
+		for mi, m in ipairs(step.members or { step }) do
 			tinsert(items, { entry = m.entry, index = i,
 				opportunistic = step.opportunistic, noLocation = step.noLocation,
+				-- Only the first mount of a shared stop carries the number.
+				sameStopAsPrevious = mi > 1,
 				batched = #(step.members or {}) > 1 })
 			if m.rec and m.rec.zone and m.rec.zone.name then
 				zones[m.rec.zone.name] = true
@@ -655,7 +686,26 @@ function UI.RefreshPlanner()
 	-- version: they have not been forgotten, they just are not actionable now.
 	local waiting = #MM.Router.deferred
 	planBox:SetDataProvider(CreateDataProvider(items), ScrollBoxConstants.RetainScrollPosition)
-	if planBox.emptyText then planBox.emptyText:SetShown(#items == 0) end
+	if planBox.emptyText then
+		planBox.emptyText:SetShown(#items == 0)
+		-- "Empty" and "not charted yet" look identical and mean opposite
+		-- things. Saying the wrong one over a plan of 286 goals is how a
+		-- working addon reads as a broken one.
+		if #items == 0 and planBox.emptyText.SetText then
+			local planned = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
+			if planned > 0 and MM.Router.IsBuilding and MM.Router.IsBuilding() then
+				planBox.emptyText:SetText(
+					("Charting %d mounts into a route\226\128\166"):format(planned))
+			elseif planned > 0 then
+				planBox.emptyText:SetText("Nothing in your plan can be routed from here"
+					.. " right now.\n\nSee /mm whynot for what is holding each one back.")
+			else
+				planBox.emptyText:SetText("Your farm plan is empty.\n\nAdd mounts with the"
+					.. " [+] buttons, or use Auto-Plan / Add 10 Easiest. The plan charts"
+					.. " itself as soon as you add something; then press Start Route.")
+			end
+		end
+	end
 
 	local zoneCount = 0
 	for _ in pairs(zones) do zoneCount = zoneCount + 1 end

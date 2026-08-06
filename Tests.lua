@@ -751,6 +751,29 @@ local function runLogic()
 		return true, ("standing-here work leads at position %d"):format(firstHere)
 	end)
 
+	check("An unfinished build is not reported as an empty plan", function()
+		-- Clear Plan then Auto-Plan All showed "your farm plan is empty" over a
+		-- plan of 286 goals. Build is chunked and returns with the work in
+		-- flight, so the pane painted the PREVIOUS route -- which Clear Plan
+		-- had just emptied. Changing tabs "fixed" it only by re-rendering after
+		-- the build landed.
+		local R = MM.Router
+		if not (R and R.IsBuilding and R.Build) then return nil, "no router" end
+		if R.IsBuilding() then return nil, "a build is already running" end
+		R.builtSignature, R.chartRank, R.builtRouteCount = nil, nil, nil
+		R:Build()
+		local flying = R.IsBuilding()
+		R:BuildSync()
+		if R.IsBuilding() then
+			return false, "BuildSync returned with work still in flight"
+		end
+		-- The signal the view listens on must exist, or nothing repaints when
+		-- the route lands and the pane stays wrong until something else redraws.
+		if not (MM.Fire and MM.On) then return nil, "no event bus" end
+		return true, flying and "build reported in flight, then completed"
+			or "build completed within one frame"
+	end)
+
 	check("A chunked build never shows a partial route", function()
 		-- Chunking was off because RunBuild cleared R.route before refilling
 		-- it, so a reader during a build saw an empty list and drew it. The

@@ -1440,6 +1440,17 @@ end
 -- very next line. The checks and the router model both do exactly that: build,
 -- then measure what was built. Without this they would measure the PREVIOUS
 -- route and quietly report on the wrong thing.
+-- True while a chunked build is still in flight.
+--
+-- Chunking made Build return before the route exists, so a caller that renders
+-- immediately draws the PREVIOUS route -- and after Clear Plan the previous
+-- route is empty. The planner showed "your farm plan is empty" over a plan of
+-- 286 goals, and switching tabs fixed it because that re-rendered after the
+-- build had finished. Anything that draws the route needs to be able to ask.
+function R.IsBuilding()
+	return building ~= nil and coroutine.status(building) == "suspended"
+end
+
 function R:BuildSync(force)
 	return self:Build(force, true)
 end
