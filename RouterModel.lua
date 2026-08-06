@@ -689,6 +689,22 @@ function RM.TravelReport()
 				if who == "journey" and jlegs and MM.Journey.Describe then
 					local desc = MM.Journey.Describe(jlegs)
 					if desc then w("      route: %s", desc) end
+					-- WHERE THE GOAL ATTACHED, and how it was chosen.
+					--
+					-- Several legs with different origins AND different
+					-- destinations came back with the same route and the same
+					-- cost, which cannot be right. The leg line named neither
+					-- the destination zone nor how it was reached, so there was
+					-- nothing to reason from -- only a story to invent about
+					-- what might be happening. This prints the fact.
+					local ti = C_Map.GetMapInfo(b.mapID)
+					if ti and ti.name and MM.Journey.AttachAudit then
+						local same, other, how = MM.Journey.AttachAudit(ti.name, b.x, b.y)
+						w("      to %s (map %s): %s, %s entry point(s)%s",
+							ti.name, tostring(b.mapID), how or "not attached yet",
+							tostring(same or 0),
+							(other or 0) > 0 and (", " .. other .. " off-continent") or "")
+					end
 				elseif not journey and jwhy then
 					-- And why it declined, for the same reason the network says
 					-- so: "could not get on to the graph", "could not get off at
