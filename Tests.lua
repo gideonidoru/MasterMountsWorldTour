@@ -1429,6 +1429,36 @@ local function runLogic()
 			got, hops, J.transitNodes or 0)
 	end)
 
+	check("A zone name resolves whatever its case", function()
+		-- The travel graph keys its zones lowercase and then asked the map
+		-- index, which the client fills with proper-cased names. Every one of
+		-- those lookups missed, and missed quietly: cross-zone distances fell
+		-- back to a crude zone-size approximation, and any zone without a flight
+		-- point of its own became unreachable -- "no way to reach the forbidden
+		-- reach from the graph" while 2,180 positioned nodes sat loaded.
+		--
+		-- A resolver that only answers in one case is a resolver half its
+		-- callers cannot use.
+		local U = MM.Util
+		if not (U and U.ResolveMapByName) then return nil, "resolver missing" end
+		local probes, checked, bad = { "Orgrimmar", "Stormwind City", "Tanaris" }, 0, nil
+		for _, name in ipairs(probes) do
+			local exact = U.ResolveMapByName(name)
+			if exact then
+				checked = checked + 1
+				local lower = U.ResolveMapByName(name:lower())
+				local upper = U.ResolveMapByName(name:upper())
+				if lower ~= exact or upper ~= exact then
+					bad = bad or ("%s: exact %s, lower %s, upper %s"):format(
+						name, tostring(exact), tostring(lower), tostring(upper))
+				end
+			end
+		end
+		if checked == 0 then return nil, "no probe zone resolved at all" end
+		if bad then return false, bad end
+		return true, ("%d zones resolve identically in any case"):format(checked)
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%

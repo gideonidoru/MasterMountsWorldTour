@@ -8,10 +8,10 @@ local U = MM.Util
 ------------------------------------------------------------
 -- Zone name -> uiMapID resolution (records may carry only a zone name)
 ------------------------------------------------------------
-local nameToMap, nameToMaps
+local nameToMap, nameToMaps, lowerToMap
 
 local function buildMapIndex()
-	nameToMap, nameToMaps = {}, {}
+	nameToMap, nameToMaps, lowerToMap = {}, {}, {}
 	-- Index EVERY map type. Restricting to Zone/Continent/Dungeon/Micro used
 	-- to drop battlegrounds and special maps (Alterac Valley, Stormshield,
 	-- Telogrus Rift), which then resolved to nothing.
@@ -35,6 +35,23 @@ local function buildMapIndex()
 			if not prev or rank < prev then
 				bestRank[info.name] = rank
 				nameToMap[info.name] = mapID
+			end
+			-- A CASE-FOLDED INDEX ALONGSIDE THE EXACT ONE.
+			--
+			-- The client names maps "The Forbidden Reach"; several callers hold
+			-- the name lowercased, because they key their own tables that way.
+			-- Those lookups all missed, silently, and the cost was not obvious:
+			-- the travel graph fell back to a crude zone-size approximation for
+			-- every cross-zone distance, and a zone with no flight point of its
+			-- own became unreachable entirely -- "no way to reach the forbidden
+			-- reach from the graph" with 2,180 positioned nodes loaded.
+			--
+			-- Same ranking, so an outdoor zone still beats an instance floor.
+			local lower = info.name:lower()
+			local prevLower = bestRank["\1" .. lower]
+			if not prevLower or rank < prevLower then
+				bestRank["\1" .. lower] = rank
+				lowerToMap[lower] = mapID
 			end
 			nameToMaps[info.name] = nameToMaps[info.name] or {}
 			tinsert(nameToMaps[info.name], mapID)
@@ -244,6 +261,12 @@ function U.ResolveMapByName(name)
 	if not nameToMap then buildMapIndex() end
 	for _, candidate in ipairs(nameCandidates(name)) do
 		local id = nameToMap[candidate]
+		if id then return routableMap(candidate, id) end
+	end
+	-- Only after every exact match has been tried, so a correctly-cased name
+	-- can never be beaten by a case-folded collision.
+	for _, candidate in ipairs(nameCandidates(name)) do
+		local id = lowerToMap[candidate:lower()]
 		if id then return routableMap(candidate, id) end
 	end
 	return nil
