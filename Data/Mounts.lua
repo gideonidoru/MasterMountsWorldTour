@@ -23018,25 +23018,42 @@ MM.AddMounts({
 	{
 		name = "Scrappy Worldsnail",
 		spellID = 374162,
+		itemID = 192786,
 		expansion = 9,
-		category = "ACHIEVEMENT",
+		category = "CURRENCY",
 		obtainable = true,
-		source = "Feed Big Slick in Loamm, Zaralek Cavern, over several days.",
+		source = "Bought from Dealer Vexil at the Smoldering Perch for 1,000 Magmotes, as the Slumbering Worldsnail Shell.",
 		zone = {
 			name = "Zaralek Cavern",
 			mapID = 2133,
+			x = 34.8,
+			y = 46.6,
 		},
 		conditions = {
 			{
+				name = "Magmote",
 				amount = 1000,
+				how = "Looted around the Citadel in Zaralek Cavern while the Worldbreaker Membership is active; roughly 500 an hour in a group",
 				id = 202173,
+				type = "ITEM",
+			},
+			{
+				name = "The Shadow of His Wings",
+				id = 65691,
+				type = "QUEST",
+			},
+			{
+				name = "Worldbreaker Membership",
+				amount = 1,
+				how = "From the Unlocking Our Past cache; needs a Restored Obsidian Key. Lasts two days and is lost on death",
+				id = 199215,
 				type = "ITEM",
 			},
 		},
 		attempts = "DAILY",
 		timePerAttempt = 5,
 		effort = 2,
-		notes = "Feed the snail Big Slick in Loamm repeatedly (daily feeding over roughly two weeks) to grow it and earn the mount.",
+		notes = "The Shadow of His Wings unlocks Iggy the Believer at 32.2, 52.4 and the repeatable Unlocking Our Past, which costs a Restored Obsidian Key and rewards a cache that can contain the Worldbreaker Membership. The membership is what lets Magmotes drop at all, it lasts two days, and DYING ENDS IT -- buy a spare from Dealer Vexil for 20 Magmotes once you hold the title, which is far cheaper than farming another key. Best rate is the Citadel vault in a group, around 500 motes an hour.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
 	{
@@ -28405,15 +28422,22 @@ MM.AddMounts({
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
-		source = "TWW Season 3 Mythic+ seasonal Keystone achievement reward (Timelost Saddle)",
+		source = "Reward for The War Within Keystone Master: Season Three -- a Mythic+ rating of 2,000 during that season.",
 		zone = {
 			name = "Silvermoon City",
 			mapID = 2393,
 			x = 42.1,
 			y = 58.8,
 		},
+		conditions = {
+			{
+				name = "The War Within Keystone Master: Season Three",
+				id = 41973,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
-		notes = "Seasonal; becomes unobtainable when Season 3 ends.",
+		notes = "Seasonal, and that season has passed. Not to be confused with the Timelost Saddle, which is the Midnight Keystone Myth: Season One reward and pays a different set of mounts.",
 		solo = false,
 	},
 	{
@@ -33740,10 +33764,11 @@ MM.AddMounts({
 	},
 	{
 		name = "Void-Corrupted Lynx",
+		itemID = 270058,
 		expansion = 11,
 		category = "PROFESSION",
 		obtainable = true,
-		source = "Ritual Sites: treasure and rare spoils.",
+		source = "Midnight Leatherworking: craft the Rope Lynx Harness from Pattern: Rope Lynx Harness, which drops from the final Ritual Site reward chest.",
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
@@ -33755,6 +33780,42 @@ MM.AddMounts({
 				name = "Rope Lynx Harness",
 				id = 270058,
 				type = "ITEM",
+			},
+			{
+				name = "Leatherworking",
+				skill = 90,
+				type = "PROFESSION",
+			},
+			{
+				factionID = 2792,
+				factionName = "Ritual Sites",
+				standingName = "Renown 8",
+				type = "REP",
+			},
+			{
+				name = "Pattern: Rope Lynx Harness",
+				amount = 1,
+				how = "Final reward chest of a Tier 5 Ritual Site",
+				id = 272391,
+				type = "ITEM",
+			},
+			{
+				name = "Broken Lynx Leash",
+				itemID = 272392,
+				count = 1,
+				type = "MATERIAL",
+			},
+			{
+				name = "Mote of Primal Energy",
+				itemID = 236950,
+				count = 40,
+				type = "MATERIAL",
+			},
+			{
+				name = "Sin'dorei Armor Banding",
+				itemID = 244635,
+				count = 2,
+				type = "MATERIAL",
 			},
 		},
 		altSources = {
@@ -33768,7 +33829,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
-		notes = "Pattern and the Broken Lynx Leash reagent come from your first Tier 5 Ritual Site clear (Ritual Site Renown 8 to unlock Tier 5). Craftable via Crafting Orders for non-Leatherworkers.",
+		notes = "Needs Midnight Leatherworking 90 and Renown 8 with the Ritual Sites to unlock Tier 5, which is where both the pattern and the Broken Lynx Leash come from. Craftable through a crafting order without the profession. One further reagent, Infused Scaleworm Hide x1, is named by the recipe but has no item under that name in the client table, so it is not counted below.",
 	},
 	{
 		name = "Nether-Swept Drake",
@@ -36837,11 +36898,54 @@ MM.AddMounts({
 	},
 	{
 		name = "Steelbound Devourer",
+		itemID = 137686,
 		expansion = 6,
 		category = "PROFESSION",
 		obtainable = true,
-		source = "Legion Blacksmithing craft (Steelbound Harness) from a Felsmith recipe.",
+		source = "Legion Blacksmithing: craft the Steelbound Harness from Plans: Fel Core Hound Harness, which drops from Tichondrius in The Nighthold.",
+		zone = {
+			name = "Suramar",
+		},
+		conditions = {
+			{
+				name = "Blacksmithing",
+				skill = 100,
+				type = "PROFESSION",
+			},
+			{
+				name = "Plans: Fel Core Hound Harness",
+				amount = 1,
+				how = "Drops from Tichondrius in The Nighthold, about 2%",
+				id = 137687,
+				type = "ITEM",
+			},
+			{
+				name = "Demonsteel Bar",
+				itemID = 124461,
+				count = 100,
+				type = "MATERIAL",
+			},
+			{
+				name = "Blood of Sargeras",
+				itemID = 124124,
+				count = 50,
+				type = "MATERIAL",
+			},
+			{
+				name = "Infernal Brimstone",
+				itemID = 124444,
+				count = 10,
+				type = "MATERIAL",
+			},
+			{
+				name = "Felhide",
+				itemID = 124116,
+				count = 10,
+				type = "MATERIAL",
+			},
+		},
 		effort = 3,
+		notes = "The plans are the bottleneck at roughly a 2% drop from Tichondrius, on a raid lockout. Requires Legion Blacksmithing 100.",
 		noLocationReason = "Crafted (Legion Blacksmithing) -- made, not collected from a place",
 	},
 	{
@@ -38841,7 +38945,7 @@ MM.AddMounts({
 		name = "Slumbering Worldsnail",
 		expansion = 9,
 		category = "VENDOR",
-		obtainable = true,
+		obtainable = false,
 		source = "Sold by Dealer Vexil at Smoldering Perch for 1,000 Magmotes after The Shadow of His Wings.",
 		zone = {
 			name = "The Waking Shores",
@@ -38859,6 +38963,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		notes = "Not a mount. This is the NAME OF THE ITEM -- Slumbering Worldsnail Shell, 192786 -- and the mount it teaches is the Scrappy Worldsnail (spell 374162), which has its own record. Confirmed through the client's own item-effect table rather than by resemblance.",
 	},
 	{
 		name = "Big Slick in the City",
