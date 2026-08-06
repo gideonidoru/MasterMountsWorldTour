@@ -15566,14 +15566,14 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Frontline Warrior",
-				idAlliance = 13283,
-				idHorde = 13284,
+				name = "Two Sides to Every Tale",
+				id = 13517,
 				type = "ACHIEVEMENT",
 			},
 		},
 		effort = 3,
-		notes = "Frontline Warrior requires completing 100 Faction Assault world quests (8.1 incursions).",
+		notes = "Requires the Battle for Azeroth war campaign finished on BOTH factions on this account: A Nation United (Alliance) or Zandalar Forever! (Horde), plus Tides of Vengeance on each side.",
+		unpriced = "an achievement reward, not a purchase",
 	},
 	{
 		name = "Bloodflank Charger",
@@ -15592,14 +15592,14 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Frontline Warrior",
-				idAlliance = 13283,
-				idHorde = 13284,
+				name = "Two Sides to Every Tale",
+				id = 13517,
 				type = "ACHIEVEMENT",
 			},
 		},
 		effort = 3,
-		notes = "Frontline Warrior requires completing 100 Faction Assault world quests (8.1 incursions).",
+		notes = "Requires the Battle for Azeroth war campaign finished on BOTH factions on this account: A Nation United (Alliance) or Zandalar Forever! (Horde), plus Tides of Vengeance on each side.",
+		unpriced = "an achievement reward, not a purchase",
 	},
 	{
 		name = "Crimson Tidestallion",
@@ -20444,18 +20444,192 @@ MM.AddMounts({
 		expansion = 8,
 		category = "PUZZLE",
 		obtainable = true,
-		source = "Tame Darkmaul in Korthia by feeding and riding him",
+		source = "Tame Darkmaul in Korthia: feed him Tasty Mawshrooms and ride him ten times.",
 		npc = {
 			name = "Darkmaul",
 			id = 180063,
 		},
 		zone = {
+			name = "Korthia",
 			mapID = 1961,
-			x = 42.6,
-			y = 33,
+			x = 42.8,
+			y = 32.7,
 		},
+		acquire = {
+			hours = 3,
+			steps = {
+				{
+					text = "Loot the five daily Invasive Mawshroom treasures in Korthia; each has several possible spawn points",
+				},
+				{
+					text = "A Tasty Mawshroom drops from them occasionally -- this is the gate, and it is why the chain runs over days",
+				},
+				{
+					text = "Use one on Darkmaul at 42.8, 32.7 for a two-minute Friendly Ride buff, then ride him",
+				},
+				{
+					text = "Ten rides total on live. Dying before the buff expires wastes that ride",
+				},
+				{
+					text = "On the last ride the mount drops straight into your bags",
+				},
+			},
+		},
+		attempts = "DAILY",
 		effort = 2,
-		notes = "Gather Darkmaul's preferred food, then ride the shardhide to earn his loyalty.",
+		notes = "Roughly a week of short daily visits rather than one sitting: the five mawshroom treasures are a daily lockout and the Tasty Mawshroom is only an occasional drop from them. About fifteen minutes a day.",
+		spawns = {
+			{
+				mapID = 1961,
+				x = 54.2,
+				y = 41.2,
+			},
+			{
+				mapID = 1961,
+				x = 56.8,
+				y = 51.5,
+			},
+			{
+				mapID = 1961,
+				x = 57.3,
+				y = 39.4,
+			},
+			{
+				mapID = 1961,
+				x = 58.2,
+				y = 40.5,
+			},
+			{
+				mapID = 1961,
+				x = 60.3,
+				y = 41.6,
+			},
+			{
+				mapID = 1961,
+				x = 60.7,
+				y = 38.2,
+			},
+			{
+				mapID = 1961,
+				x = 48.5,
+				y = 41.2,
+			},
+			{
+				mapID = 1961,
+				x = 49.4,
+				y = 40.7,
+			},
+			{
+				mapID = 1961,
+				x = 49.5,
+				y = 31.7,
+			},
+			{
+				mapID = 1961,
+				x = 49.9,
+				y = 32.5,
+			},
+			{
+				mapID = 1961,
+				x = 51.4,
+				y = 46.8,
+			},
+			{
+				mapID = 1961,
+				x = 53.7,
+				y = 37.9,
+			},
+			{
+				mapID = 1961,
+				x = 42.1,
+				y = 35.8,
+			},
+			{
+				mapID = 1961,
+				x = 42.3,
+				y = 34.6,
+			},
+			{
+				mapID = 1961,
+				x = 43.6,
+				y = 36.6,
+			},
+			{
+				mapID = 1961,
+				x = 45.6,
+				y = 34.3,
+			},
+			{
+				mapID = 1961,
+				x = 52.4,
+				y = 25,
+			},
+			{
+				mapID = 1961,
+				x = 55.1,
+				y = 16.4,
+			},
+			{
+				mapID = 1961,
+				x = 35.7,
+				y = 31.1,
+			},
+			{
+				mapID = 1961,
+				x = 37.4,
+				y = 34.7,
+			},
+			{
+				mapID = 1961,
+				x = 38.8,
+				y = 33.8,
+			},
+			{
+				mapID = 1961,
+				x = 39.5,
+				y = 30.7,
+			},
+			{
+				mapID = 1961,
+				x = 39.7,
+				y = 34.8,
+			},
+			{
+				mapID = 1961,
+				x = 42,
+				y = 32.5,
+			},
+			{
+				mapID = 1961,
+				x = 39.6,
+				y = 30,
+			},
+			{
+				mapID = 1961,
+				x = 41.2,
+				y = 44.9,
+			},
+			{
+				mapID = 1961,
+				x = 43.4,
+				y = 56.3,
+			},
+			{
+				mapID = 1961,
+				x = 45.2,
+				y = 47.9,
+			},
+			{
+				mapID = 1961,
+				x = 46.5,
+				y = 48.5,
+			},
+			{
+				mapID = 1961,
+				x = 54.8,
+				y = 55.5,
+			},
+		},
 	},
 	{
 		name = "Maelie, the Wanderer",
@@ -25507,13 +25681,41 @@ MM.AddMounts({
 		expansion = 10,
 		category = "PUZZLE",
 		obtainable = true,
-		source = "Collect the 5 runestones around Siren Isle for the Forgotten Vault runekey activity",
+		source = "Free Thrayir in the Forgotten Vault on Siren Isle with five runekeys, one per surrounding runestone.",
 		zone = {
 			name = "Siren Isle",
 			mapID = 2369,
+			x = 44.04,
+			y = 23.13,
+		},
+		acquire = {
+			hours = 4,
+			steps = {
+				{
+					text = "Be in an active storm -- a Special Assignment quest, or one already completed that week. Nothing below drops otherwise",
+				},
+				{
+					text = "Whirling Runekey: Ksvir the Forgotten, southernmost room of the Forgotten Vault. Appears to be a guaranteed drop",
+				},
+				{
+					text = "Cyclonic Runekey: Zek'ul the Shipbreaker in the Deadfin Mire, or fished from the water where he spawns",
+				},
+				{
+					text = "Torrential Runekey: 7 Torrential Fragments, from any mob on the island during a storm",
+				},
+				{
+					text = "Thunderous Runekey: 5 Thunderous Fragments, from storm chests and underwater chests. Seafarer's Caches are the fastest source, which needs Dipping a Toe unlocked first",
+				},
+				{
+					text = "Turbulent Runekey: 3 Turbulent Fragments at fixed spots -- 38.2/51.8 in the abandoned inn's garden, 67.1/78.4 in the Rotting Hole, 52.4/38.6 in the Spirit-Scarred Cave",
+				},
+				{
+					text = "Use all five keys on their runestones, then talk to Thrayir",
+				},
+			},
 		},
 		effort = 3,
-		notes = "Collect the 5 runestones scattered around Siren Isle to open the Forgotten Vault. Runestone spots vary, so there is no single coordinate worth routing to.",
+		notes = "The Forgotten Vault entrance is at 44.0, 23.1. Cyrce's Circlet is rumoured to improve fragment drops; that is unconfirmed and is recorded here as a rumour, not a requirement.",
 	},
 	{
 		name = "Soweezi's Vintage Waveshredder",
@@ -27408,15 +27610,44 @@ MM.AddMounts({
 		expansion = 10,
 		category = "PUZZLE",
 		obtainable = true,
-		source = "Assembled from parts collected through Horrific Visions Revisited activities",
+		source = "Recover the motorbike in the Vision of Stormwind, then rebuild it from parts found across both Horrific Visions.",
 		zone = {
-			name = "Dornogal",
-			mapID = 2339,
-			x = 34.4,
-			y = 68.3,
+			name = "Vision of Stormwind",
+			mapID = 2404,
+			x = 62.09,
+			y = 31.16,
+		},
+		acquire = {
+			hours = 12,
+			steps = {
+				{
+					text = "Enter the Vision of Stormwind with at least one mask active -- you need a mask on for the end-chest loot too",
+				},
+				{
+					text = "Dwarven District, 62.1/31.2: clear the mobs around the motorbike, bring the rider low, finish him when he dismounts, then interact with the bike. It appears in Dornogal beside the Vision portal",
+				},
+				{
+					text = "Engine: Void-Forged Engine Block from the Engineering shop in the Drag, Vision of Orgrimmar (56.7/56.8), plus 4 Goblin-Machined Pistons from Big Keech at 1,000g each",
+				},
+				{
+					text = "Exhaust: Magic-Lined Manifold at the Auction House entrance in the Trade District, Vision of Stormwind (61.5/72.7), plus an Elementium-Plated Exhaust Pipe from Big Keech for 1,500g",
+				},
+				{
+					text = "Handlebars: Twisted Skull-Scythe Handlebars from Valeera's end chest (Old Town), an Irresistible Red Button by work order -- it needs 10 soulbound Pile of Rusted Scrap -- and rank-3 Safety Switch, 3 Whimsical Wiring and a Storm-Touched Weapon Wrap",
+				},
+				{
+					text = "Battery: Depleted Void Crystal from Umbric's end chest (Mage Quarter), plus rank-3 Jumper Cables and a Refulgent Crystal",
+				},
+				{
+					text = "Seat: Void-Scarred Boarhide from Rexxar's end chest (Valley of Honor, Orgrimmar), plus 5 rank-3 Weavercloth Spellthread",
+				},
+				{
+					text = "Wheels: two Voidflame-Resistant Hides and two Tentacle Spokes from the Kelsey, Wyrmbane and Geya'rah end chests across both visions, plus 12 rank-3 Entropy Enhancers",
+				},
+			},
 		},
 		effort = 4,
-		notes = "Mechagon-style scavenger hunt: gather all components inside the visions.",
+		notes = "Big Keech sells in the OLD Vale of Eternal Blossoms at 71.1, 46.1 -- speak to Zidormi to get there. Vendor materials alone are about 5,500g and the auction house side is roughly 7,000-10,000g more, depending entirely on your server and whether you can get the rank-3 crafts made rather than bought.",
 	},
 	{
 		name = "Radiant Imperial Lynx",
@@ -35539,16 +35770,23 @@ MM.AddMounts({
 		spellID = 136163,
 		itemID = 93385,
 		expansion = 4,
-		category = "VENDOR",
+		category = "QUEST",
 		obtainable = true,
 		faction = "Alliance",
-		source = "Sold by Vasarin Redmorn at Violet Rise, Isle of Thunder (Kirin Tor Offensive)",
+		source = "Reward from The Silence, at the end of the Kirin Tor Offensive campaign on the Isle of Thunder.",
 		zone = {
-			name = "Krasarang Wilds",
-			x = 84,
-			y = 60,
+			name = "Isle of Thunder",
+			mapID = 504,
+		},
+		conditions = {
+			{
+				name = "The Silence",
+				id = 32455,
+				type = "QUEST",
+			},
 		},
 		effort = 3,
+		unpriced = "a quest reward, not a purchase",
 	},
 	{
 		name = "Grand Wyvern",
@@ -38513,17 +38751,38 @@ MM.AddMounts({
 	},
 	{
 		name = "Skyskin Hornstrider",
+		itemID = 192800,
 		expansion = 9,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold by Brendormi (Primalist Future) for Essences of the Storm and Elemental Overflow.",
+		source = "Sold by Brendormi in The Primalist Future for 150 Essence of the Storm and 3,000 Elemental Overflow.",
+		npc = {
+			name = "Brendormi",
+			id = 199425,
+		},
 		zone = {
-			name = "Valdrakken",
-			mapID = 2112,
-			x = 50,
-			y = 50,
+			name = "The Primalist Future",
+			mapID = 2085,
+			x = 61.2,
+			y = 47,
+		},
+		conditions = {
+			{
+				name = "Essence of the Storm",
+				amount = 150,
+				how = "Storm's Fury in The Primalist Future",
+				id = 202039,
+				type = "ITEM",
+			},
+			{
+				name = "Elemental Overflow",
+				amount = 3000,
+				id = 2118,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
+		notes = "Essence of the Storm comes from Storm's Fury in The Primalist Future. The vendor sits inside the scenario area, entered from Thaldraszus.",
 	},
 	{
 		name = "Clayscale Hornstrider",
@@ -39136,13 +39395,40 @@ MM.AddMounts({
 		expansion = 9,
 		category = "PUZZLE",
 		obtainable = true,
-		source = "Secret: earn Wards of the Dread Citadel in Naxxramas, then complete the Inconspicuous Crow quests.",
+		source = "Free Valiance from Instructor Razuvious's stable in 10-player Naxxramas, after unlocking the Naxxramas secrets.",
 		zone = {
 			name = "Dragonblight",
 			x = 87.6,
 			y = 51,
 		},
+		acquire = {
+			hours = 8,
+			steps = {
+				{
+					text = "Unlock the secrets of Naxxramas, then unlock Zackett Skullsmash and his stock. Both are account-wide",
+				},
+				{
+					text = "Collect 30 Death's Bargaining Chips and buy a Rotten Delicious from Zackett",
+				},
+				{
+					text = "Enter on 10-PLAYER with Razuvious still alive. Swap to an alt if your main has killed him -- the secrets carry, the lockout does not",
+				},
+				{
+					text = "Give the Rotten Delicious to Valiance. Approaching him without it only knocks you back",
+				},
+				{
+					text = "At the Razuvious arena, mind-control a Death Knight Understudy from one of the two pillars and walk it to Valiance",
+				},
+				{
+					text = "The add mounts him. Walk it back to Razuvious and break the control -- Dismiss on the portrait",
+				},
+				{
+					text = "The add turns on you. Kill Razuvious and the add, then loot the mount from him",
+				},
+			},
+		},
 		effort = 4,
+		notes = "Everything except the raid lockout is account-wide, so the unlocks only have to be done once across the whole warband.",
 	},
 	{
 		name = "Renewed Magmammoth",
@@ -42753,9 +43039,9 @@ MM.AddMounts({
 		spellID = 459,
 		itemID = 1134,
 		expansion = 0,
-		category = "VENDOR",
-		obtainable = true,
-		source = "Sold by Ogunaro Wolfrunner in Orgrimmar",
+		category = "REMOVED",
+		obtainable = false,
+		source = "Original vanilla orc wolf vendor mount, removed from vendors in patch 1.4 (2005).",
 		zone = {
 			name = "Orgrimmar",
 			mapID = 85,
@@ -42763,6 +43049,7 @@ MM.AddMounts({
 			y = 35.2,
 		},
 		effort = 3,
+		notes = "The Swift Gray Wolf is a different mount and is still sold by Ogunaro Wolfrunner.",
 	},
 	{
 		name = "Gruffy Comfy Flying Quilt",
