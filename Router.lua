@@ -105,7 +105,7 @@ local function makeStep(entry)
 	end
 
 	-- A quest chain routes to the step you are ON, not to the mount. The giver
-	-- for a later step will not talk to you yet, so his position is the wrong
+	-- for a later step will not talk to you yet, so that position is the wrong
 	-- answer until the steps before it are done.
 	local chainStep, chainIndex, chainTotal
 	if rec.questChain and MM.QuestGate and MM.QuestGate.CurrentStep then
@@ -250,6 +250,20 @@ local function stopKey(step)
 	if rec.npc and rec.npc.name then
 		return prefix .. "N:" .. rec.npc.name:lower()
 	end
+	-- A QUEUE IS ONE ACT, HOWEVER MANY MOUNTS ROLL OFF IT.
+	--
+	-- Five Island Expedition mounts all drop from finishing one island: two
+	-- minutes to the queue NPC, ten minutes to run it, five chances. But an
+	-- island has no map to group by -- "Island Expedition" is not a zone this
+	-- client resolves -- and no instance or npc name either, so every one of
+	-- them fell through to `return nil` and became a stop of its own. The
+	-- session then charged twelve minutes five times over for a single run,
+	-- and a three-hour evening could not fit what a twelve-minute one does.
+	--
+	-- Checked AFTER instance and npc so a specific raid still keys on the raid
+	-- rather than collapsing into "raid queue" with every other one.
+	local kind = MM.Queue and MM.Queue.KindFor and MM.Queue.KindFor(rec)
+	if kind then return prefix .. "Q:" .. kind end
 	if not step.mapID then return nil end
 	-- Otherwise: same map, same spot, same kind of errand. The family guard
 	-- stops a vendor and a world drop merging just because they share a corner
@@ -291,7 +305,27 @@ local function groupStops(steps)
 			-- Expected mounts ADD -- one trip now rolls for all of them, which
 			-- is the whole point of batching. Time does NOT add: four mounts off
 			-- one raid clear is still one raid clear, so take the longest.
-			stop.mounts = (stop.mounts or 0) + (step.mounts or 0)
+			-- MOUNTS ADD ONLY WHEN ONE VISIT CAN REALLY YIELD THEM ALL.
+			--
+			-- Five island mounts off one run genuinely add: the run rolls for
+			-- each independently, so the chances are separate events.
+			--
+			-- Eight Vicious mounts at one vendor do NOT. They share a single
+			-- underlying grind -- one Vicious Saddle buys one mount, and every
+			-- saddle is another hundred wins. Summing them made a single vendor
+			-- trip look like 0.8 expected mounts for fifteen minutes, the best
+			-- density in the plan, which is why a 45-minute session filled with
+			-- Vicious saddles.
+			--
+			-- A stated dropRate is a real, independent per-attempt chance and
+			-- adds. Anything resting on an unread requirement is a shared
+			-- grind wearing several hats, and takes the MAX instead.
+			local indep = step.rec and step.rec.dropRate
+			if indep then
+				stop.mounts = (stop.mounts or 0) + (step.mounts or 0)
+			elseif (step.mounts or 0) > (stop.mounts or 0) then
+				stop.mounts = step.mounts
+			end
 			if (step.visitMinutes or 0) > (stop.visitMinutes or 0) then
 				stop.visitMinutes = step.visitMinutes
 			end
@@ -436,7 +470,13 @@ local function advanceState(state, step)
 	state.y = step.y or state.y
 end
 
-local function travelMinutes(state, step)
+-- `wantLegs` defaults to TRUE, because every caller that existed when this was
+-- written needs the described route and a silent downgrade would replace real
+-- directions with nothing. Only the greedy selection passes false: it compares
+-- numbers and throws every candidate but one away, so building 5,400 leg
+-- descriptions to discard 5,399 of them was the bulk of the freeze.
+local function travelMinutes(state, step, wantLegs)
+	if wantLegs == nil then wantLegs = true end
 	-- Flying, if we can measure it. Same continent includes "both unknown":
 	-- a missing continent must not throw away two known positions.
 	-- Mounting up is not free. Two seconds, and it
@@ -464,12 +504,35 @@ local function travelMinutes(state, step)
 		local fi = state.mapID and C_Map.GetMapInfo(state.mapID)
 		local ti = step.mapID and C_Map.GetMapInfo(step.mapID)
 		if fi and ti and fi.name and ti.name then
-			local mins, legs = MM.Journey.Plan(fi.name, state.x, state.y,
-				ti.name, step.x, step.y, flyMinutes, state.mapID, step.mapID)
-			if mins then
-				best = mins
-				method = { key = "journey:" .. tostring(step.mapID), taxi = true,
-					name = MM.Journey.Describe(legs) or "multi-leg route", legs = legs }
+			if not wantLegs and MM.Journey.MinutesFrom then
+				-- ONE SEARCH FOR THE WHOLE POOL, not one per candidate.
+				--
+				-- Journey.Plan runs a Dijkstra per (from, to) pair, and the
+				-- greedy chain asks it for every remaining stop at every step
+				-- -- O(n^2), about 5,400 searches on a 104-stop plan, all in
+				-- one frame. MinutesFrom answers the question that loop is
+				-- actually asking -- "from where I am now, how far is
+				-- everything?" -- with a single search from the origin, cached
+				-- until the origin moves.
+				--
+				-- EXACTLY the same numbers: it is the same Dijkstra, run once
+				-- to every node instead of once per node. The route this
+				-- chooses is unchanged; only the time to choose it is.
+				local mins = MM.Journey.MinutesFrom(fi.name, state.x, state.y,
+					state.mapID, ti.name, step.x, step.y, step.mapID)
+				if mins and (not flyMinutes or mins < flyMinutes) then
+					best = mins
+					method = { key = "journey:" .. tostring(step.mapID), taxi = true,
+						name = "multi-leg route" }
+				end
+			else
+				local mins, legs = MM.Journey.Plan(fi.name, state.x, state.y,
+					ti.name, step.x, step.y, flyMinutes, state.mapID, step.mapID)
+				if mins then
+					best = mins
+					method = { key = "journey:" .. tostring(step.mapID), taxi = true,
+						name = MM.Journey.Describe(legs) or "multi-leg route", legs = legs }
+				end
 			end
 		end
 	end
@@ -542,7 +605,7 @@ function R.TravelScale() return travelScale() end
 ------------------------------------------------------------
 -- The objective
 ------------------------------------------------------------
--- the user, twice: I changed a bunch of weights and priorities and nothing really
+-- the player, twice: I changed a bunch of weights and priorities and nothing really
 -- changed and It did not seem like the prioritization stack did anything to
 -- reorder the list either. Both true, and neither was a wiring fault. It was
 -- a UNITS fault.
@@ -560,7 +623,7 @@ function R.TravelScale() return travelScale() end
 --     EXPECTED MOUNTS   the sum of the chances you roll at a stop
 --
 -- and the router maximises **expected mounts per minute**. That is literally
--- what the user asked it to optimise, it front-loads the best hour for someone who
+-- what the question was it to optimise, it front-loads the best hour for someone who
 -- only has an hour, and every weight now shifts the answer by an amount
 -- proportional to what its label claims.
 -- How big a divisor a goal's own handicap (effort, time, long odds, era)
@@ -592,7 +655,7 @@ R.Density = density
 -- feels like gaming currency not considering it as part of the selection
 -- criteria.
 --
--- It was not, and he put his finger on exactly the wrong bit. The first version
+-- It was not, and the objection landed on exactly the wrong bit. The first version
 -- divided EXPECTED MOUNTS by the priority rank -- pretending a rare literally
 -- yields more mounts than it does. Expected mounts is a real quantity that the
 -- planner summary and the tooltips report to the player as fact. Corrupting it
@@ -613,7 +676,7 @@ R.Density = density
 --   strength 0.6  -> 1.6x per place (default)
 --   strength 1.5  -> 2.5x per place: effectively strict, top-of-list first
 --
--- The escape hatch matters and is the thing the user already said was reasonable:
+-- The escape hatch matters and is the thing the player already said was reasonable:
 -- a #7 that is right next to you and rolls four chances SHOULD beat a #1 across
 -- the world. A hard lexicographic sort could never express that.
 -- Can you FINISH it in one sitting?
@@ -704,12 +767,51 @@ R.PreferenceDivisor = preferenceDivisor
 -- amount of convenience is worth losing it. LOCKOUT becomes a multiplier the
 -- Deadline pressure slider controls, so it can be traded off like everything
 -- else.
+-- HOW MUCH OF THE WINDOW IS LEFT, not merely that there is one.
+--
+-- DAILY and WEEKLY both returned URGENCY.LOCKOUT and both got the same flat
+-- boost, so a weekly raid on THURSDAY -- with four days still to use it --
+-- pushed as hard as one on Monday night with three hours left. And by the same
+-- flatness a daily rare, whose window closes tonight, could never outrank it.
+--
+-- Pressure is the fraction of the window already spent: ~0 when it has just
+-- reset and nothing is at stake, ~1 as it closes and the roll is about to be
+-- lost. A daily six hours from reset is 75% spent; a weekly on Thursday is
+-- about 43%. The daily leads, which is what "use it or lose it" actually means.
+local SECONDS_DAY, SECONDS_WEEK = 86400, 604800
+
+local function windowPressure(rec)
+	if not rec then return nil end
+	local cadence = rec.attempts or (rec.instance and rec.instance.lockout)
+	local left, window
+	if cadence == "DAILY" then
+		window = SECONDS_DAY
+		left = GetQuestResetTime and GetQuestResetTime() or nil
+	elseif cadence == "WEEKLY" then
+		window = SECONDS_WEEK
+		left = C_DateAndTime and C_DateAndTime.GetSecondsUntilWeeklyReset
+			and C_DateAndTime.GetSecondsUntilWeeklyReset() or nil
+	else
+		return nil
+	end
+	-- No clock from the client: fall back to treating the window as half
+	-- spent. Guessing "about to close" would make every lockout scream.
+	if not left or left <= 0 or left > window then return 0.5 end
+	return 1 - (left / window)
+end
+
+-- Exposed so /mm can assert the scaling rather than trust it.
+R.WindowPressure = windowPressure
+
 local function urgencyBoost(s)
 	local P = MM.Planner
 	if not (P and s.urgency) then return 1 end
 	if s.urgency == P.URGENCY.LOCKOUT then
 		local W = MM.Weights
-		return 1 + ((W and W.Get) and W.Get("urgency") or 1)
+		local weight = (W and W.Get) and W.Get("urgency") or 1
+		local pressure = windowPressure(s.rec)
+		if pressure then return 1 + weight * pressure end
+		return 1 + weight
 	end
 	return 1
 end
@@ -733,7 +835,7 @@ end
 -- had ever touched a routing decision, while the self-test cheerfully reported
 -- "all 8 weights move a routing input".
 --
--- They are lenses, not corrections to the measurement -- the rule the user set when
+-- They are lenses, not corrections to the measurement -- the rule the player set when
 -- he caught the first version dividing expected mounts by priority rank
 -- ("that feels like gaming currency"). Density stays an honest quantity; these
 -- change how hard the player wants to look at part of it.
@@ -847,9 +949,49 @@ function nearestChain(steps, start)
 		-- order the plan happened to be in and ignored travel completely.
 		-- An offline run made it obvious: two very different scenarios produced
 		-- byte-identical routes.
+		-- A CHART WE ALREADY HAVE IS AN ORDER WE DO NOT HAVE TO RE-DERIVE.
+		--
+		-- This scan is the expensive part of the whole build: for every stop it
+		-- prices travel to every remaining candidate -- O(n^2), roughly 5,400
+		-- Journey searches on a 104-stop plan, and the reason a login froze.
+		--
+		-- Restoring the stored chart used to skip only the 2-opt, which for a
+		-- strict-priority player does nothing at all, so the freeze survived
+		-- every attempt to cache it. The decision that actually costs time is
+		-- THIS one, so when a valid chart says where each stop goes, the choice
+		-- is read instead of recomputed and only the winner is priced.
+		local rank = R.chartRank
+		if rank then
+			local bi, br
+			for i, s in ipairs(pool) do
+				local id = s.entry and s.entry.spellID
+				local r = id and rank[id]
+				for _, m in ipairs(s.members or {}) do
+					local mid = m.entry and m.entry.spellID
+					local mr = mid and rank[mid]
+					if mr and (not r or mr < r) then r = mr end
+				end
+				-- Anything the chart does not know keeps its place at the end.
+				r = r or (1e9 + i)
+				if not bi or r < br then bi, br = i, r end
+			end
+			local chosen = tremove(pool, bi)
+			local minutes, method = travelMinutes(state, chosen)
+			chosen.arriveMinutes, chosen.arriveBy = minutes, method
+			tinsert(ordered, chosen)
+			if method then state.used[method.key] = true end
+			advanceState(state, chosen)
+		else
+
+		-- Hand the frame back if we have held it too long. This is the only
+		-- place that needs it: it is where the graph searches are.
+		if R.ShouldYield and R.ShouldYield() then R.Yield() end
+
 		local bestI, bestScore, bestTime, bestMethod
 		for i, s in ipairs(pool) do
-			local minutes, method = travelMinutes(state, s)
+			-- Numbers only: every candidate but one is discarded, and the
+			-- winner's directions are built once, after the choice.
+			local minutes, method = travelMinutes(state, s, false)
 			local d = selectionScore(s, minutes * scale, s.workMinutes)
 			if not bestI or d > bestScore + 1e-12
 				or (d > bestScore - 1e-12 and minutes < bestTime) then
@@ -857,12 +999,21 @@ function nearestChain(steps, start)
 			end
 		end
 		local nextStep = tremove(pool, bestI)
-		nextStep.arriveMinutes, nextStep.arriveBy = bestTime, bestMethod
+		-- NOW build the real directions -- once, for the one we chose.
+		--
+		-- The selection above deliberately skipped them, so bestMethod carries
+		-- a placeholder name and no legs. Leaving that on the stop would trade
+		-- the freeze for a route that cannot tell you how to get anywhere.
+		-- One described leg per stop is 104 of them, not 5,400.
+		local wMinutes, wMethod = travelMinutes(state, nextStep, true)
+		nextStep.arriveMinutes = wMinutes or bestTime
+		nextStep.arriveBy = wMethod or bestMethod
 		tinsert(ordered, nextStep)
 		-- Spending the teleport here is what makes the rest of the chain honest:
 		-- a hearthstone used on leg two is not available on leg nine.
 		if bestMethod then state.used[bestMethod.key] = true end
 		advanceState(state, nextStep)
+		end
 	end
 	return ordered
 end
@@ -1019,7 +1170,7 @@ local function weaveOpportunistic(route, extras, startWorld, startContinent)
 			-- A detour has to be worth taking, not merely short.
 			--
 			-- This weighed distance and nothing else, so Bloodthirsty Dreadwing
-			-- -- a mount the user cannot afford, expected value ZERO -- was slotted
+			-- -- a mount the player cannot afford, expected value ZERO -- was slotted
 			-- in at position ONE because it happened to be a minute off the
 			-- path. Free is not the same as worth doing, and the first thing in
 			-- a route is the one place that must never be filler.
@@ -1133,7 +1284,250 @@ local function routePool(steps, playerContinent, startWorld)
 	return out, cursor
 end
 
-function R:Build()
+-- What this route was charted FOR. If none of it has moved, the route standing
+-- in R.route is still the answer and re-deriving it is pure cost.
+--
+-- The plan is account-wide; the charted path is not. It depends on this
+-- character's teleports, faction, lockouts and the anchor it was charted from,
+-- so the signature carries all of those and the cache is per character.
+--
+-- Opening the main window re-ran the whole chart -- Journey.lua:1122 "script
+-- ran too long" -- for a route that had not changed since it was built.
+local function buildSignature()
+	local plan = MM.cdb and MM.cdb.plan or {}
+	-- SORTED, because the plan is a SET and its ORDER is an output.
+	--
+	-- P:Optimize rewrites cdb.plan into route order at the end of every chart.
+	-- Hashing the plan in order therefore made every build change its own
+	-- signature, so the stored chart could never match and every login
+	-- re-charted from scratch. Sorting makes the signature depend on WHICH
+	-- goals are planned, never on the order the last chart put them in.
+	local ids = {}
+	for i = 1, #plan do ids[i] = plan[i].spellID end
+	table.sort(ids)
+	local a = MM.Planner and MM.Planner.Anchor and MM.Planner.Anchor()
+	local W = MM.Weights
+	return table.concat({
+		UnitName and UnitName("player") or "?",
+		GetRealmName and GetRealmName() or "?",
+		#plan, table.concat(ids, ","),
+		-- The anchor's MAP, never its timestamp.
+		--
+		-- P:Optimize calls SetAnchor first, which stamps a fresh `at` every
+		-- time -- so the signature was different on every single build and the
+		-- cache could never hit. That is why logging out and back in still
+		-- re-charted: the chart was being saved and then never matched.
+		a and a.mapID or "?",
+		-- Session length is deliberately ABSENT. The chart is the optimal
+		-- order; a session is a view applied over it by ApplySession. Folding
+		-- the length in here would re-chart the whole route every time the
+		-- dropdown moved, which is the churn that made a 45-minute list look
+		-- like a different plan rather than a shorter one.
+		-- The weights that actually move the chart. Not a Signature() helper --
+		-- there isn't one, and the audit caught me inventing it.
+		W and W.Get and ("%s/%s/%s/%s"):format(W.Get("travel"), W.Get("effort"),
+			W.Get("odds"), W.Get("priority")) or "w",
+	}, "|")
+end
+
+-- Force the next Build to do real work: anything that changes the WORLD rather
+-- than the plan (a new flight point, a teleport learned) calls this.
+function R.Invalidate()
+	-- CLEARS THE IN-MEMORY MARKER ONLY. It must NOT delete the stored chart.
+	--
+	-- It used to, and MM_SCANNED -- which fires on every login as the journal
+	-- is read -- is wired to this. So the first thing that happened every
+	-- session was the saved chart being thrown away, and it could never
+	-- survive long enough to be matched. That is the whole login recalculation.
+	--
+	-- Deleting it was redundant anyway: the chart is only ever used when its
+	-- signature matches, so a world that has genuinely changed is already
+	-- rejected by the comparison. Forcing a rebuild and destroying the
+	-- evidence are two different things, and only the first was wanted.
+	R.builtSignature = nil
+end
+
+-- The finished order, as spellIDs, keyed by the signature it was charted for.
+-- Only the SEQUENCE is stored: everything else about a stop is derived from the
+-- database on load and would be stale the moment anything moved.
+function R.SaveChart(sig)
+	if not (MM.cdb and sig and #R.route > 0) then return end
+	local stops = {}
+	for _, stop in ipairs(R.route) do
+		local ids = {}
+		for _, m in ipairs(stop.members or { stop }) do
+			if m.entry and m.entry.spellID then ids[#ids + 1] = m.entry.spellID end
+		end
+		if #ids > 0 then stops[#stops + 1] = ids end
+	end
+	MM.cdb.chart = { sig = sig, stops = stops }
+end
+
+-- Reorder the freshly built stops into the stored sequence. Returns false when
+-- there is nothing valid to restore, and the caller then charts for real.
+--
+-- Anything the stored order does not mention keeps its relative place at the
+-- END rather than being dropped -- a goal added since must still appear, and
+-- silently losing one would be far worse than charting it in the wrong slot.
+function R.RestoreChart(sig)
+	local chart = MM.cdb and MM.cdb.chart
+	if not (chart and sig and chart.sig == sig and chart.stops) then return false end
+	local rank = {}
+	for i, ids in ipairs(chart.stops) do
+		for _, spellID in ipairs(ids) do
+			if rank[spellID] == nil then rank[spellID] = i end
+		end
+	end
+	local order, seen = {}, 0
+	for i, stop in ipairs(R.route) do
+		local best
+		for _, m in ipairs(stop.members or { stop }) do
+			local r = m.entry and rank[m.entry.spellID]
+			if r and (not best or r < best) then best = r end
+		end
+		if best then seen = seen + 1 end
+		-- Unknown stops sort after everything known, in the order they arrived.
+		order[stop] = best or (#chart.stops + i)
+	end
+	-- A chart that matches almost nothing is not worth trusting.
+	if seen == 0 then return false end
+	table.sort(R.route, function(a, b) return order[a] < order[b] end)
+	R.restoredChart = seen
+	return true
+end
+
+-- CHUNKED, IN ONE PLACE, FOR EVERY CALLER.
+--
+-- Charting a large plan is thousands of graph searches in a single frame, and
+-- the client simply stops until it finishes. Rather than ask each of the seven
+-- call sites to opt in -- which is how this gets missed the next time one is
+-- added -- the yielding lives inside Build itself.
+--
+-- The body runs as a coroutine. nearestChain, where the searches actually are,
+-- hands the frame back whenever it has held it for longer than the budget, and
+-- a ticker resumes it. Every caller keeps calling R:Build() exactly as before.
+--
+-- SMALL PLANS STAY SYNCHRONOUS. Below the threshold the coroutine is driven to
+-- completion before Build returns, so nothing that reads R.route immediately --
+-- the session fitter, the tests -- has its behaviour changed by this at all.
+local CHUNK_MS = 24            -- frame budget before handing control back
+local CHUNK_FROM_STOPS = 40    -- below this, finish in one go
+local building                 -- the coroutine, while one is in flight
+
+-- Called from inside the chain: true when we have held the frame long enough.
+function R.ShouldYield()
+	if not (building and R.chunkStartedAt and debugprofilestop) then return false end
+	return (debugprofilestop() - R.chunkStartedAt) > CHUNK_MS
+end
+
+function R.Yield()
+	-- NOT coroutine.isyieldable(): that is Lua 5.2+, and WoW is 5.1. Calling it
+	-- threw "attempt to call a nil value" on every build, which emptied the
+	-- plan. `coroutine.running()` returns the current coroutine (or nil on the
+	-- main thread) in 5.1, which is the same question asked in the dialect we
+	-- actually run in.
+	if building and coroutine.running() then
+		coroutine.yield()
+		R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
+	end
+end
+
+function R:Build(force)
+	-- A build already in flight owns R.route; asking again just lets it finish.
+	if building and coroutine.status(building) == "suspended" then return end
+	local sig = buildSignature()
+	if not force and R.builtSignature == sig and #R.route > 0 then
+		return
+	end
+	-- SAY WHY, when it did not hit.
+	--
+	-- Four rounds went on inferring why the cache missed. A cache that cannot
+	-- explain itself is a cache nobody can fix, so it names the component that
+	-- differed instead of leaving it to be guessed at.
+	local stored = MM.cdb and MM.cdb.chart
+	R.cacheWhy = nil
+	if not stored then
+		R.cacheWhy = "no chart stored for this character yet"
+	elseif stored.sig ~= sig then
+		local was, now = {}, {}
+		for part in tostring(stored.sig):gmatch("[^|]*") do was[#was + 1] = part end
+		for part in sig:gmatch("[^|]*") do now[#now + 1] = part end
+		local LABEL = { "character", "realm", "plan size", "plan contents",
+			"anchor map", "weights" }
+		for i = 1, math.max(#was, #now) do
+			if was[i] ~= now[i] then
+				R.cacheWhy = ("%s changed (%s -> %s)"):format(
+					LABEL[i] or ("field " .. i),
+					tostring(was[i]):sub(1, 24), tostring(now[i]):sub(1, 24))
+				break
+			end
+		end
+		R.cacheWhy = R.cacheWhy or "signature differs"
+	end
+
+	R.builtSignature = sig
+
+	local n = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
+	R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
+	building = coroutine.create(function() R.RunBuild(sig) end)
+	-- CHUNKING IS OFF, DELIBERATELY.
+	--
+	-- RunBuild wipes R.route before it refills it, and Build returns early
+	-- while a coroutine is still suspended. So any second call during a
+	-- chunked build -- opening the window, a plan edit, a scan -- saw an empty
+	-- or half-filled route and drew it: six mounts after a login, nothing at
+	-- all after reopening the window. A plan that loses its goals is far worse
+	-- than a plan that takes a moment to appear.
+	--
+	-- Making this safe needs the route built into a SCRATCH list and swapped in
+	-- only when complete, so a partial state is never observable. That is the
+	-- fix, and it is not a flag flip -- so until it is written, every build
+	-- runs to completion in one frame exactly as it always did.
+	local chunked = false
+
+	local function pump()
+		if not building then return end
+		R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
+		local ok, err = coroutine.resume(building)
+		if not ok then
+			building = nil
+			if MM.Print then MM:Print("|cffff5555route build failed|r -- %s",
+				tostring(err):sub(-140)) end
+			return
+		end
+		if coroutine.status(building) == "dead" then
+			building = nil
+			MM:Fire("MM_ROUTE_ADVANCED")
+			return
+		end
+		if chunked then C_Timer.After(0, pump) end
+	end
+
+	if chunked then
+		pump()
+	else
+		-- Small plan: drive it to completion before returning, so every
+		-- existing caller sees exactly what it saw before.
+		while building and coroutine.status(building) == "suspended" do pump() end
+		building = nil
+	end
+end
+
+function R.RunBuild(sig)
+	-- A stored chart for THIS signature means the order is already decided.
+	-- nearestChain reads it instead of re-deriving it, which is where the
+	-- login freeze actually lived -- the 2-opt skip never touched it.
+	R.chartRank = nil
+	local stored = MM.cdb and MM.cdb.chart
+	if stored and stored.sig == sig and stored.stops then
+		local rank = {}
+		for i, ids in ipairs(stored.stops) do
+			for _, spellID in ipairs(ids) do
+				if rank[spellID] == nil then rank[spellID] = i end
+			end
+		end
+		R.chartRank = rank
+	end
 	local startedAt = debugprofilestop and debugprofilestop() or nil
 	wipe(R.route); wipe(R.unrouted); wipe(R.deferred)
 
@@ -1473,18 +1867,40 @@ function R:Build()
 	-- ending early simply continues.
 	R.ApplySession = function()
 		local S = MM.Session
+		-- THE BASE ORDER IS NEVER OVERWRITTEN.
+		--
+		-- This reordered R.route in place, so the session's order became the
+		-- only order there was: going back to "No limit" had nothing to return
+		-- to. The un-sessioned order is kept aside and every application starts
+		-- from it, so a session is a view that can always be closed.
+		if R.baseOrder then
+			wipe(R.route)
+			for _, stop in ipairs(R.baseOrder) do R.route[#R.route + 1] = stop end
+		end
 		local st = S and S.Active and S.Active()
 		if not (st and S.Fit and R.route and #R.route > 0) then return end
 		local chosen = S.Fit(st.minutes)
 		if not chosen or #chosen == 0 then return end
+		-- S.Fit RETURNS WRAPPERS, NOT STOPS.
+		--
+		-- Each entry is { stop = <the stop>, travel = n, at = n }. This treated
+		-- them as stops, so two things broke at once: `inSession` was keyed on
+		-- wrappers and never matched a real stop, and the wrappers themselves
+		-- were pushed into R.route.
+		--
+		-- A wrapper has no `members`, so the UI's `step.members or { step }`
+		-- fell back to a single row -- which is why five Island Expedition
+		-- mounts sat at stop 1 with no session limit and split into stops 1, 2
+		-- and 3 the moment one was set. Nothing was ungrouping them; the group
+		-- was being replaced by a table that never had one.
 		local inSession = {}
-		for _, stop in ipairs(chosen) do inSession[stop] = true end
+		for _, sel in ipairs(chosen) do inSession[sel.stop] = true end
 		local rest = {}
 		for _, stop in ipairs(R.route) do
 			if not inSession[stop] then rest[#rest + 1] = stop end
 		end
 		wipe(R.route)
-		for _, stop in ipairs(chosen) do R.route[#R.route + 1] = stop end
+		for _, sel in ipairs(chosen) do R.route[#R.route + 1] = sel.stop end
 		for _, stop in ipairs(rest) do R.route[#R.route + 1] = stop end
 		st.planned = #chosen
 	end
@@ -1525,7 +1941,22 @@ function R:Build()
 	-- The final adjudicator. It respects preference -- that is what
 	-- selectionScore carries -- but it is not bound by it, and where the two
 	-- disagree the clock wins. Total plan time is the objective.
-	R.ImproveTotalTime(playerContinent, playerWorld)
+	-- THE ORDER SURVIVES A LOGOUT.
+	--
+	-- R.builtSignature is a Lua local, so a reload wiped it and an unchanged
+	-- plan on the same character re-charted from scratch at every login --
+	-- "Journey.lua: script ran too long" for a decision that had already been
+	-- made two minutes earlier.
+	--
+	-- Deciding the order is the expensive part; the order itself is a list of
+	-- spellIDs. So it is written to the CHARACTER's saved variables (the plan
+	-- is account-wide, the chart is not -- it depends on this character's
+	-- teleports, faction and lockouts) and restored when the signature still
+	-- matches. Restoring skips the 2-opt entirely, which is where the Dijkstras
+	-- live.
+	if not R.RestoreChart(R.builtSignature) then
+		R.ImproveTotalTime(playerContinent, playerWorld)
+	end
 	R.ApplyPreferenceCap()
 	for i, stop in ipairs(R.route) do stop.layerRouted = i end
 	R.Measure()
@@ -1533,16 +1964,21 @@ function R:Build()
 	-- Index the finished route so a goal can be asked what it was batched with.
 	-- Built here rather than searched on demand: the tooltip asks per row, and
 	-- rescanning the route for every hover is work we already did once.
-	wipe(R.stopBySpell)
-	for _, stop in ipairs(R.route) do
-		for _, member in ipairs(stop.members or { stop }) do
-			local e = member.entry
-			if e and e.spellID then R.stopBySpell[e.spellID] = stop end
-		end
-	end
+	R.Reindex()
 
 	-- The session's promise, applied AFTER every other layer and after the
 	-- stopBySpell index is built -- it only reorders, so the index stays valid.
+	-- Persist BEFORE the session reorder, not after: the session is a view of
+	-- the chart, not the chart. Storing the session's order would make the
+	-- restored route depend on whatever length happened to be picked last.
+	-- Charting is done: stop reading the old order, and record the new one.
+	R.chartRank = nil
+	R.SaveChart(R.builtSignature)
+	-- Snapshot BEFORE ApplySession, so the view always has something to
+	-- restore to without rebuilding anything.
+	R.baseOrder = {}
+	for i, stop in ipairs(R.route) do R.baseOrder[i] = stop end
+
 	if R.ApplySession then R.ApplySession() end
 
 	-- RESUME BY IDENTITY, NOT BY POSITION.
@@ -1636,7 +2072,7 @@ local MAX_IMPROVE_PASSES = 3
 -- The matrix kept reporting the same thing: IDENTICAL route -- but preference
 -- DID reorder (15 moved). Layer 1 works; layer 3 overrides it.
 --
--- That was the architecture working as specified. the user set routing as the final
+-- That was the architecture working as specified. the player set routing as the final
 -- adjudicator whose goal is total time, and two continent hops dwarf any
 -- preference multiplier, so geography won essentially every tie. The layered
 -- ordering table showed goals arriving 57 places ahead of where preference put
@@ -1644,7 +2080,7 @@ local MAX_IMPROVE_PASSES = 3
 --
 -- The system therefore spanned both extremes and had no middle: "geography
 -- decides" at normal strength, "order decides outright" past 1.45, and very
--- little in between. the user chose the cap.
+-- little in between. the chosen middle ground is the cap.
 --
 -- THE RULE: a stop may not sit more than `cap` places from where preference
 -- wanted it. Inside that band the clock is still completely free -- which is
@@ -1859,6 +2295,18 @@ function R.ImproveTotalTime(playerContinent, playerWorld)
 	return R.timeSaved
 end
 
+-- Rebuild the goal -> stop index. Called after anything reorders R.route,
+-- including the session view, or a goal would report the stop it used to be in.
+function R.Reindex()
+	wipe(R.stopBySpell)
+	for _, stop in ipairs(R.route) do
+		for _, member in ipairs(stop.members or { stop }) do
+			local e = member.entry
+			if e and e.spellID then R.stopBySpell[e.spellID] = stop end
+		end
+	end
+end
+
 -- The stop a goal currently sits in, or nil if the route has not been built.
 function R.StopFor(spellID)
 	return spellID and R.stopBySpell[spellID] or nil
@@ -1923,7 +2371,7 @@ function R.Measure()
 		mounts = mounts + (stop.mounts or 0)
 		stop.cumulativeMinutes = minutes
 		stop.cumulativeMounts = mounts
-		-- the user rather than truncate. Cutting the route at the session length
+		-- the player rather than truncate. Cutting the route at the session length
 		-- would hide work from someone who turns out to have longer; a line
 		-- across it tells them where they stand without deciding for them.
 		stop.pastSession = false
@@ -2249,6 +2697,47 @@ function R:Advance(step)
 	end
 	if nextIndex < 1 then nextIndex = 1 end
 	MM.cdb.routeIndex = nextIndex
+
+	-- FINISHING A GOAL IS WHERE THE PLAN IS ALLOWED TO MOVE ON.
+	--
+	-- The rest of the route was charted from wherever you started. By the time
+	-- a goal is done you are somewhere else -- and if you got there your own
+	-- way, teleporting to Orgrimmar instead of taking the taxi we suggested,
+	-- you may be somewhere else entirely. Re-anchoring here charts what is
+	-- left from where you ACTUALLY stand.
+	--
+	-- This is the only automatic re-chart, and it is deliberately tied to
+	-- completing a leg rather than to moving: moving changes the DIRECTIONS to
+	-- the current goal, which are live anyway, and must never reshuffle the
+	-- order underneath someone who is halfway to it.
+	--
+	-- Everything already visited keeps its place -- routeIndex is preserved
+	-- across the rebuild, and stops behind it are not re-ordered.
+	local goal = R:Current()
+	if MM.Planner and MM.Planner.SetAnchor then
+		MM.Planner.SetAnchor()
+		R.Invalidate()
+		R:Build()
+		-- Build reorders what is left, so hold onto the goal we advanced TO by
+		-- identity rather than by index -- the same rule the resume path uses,
+		-- for the same reason.
+		local sid = goal and goal.entry and goal.entry.spellID
+		if sid then
+			for i, stop in ipairs(R.route) do
+				if stop.entry and stop.entry.spellID == sid then
+					MM.cdb.routeIndex = i
+					break
+				end
+				for _, m in ipairs(stop.members or {}) do
+					if m.entry and m.entry.spellID == sid then
+						MM.cdb.routeIndex = i
+						break
+					end
+				end
+			end
+		end
+	end
+
 	MM.Nav.SetWaypoint(R:Current())
 	MM:Fire("MM_ROUTE_ADVANCED")
 end
@@ -2413,6 +2902,38 @@ end
 
 MM:On("MM_ROUTE_STARTED", startPoller)
 MM:On("MM_ROUTE_STOPPED", stopPoller)
+
+-- The WORLD changed, not the plan: a lockout taken or lifted, a flight point
+-- lifted, or the collection rescanned. The signature cannot see these, so they
+-- say so outright rather than being inferred.
+MM:On("MM_LOCKS", R.Invalidate)
+MM:On("MM_SCANNED", R.Invalidate)
+
+-- A SESSION IS A VIEW, AND A VIEW HAS TO BE ABLE TO CLOSE.
+--
+-- ApplySession reorders R.route IN PLACE, and nothing re-charted when the
+-- session ended -- so picking a length and then going back to "No limit" left
+-- the session's order standing for good. That is the exact symptom: the order
+-- is right, wrong once a limit is set, and never comes back.
+--
+-- Only the in-memory signature is cleared, NOT the stored chart. The chart is
+-- saved before ApplySession, so it holds the un-sessioned order: the rebuild
+-- restores it and then applies whatever the session now is, or nothing at all.
+-- Cheap either way -- no Dijkstra runs, because the ordering decision is not
+-- being remade.
+MM:On("MM_SESSION_CHANGED", function()
+	-- Re-APPLY, do not re-chart. The base order is already in hand, so this
+	-- costs nothing and cannot change which stops were chosen or in what
+	-- order the chart put them.
+	if R.baseOrder and #R.baseOrder > 0 then
+		if R.ApplySession then R.ApplySession() end
+		R.Reindex()
+		MM:Fire("MM_ROUTE_ADVANCED")
+	else
+		R.builtSignature = nil
+		R:Build()
+	end
+end)
 
 -- Plan edits invalidate the route order.
 MM:On("MM_PLAN_CHANGED", function()

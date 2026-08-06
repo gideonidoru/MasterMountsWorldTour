@@ -198,7 +198,7 @@ end
 --
 -- Twelve route builds plus twelve full re-rankings is real work however fast
 -- each one is, and doing it inside a single call means the client stops dead
--- for the duration. the user watched exactly that happen. A diagnostic tool that
+-- for the duration. the player watched exactly that happen. A diagnostic tool that
 -- freezes the game to tell you about performance is its own punchline.
 --
 -- Each scenario yields to the frame loop, so the client stays responsive and

@@ -91,7 +91,7 @@ end
 -- The step of a chain this character is actually on.
 --
 -- A chain is not one destination, it is a sequence of them, and sending someone
--- to the final quest giver before they have earned the right to talk to him is
+-- to the final quest giver before they have earned the right to talk to them is
 -- the same failure as sending them nowhere. So we walk the steps, ask the game
 -- which are already done, and hand back the first one that is not.
 --

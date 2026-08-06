@@ -92,42 +92,43 @@ local function initPlanRow(row, data)
 
 		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, -1)
-		row.name:SetPoint("RIGHT", -66, 0)
+		-- 66px was three buttons wide. With the arrows gone only the
+		-- [-] remains, so the name gets 20px back -- these truncate.
+		row.name:SetPoint("RIGHT", -46, 0)
 		row.name:SetJustifyH("LEFT")
 		row.name:SetWordWrap(false)
 
 		row.est = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		row.est:SetPoint("BOTTOMLEFT", row.icon, "BOTTOMRIGHT", 6, 1)
-		row.est:SetPoint("RIGHT", -66, 0)
+		row.est:SetPoint("RIGHT", -46, 0)
 		row.est:SetJustifyH("LEFT")
 		row.est:SetTextColor(0.4, 0.8, 1)
 		row.est:SetWordWrap(false)
 
-		row.remove = MM.Theme.CreateCloseButton(row, 14)
+		-- The SAME control the missing list uses, so one gesture means one
+		-- thing everywhere: [+] puts a mount on the plan, [-] takes it off.
+		-- This was an [x] close glyph, which reads as "dismiss this row"
+		-- rather than "take this off the plan".
+		row.remove = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+		row.remove:SetSize(38, 20)
 		row.remove:SetPoint("RIGHT", -4, 0)
+		row.remove:SetText("-")
 		row.remove.mmTooltip = "Remove from plan"
 		row.remove:SetScript("OnClick", function(self)
 			MM.Planner:Remove(self:GetParent().entry.spellID)
 		end)
-		MM.Theme.Register(row.remove, "glyph")
+		MM.Theme.Register(row.remove, "button")
 
-		row.up = CreateFrame("Button", nil, row)
-		row.up:SetSize(18, 18)
-		row.up:SetPoint("RIGHT", row.remove, "LEFT", -2, 9)
-		row.up:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up")
-		row.up:SetScript("OnClick", function(self)
-			MM.Planner:Move(self:GetParent().entry.spellID, -1)
-		end)
-		MM.Theme.Register(row.up, "glyph")
-
-		row.down = CreateFrame("Button", nil, row)
-		row.down:SetSize(18, 18)
-		row.down:SetPoint("RIGHT", row.remove, "LEFT", -2, -9)
-		row.down:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
-		row.down:SetScript("OnClick", function(self)
-			MM.Planner:Move(self:GetParent().entry.spellID, 1)
-		end)
-		MM.Theme.Register(row.down, "glyph")
+		-- NO UP/DOWN ARROWS.
+		--
+		-- The plan charts itself now: every add, removal and lockout re-slots
+		-- the order by preference, shared stops and travel time. An arrow that
+		-- nudges a row one place would be undone by the next change, so it did
+		-- not give you control -- it implied control that was not there, and a
+		-- misleading affordance is worse than an absent one.
+		--
+		-- Removing a goal is the real control, and it is the same [-] the
+		-- missing-mounts list uses.
 
 		row:SetScript("OnEnter", function(self) UI.ShowMountTooltip(self, self.entry) end)
 		row:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -177,11 +178,13 @@ end
 -- Panel
 ------------------------------------------------------------
 function UI.BuildPlanner(panel)
-	-- restore persisted filter state
+	-- Restored at LOGIN now, not here -- see Planner.RestoreFilters. Doing it
+	-- at panel-build time meant the login warm-up used the defaults and its
+	-- work was thrown away the moment the window opened. Still called here so
+	-- the panel cannot draw against unrestored filters if it somehow builds
+	-- before the first scan.
+	MM.Planner.RestoreFilters()
 	local saved = MM.db and MM.db.ui or {}
-	MM.Planner.filters.onlyAvailable = saved.plnAvailable or false
-	MM.Planner.filters.category = saved.plnCategory or nil
-	MM.Planner.filters.sort = saved.plnSort or nil
 
 	-- toolbar band behind the button row
 	local band = panel:CreateTexture(nil, "BORDER")
@@ -195,8 +198,15 @@ function UI.BuildPlanner(panel)
 	local autoBtn = UI.MakeButton(panel, "Auto-Plan All")
 	autoBtn:SetPoint("TOPLEFT", 8, -4)
 	autoBtn:SetScript("OnClick", function()
+		-- Returns what it WILL add: the adding now runs across frames so the
+		-- progress bar can actually move, so it has not finished by the time
+		-- this returns.
 		local n = MM.Planner:AutoPlanAll()
-		MM:Print("Added %d mounts to the plan.", n)
+		if n == 0 then
+			MM:Print("Everything plannable is already on your plan.")
+		else
+			MM:Print("Adding %d mounts to the plan...", n)
+		end
 	end)
 
 	local easyBtn = UI.MakeButton(panel, "Add 10 Easiest")
@@ -358,11 +368,63 @@ function UI.BuildPlanner(panel)
 	panel.planEmpty = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	panel.planEmpty:SetPoint("TOPLEFT", 540, -140)
 	panel.planEmpty:SetWidth(360)
+	-- There is no Optimize button any more -- the plan charts itself the moment
+	-- you change it -- and this line was still telling people to press one.
 	panel.planEmpty:SetText("Your farm plan is empty.\n\nAdd mounts with the [+] buttons,"
-		.. " or use Auto-Plan / Add 10 Easiest, then press Optimize and Start Route.")
+		.. " or use Auto-Plan / Add 10 Easiest. The plan charts itself as soon as"
+		.. " you add something; then press Start Route.")
 	panel.planEmpty:SetTextColor(0.55, 0.55, 0.6)
 	panel.planEmpty:Hide()
 	panel.planEmptyRef = panel.planEmpty
+
+	-- WORKING NOTICE, in the middle of the plan pane.
+	--
+	-- Auto-Plan walks the whole collection and then charts it, which is a
+	-- visible pause with nothing on screen -- and a UI that goes quiet under
+	-- load reads as broken rather than busy.
+	--
+	-- There is NO progress bar. The add sweep can be counted and is; the
+	-- charting is one call into the router that cannot report from inside, and
+	-- a bar sweeping through it would be measuring nothing while looking like
+	-- it measured something. So the counted part shows its count, the
+	-- uncountable part says plainly that the client will feel stuck, and the
+	-- whole notice is replaced by the plan itself when the work lands.
+	local notice = CreateFrame("Frame", nil, panel)
+	notice:SetPoint("TOPLEFT", 470, -66)
+	notice:SetPoint("BOTTOMRIGHT", -26, 48)
+	notice:SetFrameLevel(panel:GetFrameLevel() + 10)
+
+	notice.bg = notice:CreateTexture(nil, "BACKGROUND")
+	notice.bg:SetAllPoints()
+	notice.bg:SetColorTexture(0.03, 0.03, 0.05, 0.88)
+
+	notice.head = notice:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	notice.head:SetPoint("CENTER", 0, 22)
+	notice.head:SetTextColor(1, 0.82, 0.2)
+
+	notice.body = notice:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	notice.body:SetPoint("TOP", notice.head, "BOTTOM", 0, -14)
+	notice.body:SetWidth(380)
+	notice.body:SetJustifyH("CENTER")
+	notice.body:SetTextColor(0.75, 0.75, 0.8)
+	notice:Hide()
+	panel.notice = notice
+
+	MM:On("MM_PLAN_PROGRESS", function(done, total, phase)
+		if not phase then notice:Hide() return end
+		notice:Show()
+		if done and total and total > 0 and done < total then
+			notice.head:SetText(("Adding mounts -- %d of %d"):format(done, total))
+			notice.body:SetText("")
+		else
+			notice.head:SetText("Charting the optimal route")
+			notice.body:SetText(total and total > 0
+				and (("%d goals. This may take a moment, and your client may feel "
+					.. "unresponsive until it finishes."):format(total))
+				or "This may take a moment, and your client may feel unresponsive "
+					.. "until it finishes.")
+		end
+	end)
 
 	-- The primary action on this screen, and it looked like every other button.
 	-- Everything else here is preparation; this is the one that starts you

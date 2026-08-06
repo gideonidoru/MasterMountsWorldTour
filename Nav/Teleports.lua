@@ -431,12 +431,12 @@ local TELEPORT_OVERHEAD_MINUTES = 0.5
 ------------------------------------------------------------
 -- Portal hubs
 ------------------------------------------------------------
--- the user, standing in Zuldazar with three Orgrimmar teleports in his bags, was
+-- the player, standing in Zuldazar with three Orgrimmar teleports in their bags, was
 -- told to fly to the Dazar'alor portal room and "take the portal to Orgrimmar,
 -- then the Dornogal portal". The engine had rejected all three of those items
 -- with "lands on a different continent".
 --
--- The instruction refutes the rejection. The route WANTED him in Orgrimmar --
+-- The instruction refutes the rejection. The route WANTED the player in Orgrimmar --
 -- Orgrimmar is not a different continent to be avoided, it is the portal room
 -- he was being sent to reach the long way round. A landing is not only useful
 -- where it lands; it is useful for everywhere it CONNECTS to.
@@ -711,7 +711,7 @@ function TP.Evaluate(goalContinent, goalWorld, flyCost)
 				ok, why = false, "destination has no world position"
 			elseif continent ~= goalContinent then
 				-- Not where we are going -- but a portal hub is not a dead end.
-				-- This is the rejection that sent the user flying to a portal room
+				-- This is the rejection that sent the player flying to a portal room
 				-- he had three items to skip.
 				local extra, arrival = hubReach(placeName, goalContinent)
 				if extra then

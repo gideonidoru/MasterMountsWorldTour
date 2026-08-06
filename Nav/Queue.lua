@@ -4,7 +4,7 @@
 -- respected in the nav (the arrow should change to the random dungeon queue,
 -- etc).
 --
--- Infinite Timereaver was sitting at the top of his route with an arrow
+-- Infinite Timereaver sat at the top of the route with an arrow
 -- pointing at a location, because the router treats every goal as a place. It
 -- is not a place. It drops from **any** Timewalking dungeon, and the way you
 -- get to a Timewalking dungeon is the Dungeon Finder — there is nothing to fly

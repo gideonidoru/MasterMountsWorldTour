@@ -46,7 +46,7 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
 			-- SAY IT IN CHAT AS WELL AS TO THE ERROR HANDLER.
 			--
 			-- Retail hides Lua errors by default, so a handler that threw left
-			-- the user with nothing at all: /mm routertest printed "Modelling
+			-- the player with nothing at all: /mm routertest printed "Modelling
 			-- the router..." and then silence -- no window, no output, no
 			-- error. The command looked like it did nothing, which is the
 			-- hardest kind of failure to report and the easiest to fix.
@@ -141,7 +141,7 @@ function MM:Fire(message, ...)
 			-- SAY IT IN CHAT AS WELL AS TO THE ERROR HANDLER.
 			--
 			-- Retail hides Lua errors by default, so a handler that threw left
-			-- the user with nothing at all: /mm routertest printed "Modelling
+			-- the player with nothing at all: /mm routertest printed "Modelling
 			-- the router..." and then silence. No window, no output, no error.
 			-- The command looked like it simply did nothing, which is the
 			-- hardest kind of failure to report and among the easiest to fix.
@@ -317,8 +317,8 @@ local charDefaults = {
 
 -- THE PLAN BELONGS TO THE ACCOUNT, NOT THE CHARACTER.
 --
--- Mounts are collected account-wide, and the router now says things like
--- "Kaeleth already qualifies" -- so following its advice meant logging into a
+-- Mounts are collected account-wide, and the router can report that another
+-- character already qualifies -- so following its advice meant logging into a
 -- character with an empty plan and no idea where you were. The plan followed
 -- you nowhere.
 --
@@ -398,7 +398,7 @@ end)
 
 ------------------------------------------------------------
 -- Wowhead link popup (addons cannot open browsers; best possible
--- is a select-all editbox the user copies from)
+-- is a select-all editbox the player copies from)
 ------------------------------------------------------------
 StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"] = {
 	text = "Wowhead page for %s\n(Ctrl+C to copy, then paste in your browser)",

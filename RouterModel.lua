@@ -89,15 +89,34 @@ end
 -- landings. An invented teleport lands at an invented place and would prove
 -- the router works on a world that does not exist; a filtered one keeps every
 -- real destination and cooldown and only varies what is owned.
+-- What an ordinary character carries: the two hearthstones, and the faction
+-- cloaks that bind to a capital. Deliberately NOT the engineering wormholes,
+-- the class spells or the dungeon teleports -- those are what "all" is for.
+local TYPICAL_KEYS = {
+	hearth = true, ghearth = true,
+	cloak_coord = true, wrap_unity = true, shroud_coop = true,
+}
+
 local PROFILES = {
 	{ key = "none",    label = "no teleports at all (fresh character)",
 	  allow = function() return false end },
 	{ key = "hearth",  label = "hearthstone only",
 	  allow = function(k) return k == "hearth" end },
-	{ key = "typical", label = "hearthstone + the common portals",
+	-- A VOCABULARY YOU ASSUME IS A VOCABULARY YOU GET WRONG.
+	--
+	-- This matched keys containing "portal", "dalaran", "garrison" or "hall".
+	-- The teleport keys are hearth, ghearth, wh_*, tp_*, cloak_coord,
+	-- wrap_unity, shroud_coop, naaru, deathgate, moonglade, dreamwalk,
+	-- zenpilgrimage -- not one of which contains any of those words. So
+	-- "typical" selected exactly what "hearth" did and the two profiles
+	-- printed byte-identical output, for as long as the profile has existed.
+	--
+	-- Named outright now, against the keys that exist. A set cannot silently
+	-- match nothing the way a substring can, and the invariant below fails if
+	-- two profiles ever collapse into one again.
+	{ key = "typical", label = "hearthstone, garrison hearth and the faction cloaks",
 	  allow = function(k)
-		return k == "hearth" or k:find("portal") ~= nil or k:find("dalaran") ~= nil
-			or k:find("garrison") ~= nil or k:find("hall") ~= nil
+		return TYPICAL_KEYS[k] == true
 	  end },
 	{ key = "all",     label = "everything this character actually owns",
 	  allow = function() return true end },
@@ -238,14 +257,30 @@ local function withProfile(profile, fn)
 	-- way out, so no profile inherits another's cache and the player's real
 	-- session is not left holding the last profile's answers.
 	if MM.Journey and MM.Journey.ForgetPlans then MM.Journey.ForgetPlans() end
+	-- THE BUILD CACHE DOES NOT KNOW ABOUT CAPABILITY.
+	--
+	-- Teleports are deliberately absent from the build signature, so every
+	-- profile matched the previous one's chart and Build returned early with
+	-- the SAME route -- which is why "no teleports at all" reported eight
+	-- teleport legs and all four profiles printed 105 identical stops. The
+	-- harness is the one caller that must always re-chart.
+	local R = MM.Router
+	local savedSig, savedRank = R and R.builtSignature, R and R.chartRank
+	if R then R.builtSignature, R.chartRank = nil, nil end
 
 	local ok, err = pcall(fn)
+	if R then R.builtSignature, R.chartRank = savedSig, savedRank end
 	TP.Options, TP.Landings, TP.Refresh = realOptions, realLandings, realRefresh
 	TP.TravelMinutes = realTravel
 
 	if MM.Journey and MM.Journey.ForgetPlans then MM.Journey.ForgetPlans() end
 	if not ok then error(err, 0) end
-	return #allowed
+	-- The SET, not just the size. Two profiles selecting three teleports each
+	-- is not the same as two profiles selecting the same three.
+	local keys = {}
+	for _, l in ipairs(allowed) do keys[#keys + 1] = tostring(l.key or "?") end
+	table.sort(keys)
+	return #allowed, table.concat(keys, ",")
 end
 
 -- Everything we want to say about one (sample, profile) pair.
@@ -364,6 +399,26 @@ local function checkInvariants(results, sample)
 		end
 	end
 
+	-- A PROFILE THAT SELECTS WHAT ANOTHER SELECTS IS NOT A PROFILE.
+	--
+	-- "typical" filtered on key substrings -- "portal", "dalaran", "garrison",
+	-- "hall" -- that appear in no teleport key we ship, so it selected exactly
+	-- what "hearth" did and the two printed identical output for as long as it
+	-- existed. Every other invariant passed: monotonicity holds trivially
+	-- between two copies of one answer. Comparing the SETS is what catches it,
+	-- and it catches the next mistyped filter too.
+	for i = 1, #results do
+		for k = i + 1, #results do
+			local a, b = results[i], results[k]
+			if a.landings == b.landings and a.landingKeys and b.landingKeys
+				and a.landingKeys == b.landingKeys then
+				fail("[%s] and [%s] select the SAME %d teleport(s) (%s) -- "
+					.. "one of them is not testing anything",
+					a.profile.key, b.profile.key, a.landings, a.landingKeys)
+			end
+		end
+	end
+
 	-- "Exercised" means THE PROFILES DIFFERED, not that some teleport was used.
 	--
 	-- The old test asked whether any profile used a teleport, which was true
@@ -410,12 +465,13 @@ function RM.Run(n)
 			-- Nothing was wrong with the capability filter. The measurement was
 			-- simply taken after it had been switched off.
 			local obs
-			local count = withProfile(profile, function()
+			local count, keysig = withProfile(profile, function()
 				MM.Router:Build()
 				obs = observe(sample)
 			end)
 			results[#results + 1] = {
-				profile = profile, landings = count or 0, obs = obs or observe(sample),
+				profile = profile, landings = count or 0, landingKeys = keysig,
+				obs = obs or observe(sample),
 			}
 		end
 	end)
@@ -492,8 +548,12 @@ function RM.Format(run)
 			-- travel + work = total, stated rather than implied. The two are
 			-- different kinds of cost and the router weighs them differently;
 			-- showing only travel hid the number that usually dominates.
-			w("        arrive: %-22s travel %.0f + do %s = %s%s",
-				st.arrive, st.travel,
+			-- "travel 0" for a leg that really took 40 seconds reads as a bug.
+			-- Sub-minute travel is stated in seconds; it is small, not absent.
+			w("        arrive: %-22s travel %s + do %s = %s%s",
+				st.arrive,
+				(st.travel or 0) < 1 and ("%.0fs"):format((st.travel or 0) * 60)
+					or ("%.0f"):format(st.travel),
 				st.work > 0 and ("%.0f"):format(st.work) or "?",
 				st.work > 0 and (MM.Util.FormatSeconds((st.travel + st.work) * 60))
 					or ("%.0f min"):format(st.travel),
@@ -568,6 +628,13 @@ function RM.TravelReport()
 				end
 			end
 		end
+		-- Whether the stored chart was reused, and if not, exactly why.
+		local R = MM.Router
+		if R then
+			w("  Chart cache    %s", R.cacheWhy
+				and ("MISS -- " .. R.cacheWhy)
+				or "HIT -- order restored, no re-charting")
+		end
 		w("  Flight times   %d nodes, %d measured hops, %d projected (%.1f%%)",
 			nodes, hops, projected, hops > 0 and (projected / hops * 100) or 0)
 		-- Loaded is not the same as WIRED. This says how many of those hops the
@@ -581,6 +648,29 @@ function RM.TravelReport()
 		if projected < hops then
 			w("     |cffff4444%d hops have no name mapping and cannot be routed|r",
 				hops - projected)
+		end
+		-- ISLANDS. A graph can hold every correct edge and still be in pieces,
+		-- and nothing here used to say so -- 47 zones had no way in at all.
+		local J = MM.Journey
+		if J and J.components then
+			w("  Islands        %d components, %d hold a goal; %d bridged by flying, "
+				.. "%d left alone (%d lookups)%s",
+				J.components, J.bridgeRelevant or 0, J.bridges or 0,
+				J.bridgeSkipped or 0, J.bridgeCompares or 0,
+				J.bridgeWhy and (" -- " .. J.bridgeWhy) or "")
+			for i, b in ipairs(J.bridgeDetail or {}) do
+				if i > 8 then
+					w("     ...and %d more", #J.bridgeDetail - 8)
+					break
+				end
+				w("     %s -> %s  (%.0f yd, %.1f min by air)",
+					b.from, b.to, b.yards or 0, b.minutes or 0)
+			end
+			if (J.bridgeSkipped or 0) > 0 then
+				w("     |cffffcc55%d island(s) have nothing on their own continent "
+					.. "to fly from -- not bridged rather than bridged wrongly|r",
+					J.bridgeSkipped)
+			end
 		end
 	end
 

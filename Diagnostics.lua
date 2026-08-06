@@ -424,9 +424,14 @@ MM:On("MM_GAPS_DEBUG", function()
 	-- which is how an unrated Mythic+ mount outranked quick legacy drops. It is
 	-- now assumed to be a typical boss rate instead, but an assumption is still
 	-- an assumption -- every one of these is a real number sitting on Wowhead.
+	-- Obtainable only, for the same reason the price list is: a rate for a
+	-- mount that no longer drops is not a gap anyone can close, and listing it
+	-- makes the backlog look larger than the work actually is.
 	local unrated, chancy = {}, 0
 	for _, rec in pairs(MM.DBByName) do
-		if rec.category == "DROP" or rec.category == "RARE" or rec.category == "ZONEDROP" then
+		if rec.obtainable
+			and (rec.category == "DROP" or rec.category == "RARE"
+			or rec.category == "ZONEDROP") then
 			chancy = chancy + 1
 			if not rec.dropRate then unrated[#unrated + 1] = rec.name end
 		end
@@ -451,17 +456,28 @@ MM:On("MM_GAPS_DEBUG", function()
 		-- needs materials, and a craft with no conditions block is a mount the
 		-- planner would otherwise treat as free. This is the list that turns
 		-- "charged as unknown" back into real data.
-		if (rec.category == "CURRENCY" or rec.category == "VENDOR"
+		-- ONLY WHAT SOMEONE CAN ACTUALLY GO AND BUY.
+		--
+		-- 62 of the 160 were mounts nobody can obtain any more -- 33 of them
+		-- MoP Remix, whose vendor and currency both left with the event. This
+		-- list exists to ask a player to stand at a till and read a price, and
+		-- it was sending them to tills that no longer exist.
+		if rec.obtainable
+			and (rec.category == "CURRENCY" or rec.category == "VENDOR"
 			or rec.category == "TIMEWALKING" or rec.category == "PROFESSION")
 			and not (rec.conditions and #rec.conditions > 0)
 			and not (rec.acquire)
 			and not (rec.source or ""):lower():find("gold") then
 			unpriced[#unpriced + 1] = rec.name
-			-- Whether the source text actually states a figure. The closing
-			-- line used to promise it always does; for most of these it does
-			-- not, and sending someone to look for a price that was never
-			-- written down wastes the one resource this list is asking for.
-			if (rec.source or ""):find("%d") then withNumber = withNumber + 1 end
+			-- Whether the source text states a PRICE, not merely a digit.
+			-- Counting any digit called "Renown 39", "added 11.0.7" and
+			-- "(10.1.5)" stated prices, and promised 77 figures that were
+			-- mostly patch numbers -- sending someone to look for a price
+			-- nobody ever wrote down wastes the one resource this list asks
+			-- for. A price is a quantity followed by what it is denominated in.
+			if (rec.source or ""):find("%d[%d,]+%s+%u") then
+				withNumber = withNumber + 1
+			end
 		end
 	end
 	if #unpriced > 0 then

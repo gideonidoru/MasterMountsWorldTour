@@ -109,25 +109,44 @@ local function mergeConditions(existing, incoming)
 	if type(existing) ~= "table" or #existing == 0 then return incoming end
 	if type(incoming) ~= "table" then return existing end
 
-	local byKey, order = {}, {}
+	-- AN ID AND A NAME FOR ONE REQUIREMENT ARE ONE REQUIREMENT.
+	--
+	-- conditionKey prefers the id, so { type = "ACHIEVEMENT", name = "Mount
+	-- Parade" } and { type = "ACHIEVEMENT", id = 8302, name = "Mount Parade" }
+	-- keyed differently and BOTH survived -- 25 records ended up requiring the
+	-- same thing twice, once with readable progress and once without, and the
+	-- planner charged both. A second index on type+name collapses them.
+	--
+	-- Two conditions of one type with DIFFERENT names stay separate, which is
+	-- the case the id-first key was protecting: a mount really can need two
+	-- currencies.
+	local byKey, byName, order = {}, {}, {}
+	local function nameKey(cond)
+		if not cond.name then return nil end
+		return (cond.type or "?") .. "\0" .. cond.name:lower()
+	end
 	local function absorb(cond)
-		local key = conditionKey(cond)
-		local prev = byKey[key]
+		local nk = nameKey(cond)
+		local prev = byKey[conditionKey(cond)] or (nk and byName[nk])
 		if prev then
 			for k, v in pairs(cond) do prev[k] = v end -- later file wins per-field
+			-- It may only NOW have an id, so re-index under both identities.
+			byKey[conditionKey(prev)] = prev
+			if nk then byName[nk] = prev end
 		else
 			local copy = {}
 			for k, v in pairs(cond) do copy[k] = v end
-			byKey[key] = copy
-			tinsert(order, key)
+			byKey[conditionKey(copy)] = copy
+			if nk then byName[nk] = copy end
+			-- Store the TABLE, not its key: absorbing an id changes the key,
+			-- and a list of stale keys would rebuild the wrong conditions.
+			tinsert(order, copy)
 		end
 	end
 	for _, cond in ipairs(existing) do absorb(cond) end
 	for _, cond in ipairs(incoming) do absorb(cond) end
 
-	local merged = {}
-	for _, key in ipairs(order) do tinsert(merged, byKey[key]) end
-	return merged
+	return order
 end
 
 -- Later files (overrides) may correct earlier records by name. Most fields
@@ -148,6 +167,77 @@ function MM.OverrideMount(name, fields)
 	-- came from a late override file -- so the index has to be maintained on
 	-- override too, or it would hold the 43 we started with.
 	if rec.itemID then MM.ItemToMount[rec.itemID] = rec end
+end
+
+-- Put an id on a condition that already exists, found by type and NAME.
+--
+-- OverrideMount cannot do this. conditionKey treats an id as authoritative, so
+-- passing { type = "QUEST", name = "...", id = 11012 } keys as QUEST\011012
+-- while the record's own condition keys as QUEST\0<name> -- the merge sees two
+-- different conditions and the record ends up requiring the same quest twice.
+--
+-- Returns true only when a condition was actually found and changed, so a
+-- generated file cannot quietly annotate nothing after a record is renamed.
+function MM.SetConditionID(mountName, kind, condName, id)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions and id) then return false end
+	local want = condName and condName:lower()
+	for _, cond in ipairs(rec.conditions) do
+		if cond.type == kind and not cond.id
+			and cond.name and cond.name:lower() == want then
+			cond.id = id
+			return true
+		end
+	end
+	return false
+end
+
+-- Put an AMOUNT on a condition that already names what it costs.
+--
+-- Same reasoning as SetConditionID, and the same reason OverrideMount cannot do
+-- it: a record carrying { type = "CURRENCY", name = "Timewarped Badge" } with no
+-- amount keys as CURRENCY\0<name>, so merging in an id-bearing copy produces a
+-- SECOND condition and the mount reads as costing both. Matching on the name and
+-- filling the amount in place is the only way to price these without duplicating.
+--
+-- Sets the id too when one is supplied and the condition lacks it, since a
+-- condition matched by name can safely gain the id it was missing.
+--
+-- Returns true only when a condition was actually found and changed, so a
+-- generated file cannot quietly price nothing after a record is renamed.
+function MM.SetConditionAmount(mountName, kind, condName, amount, id)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions and amount) then return false end
+	local want = condName and condName:lower()
+	for _, cond in ipairs(rec.conditions) do
+		if cond.type == kind and cond.name and cond.name:lower() == want then
+			if cond.amount then return false end   -- never overwrite a real price
+			cond.amount = amount
+			if id and not cond.id then cond.id = id end
+			return true
+		end
+	end
+	return false
+end
+
+-- Put an id on every record whose npc is named but unidentified.
+--
+-- Keyed by the NPC rather than the mount: one drop source usually feeds
+-- several mounts, and a per-mount override would replace the whole npc table
+-- and lose whatever else it held. Returns how many records were changed, so a
+-- generated file cannot silently annotate nothing.
+function MM.SetNpcID(npcName, id)
+	if not (npcName and id) then return 0 end
+	local want, n = npcName:lower(), 0
+	for _, rec in ipairs(MM.DBList or {}) do
+		local npc = rec.npc
+		if type(npc) == "table" and not npc.id
+			and npc.name and npc.name:lower() == want then
+			npc.id = id
+			n = n + 1
+		end
+	end
+	return n
 end
 
 -- Escape hatch for a record whose old requirements are genuinely wrong

@@ -22,7 +22,81 @@ P.filters = {
 ------------------------------------------------------------
 -- Missing mounts (filtered)
 ------------------------------------------------------------
+-- The filtered list, memoised.
+--
+-- With "Available now" ticked this asks Availability.GetStatus for all ~1,300
+-- uncollected mounts, and SortEntries can ask Rank for each of them too. That
+-- is the cost of opening the window -- nothing to do with the router or the
+-- chart, which is why fixing those never touched it.
+--
+-- IN MEMORY ONLY, DELIBERATELY. Status depends on lockouts, holidays,
+-- rotations, currency and reputation, all of which move while you are logged
+-- out. A list persisted to disk would come back claiming things are available
+-- that reset overnight -- confidently wrong, which is worse than slow. The
+-- epoch below is bumped by exactly the events Availability already invalidates
+-- its own cache on, so this can never be staler than the answers it is built
+-- from.
+local missingCache, missingKey = nil, nil
+local missingEpoch = 0
+
+local function missingFingerprint()
+	local f = P.filters
+	return table.concat({
+		missingEpoch,
+		MM.Scanner and MM.Scanner.collectedCount or 0,
+		tostring(f.category), tostring(f.expansion), tostring(f.sort),
+		tostring(f.search), tostring(f.onlyAvailable),
+		MM.db and MM.db.hideIgnored and "h" or "-",
+	}, "|")
+end
+
+-- WARM IT WHILE THE LOADING SCREEN IS STILL UP.
+--
+-- The first GetMissing after a login evaluates ~1,300 statuses, and doing it
+-- when the player clicks the icon puts that entire cost between the click and
+-- the window. Doing it a few seconds after the journal scan puts it where a
+-- pause is expected and nobody is waiting on it.
+--
+-- Deliberately AFTER a delay, not inline with the scan: logging in is already
+-- the busiest moment the client has, and adding to it is how a warm-up becomes
+-- the very stall it exists to remove.
+-- The saved filter state, restored from MM.db.ui.
+--
+-- This lived inside UI.BuildPlanner, which does not run until the window is
+-- first OPENED. So the warm-up below ran with the defaults -- "Available now"
+-- off -- built the unfiltered list, and then opening the window restored the
+-- real filters, changed the fingerprint, and rebuilt everything from scratch.
+-- The warm-up was warming a list nobody was going to look at.
+--
+-- Restoring it at login instead means the warm-up and the first open agree.
+function P.RestoreFilters()
+	local saved = MM.db and MM.db.ui or {}
+	P.filters.onlyAvailable = saved.plnAvailable or false
+	P.filters.category = saved.plnCategory or nil
+	P.filters.sort = saved.plnSort or nil
+end
+
+local warmed = false
+MM:On("MM_SCANNED", function()
+	if warmed then return end
+	warmed = true
+	P.RestoreFilters()
+	C_Timer.After(4, function()
+		-- Warms the list the player will actually open, not a default one.
+		pcall(function() P:GetMissing() end)
+	end)
+end)
+
+-- Exactly the messages Availability listens to. MM_CURRENCY and MM_REP were in
+-- an earlier draft of this list and nothing fires either of them -- a listener
+-- for a message nobody sends is decoration that reads like coverage.
+for _, msg in ipairs({ "MM_SCANNED", "MM_LOCKS", "MM_CALENDAR", "MM_PLAN_CHANGED" }) do
+	MM:On(msg, function() missingEpoch = missingEpoch + 1 end)
+end
+
 function P:GetMissing()
+	local key = missingFingerprint()
+	if missingKey == key and missingCache then return missingCache end
 	local out = {}
 	local f = P.filters
 	local search = f.search ~= "" and f.search:lower() or nil
@@ -41,7 +115,9 @@ function P:GetMissing()
 			if ok then tinsert(out, entry) end
 		end
 	end
-	return P.SortEntries(out, f.sort)
+	missingCache = P.SortEntries(out, f.sort)
+	missingKey = key
+	return missingCache
 end
 
 ------------------------------------------------------------
@@ -61,6 +137,10 @@ function P:Add(spellID)
 end
 
 function P:Remove(spellID)
+	-- Removing by hand cancels any debt the lockout bookkeeping was holding.
+	-- Without this, a goal you deliberately dropped would reappear the moment
+	-- its lockout lifted, which reads as the addon overruling you.
+	if MM.db and MM.db.retired then MM.db.retired[spellID] = nil end
 	local i = P:InPlan(spellID)
 	if i then
 		tremove(MM.cdb.plan, i)
@@ -74,7 +154,14 @@ function P:Move(spellID, delta)
 	local j = i + delta
 	if j < 1 or j > #MM.cdb.plan then return end
 	MM.cdb.plan[i], MM.cdb.plan[j] = MM.cdb.plan[j], MM.cdb.plan[i]
-	MM:Fire("MM_PLAN_CHANGED")
+	-- Exempt from the auto-optimize below. These arrows mean "I want this one
+	-- first"; re-optimizing on the click would put it straight back and the
+	-- button would appear broken.
+	if P.SuppressAutoOptimize then
+		P.SuppressAutoOptimize(function() MM:Fire("MM_PLAN_CHANGED") end)
+	else
+		MM:Fire("MM_PLAN_CHANGED")
+	end
 end
 
 function P:Clear()
@@ -111,15 +198,59 @@ end
 
 -- Everything missing that can actually be worked toward.
 function P:AutoPlanAll()
-	local added = 0
+	-- REAL COUNTS, NOT A SPINNER.
+	--
+	-- This walks every mount and then charts the result, which on a full
+	-- collection is a visible pause. The scan below is genuinely countable, so
+	-- it reports what it has actually done -- a bar that moves on a timer
+	-- rather than on work is just a spinner claiming to know something.
+	--
+	-- InPlan is a linear scan of the plan, so adding N mounts one at a time was
+	-- N*N/2 comparisons -- about 600,000 on a full sweep, and most of the wait.
+	-- One index up front makes it N.
+	local have = {}
+	for _, item in ipairs(MM.cdb.plan) do have[item.spellID] = true end
+
+	local pool = {}
 	for _, entry in ipairs(MM.Scanner.mounts) do
-		if not entry.collected and plannable(entry) and not P:InPlan(entry.spellID) then
-			tinsert(MM.cdb.plan, { spellID = entry.spellID, added = GetServerTime() })
-			added = added + 1
+		if not entry.collected and plannable(entry) and not have[entry.spellID] then
+			pool[#pool + 1] = entry.spellID
 		end
 	end
-	if added > 0 then MM:Fire("MM_PLAN_CHANGED") end
-	return added
+
+	local total, now = #pool, GetServerTime()
+	if total == 0 then
+		MM:Fire("MM_PLAN_PROGRESS", nil)
+		return 0
+	end
+
+	-- ADDED ACROSS FRAMES, OR THE BAR IS A LIE.
+	--
+	-- A synchronous loop cannot show progress: the client does not repaint
+	-- until the call returns, so every update would land on one frame and the
+	-- bar would jump from empty to full at the end -- exactly the freeze it is
+	-- meant to explain. Chunking hands the frame back, so the count on screen
+	-- is the count actually done.
+	local CHUNK = 150
+	local i = 0
+	MM:Fire("MM_PLAN_PROGRESS", 0, total, "Adding mounts")
+	local function step()
+		local stop = math.min(i + CHUNK, total)
+		while i < stop do
+			i = i + 1
+			tinsert(MM.cdb.plan, { spellID = pool[i], added = now })
+		end
+		if i < total then
+			MM:Fire("MM_PLAN_PROGRESS", i, total, "Adding mounts")
+			C_Timer.After(0, step)
+		else
+			MM:Fire("MM_PLAN_PROGRESS", i, total, "Adding mounts")
+			-- Charting is announced by the optimize pass this fires.
+			MM:Fire("MM_PLAN_CHANGED")
+		end
+	end
+	step()
+	return total
 end
 
 ------------------------------------------------------------
@@ -155,8 +286,111 @@ local function recContinent(rec)
 end
 
 -- 0 = your continent, 1 = elsewhere, 0.5 = unknown
+-- How far away this is, as a 0-1 penalty.
+--
+-- THIS USED TO BE THREE VALUES: 0 same continent, 1 another, 0.5 unknown. So
+-- on your own continent every candidate scored travel 0, and a mount 30
+-- seconds away ranked identically to one 8 minutes away -- which is why "Add
+-- 10 Easiest" was instant, and why it was not actually ranking on travel at
+-- all. Ordering could be repaired later by the route's third layer; SELECTION
+-- could not, because layer 3 can only reorder the ten it was handed.
+--
+-- It is now real minutes, from where you are standing, out of ONE Dijkstra
+-- shared by every candidate (J.MinutesFrom). The 0-1 range is deliberately
+-- kept so the `travel` weight still means what it meant and the default
+-- calibration is untouched -- it is simply continuous now instead of a flag.
+-- MEASURED FROM THE PLAN'S ANCHOR, NOT FROM WHERE YOU HAPPEN TO BE.
+--
+-- Reading the live player position made the plan re-chart as you walked --
+-- fly to objective one and objectives two and three would reshuffle behind
+-- you. A plan that moves while you follow it is not a plan.
+--
+-- So the anchor is frozen when the plan is charted and only moves when YOU
+-- change the plan. The chain from each objective to the next is the router's
+-- job (layer 3); this is only the starting point that chain is measured from.
+local TRAVEL_FULL_PENALTY_MINUTES = 30
+
+-- Memoised against the anchor.
+--
+-- Real travel in the ease score cost 1,136 ms a build -- MinutesFrom asked per
+-- candidate, ~1,300 times, for every rank. The anchor is FROZEN by design, so
+-- every one of those answers is the same until you edit the plan: the whole
+-- point of anchoring is that this number holds still. Keyed by the anchor map
+-- so it cannot outlive the position it was measured from.
+local proxCache, proxAnchor = {}, nil
+function P.Anchor()
+	local a = MM.cdb and MM.cdb.planAnchor
+	if a and a.mapID and a.name then return a end
+	-- SET IT ONCE, LAZILY. Without this the anchor only ever appeared after a
+	-- plan EDIT, so on a fresh login there was none -- proximityPenalty fell
+	-- back to the continent flag and the ease score reported two distinct
+	-- travel costs across 281 goals. Establishing it on first read is not the
+	-- same as re-reading it as you move: it is set here and then held.
+	if P.SetAnchor then P.SetAnchor() end
+	a = MM.cdb and MM.cdb.planAnchor
+	if a and a.mapID and a.name then return a end
+	return nil
+end
+
+-- Re-anchor to where the player is standing NOW. Called only when the plan is
+-- charted, never on movement.
+function P.SetAnchor()
+	local mapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+	local info = mapID and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+	if not (info and info.name) then return end
+	local pos = C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(mapID, "player")
+	-- PER CHARACTER, like the chart it feeds.
+	--
+	-- This lived in MM.db (account-wide), so charting on an alt in Icecrown
+	-- overwrote the anchor for every character. Coming back to one standing in
+	-- Zuldazar, its ease scores were measured from Icecrown and its signature
+	-- had changed for a reason that had nothing to do with it.
+	MM.cdb = MM.cdb or {}
+	MM.cdb.planAnchor = {
+		name = info.name, mapID = mapID,
+		x = pos and pos.x and pos.x * 100 or nil,
+		y = pos and pos.y and pos.y * 100 or nil,
+		at = GetServerTime(),
+	}
+	if MM.Journey and MM.Journey.ForgetTravelFrom then MM.Journey.ForgetTravelFrom() end
+	-- Re-anchoring invalidates every distance measured from the old one. The
+	-- key check in proximityPenalty catches a MAP change on its own, but
+	-- re-anchoring in the same zone keeps the map and moves the point.
+	proxCache, proxAnchor = {}, nil
+end
+
 local function proximityPenalty(rec)
-	local playerContinent = select(1, U.PlayerWorldPos())
+	local anchorNow = P.Anchor and P.Anchor()
+	local anchorKey = anchorNow and anchorNow.mapID or "?"
+	if proxAnchor ~= anchorKey then
+		proxCache, proxAnchor = {}, anchorKey
+	end
+	local hit = proxCache[rec]
+	if hit ~= nil then return hit end
+	local value = P.ComputeProximity(rec)
+	proxCache[rec] = value
+	return value
+end
+
+function P.ComputeProximity(rec)
+	local pc = select(1, U.PlayerWorldPos())
+	local zone = rec.zone and rec.zone.name
+	if zone and MM.Journey and MM.Journey.MinutesFrom then
+		local anchor = P.Anchor()
+		local hereName = anchor and anchor.name
+		local here = anchor and anchor.mapID
+		if hereName then
+			local mins = MM.Journey.MinutesFrom(hereName, anchor.x, anchor.y, here,
+				zone, rec.zone.x, rec.zone.y, rec.zone.mapID)
+			if mins then
+				return math.min(mins / TRAVEL_FULL_PENALTY_MINUTES, 1)
+			end
+		end
+	end
+	-- No route to it, or nowhere to route from: fall back to the continent
+	-- flag. A nil answer must never read as "close" -- that is the one error
+	-- that promotes an unreachable goal to the top of the list.
+	local playerContinent = pc
 	local c = recContinent(rec)
 	if not (playerContinent and c) then return 0.5 end
 	return c == playerContinent and 0 or 1
@@ -199,7 +433,7 @@ local function isGroupContent(rec, hay)
 		if class and (class.pvp or class.guild) then return true end
 	end
 
-	-- the user, on the previous version of this: do not default to group if you can
+	-- the player, on the previous version of this: do not default to group if you can
 	-- separate any class from some classes -- default to soloable.
 	--
 	-- Fair. Blanket-grouping every achievement punishes the many soloable ones
@@ -515,13 +749,13 @@ end
 
 -- Single sortable number: tier dominates, subscore orders within it.
 -- This answers "what's EASIEST" — used by Add 10 Easiest and Sort: Easiest.
--- The tier's POSITION in the user's priority order leads, not its constant:
+-- The tier's POSITION in the player's priority order leads, not its constant:
 -- someone who puts rares above achievements means it absolutely, so no
 -- achievement subscore may cross the boundary. P.TIER values stay fixed as
 -- identities, which is what the router's semantic thresholds compare against.
 -- EASE IS NOT PREFERENCE.
 --
--- This used MM.Weights.TierRank, which orders tiers by the user's OWN
+-- This used MM.Weights.TierRank, which orders tiers by the player's OWN
 -- configured priority. So "the 10 easiest" was really "the 10 highest in the
 -- order you already set", and a vendor mount you could buy standing still
 -- ranked below a dungeon if you had put INSTANCE first. The button could only
@@ -638,6 +872,22 @@ function P.ExpectedMounts(entry)
 		return 0
 	end
 
+	-- GOLD IS A REQUIREMENT TOO, AND IT WAS NOT CHECKED HERE.
+	--
+	-- The line above rejects a goal whose CONDITIONS cannot be met, but a gold
+	-- price is not a condition -- it is `rec.goldCost` -- so Bloodfang Widow at
+	-- 2,000,000 gold fell straight past it and reported a GUARANTEED mount.
+	-- TimeCommitment does charge the shortfall, but a session prices a stop by
+	-- VisitMinutes, so the penalty was not in the denominator and a certainty
+	-- divided by a short vendor visit beat everything else in the plan.
+	--
+	-- Same rule as everywhere else in this function: a visit only yields the
+	-- mount if you can actually complete the purchase when you arrive.
+	if rec.goldCost and rec.goldCost > 0 and GetMoney then
+		local have = GetMoney()
+		if have and have < rec.goldCost * 10000 then return 0 end
+	end
+
 	-- An achievement mount is NOT handed to you for showing up.
 	--
 	-- Requirement — Achievement mounts are still winning too often, especially in
@@ -658,6 +908,77 @@ function P.ExpectedMounts(entry)
 		if progress >= 1 then return 1 end     -- done; go and claim it
 		return progress * progress
 	end
+
+	-- A QUEST YOU HAVE ALREADY TURNED IN CANNOT REWARD IT AGAIN.
+	--
+	-- Child of Torcali is the reward for "Wander Not Alone", the last step of a
+	-- chain. Finish the chain without the mount and that door is shut -- but
+	-- nothing checked, so it reported a GUARANTEED mount and led the plan.
+	-- This is not a guess: the client knows which quests are flagged complete.
+	--
+	-- Where the quest id is UNKNOWN we cannot tell whether the chain is still
+	-- open, and the rule is the same as everywhere else here -- we cannot read
+	-- it, so we must not claim certainty.
+	if rec.category == "QUEST" then
+		local known, done = false, false
+		-- A questChain names the exact quest that AWARDS the mount, which is
+		-- the only one whose completion settles this. Child of Torcali carries
+		-- `final = 55798` -- "Wander Not Alone" -- so the answer is readable
+		-- rather than inferred from the chain's other twelve steps.
+		local chain = rec.questChain
+		if chain and chain.final then
+			known = true
+			if C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted
+				and C_QuestLog.IsQuestFlaggedCompleted(chain.final) then
+				done = true
+			end
+		end
+		for _, cond in ipairs(rec.conditions or {}) do
+			if cond.type == "QUEST" and cond.id then
+				known = true
+				if C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted
+					and C_QuestLog.IsQuestFlaggedCompleted(cond.id) then
+					done = true
+				end
+			end
+		end
+		if done then return 0 end          -- turned in; this path is spent
+		if not known then return 0.1 end   -- cannot see whether it is open
+	end
+
+	-- A CONTAINER YOU CANNOT OPEN YIELDS NOTHING.
+	--
+	-- Ancestral War Bear and Hexed Vilefeather Eagle are looted from treasures
+	-- -- the Honored Warrior's Cache, the Abandoned Ritual Skull -- that each
+	-- need a set of items collected first. None of that is in the record, so
+	-- "walk up and loot it" was scored as a certainty and both went straight to
+	-- the top of a 45-minute session.
+	--
+	-- The items are not modelled anywhere, and inventing the list is exactly
+	-- the mistake the secret chains taught. So: not zero, because the treasure
+	-- is real and reachable -- but never a certainty either.
+	-- A record that STATES its chain is costed by the chain, not by this
+	-- blanket -- Ancestral War Bear's four keys and Hexed Vilefeather Eagle's
+	-- 1,000 Vile Essence are real data and the acquire machinery reads them.
+	-- The 0.1 is only for the ones whose gate is still unknown to us.
+	if rec.category == "TREASURE" and not rec.acquire then return 0.1 end
+
+	-- PVP IS AN ACCUMULATION, NOT AN ERRAND.
+	--
+	-- A Vicious saddle is a hundred wins. The record states that in prose and
+	-- carries no readable condition, so it fell through to "you go, you get
+	-- it" and scored a GUARANTEED mount for one visit -- the best density any
+	-- goal can have. That is why switching to a 45-minute session put Vicious
+	-- saddles on top: nothing else can beat a certainty.
+	--
+	-- Structurally this is a reputation grind, not a purchase: a long
+	-- accumulation with a guaranteed end. One match advances it; one match does
+	-- not finish it. Where the requirement IS readable the check above has
+	-- already answered (0 when it cannot be met, 1 when it can), so this only
+	-- catches the ones whose cost lives in prose -- and the rule there is the
+	-- same as everywhere else in this file: we cannot read it, so we must not
+	-- claim it.
+	if rec.category == "PVP" then return 0.1 end
 
 	return 1 -- a vendor, a quest: you go, you get it
 end
@@ -721,6 +1042,12 @@ local CURRENCY_GRIND_MINUTES = 8 * 60      -- a full unique-currency haul
 -- player sees they cannot have it sooner, while the ranking compares effort
 -- with everything else on the same scale.
 local WEEK_MINUTES_OF_EFFORT = 150
+-- One day's worth of a daily-quest reputation: the dailies themselves, not the
+-- day they are locked behind. Same reasoning as WEEK_MINUTES_OF_EFFORT above.
+local DAILY_MINUTES_OF_EFFORT = 15
+-- One PvP match, queue included. An assumption, and the same kind ClearTimes
+-- already replaces with measured figures once it has watched a few.
+local PVP_MATCH_MINUTES = 12
 local ACHIEVEMENT_MINUTES = 6 * 60         -- a meta from nothing
 -- One outstanding achievement criterion, scaled by the record's effort rating.
 -- Twenty minutes is a boss feat or a rare kill; the effort rating stretches it
@@ -737,15 +1064,19 @@ local PURCHASE_MINUTES = 2
 -- can read, it is charged as unknown rather than free, and reported in /mm gaps
 -- so the guess can be replaced with data.
 --
--- PROFESSION was missing, and the user caught what that produced: its showing
+-- PROFESSION was missing, and the player caught what that produced: its showing
 -- protoform synthesis mounts that I do not have materials for and would need to
 -- farm but is not considering the farm. All 24 Protoform Synthesis records
 -- carry no conditions and no chain, so each was a GUARANTEED mount costed at
 -- the 45-minute effort floor -- a density nothing else in the plan could beat.
 -- A craft always needs materials; pretending otherwise is the same hole that
 -- unpriced vendor mounts and unmodelled achievements fell through.
+-- PVP belongs here for the same reason CURRENCY does: the cost is real, it is
+-- stated only in prose ("100 wins"), and nothing can read it. Without it a
+-- Vicious mount carried no cost at all beyond its effort rating, so a grind
+-- measured in DAYS fitted inside a three-hour session.
 local PRICED = { CURRENCY = true, VENDOR = true, REP = true, TIMEWALKING = true,
-	PROFESSION = true }
+	PROFESSION = true, PVP = true }
 
 -- Expected attempts for a drop, so a 1% mount is not costed as one kill. Capped:
 -- past a point "very many" is the only honest reading, and the exact number
@@ -784,6 +1115,10 @@ local VISIT_DEFAULTS = {
 	QUEST      = 20,
 	PUZZLE     = 20,
 	ACHIEVEMENT= 20,
+	-- One match or battleground. NOT the whole grind: a Vicious saddle is a
+	-- hundred wins, and the accumulation is charged by the unknown-cost
+	-- penalty above, not by pretending a single game takes days.
+	PVP        = 15,
 }
 
 -- Authored value, then what we measured, then the category default. Measured
@@ -797,7 +1132,198 @@ function P.BestVisitMinutes(rec, spellID)
 	return P.DefaultVisitMinutes(rec), "assumed"
 end
 
+-- Is this mount the end of a QUEST CHAIN, by data or by its own prose?
+--
+-- One test, used by both DefaultVisitMinutes and VisitMinutes, so a chain
+-- cannot be recognised in one and missed in the other -- which is exactly how
+-- Child of Torcali kept its ten-minute price after the chain rule went in.
+local CHAIN_WORDS = { "storyline", "questline", "quest line", "quest chain",
+	"campaign", "final step", "last step", "chain of quests", "series of quests" }
+
+-- A paragon cache: the reward comes from filling a paragon bar, so the bar is
+-- the unit of attempt. Detected from the record's own prose -- the conditions
+-- do not always carry a readable paragon flag, but every one of these says so.
+function P.IsParagon(rec)
+	if not rec then return false end
+	local hay = ((rec.source or "") .. " " .. (rec.notes or "")):lower()
+	return hay:find("paragon", 1, true) ~= nil
+end
+
+-- What is ACTUALLY left to reach the next paragon cache, from where you stand.
+--
+-- A flat bar charged everyone the same, which is wrong in both directions:
+-- someone 80% into a paragon bar is nearly there, and someone sitting at
+-- Honored has two full standings to climb before a paragon bar even begins.
+--
+-- Read in that order -- paragon progress first because it is the most specific
+-- thing the client will tell us, then plain reputation progress, and only if
+-- neither answers do we charge the whole climb.
+function P.ParagonRemainingMinutes(rec)
+	return P.RepRemainingMinutes(rec)
+end
+
+-- WHAT IS LEFT TO EARN, for every reputation and renown mount alike.
+--
+-- This began as paragon-only, which was the wrong shape: paragon is not a
+-- special case, it is just the last segment of one continuous bar. A renown
+-- mount at Renown 18 of 20 and a paragon mount 80% through its bar are the
+-- same situation -- nearly done -- and both were being charged the full grind.
+--
+-- So the rule is uniform: find how far along the player already is, and charge
+-- only the remainder. Read most-specific first, because paragon progress is a
+-- finer-grained answer than the standing it sits on top of.
+-- Any mount whose gate is a standing: reputation, renown or paragon alike.
+function P.IsRepGated(rec)
+	if not rec then return false end
+	if P.IsParagon and P.IsParagon(rec) then return true end
+	for _, cond in ipairs(rec.conditions or {}) do
+		if cond.type == "REP" then return true end
+	end
+	return false
+end
+
+function P.RepRemainingMinutes(rec)
+	local C = MM.Conditions
+	for _, cond in ipairs((rec and rec.conditions) or {}) do
+		if C and C.ParagonProgress then
+			local into, _, pending = C.ParagonProgress(cond)
+			if into and pending then
+				return 5          -- a cache is already waiting; go and open it
+			elseif into then
+				return PARAGON_BAR_MINUTES * (1 - into)
+			end
+		end
+		if C and C.RepProgress then
+			local frac = C.RepProgress(cond)
+			if frac and frac < 1 then
+				local remaining = REP_GRIND_MINUTES * (1 - frac)
+				-- A paragon mount needs a FULL bar after exalted; a plain
+				-- reputation or renown mount is done when the standing lands.
+				if P.IsParagon and P.IsParagon(rec) then
+					remaining = remaining + PARAGON_BAR_MINUTES
+				end
+				local gated = P.CalendarRepMinutes(rec, frac)
+				return gated or remaining
+			end
+		end
+	end
+	-- Nothing readable: charge the whole climb. For paragon, a bar on top --
+	-- never the bar alone, since assuming exalted is the optimistic error.
+	if P.IsParagon and P.IsParagon(rec) then
+		return REP_GRIND_MINUTES + PARAGON_BAR_MINUTES
+	end
+	return REP_GRIND_MINUTES
+end
+
+-- A PVP SEASON REWARD IS A BAR YOU FILL WITH MATCHES.
+--
+-- Same shape as reputation, counted in games instead of turn-ins: how much of
+-- the bar is left, how much one match pays, therefore how many matches -- and
+-- match length turns that into minutes.
+--
+-- Earnings per match are not fixed, since a win pays materially more than a
+-- loss. rec.pvpPerWin/pvpPerLoss with the player's own win rate give the true
+-- expected value; a record carrying only a flat pvpPerMatch uses that as-is.
+function P.PvpRemainingMinutes(rec, fractionDone)
+	if not (rec and rec.pvpBarTotal) then return nil end
+	local perMatch = rec.pvpPerMatch
+	if not perMatch and rec.pvpPerWin and rec.pvpPerLoss then
+		-- No measured win rate yet: even odds is the neutral assumption, not a
+		-- flattering one.
+		local winRate = (MM.PvpStats and MM.PvpStats.WinRate and MM.PvpStats.WinRate()) or 0.5
+		perMatch = rec.pvpPerWin * winRate + rec.pvpPerLoss * (1 - winRate)
+	end
+	if not perMatch or perMatch <= 0 then return nil end
+	local remaining = rec.pvpBarTotal * (1 - (fractionDone or 0))
+	if remaining <= 0 then return nil end
+	local matches = math.ceil(remaining / perMatch)
+	return matches * (rec.pvpMatchMinutes or PVP_MATCH_MINUTES), matches
+end
+
+-- Reputations that are GATED BY THE CALENDAR, not by how long you play.
+--
+-- Some factions only grant reputation through daily quests or a weekly cap.
+-- You cannot sit down and grind them out -- doing every daily available today
+-- earns the day's allowance and then the faucet closes until tomorrow. Such a
+-- rep takes WEEKS whatever the session length, and pricing it in continuous
+-- minutes tells the player they can finish tonight if they just commit six
+-- hours. They cannot.
+--
+-- Priced the same way capped currencies already are: charge the EFFORT of the
+-- days you must show up for, and carry the elapsed reality in the label. That
+-- keeps it comparable with everything else in the ranking while being honest
+-- that no session buys it outright.
+--
+-- Set rec.repDaysRemaining (days of dailies still to do) to engage this.
+function P.RepIsCalendarGated(rec)
+	return rec and rec.repPacing == "DAILY"
+end
+
+function P.CalendarRepMinutes(rec, fractionDone)
+	local days = rec and rec.repDaysRemaining
+	if not days then return nil end
+	if fractionDone and fractionDone > 0 then
+		days = days * (1 - fractionDone)
+	end
+	if days <= 0 then return nil end
+	-- DAILY_MINUTES_OF_EFFORT mirrors WEEK_MINUTES_OF_EFFORT: what one day's
+	-- allowance costs to claim, not the 24 hours it is spread across.
+	return days * DAILY_MINUTES_OF_EFFORT, days
+end
+
+function P.IsQuestChain(rec)
+	if not rec then return false end
+	if rec.questChain and rec.questChain.steps then return true end
+	if rec.category ~= "QUEST" then return false end
+	local hay = ((rec.source or "") .. " " .. (rec.notes or "")):lower()
+	for _, w in ipairs(CHAIN_WORDS) do
+		if hay:find(w, 1, true) then return true end
+	end
+	return false
+end
+
+-- Minutes per quest in a chain. An assumption, and labelled: a step is a
+-- turn-in, a short errand and a flight, and thirteen of them is an evening.
+local QUEST_CHAIN_MINUTES = 6
+
 function P.DefaultVisitMinutes(rec)
+	-- A CHAIN IS NOT A VISIT.
+	--
+	-- Child of Torcali is the reward for the LAST of thirteen quests, and it
+	-- was costed at the flat QUEST visit of 20 minutes while scoring as a
+	-- guaranteed mount. One guaranteed mount for twenty minutes is the best
+	-- density anything can have, which is how a thirteen-quest storyline beat
+	-- an island run you are standing next to.
+	--
+	-- You cannot have the mount without finishing the chain, so the chain IS
+	-- the cost of getting it.
+	if rec and rec.questChain and rec.questChain.steps then
+		return math.max(rec.questChain.steps, 1) * QUEST_CHAIN_MINUTES
+	end
+	-- A CHAIN WE CANNOT COUNT IS STILL NOT ONE QUEST.
+	--
+	-- 13 records carry a real questChain and are costed by its length above.
+	-- Another 35 QUEST records only SAY they are a storyline -- "the final step
+	-- of", "the campaign", "the questline" -- with no step list to read. Those
+	-- were costed at the flat 20-minute QUEST visit, which is the same mistake
+	-- Child of Torcali made, just without the data to catch it.
+	--
+	-- No step count is invented here. A chain of unknown length is a cost we
+	-- cannot read, and this file already has one answer for that: charge the
+	-- unknown-cost figure, so it can never outrank work we CAN account for.
+	-- Supplying a real questChain replaces this with arithmetic.
+	if P.IsQuestChain(rec) then return UNKNOWN_COST_MINUTES end
+	-- WHAT YOU ACTUALLY TAKE, when we have watched you do it.
+	--
+	-- Everything below is a category average, and a category average is wrong
+	-- for any specific player -- someone soloing a legacy raid in current gear
+	-- is not taking 25 minutes. ClearTimes keeps a running mean of your real
+	-- door-to-door time per instance, so once it has seen a run or two the
+	-- plan is costed on you rather than on a table.
+	if rec and rec.instance and rec.instance.name and MM.ClearTimes then
+		local learned = MM.ClearTimes.Get(rec.instance.name)
+		if learned then return learned end
+	end
 	-- A raid is the one case where the container, not the category, sets the
 	-- length -- a full clear is not a dungeon run.
 	if rec and rec.instance and rec.instance.raid then return 25 end
@@ -1104,6 +1630,38 @@ end
 -- router see it too.
 function P.VisitMinutes(entry)
 	local rec = entry and entry.rec
+	-- THE CHAIN COMES FIRST, before any per-attempt figure.
+	--
+	-- Child of Torcali carries timePerAttempt = 10 -- the length of the last
+	-- quest, which is true and completely beside the point. You cannot have the
+	-- mount without the other twelve, so a ten-minute visit priced a thirteen
+	-- quest storyline as an errand and it outranked an island run standing next
+	-- to the player.
+	if P.IsQuestChain(rec) then
+		return P.DefaultVisitMinutes(rec)
+	end
+	-- A PARAGON CACHE IS A WHOLE BAR, NOT A VISIT.
+	--
+	-- Beryl Shardhide and Fierce Razorwing are 12.5% from a Death's Advance
+	-- paragon cache. One ATTEMPT is filling an entire paragon reputation bar --
+	-- days of dailies -- but they carry a dropRate, so VisitMinutes fell to the
+	-- REP default of five minutes and a session read two long grinds as the
+	-- cheapest thing in the plan.
+	--
+	-- TimeCommitment has priced a paragon bar correctly all along; the session
+	-- costs by VisitMinutes and never reached it.
+	-- A PVP BAR IS A MATCH COUNT, not a visit.
+	--
+	-- Same failure as paragon: a Vicious mount carries a category default of a
+	-- few minutes, when one "attempt" is 2,400 points of rated wins.
+	if rec and rec.pvpBarTotal then
+		local mins = P.PvpRemainingMinutes(rec, MM.PvpStats and MM.PvpStats.BarProgress
+			and MM.PvpStats.BarProgress() or 0)
+		if mins then return mins end
+	end
+	if rec and P.IsRepGated and P.IsRepGated(rec) then
+		return P.RepRemainingMinutes(rec)
+	end
 	if rec and rec.timePerAttempt then
 		return math.max(rec.timePerAttempt, 1)
 	end
@@ -1194,7 +1752,7 @@ end
 ------------------------------------------------------------
 -- "Why is this here?"
 ------------------------------------------------------------
--- the user, on a #7-priority goal sitting near the top: i think its reasonable if
+-- the player, on a #7-priority goal sitting near the top: i think its reasonable if
 -- like a #7 sits with a high ranking opportunity because of grouping nearby
 -- rewards/drops, or if its time bound, but this goes to our weights and its
 -- still a little opaque.
@@ -1387,6 +1945,10 @@ end
 -- actionable goals in travel order (cheap wins first), then locationless
 -- actionable goals, then everything currently blocked (lockout/event).
 function P:Optimize()
+	-- Charting is the ONE moment the anchor moves. Everything downstream --
+	-- the ease score's travel term, the route's first leg -- is measured from
+	-- here, and it holds until you edit the plan again.
+	if P.SetAnchor then P.SetAnchor() end
 	MM.Router:Build()
 	local order, seen = {}, {}
 	local function push(spellID)
@@ -1408,6 +1970,161 @@ function P:Optimize()
 	MM:Fire("MM_PLAN_CHANGED")
 	return #MM.Router.route, #MM.Router.deferred
 end
+
+------------------------------------------------------------
+-- The plan optimizes itself
+------------------------------------------------------------
+-- Adding a mount re-slots it. Previously nothing called Optimize -- the button
+-- was removed and the route was only rebuilt while one was RUNNING, so adding
+-- three mounts left them in the order you clicked them and nothing worked out
+-- where they belonged until you pressed Start Route.
+--
+-- Two hazards, both real:
+--
+-- 1. RECURSION. Optimize() ends by firing MM_PLAN_CHANGED, which is the event
+--    that would trigger it. Guarded by `optimizing`.
+-- 2. STORMS. "Add 10 Easiest" fires ten times and Auto-Plan can fire for
+--    hundreds. Coalesced into one pass at the end of the frame, so N adds cost
+--    one optimize rather than N.
+--
+-- Manual reordering is exempt: the up/down arrows exist to say "I want this
+-- one first", and an optimize that immediately undid the click would make them
+-- a button that does nothing.
+local optimizing, queued = false, false
+function P.SuppressAutoOptimize(fn)
+	local prev = optimizing
+	optimizing = true
+	local ok, err = pcall(fn)
+	optimizing = prev
+	if not ok then error(err, 0) end
+end
+
+local function scheduleOptimize()
+	if optimizing or queued then return end
+	if not (MM.cdb and MM.cdb.plan and #MM.cdb.plan > 0) then return end
+	queued = true
+	-- END OF FRAME, DELIBERATELY.
+	--
+	-- Availability invalidates its status cache on these same events, and this
+	-- must run AFTER that or it optimizes against the state before the lockout.
+	-- Deferring to the end of the frame gets both: every synchronous handler
+	-- has run, and a burst of adds collapses into one pass.
+	C_Timer.After(0, function()
+		queued = false
+		-- Claim the lock NOW, not inside the second timer: between these two
+		-- frames another plan edit could otherwise queue a second pass.
+		optimizing = true
+		local n = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
+		MM:Fire("MM_PLAN_PROGRESS", nil, n, "Charting the route")
+		-- ONE MORE FRAME BEFORE THE BLOCKING CALL.
+		--
+		-- Optimize does not yield, so anything drawn in the same frame is
+		-- never painted -- the warning about the client going unresponsive
+		-- would itself only appear after the client had finished being
+		-- unresponsive. Handing the frame back once lets it show first.
+		C_Timer.After(0, function()
+			local ok, err = pcall(function() P:Optimize() end)
+			optimizing = false
+			MM:Fire("MM_PLAN_PROGRESS", nil)
+			if not ok and MM.Print then
+				MM:Print("|cffff5555auto-optimize failed|r -- %s", tostring(err):sub(-140))
+			end
+		end)
+	end)
+end
+
+-- ONLY A DELIBERATE EDIT RE-CHARTS THE PLAN.
+--
+-- The plan is a chart: from where you stand, to the first objective, then to
+-- the next, and so on. It holds still while you follow it. Re-optimizing on
+-- world events would reshuffle objectives two and three while you were flying
+-- to objective one, which is the opposite of a plan.
+--
+-- So MM_LOCKS and MM_SCANNED deliberately do NOT re-chart, even though both
+-- change what is actionable. Taking a lockout or learning a mount drops that
+-- one goal out; the others keep the places they already had.
+MM:On("MM_PLAN_CHANGED", scheduleOptimize)
+
+-- Taking a lockout retires that goal for now, WITHOUT re-charting the rest.
+--
+-- Removal is suppressed from the auto-optimize above for exactly the reason
+-- in that comment: this is the addon tidying up after the world, not you
+-- changing your mind, so nothing else is allowed to move.
+-- Retired by a lockout, and owed a place back when it lifts.
+--
+-- Kept account-wide, because the lockout is: a raid you are saved to is saved
+-- on every character, and the plan already follows you between them.
+local function retiredList()
+	MM.db = MM.db or {}
+	MM.db.retired = MM.db.retired or {}
+	return MM.db.retired
+end
+
+local function status(spellID)
+	local entry = MM.Scanner and MM.Scanner.bySpell and MM.Scanner.bySpell[spellID]
+	if not entry then return nil, nil end
+	return MM.Availability and MM.Availability.GetStatus(entry), entry
+end
+
+-- THE TWO HALVES ARE NOT SYMMETRICAL, AND THAT IS THE POINT.
+--
+-- Retiring is the addon tidying up after the world: that one goal leaves and
+-- everything else keeps the place it already had, because you may be halfway
+-- to objective one and nothing else should move under you.
+--
+-- Restoring is a new opportunity. By the time a lockout lifts you have almost
+-- certainly moved, and the returning goal might now be the very next thing
+-- worth doing or the fifth -- putting it back where it used to sit would drop
+-- it somewhere that made sense from a position you left hours ago. So a
+-- restore DOES re-chart, from where you are standing now.
+local function reviewLockouts()
+	if not MM.Scanner then return end
+	local retired = retiredList()
+
+	-- 1. retire what is newly locked -- quietly, nothing else moves
+	local drop = {}
+	for _, item in ipairs(MM.cdb and MM.cdb.plan or {}) do
+		if status(item.spellID) == "LOCKED" then drop[#drop + 1] = item.spellID end
+	end
+	if #drop > 0 then
+		P.SuppressAutoOptimize(function()
+			for _, spellID in ipairs(drop) do
+				P:Remove(spellID)                 -- clears any stale retired mark
+				retired[spellID] = { at = GetServerTime() }
+			end
+		end)
+		if MM.Print then
+			MM:Print("%d goal%s on lockout -- off the plan until it lifts.",
+				#drop, #drop == 1 and "" or "s")
+		end
+	end
+
+	-- 2. restore what is no longer locked -- and let this one re-chart
+	local back = {}
+	for spellID in pairs(retired) do
+		local st, entry = status(spellID)
+		if not entry or (entry and entry.collected) then
+			retired[spellID] = nil          -- learned it meanwhile; nothing owed
+		elseif st and st ~= "LOCKED" then
+			back[#back + 1] = spellID
+		end
+	end
+	for _, spellID in ipairs(back) do
+		retired[spellID] = nil
+		P:Add(spellID)                      -- fires MM_PLAN_CHANGED -> re-chart
+	end
+	if #back > 0 and MM.Print then
+		MM:Print("%d goal%s off lockout -- back on the plan, re-charted from here.",
+			#back, #back == 1 and "" or "s")
+	end
+end
+
+MM:On("MM_LOCKS", reviewLockouts)
+-- A lockout usually lifts at a server reset that fires no event of its own, so
+-- the restore cannot wait on MM_LOCKS alone. These are the moments the client
+-- refreshes what you are saved to.
+MM:On("MM_SCANNED", reviewLockouts)
+C_Timer.NewTicker(300, reviewLockouts)
 
 MM:On("MM_EASIEST", function()
 	local list = P:Easiest(10)

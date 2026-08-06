@@ -68,7 +68,7 @@ if LDB then
 		text = "Master Mounts",
 		icon = ICON,
 		-- WHAT A DISPLAY ADDON SHOWS AS THE NAME, separately from the value.
-		-- Titan lets the user toggle label and text independently; with no
+		-- Titan lets the player toggle label and text independently; with no
 		-- label it falls back to the data object's name and reads
 		-- "MasterMounts", jammed together, in someone's top bar.
 		label = "Master Mounts",

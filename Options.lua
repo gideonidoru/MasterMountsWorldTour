@@ -630,7 +630,7 @@ local function buildWeights()
 
 	resetBtn:SetScript("OnClick", function() W.Reset() refresh() end)
 	-- Paint once at build time. OnShow alone was not enough: Settings shows and
-	-- hides a canvas panel during registration, so by the time the user actually
+	-- hides a canvas panel during registration, so by the time the player actually
 	-- navigated to it the event had already been spent and the page sat empty
 	-- until something else forced a redraw.
 	refresh()

@@ -44,6 +44,8 @@ Weights.lua
 Crafting.lua
 Contribute.lua
 Session.lua
+ClearTimes.lua
+PvpStats.lua
 Planner.lua
 Paths.lua
 Router.lua

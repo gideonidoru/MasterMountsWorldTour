@@ -62,7 +62,7 @@ W.TIER_HINT = {
 -- "250 points per continent" says exactly what it is doing, next to the number
 -- it is doing it with. Every default below is the constant that was hard-coded
 -- in Planner.lua before this panel existed, so a fresh install ranks
--- identically -- and the user can see the reasoning rather than take it on
+-- identically -- and a player can see the reasoning rather than take it on
 -- faith.
 --
 -- Scale to keep in your head: a goal's score is typically 300-3,000 points, and
@@ -127,7 +127,7 @@ W.SLIDERS = {
 				:format(perPlace, perPlace ^ 7)
 		end },
 
-	-- The cap. the user, on the matrix reporting "Layer 1 works; layer 3 overrides
+	-- The cap. the player, on the matrix reporting "Layer 1 works; layer 3 overrides
 	-- it": routing is the final adjudicator by design, but two continent hops
 	-- dwarf any preference multiplier, so geography won nearly every tie and
 	-- reordering the tier list barely changed what you were told to do. There
@@ -182,7 +182,7 @@ W.SLIDERS = {
 -- Presets
 ------------------------------------------------------------
 -- Requirement — maybe we add some presets ... and it adjusts the weights and
--- priorities to give the user what they expect.
+-- priorities to give the player what they expect.
 --
 -- Seven sliders and a reorderable list is a good tool and a poor starting
 -- point. A preset is a sentence about how you play, and the numbers behind it
@@ -328,7 +328,7 @@ for _, s in ipairs(W.SLIDERS) do SLIDER_BY_KEY[s.key] = s end
 ------------------------------------------------------------
 -- The first cut of this panel stored 0-2 multipliers. Reading those as the
 -- point values they now are would silently set travel to 1 point and odds to 1
--- point -- a wildly different addon, with no symptom the user could attribute.
+-- point -- a wildly different addon, with no symptom a player could attribute.
 -- Stamp the schema and drop slider values from before it; the ORDER is still
 -- meaningful and is kept.
 local SCHEMA = 2
@@ -485,7 +485,7 @@ end)
 ------------------------------------------------------------
 -- What Planner asks for
 ------------------------------------------------------------
--- Position of a tier in the user's order, 1-based. BLOCKED is pinned past the
+-- Position of a tier in the player's order, 1-based. BLOCKED is pinned past the
 -- end so it can never be promoted, whatever is saved.
 local rankCache, rankCacheOrder
 function W.TierRank(tier)

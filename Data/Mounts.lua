@@ -1508,10 +1508,16 @@ MM.AddMounts({
 			difficulty = "Normal",
 			lockout = "WEEKLY",
 		},
+		dropRate = 8.647,
 		attempts = "NONE",
 		timePerAttempt = 45,
 		effort = 2,
 		notes = "Usable only inside the Temple of Ahn'Qiraj. Trash can be re-farmed with instance resets (10 per hour cap). Use Zidormi in Silithus if the zone is phased.",
+		dropObserved = {
+			count = 323463,
+			outOf = 3740865,
+			sources = 10,
+		},
 	},
 	{
 		name = "Green Qiraji Battle Tank",
@@ -1532,10 +1538,16 @@ MM.AddMounts({
 			difficulty = "Normal",
 			lockout = "WEEKLY",
 		},
+		dropRate = 8.894,
 		attempts = "NONE",
 		timePerAttempt = 45,
 		effort = 2,
 		notes = "Usable only inside the Temple of Ahn'Qiraj.",
+		dropObserved = {
+			count = 332705,
+			outOf = 3740865,
+			sources = 10,
+		},
 	},
 	{
 		name = "Yellow Qiraji Battle Tank",
@@ -1556,10 +1568,16 @@ MM.AddMounts({
 			difficulty = "Normal",
 			lockout = "WEEKLY",
 		},
+		dropRate = 8.995,
 		attempts = "NONE",
 		timePerAttempt = 45,
 		effort = 2,
 		notes = "Usable only inside the Temple of Ahn'Qiraj.",
+		dropObserved = {
+			count = 336479,
+			outOf = 3740865,
+			sources = 10,
+		},
 	},
 	{
 		name = "Red Qiraji Battle Tank",
@@ -1580,14 +1598,15 @@ MM.AddMounts({
 			difficulty = "Normal",
 			lockout = "WEEKLY",
 		},
-		dropRate = 0.92,
+		dropRate = 1.007,
 		attempts = "NONE",
 		timePerAttempt = 45,
 		effort = 5,
 		notes = "Usable only inside the Temple of Ahn'Qiraj. This is the rare fourth farmable tank; expect many full clears.",
 		dropObserved = {
-			count = 5940,
-			outOf = 645558,
+			count = 37681,
+			outOf = 3740865,
+			sources = 10,
 		},
 	},
 	{
@@ -1622,6 +1641,13 @@ MM.AddMounts({
 			x = 76.2,
 			y = 65.5,
 		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
+		},
 		effort = 2,
 		notes = "Legacy honor-system mount; Marks of Honor come from battleground wins and losses.",
 	},
@@ -1639,6 +1665,13 @@ MM.AddMounts({
 			mapID = 84,
 			x = 76.2,
 			y = 65.5,
+		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
 		},
 		effort = 2,
 	},
@@ -1660,6 +1693,13 @@ MM.AddMounts({
 			x = 76.2,
 			y = 65.5,
 		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
+		},
 		effort = 2,
 	},
 	{
@@ -1677,6 +1717,13 @@ MM.AddMounts({
 			x = 76.2,
 			y = 65.5,
 		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
+		},
 		effort = 2,
 	},
 	{
@@ -1693,6 +1740,13 @@ MM.AddMounts({
 			mapID = 85,
 			x = 41.8,
 			y = 72.5,
+		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
 		},
 		effort = 2,
 		notes = "Legacy honor-system mount; Marks of Honor come from battleground wins and losses.",
@@ -1712,6 +1766,13 @@ MM.AddMounts({
 			x = 41.8,
 			y = 72.5,
 		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
+		},
 		effort = 2,
 	},
 	{
@@ -1729,6 +1790,13 @@ MM.AddMounts({
 			x = 41.8,
 			y = 72.5,
 		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
+		},
 		effort = 2,
 	},
 	{
@@ -1745,6 +1813,13 @@ MM.AddMounts({
 			mapID = 85,
 			x = 41.8,
 			y = 72.5,
+		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
 		},
 		effort = 2,
 	},
@@ -1771,6 +1846,11 @@ MM.AddMounts({
 				factionName = "Stormpike Guard",
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -1799,6 +1879,11 @@ MM.AddMounts({
 				factionName = "Frostwolf Clan",
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -1839,6 +1924,11 @@ MM.AddMounts({
 		category = "CLASS",
 		obtainable = true,
 		source = "Paladin epic class mount, learned from the trainer (originally an epic Scholomance quest chain).",
+		zone = {
+			mapID = 22,
+			x = 69.1,
+			y = 73,
+		},
 		effort = 1,
 		notes = "Paladins only. The original Dire Maul/Scholomance quest chain was retired; it is now trainer-taught.",
 		noLocationReason = "Class mount -- learned automatically or from your own trainer",
@@ -1861,6 +1951,11 @@ MM.AddMounts({
 		category = "CLASS",
 		obtainable = true,
 		source = "Warlock epic class mount, learned from the trainer (originally an epic Dire Maul summoning quest chain).",
+		zone = {
+			mapID = 36,
+			x = 12.6,
+			y = 31.6,
+		},
 		effort = 1,
 		notes = "Warlocks only. The original Dire Maul ritual quest was retired; it is now trainer-taught.",
 		noLocationReason = "Class mount -- learned automatically or from your own trainer",
@@ -2208,6 +2303,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
+				id = 11012,
 				type = "QUEST",
 			},
 			{
@@ -2272,6 +2368,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
+				id = 11012,
 				type = "QUEST",
 			},
 			{
@@ -2336,6 +2433,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
+				id = 11012,
 				type = "QUEST",
 			},
 			{
@@ -2400,6 +2498,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
+				id = 11012,
 				type = "QUEST",
 			},
 			{
@@ -2464,6 +2563,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
+				id = 11012,
 				type = "QUEST",
 			},
 			{
@@ -2528,6 +2628,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Blood Oath of the Netherwing (unlocks the Netherwing dailies)",
+				id = 11012,
 				type = "QUEST",
 			},
 			{
@@ -4009,6 +4110,13 @@ MM.AddMounts({
 			x = 76.2,
 			y = 65.5,
 		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
+		},
 		effort = 1,
 		notes = "PvP counterpart of the Draenei elekk. Added alongside the classic Black War mounts for the TBC races.",
 	},
@@ -4028,6 +4136,13 @@ MM.AddMounts({
 			mapID = 85,
 			x = 41.8,
 			y = 72.5,
+		},
+		conditions = {
+			{
+				amount = 15,
+				id = 137642,
+				type = "ITEM",
+			},
 		},
 		effort = 1,
 		notes = "Black armored hawkstrider, the PvP counterpart of the Blood Elf hawkstriders.",
@@ -4230,14 +4345,15 @@ MM.AddMounts({
 				notes = "Wrath Timewalking week only. Also drops from Yogg-Saron (no Keepers) in Ulduar year-round; cache drop chance is not published.",
 			},
 		},
-		dropRate = 1.004,
+		dropRate = 0.983,
 		attempts = "WEEKLY",
 		timePerAttempt = 25,
 		effort = 5,
 		notes = "Talk to none of the four Keepers before the fight (Yogg-0 / Alone in the Darkness style). 25-player only.",
 		dropObserved = {
-			count = 984,
-			outOf = 98010,
+			count = 24,
+			outOf = 2442,
+			sources = 1,
 		},
 	},
 	{
@@ -4451,14 +4567,15 @@ MM.AddMounts({
 			difficulty = "10 or 25",
 			lockout = "WEEKLY",
 		},
-		dropRate = 0.831,
+		dropRate = 0.731,
 		attempts = "WEEKLY",
 		timePerAttempt = 10,
 		effort = 4,
 		notes = "Your faction must control Wintergrasp to enter. Four bosses x two sizes = up to eight chances per week.",
 		dropObserved = {
-			count = 576,
-			outOf = 69331,
+			count = 1986,
+			outOf = 271591,
+			sources = 5,
 		},
 	},
 	{
@@ -5521,6 +5638,11 @@ MM.AddMounts({
 		npc = {
 			id = 42773,
 		},
+		zone = {
+			mapID = 124,
+			x = 52.6,
+			y = 34.5,
+		},
 		effort = 1,
 		notes = "Death Knight only.",
 		noLocationReason = "Class mount -- learned automatically or from your own trainer",
@@ -5535,6 +5657,11 @@ MM.AddMounts({
 		source = "Death Knight class flying mount, learned automatically",
 		npc = {
 			id = 29032,
+		},
+		zone = {
+			mapID = 23,
+			x = 84,
+			y = 49.8,
 		},
 		effort = 1,
 		notes = "Death Knight only.",
@@ -5860,6 +5987,7 @@ MM.AddMounts({
 		source = "Drops from Alysrazor in Firelands",
 		npc = {
 			name = "Alysrazor",
+			id = 52530,
 		},
 		zone = {
 			name = "Mount Hyjal",
@@ -5906,6 +6034,7 @@ MM.AddMounts({
 		source = "Drops from Al'Akir in Throne of the Four Winds",
 		npc = {
 			name = "Al'Akir",
+			id = 46753,
 		},
 		zone = {
 			name = "Uldum",
@@ -6030,6 +6159,7 @@ MM.AddMounts({
 		source = "Drops from Ultraxion in Dragon Soul",
 		npc = {
 			name = "Ultraxion",
+			id = 55294,
 		},
 		zone = {
 			name = "Tanaris",
@@ -6076,6 +6206,7 @@ MM.AddMounts({
 		source = "Drops from Altairus in The Vortex Pinnacle",
 		npc = {
 			name = "Altairus",
+			id = 43873,
 		},
 		zone = {
 			name = "Uldum",
@@ -6088,14 +6219,15 @@ MM.AddMounts({
 			difficulty = "Normal/Heroic",
 			lockout = "NONE",
 		},
-		dropRate = 0.685,
+		dropRate = 0.771,
 		attempts = "NONE",
 		timePerAttempt = 5,
 		effort = 3,
 		notes = "Drops on BOTH Normal and Heroic. Normal can be reset and re-run (10 instances/hour cap); Heroic locks daily.",
 		dropObserved = {
-			count = 2708,
-			outOf = 395464,
+			count = 1073,
+			outOf = 139155,
+			sources = 1,
 		},
 	},
 	{
@@ -6108,6 +6240,7 @@ MM.AddMounts({
 		source = "Drops from Slabhide in The Stonecore",
 		npc = {
 			name = "Slabhide",
+			id = 43214,
 		},
 		zone = {
 			name = "Deepholm",
@@ -6166,6 +6299,7 @@ MM.AddMounts({
 		source = "Drops from High Priestess Kilnara in Zul'Gurub (Cataclysm heroic dungeon)",
 		npc = {
 			name = "High Priestess Kilnara",
+			id = 52059,
 		},
 		zone = {
 			name = "Northern Stranglethorn",
@@ -6586,10 +6720,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Cataclysm Raider",
-				type = "ACHIEVEMENT",
-			},
-			{
-				name = "Glory of the Cataclysm Raider",
 				id = 4853,
 				type = "ACHIEVEMENT",
 			},
@@ -6613,10 +6743,6 @@ MM.AddMounts({
 			y = 78,
 		},
 		conditions = {
-			{
-				name = "Glory of the Firelands Raider",
-				type = "ACHIEVEMENT",
-			},
 			{
 				name = "Glory of the Firelands Raider",
 				id = 5828,
@@ -6816,12 +6942,18 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				amount = 1,
 				cost = "1 Vicious Saddle",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
 		effort = 4,
 		notes = "First mount of the ongoing Vicious mount system introduced in Cataclysm. Vicious Saddles are earned by filling the rated PvP mount bar each season.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -6842,12 +6974,18 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				amount = 1,
 				cost = "1 Vicious Saddle",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
 		effort = 4,
 		notes = "Horde counterpart of the Vicious War Steed; buyable with a Vicious Saddle from rated PvP.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -7223,10 +7361,12 @@ MM.AddMounts({
 		source = "Drops from Elegon in Mogu'shan Vaults (any difficulty)",
 		npc = {
 			name = "Elegon",
+			id = 60410,
 		},
 		zone = {
-			name = "Kun-Lai Summit",
 			mapID = 379,
+			x = 59.6,
+			y = 39.1,
 		},
 		instance = {
 			name = "Mogu'shan Vaults",
@@ -7253,6 +7393,7 @@ MM.AddMounts({
 		source = "Drops from Ji-Kun in Throne of Thunder (any difficulty)",
 		npc = {
 			name = "Ji-Kun",
+			id = 69712,
 		},
 		zone = {
 			name = "Isle of Thunder",
@@ -7281,6 +7422,7 @@ MM.AddMounts({
 		source = "Drops from Horridon in Throne of Thunder (any difficulty)",
 		npc = {
 			name = "Horridon",
+			id = 68476,
 		},
 		zone = {
 			name = "Isle of Thunder",
@@ -7397,6 +7539,7 @@ MM.AddMounts({
 		source = "Rare drop from Zandalari Warbringers roaming Pandaria",
 		npc = {
 			name = "Zandalari Warbringer",
+			id = 69769,
 		},
 		zone = {
 			mapID = 418,
@@ -7454,6 +7597,7 @@ MM.AddMounts({
 		source = "Rare drop from Zandalari Warbringers roaming Pandaria",
 		npc = {
 			name = "Zandalari Warbringer",
+			id = 69769,
 		},
 		zone = {
 			name = "Pandaria (Warbringer patrol points in most zones)",
@@ -7536,6 +7680,7 @@ MM.AddMounts({
 		source = "Rare drop from Zandalari Warbringers roaming Pandaria",
 		npc = {
 			name = "Zandalari Warbringer",
+			id = 69769,
 		},
 		zone = {
 			mapID = 418,
@@ -7679,13 +7824,15 @@ MM.AddMounts({
 		obtainable = true,
 		source = "500 Bloody Coins from Speaker Gulan on the Timeless Isle",
 		zone = {
-			name = "Timeless Isle",
 			mapID = 554,
+			x = 74.9,
+			y = 44.9,
 		},
 		conditions = {
 			{
 				name = "Bloody Coin",
 				amount = 500,
+				how = "One per killing blow on an enemy player while the Censer buff is active. NPC kills award nothing.",
 				id = 789,
 				type = "CURRENCY",
 			},
@@ -7693,12 +7840,6 @@ MM.AddMounts({
 				name = "Censer of Eternal Agony",
 				cost = "required buff; Fire-Watcher's Oath also works",
 				type = "ITEM",
-			},
-			{
-				name = "Bloody Coin",
-				amount = 500,
-				how = "One per killing blow on an enemy player while the Censer buff is active. NPC kills award nothing.",
-				type = "CURRENCY",
 			},
 		},
 		timePerAttempt = 60,
@@ -8762,10 +8903,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Thundering Raider",
-				type = "ACHIEVEMENT",
-			},
-			{
-				name = "Glory of the Thundering Raider",
 				id = 8124,
 				type = "ACHIEVEMENT",
 			},
@@ -8807,8 +8944,9 @@ MM.AddMounts({
 		source = "Sold by Mistweaver Xia in Timeless Isle for Timewarped Badges during Mists of Pandaria Timewalking.",
 		vendor = "Mistweaver Xia",
 		zone = {
-			name = "Timeless Isle",
 			mapID = 554,
+			x = 43,
+			y = 55.4,
 		},
 		conditions = {
 			{
@@ -8870,6 +9008,10 @@ MM.AddMounts({
 		},
 		effort = 4,
 		notes = "MoP-era Vicious mount; still purchasable with any Vicious Saddle.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -8892,7 +9034,9 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				amount = 1,
 				cost = "Fill the Vicious mount bar in rated PvP",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -8905,6 +9049,10 @@ MM.AddMounts({
 		},
 		effort = 4,
 		notes = "MoP-era Vicious mount; still purchasable with any Vicious Saddle.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -9563,8 +9711,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Drop from Tanaan Jungle rare content (Hellbane rares / Rattling Iron Cage)",
 		zone = {
-			name = "Tanaan Jungle",
 			mapID = 534,
+			x = 61.6,
+			y = 45.6,
 		},
 		attempts = "DAILY",
 		timePerAttempt = 10,
@@ -9631,8 +9780,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Sold by the Apexis vendor in Tanaan Jungle for 150,000 Apexis Crystals",
 		zone = {
-			name = "Tanaan Jungle",
 			mapID = 534,
+			x = 57.8,
+			y = 59.4,
 		},
 		conditions = {
 			{
@@ -9975,14 +10125,20 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Steamwheedle Preservation Society - Exalted; sold at the Ring of Trials, Nagrand",
 		zone = {
-			name = "Nagrand",
 			mapID = 550,
+			x = 50.5,
+			y = 41.4,
 		},
 		conditions = {
 			{
 				factionName = "Steamwheedle Preservation Society",
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				amount = 5000,
+				id = 823,
+				type = "CURRENCY",
 			},
 		},
 		timePerAttempt = 30,
@@ -10506,10 +10662,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Hellfire Raider",
-				type = "ACHIEVEMENT",
-			},
-			{
-				name = "Glory of the Hellfire Raider",
 				id = 10149,
 				type = "ACHIEVEMENT",
 			},
@@ -10533,9 +10685,20 @@ MM.AddMounts({
 			x = 78,
 			y = 54,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		timePerAttempt = 15,
 		effort = 4,
 		notes = "Still obtainable: fill the vicious mount bar via rated PvP wins, or spend a Vicious Saddle at the vicious mount vendor.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -10555,6 +10718,13 @@ MM.AddMounts({
 			x = 41.8,
 			y = 73,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -10565,6 +10735,10 @@ MM.AddMounts({
 		timePerAttempt = 15,
 		effort = 4,
 		notes = "Still obtainable: fill the vicious mount bar via rated PvP wins, or spend a Vicious Saddle at the vicious mount vendor.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -10743,15 +10917,16 @@ MM.AddMounts({
 			difficulty = "Normal/Heroic/Mythic",
 			lockout = "WEEKLY",
 		},
-		dropRate = 0.148,
+		dropRate = 0.436,
 		attempts = "WEEKLY",
 		timePerAttempt = 20,
 		effort = 3,
 		blackmarket = true,
 		notes = "Taught by the item Living Infernal Core. Does not drop on LFR.",
 		dropObserved = {
-			count = 245,
-			outOf = 165712,
+			count = 168,
+			outOf = 38537,
+			sources = 1,
 		},
 	},
 	{
@@ -10796,6 +10971,7 @@ MM.AddMounts({
 		source = "Rare drop from Mistress Sassz'ine in Tomb of Sargeras (any difficulty)",
 		npc = {
 			name = "Mistress Sassz'ine",
+			id = 115767,
 		},
 		zone = {
 			name = "Broken Shore",
@@ -10856,6 +11032,7 @@ MM.AddMounts({
 		source = "Rare drop from Argus the Unmaker in Antorus, the Burning Throne (Mythic only)",
 		npc = {
 			name = "Argus the Unmaker",
+			id = 124828,
 		},
 		zone = {
 			name = "Antoran Wastes",
@@ -11315,6 +11492,7 @@ MM.AddMounts({
 		source = "Secret: activate the 10 hidden Hungering Orbs, then defeat Kosumoth the Hungering",
 		npc = {
 			name = "Kosumoth the Hungering",
+			id = 111573,
 		},
 		zone = {
 			mapID = 790,
@@ -11407,6 +11585,7 @@ MM.AddMounts({
 		source = "Sold by Xur'ios in Dalaran (Broken Isles) for 150 Curious Coins",
 		npc = {
 			name = "Xur'ios",
+			id = 107109,
 		},
 		zone = {
 			mapID = 627,
@@ -11462,6 +11641,7 @@ MM.AddMounts({
 		source = "Sold by Galissa Sundew at the Darkmoon Faire for 500 Darkmoon Daggermaw",
 		npc = {
 			name = "Galissa Sundew",
+			id = 55103,
 		},
 		zone = {
 			name = "Darkmoon Island",
@@ -11553,6 +11733,11 @@ MM.AddMounts({
 				standingName = "Paragon",
 				type = "REP",
 			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -11579,6 +11764,11 @@ MM.AddMounts({
 				factionName = "Dreamweavers",
 				standingName = "Paragon",
 				type = "REP",
+			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
 			},
 		},
 		dropRate = 5,
@@ -11607,6 +11797,11 @@ MM.AddMounts({
 				standingName = "Paragon",
 				type = "REP",
 			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -11634,6 +11829,11 @@ MM.AddMounts({
 				standingName = "Paragon",
 				type = "REP",
 			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -11660,6 +11860,11 @@ MM.AddMounts({
 				factionName = "The Nightfallen",
 				standingName = "Paragon",
 				type = "REP",
+			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
 			},
 		},
 		dropRate = 5,
@@ -12009,6 +12214,11 @@ MM.AddMounts({
 				standingName = "Paragon",
 				type = "REP",
 			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -12039,6 +12249,11 @@ MM.AddMounts({
 				standingName = "Paragon",
 				type = "REP",
 			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
+			},
 		},
 		dropRate = 5,
 		attempts = "NONE",
@@ -12068,6 +12283,11 @@ MM.AddMounts({
 				factionName = "Army of the Light",
 				standingName = "Paragon",
 				type = "REP",
+			},
+			{
+				amount = 20000,
+				id = 3252,
+				type = "CURRENCY",
 			},
 		},
 		dropRate = 5,
@@ -12111,8 +12331,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Reward from \"Fate of the Nightborne\", the end of the Suramar Insurrection campaign.",
 		zone = {
-			name = "Suramar",
 			mapID = 680,
+			x = 36.6,
+			y = 45.1,
 		},
 		questChain = {
 			name = "Fate of the Nightborne",
@@ -12126,6 +12347,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Fate of the Nightborne",
+				id = 45372,
 				type = "QUEST",
 			},
 		},
@@ -12438,9 +12660,20 @@ MM.AddMounts({
 			x = 78,
 			y = 54,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		attempts = "NONE",
 		effort = 4,
 		notes = "Introduced with Legion Season 1; still purchasable from the Vicious Saddle vendor.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -12460,6 +12693,13 @@ MM.AddMounts({
 			x = 41.8,
 			y = 73,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -12470,6 +12710,10 @@ MM.AddMounts({
 		attempts = "NONE",
 		effort = 4,
 		notes = "Introduced with Legion Season 1; still purchasable from the Vicious Saddle vendor.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -12673,6 +12917,11 @@ MM.AddMounts({
 		category = "CLASS",
 		obtainable = true,
 		source = "Hunter class mount variant, purchased in Trueshot Lodge after earning the base wolfhawk",
+		zone = {
+			mapID = 739,
+			x = 58.8,
+			y = 31.8,
+		},
 		attempts = "NONE",
 		effort = 3,
 		notes = "Hunter only. Green variant; originally tied to fully unlocking the Survival artifact weapon.",
@@ -12685,6 +12934,11 @@ MM.AddMounts({
 		category = "CLASS",
 		obtainable = true,
 		source = "Hunter class mount variant, purchased in Trueshot Lodge after earning the base wolfhawk",
+		zone = {
+			mapID = 739,
+			x = 58.8,
+			y = 31.8,
+		},
 		attempts = "NONE",
 		effort = 3,
 		notes = "Hunter only. Blue variant; originally tied to fully unlocking the Marksmanship artifact weapon.",
@@ -12869,6 +13123,12 @@ MM.AddMounts({
 		source = "Rogue class mount variant, sold by Zan Shivsproket in the Hall of Shadows",
 		npc = {
 			name = "Zan Shivsproket",
+			id = 121282,
+		},
+		zone = {
+			mapID = 626,
+			x = 42.5,
+			y = 82.2,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -12884,6 +13144,12 @@ MM.AddMounts({
 		source = "Rogue class mount variant, sold by Zan Shivsproket in the Hall of Shadows",
 		npc = {
 			name = "Zan Shivsproket",
+			id = 121282,
+		},
+		zone = {
+			mapID = 626,
+			x = 42.5,
+			y = 82.2,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -12899,6 +13165,12 @@ MM.AddMounts({
 		source = "Rogue class mount variant, sold by Zan Shivsproket in the Hall of Shadows",
 		npc = {
 			name = "Zan Shivsproket",
+			id = 121282,
+		},
+		zone = {
+			mapID = 626,
+			x = 42.5,
+			y = 82.2,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -12979,6 +13251,11 @@ MM.AddMounts({
 		source = "Warlock class mount variant, purchased in the Dreadscar Rift after earning the base wrathsteed",
 		npc = {
 			id = 101097,
+		},
+		zone = {
+			mapID = 717,
+			x = 37.7,
+			y = 31,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -13331,8 +13608,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Drops from the Unbound Abomination in The Underrot on Mythic difficulty.",
 		zone = {
-			name = "Nazmir",
 			mapID = 863,
+			x = 51.6,
+			y = 65.3,
 		},
 		instance = {
 			name = "The Underrot",
@@ -13553,7 +13831,7 @@ MM.AddMounts({
 		},
 		dropRate = 0.166,
 		attempts = "NONE",
-		timePerAttempt = 15,
+		timePerAttempt = 5,
 		effort = 3,
 		notes = "Island mounts drop from the end-of-run reward, weighted by the island's inhabitants. Islands are solo-queueable from the expedition table in Boralus/Zuldazar since 9.1.5. Not sold for dubloons.",
 		dropObserved = {
@@ -13743,7 +14021,7 @@ MM.AddMounts({
 		},
 		dropRate = 6.24,
 		attempts = "NONE",
-		timePerAttempt = 15,
+		timePerAttempt = 5,
 		effort = 3,
 		dropObserved = {
 			count = 154,
@@ -13790,7 +14068,7 @@ MM.AddMounts({
 		},
 		dropRate = 9.151,
 		attempts = "NONE",
-		timePerAttempt = 15,
+		timePerAttempt = 5,
 		effort = 3,
 		dropObserved = {
 			count = 152,
@@ -13837,7 +14115,7 @@ MM.AddMounts({
 		},
 		dropRate = 12.07,
 		attempts = "NONE",
-		timePerAttempt = 15,
+		timePerAttempt = 5,
 		effort = 3,
 		dropObserved = {
 			count = 165,
@@ -13931,7 +14209,7 @@ MM.AddMounts({
 		},
 		dropRate = 7.539,
 		attempts = "NONE",
-		timePerAttempt = 15,
+		timePerAttempt = 5,
 		effort = 3,
 		dropObserved = {
 			count = 91,
@@ -14187,8 +14465,9 @@ MM.AddMounts({
 		faction = "Alliance",
 		source = "Earned by raising reputation with the hidden Honeyback Hive faction in Stormsong Valley (8.2.5)",
 		zone = {
-			name = "Stormsong Valley",
 			mapID = 942,
+			x = 62.5,
+			y = 26.3,
 		},
 		conditions = {
 			{
@@ -14463,8 +14742,9 @@ MM.AddMounts({
 		faction = "Horde",
 		source = "Raised via the baby pterrordax daily questline in Zuldazar (Ptero-Tot chain)",
 		zone = {
-			name = "Zuldazar",
 			mapID = 862,
+			x = 70.6,
+			y = 50.6,
 		},
 		timePerAttempt = 10,
 		effort = 3,
@@ -14607,8 +14887,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Built through the Mechagon questline by collecting parts and paint for Pascal-K1N6",
 		zone = {
-			name = "Mechagon Island",
 			mapID = 1462,
+			x = 71.4,
+			y = 32.3,
 		},
 		timePerAttempt = 30,
 		effort = 3,
@@ -14738,6 +15019,7 @@ MM.AddMounts({
 		source = "Drops from the rare Nimar the Slayer in Arathi Highlands (warfront cycle)",
 		npc = {
 			name = "Nimar the Slayer",
+			id = 142692,
 		},
 		zone = {
 			name = "Arathi Highlands",
@@ -14895,6 +15177,7 @@ MM.AddMounts({
 		source = "Drops from the rares Moxo the Beheader and Athil Dewfire in Darkshore.",
 		npc = {
 			name = "Athil Dewfire",
+			id = 148037,
 		},
 		zone = {
 			mapID = 62,
@@ -14923,6 +15206,7 @@ MM.AddMounts({
 		source = "Drops from the rares Croz Bloodrage and Shadowclaw in Darkshore.",
 		npc = {
 			name = "Moxo the Beheader",
+			id = 147701,
 		},
 		zone = {
 			mapID = 62,
@@ -15030,8 +15314,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Reward from the achievement Periodic Destruction in Nazjatar (Mardivas's Laboratory elemental combos)",
 		zone = {
-			name = "Nazjatar",
 			mapID = 1355,
+			x = 38.1,
+			y = 55.4,
 		},
 		conditions = {
 			{
@@ -15076,6 +15361,7 @@ MM.AddMounts({
 		source = "Obtained from the Armored Vaultbot rare on Mechagon Island",
 		npc = {
 			name = "Armored Vaultbot",
+			id = 150394,
 		},
 		zone = {
 			name = "Mechagon Island",
@@ -15178,6 +15464,11 @@ MM.AddMounts({
 		npc = {
 			name = "Wrathion",
 		},
+		zone = {
+			mapID = 1473,
+			x = 46.2,
+			y = 64,
+		},
 		conditions = {
 			{
 				name = "We Have the Technology",
@@ -15187,11 +15478,6 @@ MM.AddMounts({
 				name = "Corrupted Mementos",
 				amount = 100000,
 				id = 1719,
-				type = "CURRENCY",
-			},
-			{
-				name = "Corrupted Mementos",
-				amount = 100000,
 				type = "CURRENCY",
 			},
 		},
@@ -15242,10 +15528,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Through the Depths of Visions",
-				type = "ACHIEVEMENT",
-			},
-			{
-				name = "Through the Depths of Visions",
 				id = 13994,
 				type = "ACHIEVEMENT",
 			},
@@ -15268,8 +15550,9 @@ MM.AddMounts({
 			id = 157153,
 		},
 		zone = {
-			name = "Vale of Eternal Blossoms",
 			mapID = 1530,
+			x = 30.6,
+			y = 37.8,
 		},
 		dropRate = 3.0303,
 		attempts = "DAILY",
@@ -15311,8 +15594,9 @@ MM.AddMounts({
 			id = 163042,
 		},
 		zone = {
-			name = "Vale of Eternal Blossoms",
 			mapID = 1530,
+			x = 29,
+			y = 53,
 		},
 		attempts = "NONE",
 		timePerAttempt = 30,
@@ -15468,6 +15752,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				amount = 1,
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -15480,6 +15766,10 @@ MM.AddMounts({
 		},
 		effort = 4,
 		notes = "Introduced in BfA Season 1; still purchasable from the vicious mount vendor with a saddle.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -15503,6 +15793,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				amount = 1,
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -15515,6 +15807,10 @@ MM.AddMounts({
 		},
 		effort = 4,
 		notes = "Introduced in BfA Season 1.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -15554,6 +15850,10 @@ MM.AddMounts({
 		},
 		effort = 4,
 		notes = "BfA-season vicious mount; separate Alliance and Horde armored versions share the name.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -15574,11 +15874,17 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				amount = 1,
+				id = 103533,
 				type = "ITEM",
 			},
 		},
 		effort = 4,
 		notes = "Introduced late in BfA's vicious rotation.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -15602,6 +15908,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				amount = 1,
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -15614,6 +15922,10 @@ MM.AddMounts({
 		},
 		effort = 4,
 		notes = "Introduced late in BfA's vicious rotation.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -15897,6 +16209,7 @@ MM.AddMounts({
 		source = "Defeat Worldedge Gorger in Revendreth and adopt the Impressionable Gorger Spawn, then complete the feeding chain",
 		npc = {
 			name = "Worldedge Gorger",
+			id = 160821,
 		},
 		zone = {
 			mapID = 1525,
@@ -16039,6 +16352,11 @@ MM.AddMounts({
 				factionName = "The Avowed",
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				amount = 2000,
+				id = 1816,
+				type = "CURRENCY",
 			},
 		},
 		effort = 4,
@@ -16204,6 +16522,16 @@ MM.AddMounts({
 				factionName = "Venthyr Renown",
 				standingName = "Renown 39",
 				type = "REP",
+			},
+			{
+				amount = 50,
+				id = 1885,
+				type = "CURRENCY",
+			},
+			{
+				amount = 100,
+				id = 1813,
+				type = "CURRENCY",
 			},
 		},
 		effort = 2,
@@ -16828,6 +17156,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Grateful Offering",
+				amount = 5000,
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -17106,6 +17436,16 @@ MM.AddMounts({
 				factionName = "Necrolord Renown",
 				standingName = "Renown 39",
 				type = "REP",
+			},
+			{
+				amount = 50,
+				id = 1885,
+				type = "CURRENCY",
+			},
+			{
+				amount = 100,
+				id = 1813,
+				type = "CURRENCY",
 			},
 		},
 		effort = 2,
@@ -17963,6 +18303,16 @@ MM.AddMounts({
 				standingName = "Renown 39",
 				type = "REP",
 			},
+			{
+				amount = 40,
+				id = 1885,
+				type = "CURRENCY",
+			},
+			{
+				amount = 100,
+				id = 1813,
+				type = "CURRENCY",
+			},
 		},
 		effort = 2,
 		access = "Auto-granted into your bags at Night Fae Renown 39 - you do not need to buy it. Elwyn only sells a replacement copy.",
@@ -18098,8 +18448,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Sold at Revered with the Court of Night (Night Fae covenant reputation)",
 		zone = {
-			name = "Ardenweald",
 			mapID = 1565,
+			x = 59.6,
+			y = 52.9,
 		},
 		conditions = {
 			{
@@ -18131,8 +18482,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Revered with the Court of Night -- see Spindlenose in Ardenweald.",
 		zone = {
-			name = "Ardenweald",
 			mapID = 1565,
+			x = 59.6,
+			y = 52.9,
 		},
 		conditions = {
 			{
@@ -18310,8 +18662,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "War Chest of the Wild Hunt — Night Fae Covenant Assault in the Maw (9.1)",
 		zone = {
-			name = "The Maw",
 			mapID = 1543,
+			x = 22.4,
+			y = 43.3,
 		},
 		dropRate = 4,
 		attempts = "WEEKLY",
@@ -18346,6 +18699,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Grateful Offering",
+				amount = 2500,
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -18628,8 +18983,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Collect Nilganihmaht's five rings from Maw rares and treasures to unseal his vault",
 		zone = {
-			name = "The Maw",
 			mapID = 1543,
+			x = 25.6,
+			y = 32,
 		},
 		acquire = {
 			hours = 9,
@@ -18808,10 +19164,6 @@ MM.AddMounts({
 			y = 41,
 		},
 		conditions = {
-			{
-				name = "Twisting Corridors: Layer 8",
-				type = "ACHIEVEMENT",
-			},
 			{
 				name = "Twisting Corridors: Layer 8",
 				id = 14570,
@@ -19241,6 +19593,7 @@ MM.AddMounts({
 		source = "Drops from Nalthor the Rimebinder in The Necrotic Wake (Mythic)",
 		npc = {
 			name = "Nalthor the Rimebinder",
+			id = 166945,
 		},
 		zone = {
 			name = "Bastion",
@@ -19521,6 +19874,7 @@ MM.AddMounts({
 		source = "Drops from The Jailer in Sepulcher of the First Ones (Mythic)",
 		npc = {
 			name = "The Jailer",
+			id = 185421,
 		},
 		zone = {
 			name = "Zereth Mortis",
@@ -20621,8 +20975,14 @@ MM.AddMounts({
 				notes = "20th Anniversary event vendor mount; event ended January 2025.",
 			},
 		},
+		dropRate = 11.537,
 		effort = 3,
 		notes = "Added during the Shadowlands era alongside Burning Crusade Timewalking.",
+		dropObserved = {
+			count = 1678,
+			outOf = 14545,
+			sources = 1,
+		},
 	},
 	{
 		name = "Renewed Proto-Drake",
@@ -20647,8 +21007,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Leveling reward from \"Shady Sanctuary\", Ohn'ahran Plains main questline.",
 		zone = {
-			name = "Ohn'ahran Plains",
 			mapID = 2023,
+			x = 28.3,
+			y = 57.7,
 		},
 		questChain = {
 			name = "Shady Sanctuary",
@@ -20697,8 +21058,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Awarded during the Embers of Neltharion (10.1) Zaralek Cavern campaign",
 		zone = {
-			name = "Zaralek Cavern",
 			mapID = 2133,
+			x = 53.6,
+			y = 30.2,
 		},
 		effort = 1,
 		notes = "Campaign reward -- it comes to you for playing the 10.1 story, so there is nothing to farm and no coordinate to travel to.",
@@ -21078,6 +21440,11 @@ MM.AddMounts({
 				standingName = "Renown 25",
 				type = "REP",
 			},
+			{
+				amount = 20000,
+				id = 2657,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -21101,6 +21468,21 @@ MM.AddMounts({
 				factionName = "Iskaara Tuskarr",
 				standingName = "Renown (low tier)",
 				type = "REP",
+			},
+			{
+				amount = 2,
+				id = 201403,
+				type = "ITEM",
+			},
+			{
+				amount = 2,
+				id = 201400,
+				type = "ITEM",
+			},
+			{
+				amount = 750,
+				id = 2003,
+				type = "CURRENCY",
 			},
 		},
 		effort = 2,
@@ -21126,6 +21508,21 @@ MM.AddMounts({
 				standingName = "Renown (low tier)",
 				type = "REP",
 			},
+			{
+				amount = 2,
+				id = 201403,
+				type = "ITEM",
+			},
+			{
+				amount = 2,
+				id = 201400,
+				type = "ITEM",
+			},
+			{
+				amount = 750,
+				id = 2003,
+				type = "CURRENCY",
+			},
 		},
 		effort = 2,
 	},
@@ -21149,6 +21546,21 @@ MM.AddMounts({
 				factionName = "Iskaara Tuskarr",
 				standingName = "Renown (high tier)",
 				type = "REP",
+			},
+			{
+				amount = 5,
+				id = 201403,
+				type = "ITEM",
+			},
+			{
+				amount = 5,
+				id = 201400,
+				type = "ITEM",
+			},
+			{
+				amount = 1000,
+				id = 2003,
+				type = "CURRENCY",
 			},
 		},
 		effort = 3,
@@ -21174,6 +21586,21 @@ MM.AddMounts({
 				standingName = "Renown (high tier)",
 				type = "REP",
 			},
+			{
+				amount = 5,
+				id = 201403,
+				type = "ITEM",
+			},
+			{
+				amount = 5,
+				id = 201400,
+				type = "ITEM",
+			},
+			{
+				amount = 1000,
+				id = 2003,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -21196,6 +21623,21 @@ MM.AddMounts({
 				factionName = "Iskaara Tuskarr",
 				standingName = "Renown 30",
 				type = "REP",
+			},
+			{
+				amount = 1,
+				id = 193633,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 193696,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 193708,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21605,7 +22047,9 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Dreamsurge Coalescence",
+				amount = 1000,
 				cost = "1 Dreamsurge Coalescence",
+				id = 207026,
 				type = "ITEM",
 			},
 		},
@@ -21673,8 +22117,9 @@ MM.AddMounts({
 			name = "Stargrazer",
 		},
 		zone = {
-			name = "Emerald Dream",
 			mapID = 2200,
+			x = 50.3,
+			y = 61.6,
 		},
 		conditions = {
 			{
@@ -21728,16 +22173,23 @@ MM.AddMounts({
 		source = "Sold by Talisa Whisperbloom, the Dream Wardens renown vendor in the Emerald Dream.",
 		npc = {
 			name = "Talisa Whisperbloom",
+			id = 212797,
 		},
 		zone = {
-			name = "Emerald Dream",
 			mapID = 2200,
+			x = 59.8,
+			y = 16.9,
 		},
 		conditions = {
 			{
 				factionName = "Dream Wardens",
 				standingName = "Renown (mid tier)",
 				type = "REP",
+			},
+			{
+				amount = 1,
+				id = 211376,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -22060,10 +22512,16 @@ MM.AddMounts({
 				effort = 3,
 			},
 		},
+		dropRate = 5.984,
 		attempts = "DAILY",
 		timePerAttempt = 10,
 		effort = 3,
 		notes = "Requires a group to activate the five summoning levers at the same time.",
+		dropObserved = {
+			count = 131,
+			outOf = 2189,
+			sources = 1,
+		},
 	},
 	{
 		name = "Siesbarg",
@@ -22832,6 +23290,13 @@ MM.AddMounts({
 			x = 78,
 			y = 54,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		altSources = {
 			{
 				name = "Vicious Skyflayer",
@@ -23340,10 +23805,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "I'm On Island Time",
-				type = "ACHIEVEMENT",
-			},
-			{
-				name = "I'm On Island Time",
 				id = 40956,
 				type = "ACHIEVEMENT",
 			},
@@ -23623,8 +24084,9 @@ MM.AddMounts({
 		source = "Sold by Mistweaver Xia in Timeless Isle for Timewarped Badges during Mists of Pandaria Timewalking.",
 		vendor = "Mistweaver Xia",
 		zone = {
-			name = "Timeless Isle",
 			mapID = 554,
+			x = 43,
+			y = 55.4,
 		},
 		conditions = {
 			{
@@ -24130,6 +24592,11 @@ MM.AddMounts({
 				standingName = "Exalted",
 				type = "REP",
 			},
+			{
+				amount = 8125,
+				id = 2815,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -24182,6 +24649,11 @@ MM.AddMounts({
 				factionName = "Steamwheedle Cartel",
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				amount = 11375,
+				id = 2815,
+				type = "CURRENCY",
 			},
 		},
 		effort = 3,
@@ -24236,6 +24708,11 @@ MM.AddMounts({
 				standingName = "Exalted",
 				type = "REP",
 			},
+			{
+				amount = 11375,
+				id = 2815,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -24288,6 +24765,11 @@ MM.AddMounts({
 				factionName = "Darkfuse Solutions",
 				standingName = "Exalted",
 				type = "REP",
+			},
+			{
+				amount = 11375,
+				id = 2815,
+				type = "CURRENCY",
 			},
 		},
 		effort = 4,
@@ -24766,6 +25248,13 @@ MM.AddMounts({
 			x = 78,
 			y = 54,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		altSources = {
 			{
 				name = "Vicious Electro Eel",
@@ -25094,6 +25583,11 @@ MM.AddMounts({
 				standingName = "Renown 9",
 				type = "REP",
 			},
+			{
+				amount = 8125,
+				id = 2815,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Renown earned via the Nightfall scenario and Hallowfall event activities.",
@@ -25374,8 +25868,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Found in the Wriggling Pinnacle Cache in K'aresh.",
 		zone = {
-			name = "K'aresh",
 			mapID = 2371,
+			x = 74.1,
+			y = 32.6,
 		},
 		dropRate = 3.0303,
 		effort = 3,
@@ -27082,6 +27577,11 @@ MM.AddMounts({
 		category = "TIMEWALKING",
 		obtainable = true,
 		source = "Very rare drop from any Timewalking dungeon or raid boss, any era.",
+		zone = {
+			mapID = 2025,
+			x = 61,
+			y = 84.3,
+		},
 		dropRate = 0.1,
 		attempts = "NONE",
 		timePerAttempt = 20,
@@ -29010,8 +29510,28 @@ MM.AddMounts({
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
-			x = 50,
-			y = 50,
+			x = 46.83,
+			y = 81.86,
+		},
+		acquire = {
+			note = "Four keys, then open the cache at 46.83, 81.86",
+			steps = {
+				{
+					text = "Nalorakk's Chosen (32.7, 83.5) -- Bear Tooth",
+				},
+				{
+					text = "Halazzi's Chosen (34.6, 33.5) -- Lynx Claw",
+				},
+				{
+					text = "Jan'alai's Chosen (54.8, 22.4) -- Dragonhawk Feather",
+				},
+				{
+					text = "Akil'zon's Chosen (51.6, 84.9) -- Eagle Talon",
+				},
+				{
+					text = "Open the Honored Warrior's Cache (46.8, 81.9)",
+				},
+			},
 		},
 		altSources = {
 			{
@@ -29037,8 +29557,13 @@ MM.AddMounts({
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
-			x = 50,
-			y = 50,
+			x = 44.72,
+			y = 44.1,
+		},
+		acquire = {
+			name = "Vile Essence",
+			count = 1000,
+			note = "Then open the Abandoned Ritual Skull at 44.72, 44.10",
 		},
 		altSources = {
 			{
@@ -29647,6 +30172,7 @@ MM.AddMounts({
 		source = "Sold by Telemancer Astrandis in Silvermoon City for 10,000 Undercoins; requires Delver's Journey Rank 5.",
 		npc = {
 			name = "Telemancer Astrandis",
+			id = 242399,
 		},
 		zone = {
 			name = "Silvermoon City",
@@ -29683,6 +30209,7 @@ MM.AddMounts({
 		source = "Sold by Construct V'anore in Silvermoon City for 2,000 Remnant of Anguish; requires Preyseeker's Journey Rank 5.",
 		npc = {
 			name = "Construct V'anore",
+			id = 252956,
 		},
 		zone = {
 			name = "Silvermoon City",
@@ -29724,6 +30251,7 @@ MM.AddMounts({
 		source = "Sold by Construct V'anore in Silvermoon City for 2,000 Remnant of Anguish; requires Preyseeker's Journey Rank 10.",
 		npc = {
 			name = "Construct V'anore",
+			id = 252956,
 		},
 		zone = {
 			name = "Silvermoon City",
@@ -29797,6 +30325,7 @@ MM.AddMounts({
 		source = "Drops from Degentrius in Magisters' Terrace on Mythic or Mythic+ difficulty.",
 		npc = {
 			name = "Degentrius",
+			id = 231865,
 		},
 		zone = {
 			name = "Isle of Quel'Danas",
@@ -29854,6 +30383,7 @@ MM.AddMounts({
 		source = "Drops from the Restless Heart in Windrunner Spire on Mythic or Mythic+ difficulty.",
 		npc = {
 			name = "Restless Heart",
+			id = 231636,
 		},
 		zone = {
 			name = "Eversong Woods",
@@ -29971,12 +30501,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Timelost Saddle",
-				id = 275436,
-				type = "ITEM",
-			},
-			{
-				name = "Timelost Saddle",
 				cost = "1 Timelost Saddle (Keystone Myth achievement, one per season); redeemed with Lindormi",
+				id = 275436,
 				type = "ITEM",
 			},
 		},
@@ -30013,12 +30539,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Timelost Saddle",
-				id = 275436,
-				type = "ITEM",
-			},
-			{
-				name = "Timelost Saddle",
 				cost = "1 Timelost Saddle (Keystone Myth achievement, one per season); redeemed with Lindormi",
+				id = 275436,
 				type = "ITEM",
 			},
 		},
@@ -30112,6 +30634,7 @@ MM.AddMounts({
 		source = "Combine 4 Delicious Sporesnacks, earned one per week per account from Rotmire in the Sporefall raid (any difficulty).",
 		npc = {
 			name = "Rotmire",
+			id = 254176,
 		},
 		zone = {
 			name = "Harandar",
@@ -30229,12 +30752,6 @@ MM.AddMounts({
 			{
 				name = "Voidlight Marl",
 				amount = 6000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
-				type = "CURRENCY",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 6000,
 				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Caeris Fairdawn",
 				id = 3316,
 				type = "CURRENCY",
@@ -30270,12 +30787,6 @@ MM.AddMounts({
 				factionName = "Silvermoon Court",
 				standingName = "Renown 19",
 				type = "REP",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 8000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
-				type = "CURRENCY",
 			},
 			{
 				name = "Voidlight Marl",
@@ -30319,12 +30830,6 @@ MM.AddMounts({
 			{
 				name = "Voidlight Marl",
 				amount = 6000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
-				type = "CURRENCY",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 6000,
 				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Magovu in Zul'Aman",
 				id = 3316,
 				type = "CURRENCY",
@@ -30360,12 +30865,6 @@ MM.AddMounts({
 				factionName = "Amani Tribe",
 				standingName = "Renown 19",
 				type = "REP",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 8000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
-				type = "CURRENCY",
 			},
 			{
 				name = "Voidlight Marl",
@@ -30409,20 +30908,14 @@ MM.AddMounts({
 			{
 				name = "Voidlight Marl",
 				amount = 6000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
+				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Naynar at the Den in Harandar",
+				id = 3316,
 				type = "CURRENCY",
 			},
 			{
 				factionName = "Hara'ti",
 				standingName = "Renown 16",
 				type = "REP",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 6000,
-				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Naynar at the Den in Harandar",
-				id = 3316,
-				type = "CURRENCY",
 			},
 		},
 		altSources = {
@@ -30460,20 +30953,14 @@ MM.AddMounts({
 			{
 				name = "Voidlight Marl",
 				amount = 8000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
+				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Naynar at the Den in Harandar",
+				id = 3316,
 				type = "CURRENCY",
 			},
 			{
 				factionName = "Hara'ti",
 				standingName = "Renown 19",
 				type = "REP",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 8000,
-				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Naynar at the Den in Harandar",
-				id = 3316,
-				type = "CURRENCY",
 			},
 		},
 		altSources = {
@@ -30510,20 +30997,14 @@ MM.AddMounts({
 			{
 				name = "Voidlight Marl",
 				amount = 6000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
+				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Void Researcher Anowin",
+				id = 3316,
 				type = "CURRENCY",
 			},
 			{
 				factionName = "Singularity",
 				standingName = "Renown 17",
 				type = "REP",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 6000,
-				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Void Researcher Anowin",
-				id = 3316,
-				type = "CURRENCY",
 			},
 		},
 		altSources = {
@@ -30560,20 +31041,14 @@ MM.AddMounts({
 			{
 				name = "Voidlight Marl",
 				amount = 8000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
+				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Void Researcher Anowin",
+				id = 3316,
 				type = "CURRENCY",
 			},
 			{
 				factionName = "Singularity",
 				standingName = "Renown 19",
 				type = "REP",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 8000,
-				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Void Researcher Anowin",
-				id = 3316,
-				type = "CURRENCY",
 			},
 		},
 		altSources = {
@@ -30691,12 +31166,6 @@ MM.AddMounts({
 			{
 				name = "Voidlight Marl",
 				amount = 6000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
-				type = "CURRENCY",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 6000,
 				how = "Showdowns, world quests and renown activities across Midnight zones; sold by Thraxadus",
 				id = 3316,
 				type = "CURRENCY",
@@ -30731,12 +31200,6 @@ MM.AddMounts({
 				factionName = "Slayer's Duellum",
 				standingName = "Exalted",
 				type = "REP",
-			},
-			{
-				name = "Voidlight Marl",
-				amount = 6000,
-				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
-				type = "CURRENCY",
 			},
 			{
 				name = "Voidlight Marl",
@@ -31045,6 +31508,7 @@ MM.AddMounts({
 		source = "Ritual Sites Renown 8 -- see Sergeant Vornin in Silvermoon City.",
 		npc = {
 			name = "Sergeant Vornin",
+			id = 255503,
 		},
 		zone = {
 			name = "Silvermoon City",
@@ -31248,11 +31712,6 @@ MM.AddMounts({
 				name = "Coiled Isle currency",
 				amount = 10000,
 				id = 3448,
-				type = "CURRENCY",
-			},
-			{
-				name = "Coiled Isle currency",
-				amount = 10000,
 				type = "CURRENCY",
 			},
 		},
@@ -32804,8 +33263,15 @@ MM.AddMounts({
 			x = 50,
 			y = 55,
 		},
+		dropRate = 0.19,
+		timePerAttempt = 0.33,
 		effort = 4,
 		notes = "Also had a chance from anglers dailies bags historically.",
+		dropObserved = {
+			count = 883,
+			outOf = 466468,
+			sources = 1,
+		},
 	},
 	{
 		name = "Emerald Drake",
@@ -33094,8 +33560,9 @@ MM.AddMounts({
 		faction = "Horde",
 		source = "Reward from \"Breath of Darkest Shadow\".",
 		zone = {
-			name = "Kun-Lai Summit",
 			mapID = 379,
+			x = 55.9,
+			y = 33.9,
 		},
 		questChain = {
 			name = "Breath of Darkest Shadow",
@@ -34683,6 +35150,7 @@ MM.AddMounts({
 			x = 67.2,
 			y = 71.7,
 		},
+		timePerAttempt = 5,
 		effort = 4,
 		goldCost = 90000,
 	},
@@ -35891,6 +36359,18 @@ MM.AddMounts({
 			x = 58,
 			y = 53.8,
 		},
+		conditions = {
+			{
+				amount = 85,
+				id = 205188,
+				type = "ITEM",
+			},
+			{
+				amount = 170,
+				id = 204985,
+				type = "ITEM",
+			},
+		},
 		effort = 3,
 	},
 	{
@@ -36527,10 +37007,12 @@ MM.AddMounts({
 		source = "Sold by Talisa Whisperbloom, the Dream Wardens renown vendor in the Emerald Dream.",
 		npc = {
 			name = "Talisa Whisperbloom",
+			id = 212797,
 		},
 		zone = {
-			name = "Emerald Dream",
 			mapID = 2200,
+			x = 59.8,
+			y = 16.9,
 		},
 		conditions = {
 			{
@@ -36556,10 +37038,12 @@ MM.AddMounts({
 		source = "Sold by Talisa Whisperbloom, the Dream Wardens renown vendor in the Emerald Dream.",
 		npc = {
 			name = "Talisa Whisperbloom",
+			id = 212797,
 		},
 		zone = {
-			name = "Emerald Dream",
 			mapID = 2200,
+			x = 59.8,
+			y = 16.9,
 		},
 		conditions = {
 			{
@@ -36585,10 +37069,12 @@ MM.AddMounts({
 		source = "Sold by Talisa Whisperbloom, the Dream Wardens renown vendor in the Emerald Dream.",
 		npc = {
 			name = "Talisa Whisperbloom",
+			id = 212797,
 		},
 		zone = {
-			name = "Emerald Dream",
 			mapID = 2200,
+			x = 59.8,
+			y = 16.9,
 		},
 		conditions = {
 			{
@@ -36657,9 +37143,9 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Reward from Beginning a New Dawn at the end of the Gilneas Reclamation storyline.",
 		zone = {
-			name = "Gilneas",
-			x = 45,
-			y = 60,
+			name = "Ruins of Gilneas",
+			x = 58.7,
+			y = 47.8,
 		},
 		effort = 2,
 	},
@@ -36708,8 +37194,19 @@ MM.AddMounts({
 			x = 76.8,
 			y = 65.4,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
 		notes = "Full journal name of the MoP-season Alliance saber.",
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36726,7 +37223,18 @@ MM.AddMounts({
 			x = 76.8,
 			y = 65.4,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36746,6 +37254,13 @@ MM.AddMounts({
 			x = 41.8,
 			y = 73,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -36754,6 +37269,10 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36770,7 +37289,18 @@ MM.AddMounts({
 			x = 76.8,
 			y = 65.4,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36790,6 +37320,13 @@ MM.AddMounts({
 			x = 41.8,
 			y = 73,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -36798,6 +37335,10 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36814,7 +37355,18 @@ MM.AddMounts({
 			x = 76.8,
 			y = 65.4,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36834,6 +37386,13 @@ MM.AddMounts({
 			x = 41.8,
 			y = 73,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		factionOverlay = {
 			Alliance = {
 				zone = {
@@ -36842,6 +37401,10 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36872,6 +37435,10 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36902,6 +37469,10 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36932,6 +37503,10 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36952,7 +37527,18 @@ MM.AddMounts({
 			x = 76.8,
 			y = 65.4,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -36970,7 +37556,18 @@ MM.AddMounts({
 			x = 76.8,
 			y = 65.4,
 		},
+		conditions = {
+			{
+				amount = 1,
+				id = 103533,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
+		pvpBarTotal = 2400,
+		pvpMatchMinutes = 18,
+		pvpPerLoss = 0,
+		pvpPerWin = 60,
 		solo = false,
 	},
 	{
@@ -37095,6 +37692,13 @@ MM.AddMounts({
 			mapID = 1670,
 			x = 56.3,
 			y = 63.7,
+		},
+		conditions = {
+			{
+				name = "Timewarped Badge",
+				amount = 5000,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 	},
@@ -40294,6 +40898,11 @@ MM.AddMounts({
 		category = "QUEST",
 		obtainable = true,
 		source = "Quest: Rhapsody in Blue. Requires the legacy legendary, then a Dragonflight quest chain.",
+		zone = {
+			mapID = 2025,
+			x = 65.7,
+			y = 12.6,
+		},
 		effort = 4,
 		notes = "The quest Rhapsody in Blue. Gated behind owning the legacy legendary Dragonwrath, Tarecgosa's Rest, then a Dragonflight chain -- the legendary is the real cost here, not the quest.",
 		noLocationReason = "Quest reward -- granted on completion, nowhere to travel",
@@ -40617,10 +41226,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Orgrimmar Raider",
-				type = "ACHIEVEMENT",
-			},
-			{
-				name = "Glory of the Orgrimmar Raider",
 				id = 8454,
 				type = "ACHIEVEMENT",
 			},
@@ -40641,10 +41246,6 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Mount Parade",
-				type = "ACHIEVEMENT",
-			},
-			{
-				name = "Mount Parade",
 				id = 8302,
 				type = "ACHIEVEMENT",
 			},
@@ -40663,10 +41264,6 @@ MM.AddMounts({
 		faction = "Alliance",
 		source = "Achievement: Mount Parade (collect 200 mounts) — Alliance",
 		conditions = {
-			{
-				name = "Mount Parade",
-				type = "ACHIEVEMENT",
-			},
 			{
 				name = "Mount Parade",
 				id = 8304,

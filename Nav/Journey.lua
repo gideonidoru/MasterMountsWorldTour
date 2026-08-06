@@ -24,6 +24,12 @@ local J = MM.Journey
 
 local graph, byZone      -- node name -> { mapID, x, y, zone }, and zone -> {names}
 local edges              -- from -> { to -> {secs, mode} }
+-- Suffixed spellings ("beastwatch, gorgrond") that point at an EXISTING node
+-- table rather than being nodes of their own. They carry no edges -- edges are
+-- keyed through canon() -- so a walk over pairs(graph) sees each of the 767 of
+-- them as its own one-node island. That is what made the component count read
+-- 614 when the real figure is a fraction of it.
+local aliasKey
 
 
 -- Real yards when the client can give them, a defensible approximation when it
@@ -90,6 +96,17 @@ local function yards(zoneA, ax, ay, zoneB, bx, by, mapA, mapB)
 				local d = U.WorldDistance(wa, wb)
 				if d then return d end
 			end
+			-- SAY SO WHEN THE ANSWER BELOW IS NOT A DISTANCE.
+			--
+			-- Falling through to the planar estimate across two continents
+			-- produces a small, plausible, entirely fictional number -- the
+			-- same shape of fault that once put Bastion six seconds from The
+			-- Maw. 176 zone names now span more than one map, so the caller
+			-- gets told, and the one caller that must not guess acts on it.
+			if wa and wb and ca ~= cb then
+				local dx, dy = (ax - bx) * (ZONE_YARDS / 100), (ay - by) * (ZONE_YARDS / 100)
+				return math.sqrt(dx * dx + dy * dy), true
+			end
 		end
 	end
 	local dx, dy = (ax - bx) * (ZONE_YARDS / 100), (ay - by) * (ZONE_YARDS / 100)
@@ -101,6 +118,149 @@ local function addEdge(from, to, secs, mode)
 	edges[from] = edges[from] or {}
 	local cur = edges[from][to]
 	if not cur or secs < cur.secs then edges[from][to] = { secs = secs, mode = mode } end
+end
+
+-- Where a place joins the graph: the nodes worth attaching a journey end to.
+--
+-- Hoisted to file scope because the single-source travel search needs it too.
+-- While it was a local inside J.Plan it was invisible to every other caller,
+-- and a reference to it from outside resolves as a GLOBAL -- nil at run time,
+-- and silent to luac.
+local function attachPoints(zone, x, y, knownMapID)
+	local out = {}
+	for _, name in ipairs(byZone[zone] or {}) do
+		local n = graph[name]
+		if n and n.x and n.y then
+			-- Each end against its OWN map. A node on floor 5 carries the
+			-- floor-5 map; measuring its coordinate against the zone's
+			-- floor-0 map is the same mistake as measuring across
+			-- continents, just quieter.
+			out[#out + 1] = { name = name,
+				d = yards(zone, x or 50, y or 50, zone, n.x, n.y,
+					knownMapID, n.mapID) }
+		end
+	end
+	if #out > 0 then return out end
+	-- Cache by the map actually used, not the name, for the same reason the
+	-- plan cache is.
+	local cacheKey = zone .. "#" .. tostring(knownMapID or "?")
+	local cached = nearZoneCache[cacheKey]
+	if cached then return cached end
+
+	-- MEASURED ACROSS ZONES, OR NOT AT ALL.
+	--
+	-- yards() falls back to treating both points as if they were in one
+	-- zone when a name will not resolve to a map, which is fine WITHIN a
+	-- zone and nonsense between two. Six zone names do not resolve on this
+	-- client, and for those the fallback would hand back a small number for
+	-- an arbitrary far-away node -- a fabricated cheap edge, which Dijkstra
+	-- would seize on and route the player through.
+	--
+	-- No world position, no candidate. Leaving the list empty costs a flat
+	-- fallback for that leg; guessing costs a wrong route presented as fact.
+	-- ONLY FROM A REAL WORLD MAP.
+	--
+	-- A dungeon or raid interior has its own coordinate space, so a world
+	-- position taken inside one is not comparable to an outdoor node. A
+	-- wrong LARGE distance would merely be ignored; a wrong SMALL one
+	-- invents a cheap edge and Dijkstra routes the player straight through
+	-- it. Instances reach the world through their door, which is a separate
+	-- piece of data we already hold -- not through a coordinate guess.
+	--
+	-- Refusing here costs the flat fallback, which is what happens today.
+	local U = MM.Util
+	local here
+	-- mapFor is the file-level cached resolver; calling ResolveMapByName
+	-- per node would be 1,300 lookups per zone.
+	-- The caller's map id wins over anything re-derived from the name.
+	local originMap, ox, oy = knownMapID or mapFor(zone), x or 50, y or 50
+	local info = originMap and C_Map and C_Map.GetMapInfo
+		and C_Map.GetMapInfo(originMap)
+	-- REFUSE ONLY WHAT IS ACTUALLY AN INTERIOR.
+	--
+	-- This demanded mapType Zone or Continent, which is a guess about which
+	-- maps are outdoors. The Forbidden Reach is neither and is very much
+	-- outdoors, so it could not be entered at all -- "no way to reach the
+	-- forbidden reach from the graph" while the same leg was happily priced
+	-- by a direct flight, which needs the very world position this refused
+	-- to ask for.
+	--
+	-- The continent comparison below is the real protection: an interior's
+	-- coordinate space reports a continent that matches no outdoor node, so
+	-- its candidates are rejected on their own merits rather than on a guess
+	-- about the map's type. Only a declared Dungeon is refused outright, and
+	-- those have doors.
+	local mapType = info and info.mapType
+	local worldly = info and not (Enum and Enum.UIMapType
+		and mapType == Enum.UIMapType.Dungeon)
+
+	-- AN INSTANCE LEAVES BY ITS DOOR.
+	--
+	-- Its interior has a private coordinate space, so measuring from inside
+	-- it to an outdoor flight master is meaningless -- and a meaningless
+	-- SMALL answer invents a cheap edge that Dijkstra will happily route
+	-- through. But the door is a real outdoor place we already ship a map
+	-- and a coordinate for, and it is where the player actually stands on
+	-- the way out. Measure from there instead of refusing.
+	if not worldly and MM.Network and MM.Network.EntranceNode then
+		local key = MM.Network.EntranceNode(zone)
+		local door = key and MM.TravelNodes and MM.TravelNodes[key]
+		if door and door.mapID and door.x and door.y then
+			local dx, dy = tonumber(door.x), tonumber(door.y)
+			-- TravelNodes store 0..1; everything here is 0..100.
+			if dx and dy then
+				originMap = door.mapID
+				ox = dx <= 1.0 and dx * 100 or dx
+				oy = dy <= 1.0 and dy * 100 or dy
+				worldly = true
+			end
+		end
+	end
+
+	local hereContinent
+	if worldly and U and U.GetWorldPos and U.WorldDistance and originMap then
+		hereContinent, here = U.GetWorldPos(originMap, ox, oy)
+	end
+	local best = {}
+	if here then
+		for z, names in pairs(byZone) do
+			local mz = mapFor(z)
+			if mz then
+				for _, name in ipairs(names) do
+					local n = graph[name]
+					if n and n.x and n.y then
+						-- You cannot fly to another continent. A candidate
+						-- on a different one is not near, however small the
+						-- arithmetic between their coordinates comes out.
+						local thereContinent, there =
+							nodeWorld(name, n.mapID or mz, n.x, n.y)
+						local d = there and thereContinent == hereContinent
+							and U.WorldDistance(here, there)
+						if d then best[#best + 1] = { name = name, d = d } end
+					end
+				end
+			end
+		end
+	end
+	table.sort(best, function(a, b) return a.d < b.d end)
+	-- A handful is enough. The graph decides which is genuinely worth the
+	-- flight; carrying all of them only widens the search.
+	if #best == 0 then
+		out.why = (not info and ("no map info for " .. tostring(originMap)))
+			or (not worldly and ("map %s is an instance interior and has no door")
+				:format(tostring(originMap)))
+			or (not here and ("no world position for map " .. tostring(originMap)))
+			or "no node anywhere shares its continent"
+	end
+	for i = 1, math.min(#best, 8) do out[i] = best[i] end
+	-- Record the continent this actually measured from. An audit that
+	-- re-derives it independently will get a DIFFERENT answer for an
+	-- instance, because the origin used here is the door's outdoor map and
+	-- not the interior -- and it will then report mismatches that are its
+	-- own. Store the value used; check against that.
+	out.originContinent = hereContinent
+	nearZoneCache[cacheKey] = out
+	return out
 end
 
 -- Built once, lazily. Rebuilt when the player learns a flight point, because
@@ -135,9 +295,281 @@ function J.ForgetPlans()
 	planWhy = {}
 end
 
+-- AN ISLAND WITH NO DOOR IS STILL SOMEWHERE YOU CAN FLY TO.
+--
+-- 47 zones had no edge into the rest of the graph at all, so every journey to
+-- one of them reported "no path" and fell through to a flat flight estimate --
+-- including one that priced a Shadowlands-to-Dragon-Isles trip at 6.3 minutes,
+-- which is not a flight that exists.
+--
+-- The cross-zone fly edge is deliberately absent above, and that is right:
+-- all-pairs would be a complete graph that teaches nothing. But a component
+-- with NO way in is the one case where "you just fly there" is the real
+-- answer. The Forbidden Reach is an island off the Dragon Isles, and no
+-- portal, boat or flight master reaches it in ANY source we have -- because
+-- none is needed. Zygor does not record one for the same reason.
+--
+-- So: only for components that nothing else reaches, only ONE edge each, and
+-- only to the nearest node ON THE SAME CONTINENT, priced at the real world
+-- distance. Never across a continent -- that is not a flight, and pricing it
+-- as one is exactly how Bastion came out six seconds from The Maw.
+--
+-- A component with nothing on its continent stays stranded and says so, in
+-- J.bridgeSkipped. An island we cannot honestly connect is not one we invent
+-- a bridge to.
+local function bridgeIslands(ypm)
+	local U = MM.Util
+	if not (U and U.GetWorldPos and U.WorldDistance) then return end
+
+	-- Components, cheapest way: one walk over every node.
+	local comp, order, sizes = {}, {}, {}
+	local nc = 0
+	-- Aliases are spellings, not places. Seeding the walk from one invents a
+	-- one-node island that can never be bridged and never needed to be.
+	for name in pairs(graph) do
+		if not aliasKey[name] then order[#order + 1] = name end
+	end
+	for _, seed in ipairs(order) do
+		if not comp[seed] then
+			nc = nc + 1
+			local stack, n = { seed }, 0
+			comp[seed] = nc
+			while #stack > 0 do
+				local cur = table.remove(stack)
+				n = n + 1
+				for to in pairs(edges[cur] or {}) do
+					if not comp[to] then comp[to] = nc stack[#stack + 1] = to end
+				end
+			end
+			sizes[nc] = n
+		end
+	end
+	-- The mainland is the biggest component, not a named node: naming one
+	-- would strand everything if that node ever moved.
+	local main, best = nil, -1
+	for id, n in pairs(sizes) do if n > best then main, best = id, n end end
+	J.components, J.mainComponent = nc, best
+	if nc < 2 then J.bridges, J.bridgeSkipped = 0, 0 return end
+
+	-- Mainland candidates are FLIGHT POINTS ONLY, bucketed by continent.
+	--
+	-- Two reasons, and the second is the one that matters. It is what a player
+	-- actually does -- you fly to the nearest flight master, not to an
+	-- arbitrary dock or portal mouth. And it is ~800 nodes instead of ~4,900,
+	-- which is the difference between a scan that finishes and one that trips
+	-- the watchdog: every stranded component has to search this list.
+	local byContinent = {}
+	for name, n in pairs(graph) do
+		if comp[name] == main and n.kind == "flight" and n.x and n.y then
+			local c, w = nodeWorld(name, n.mapID or (n.zone and mapFor(n.zone)), n.x, n.y)
+			if c and w then
+				byContinent[c] = byContinent[c] or {}
+				local t = byContinent[c]
+				t[#t + 1] = { name = name, world = w }
+			end
+		end
+	end
+
+	-- A GRID, BECAUSE THERE ARE 614 COMPONENTS AND 561 FLIGHT POINTS.
+	--
+	-- Scanning every flight point for every stranded component is 688,000
+	-- distance calls inside build(), which is what pushed the report and the
+	-- router model past the watchdog. World positions are in yards, so they
+	-- bucket: look in the candidate's own cell, widen a ring at a time, and
+	-- stop one ring after the first hit -- a point just over a cell boundary
+	-- can beat one in the corner of the cell that found it.
+	--
+	-- The linear scan stays as the fallback. An island far from any flight
+	-- point would otherwise find nothing and be reported unbridgeable, which
+	-- would be a lie told by an optimisation.
+	--
+	-- The stopping rule is NOT "one ring past the first hit" -- that was the
+	-- first version and it was wrong: a point found in the far corner of ring
+	-- R can be beaten by one several rings further out. Checked against brute
+	-- force on random layouts, it disagreed on 49 of 1,600 queries, by up to
+	-- 16,700 yards. Any cell in ring R+1 is at least R*CELL away, so the sound
+	-- rule is to stop only once the best distance found beats that bound.
+	local CELL = 2000
+	local grid = {}
+	for c, list in pairs(byContinent) do
+		local g = {}
+		for _, m in ipairs(list) do
+			local cx = math.floor(m.world.x / CELL)
+			local cy = math.floor(m.world.y / CELL)
+			g[cx] = g[cx] or {}
+			g[cx][cy] = g[cx][cy] or {}
+			table.insert(g[cx][cy], m)
+		end
+		grid[c] = g
+	end
+
+	local MAX_RING = 48
+	local function nearestFlight(c, w)
+		local g, bucket = grid[c], byContinent[c]
+		if not (g and w) then return nil end
+		local cx = math.floor(w.x / CELL)
+		local cy = math.floor(w.y / CELL)
+		local bestD, bestName
+		for ring = 0, MAX_RING do
+			for ix = cx - ring, cx + ring do
+				local col = g[ix]
+				if col then
+					for iy = cy - ring, cy + ring do
+						-- only the perimeter: the interior was done last ring
+						if ring == 0 or ix == cx - ring or ix == cx + ring
+							or iy == cy - ring or iy == cy + ring then
+							for _, m in ipairs(col[iy] or {}) do
+								local d = U.WorldDistance(w, m.world)
+								if d and (not bestD or d < bestD) then
+									bestD, bestName = d, m.name
+								end
+							end
+						end
+					end
+				end
+			end
+			if bestD and bestD <= ring * CELL then return bestD, bestName end
+		end
+		if bestD then return bestD, bestName end
+		-- Nothing within MAX_RING cells: answer exactly rather than not at all.
+		for _, m in ipairs(bucket or {}) do
+			local d = U.WorldDistance(w, m.world)
+			if d and (not bestD or d < bestD) then bestD, bestName = d, m.name end
+		end
+		return bestD, bestName
+	end
+
+	-- ONLY THE COMPONENTS A GOAL CAN ACTUALLY LAND IN.
+	--
+	-- The graph is 614 components, and the first cut bridged all 613 of the
+	-- minor ones. That was 150x the necessary work -- and worse than wasteful,
+	-- because each bridge pulls its component into the searchable set, so
+	-- every Dijkstra afterwards walked ~700 extra nodes belonging to places no
+	-- mount is in. `push()` became the hot spot and both the report and the
+	-- router model stopped finishing.
+	--
+	-- Measured: of 614 components, exactly 5 contain a zone that an obtainable
+	-- record names, and 4 of those are not the mainland. Four bridges is the
+	-- whole job. The rest are positionless taxi fragments and sub-zones no
+	-- goal has ever referenced, and connecting them buys nothing but frontier.
+	local goalZones = {}
+	local anyGoalZone = false
+	-- NOT a table constructor plus ipairs.
+	--
+	-- { rec.zone and rec.zone.name, rec.instance and ..., rec.vendor and ... }
+	-- has a nil hole whenever a record lacks the first of the three, and ipairs
+	-- stops dead at the first nil -- so every record without a `zone` field
+	-- contributed nothing, and the set came out empty. That is what "no goal
+	-- zones known when the graph was built" was: not a load-order problem, a
+	-- Lua one.
+	local function noteZone(z)
+		if z and z ~= "" then
+			goalZones[z:lower()] = true
+			anyGoalZone = true
+		end
+	end
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.obtainable then
+			noteZone(rec.zone and rec.zone.name)
+			noteZone(rec.instance and rec.instance.name)
+			noteZone(rec.vendor and rec.vendor.zone)
+		end
+	end
+	local wanted = {}
+	if anyGoalZone then
+		for zone, names in pairs(byZone) do
+			if goalZones[zone] then
+				-- comp[k] is nil for an alias; never index `wanted` with it.
+				for _, k in ipairs(names) do
+					if comp[k] then wanted[comp[k]] = true end
+				end
+			end
+		end
+	end
+	-- If the database is not loaded yet there is nothing to be relevant TO,
+	-- and bridging every component "just in case" is the behaviour this
+	-- replaces. Say so instead.
+	-- NOT `anyGoalZone and nil or "..."`. The and/or ternary cannot carry a
+	-- nil: `true and nil` is falsy, so `or` takes over and the message is
+	-- returned in BOTH cases. The report duly printed "no goal zones known"
+	-- next to "13 of them hold a goal", which is a straight contradiction.
+	if anyGoalZone then
+		J.bridgeWhy = nil
+	else
+		J.bridgeWhy = "no goal zones known when the graph was built"
+	end
+
+	-- Candidate ends per stranded component, capped: one good edge connects a
+	-- component, and scanning every node of every island is how the graph
+	-- rebuild became "script ran too long" the last time.
+	local CANDIDATES = 2
+	local cands = {}
+	for name, n in pairs(graph) do
+		local id = comp[name]
+		-- `id` IS NIL FOR AN ALIAS, because the walk above deliberately does not
+		-- seed from one. An alias shares its node's table, so it passes the x/y
+		-- test, and `cands[nil]` is "table index is nil" -- which is exactly how
+		-- Router:Build() started throwing at Journey.lua:348. Excluding aliases
+		-- in one place and not the other is the whole bug.
+		if id and id ~= main and n.x and n.y then
+			cands[id] = cands[id] or {}
+			if #cands[id] < CANDIDATES then cands[id][#cands[id] + 1] = name end
+		end
+	end
+
+	-- NO BRIDGE IS EVER FREE.
+	--
+	-- The first cut priced a bridge at its raw distance, and Raven Hill's
+	-- flight point sits on exactly the same ground as a Raven Hill transit
+	-- endpoint that landed in another component -- distance 0, so the edge
+	-- cost 0. A zero-cost edge is teleportation: Dijkstra pops the whole of
+	-- both components at the same distance, and the search that used to
+	-- finish started tripping the watchdog at Journey.lua:836. It also broke
+	-- the invariant outright, which is how it was caught.
+	--
+	-- Same ground still costs something to cross, and BorderData already
+	-- decided what: 5 seconds, "the two coordinates are the same piece of
+	-- ground seen from either side". A bridge is the same statement.
+	local MIN_BRIDGE_SECONDS = 5
+
+	local made, skipped, compares = 0, 0, 0
+	J.bridgeDetail = {}
+	J.bridgeRelevant = 0
+	for id in pairs(sizes) do
+		if id ~= main and wanted[id] then
+			J.bridgeRelevant = J.bridgeRelevant + 1
+			local bestD, bestA, bestB
+			for _, name in ipairs(cands[id] or {}) do
+				local n = graph[name]
+				local c, w = nodeWorld(name, n.mapID or (n.zone and mapFor(n.zone)),
+					n.x, n.y)
+				compares = compares + 1
+				local d, to = nearestFlight(c, w)
+				if d and (not bestD or d < bestD) then
+					bestD, bestA, bestB = d, name, to
+				end
+			end
+			if bestA then
+				local secs = math.max(bestD / ypm * 60, MIN_BRIDGE_SECONDS)
+				addEdge(bestA, bestB, secs, "fly")
+				addEdge(bestB, bestA, secs, "fly")
+				made = made + 1
+				J.bridgeDetail[#J.bridgeDetail + 1] = {
+					from = graph[bestA].name, to = graph[bestB].name,
+					yards = bestD, minutes = secs / 60,
+				}
+			else
+				skipped = skipped + 1
+			end
+		end
+	end
+	J.bridges, J.bridgeSkipped, J.bridgeCompares = made, skipped, compares
+end
+
 local function build()
 	if graph then return end
 	graph, byZone, edges = {}, {}, {}
+	aliasKey = {}
 
 	-- Nodes: every flight point we know of, from the shipped list.
 	for zone, list in pairs(MM.FlightPointData or {}) do
@@ -154,7 +586,10 @@ local function build()
 			-- almost entirely disconnected and every journey fell back to
 			-- flying, which is exactly the answer it was built to improve on.
 			local alias = (p.name .. ", " .. zone):lower()
-			if not graph[alias] then graph[alias] = graph[key] end
+			if not graph[alias] then
+				graph[alias] = graph[key]
+				aliasKey[alias] = true
+			end
 		end
 	end
 
@@ -333,17 +768,29 @@ local function build()
 	-- and useless -- every pair connected, nothing learned. Within a zone it is
 	-- exactly right: you really can fly from the dock to the flight master.
 	local ypm = MM.YARDS_PER_MINUTE or 1500
+	local crossSkipped = 0
 	for _, names in pairs(byZone) do
 		for i = 1, #names do
 			for k = i + 1, #names do
 				local a, b = graph[names[i]], graph[names[k]]
-				local secs = yards(a.zone, a.x, a.y, b.zone, b.x, b.y,
-					a.mapID, b.mapID) / ypm * 60
-				addEdge(names[i], names[k], secs, "fly")
-				addEdge(names[k], names[i], secs, "fly")
+				local d, crossContinent = yards(a.zone, a.x, a.y, b.zone, b.x, b.y,
+					a.mapID, b.mapID)
+				-- You cannot fly between continents. Two nodes sharing a zone
+				-- NAME across two continents are not one zone, and an edge
+				-- between them is a route that does not exist.
+				if crossContinent then
+					crossSkipped = crossSkipped + 1
+				else
+					local secs = d / ypm * 60
+					addEdge(names[i], names[k], secs, "fly")
+					addEdge(names[k], names[i], secs, "fly")
+				end
 			end
 		end
 	end
+	J.crossContinentSkipped = crossSkipped
+
+	bridgeIslands(ypm)
 end
 
 -- Read-only views of the graph, so a test can assert the invariant that keeps
@@ -416,6 +863,118 @@ function J.AttachAudit(zone, x, y, mapID)
 	return same, other, "nearest elsewhere"
 end
 
+------------------------------------------------------------
+-- Travel from where you are standing, to everywhere, in one search
+------------------------------------------------------------
+-- WHY THIS EXISTS.
+--
+-- "Add 10 Easiest" was instant, and that was the tell: it did no routing at
+-- all. Its only travel input was a three-valued flag -- 0 same continent, 1
+-- another, 0.5 unknown -- so on your own continent every candidate scored
+-- travel 0, and a mount 30 seconds away ranked identically to one 8 minutes
+-- away. Ordering could be fixed later by the route's third layer; SELECTION
+-- could not, because layer 3 can only reorder what it was handed.
+--
+-- The reason it was a flag is that pricing N candidates looked like N
+-- searches. It is not. Travel FROM ONE PLACE to everywhere is a single
+-- Dijkstra with no goal -- the same cost as one route leg -- and every node's
+-- distance falls out of it at once. This is that search, cached until you
+-- move, so the ease score can use real minutes.
+local fromCache, fromCacheKey = nil, nil
+
+function J.ForgetTravelFrom()
+	fromCache, fromCacheKey = nil, nil
+end
+
+-- seconds-from-here for every node, or nil if we cannot stand anywhere known.
+local function travelFrom(zone, x, y, mapID)
+	if not zone then return nil end
+	local key = ("%s#%s#%.1f#%.1f"):format(zone:lower(), tostring(mapID or "?"),
+		x or -1, y or -1)
+	if fromCacheKey == key and fromCache then return fromCache end
+	build()
+
+	local ypm = J.SpeedFor(nil)
+	local SRC = "\1from"
+	edges[SRC] = {}
+	local attached = 0
+	for _, p in ipairs(attachPoints(zone:lower(), x, y, mapID)) do
+		addEdge(SRC, p.name, p.d / ypm * 60, "fly")
+		attached = attached + 1
+	end
+	if attached == 0 then edges[SRC] = nil return nil end
+
+	-- Plain Dijkstra, no early exit: we want every node, not one.
+	local dist, visited = { [SRC] = 0 }, {}
+	local heap, hn = { { SRC, 0 } }, 1
+	local function push(node, d)
+		hn = hn + 1
+		heap[hn] = { node, d }
+		local i = hn
+		while i > 1 do
+			local p = math.floor(i / 2)
+			if heap[p][2] <= heap[i][2] then break end
+			heap[p], heap[i] = heap[i], heap[p]
+			i = p
+		end
+	end
+	local function pop()
+		if hn == 0 then return nil end
+		local top = heap[1]
+		heap[1], heap[hn], hn = heap[hn], nil, hn - 1
+		local i = 1
+		while true do
+			local l, r, small = i * 2, i * 2 + 1, i
+			if l <= hn and heap[l][2] < heap[small][2] then small = l end
+			if r <= hn and heap[r][2] < heap[small][2] then small = r end
+			if small == i then break end
+			heap[i], heap[small] = heap[small], heap[i]
+			i = small
+		end
+		return top[1], top[2]
+	end
+	while hn > 0 do
+		local cur = pop()
+		if cur and not visited[cur] then
+			visited[cur] = true
+			local d = dist[cur]
+			for nb, e in pairs(edges[cur] or {}) do
+				local alt = d + e.secs
+				if not dist[nb] or alt < dist[nb] then
+					dist[nb] = alt
+					push(nb, alt)
+				end
+			end
+		end
+	end
+	edges[SRC] = nil
+	dist[SRC] = nil
+	fromCache, fromCacheKey = dist, key
+	return dist
+end
+
+-- MINUTES from where you stand to a place, using the one-search table.
+--
+-- Returns nil rather than a number when the place cannot be reached or is not
+-- in the graph. A caller that cannot tell "far" from "unknown" will charge a
+-- guess as if it were a measurement, which is the mistake this whole layer
+-- exists to stop making.
+function J.MinutesFrom(fromZone, fromX, fromY, fromMapID, toZone, toX, toY, toMapID)
+	if not (fromZone and toZone) then return nil end
+	local dist = travelFrom(fromZone, fromX, fromY, fromMapID)
+	if not dist then return nil end
+	local ypm = J.SpeedFor(nil)
+	local best
+	for _, p in ipairs(attachPoints(toZone:lower(), toX, toY, toMapID)) do
+		local d = dist[p.name]
+		if d then
+			local total = d + (p.d / ypm * 60)
+			if not best or total < best then best = total end
+		end
+	end
+	return best and (best / 60) or nil
+end
+
 function J.Stats()
 	build()
 	local n, e = 0, 0
@@ -468,142 +1027,6 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
 	-- coordinate is invented, because it only ever uses nodes we already ship.
 	-- Always { name = , d = }, whether the zone had its own points or we had to
 	-- reach outside it -- one shape, so the caller cannot mix them up.
-	local function attachPoints(zone, x, y, knownMapID)
-		local out = {}
-		for _, name in ipairs(byZone[zone] or {}) do
-			local n = graph[name]
-			if n and n.x and n.y then
-				-- Each end against its OWN map. A node on floor 5 carries the
-				-- floor-5 map; measuring its coordinate against the zone's
-				-- floor-0 map is the same mistake as measuring across
-				-- continents, just quieter.
-				out[#out + 1] = { name = name,
-					d = yards(zone, x or 50, y or 50, zone, n.x, n.y,
-						knownMapID, n.mapID) }
-			end
-		end
-		if #out > 0 then return out end
-		-- Cache by the map actually used, not the name, for the same reason the
-		-- plan cache is.
-		local cacheKey = zone .. "#" .. tostring(knownMapID or "?")
-		local cached = nearZoneCache[cacheKey]
-		if cached then return cached end
-
-		-- MEASURED ACROSS ZONES, OR NOT AT ALL.
-		--
-		-- yards() falls back to treating both points as if they were in one
-		-- zone when a name will not resolve to a map, which is fine WITHIN a
-		-- zone and nonsense between two. Six zone names do not resolve on this
-		-- client, and for those the fallback would hand back a small number for
-		-- an arbitrary far-away node -- a fabricated cheap edge, which Dijkstra
-		-- would seize on and route the player through.
-		--
-		-- No world position, no candidate. Leaving the list empty costs a flat
-		-- fallback for that leg; guessing costs a wrong route presented as fact.
-		-- ONLY FROM A REAL WORLD MAP.
-		--
-		-- A dungeon or raid interior has its own coordinate space, so a world
-		-- position taken inside one is not comparable to an outdoor node. A
-		-- wrong LARGE distance would merely be ignored; a wrong SMALL one
-		-- invents a cheap edge and Dijkstra routes the player straight through
-		-- it. Instances reach the world through their door, which is a separate
-		-- piece of data we already hold -- not through a coordinate guess.
-		--
-		-- Refusing here costs the flat fallback, which is what happens today.
-		local U = MM.Util
-		local here
-		-- mapFor is the file-level cached resolver; calling ResolveMapByName
-		-- per node would be 1,300 lookups per zone.
-		-- The caller's map id wins over anything re-derived from the name.
-		local originMap, ox, oy = knownMapID or mapFor(zone), x or 50, y or 50
-		local info = originMap and C_Map and C_Map.GetMapInfo
-			and C_Map.GetMapInfo(originMap)
-		-- REFUSE ONLY WHAT IS ACTUALLY AN INTERIOR.
-		--
-		-- This demanded mapType Zone or Continent, which is a guess about which
-		-- maps are outdoors. The Forbidden Reach is neither and is very much
-		-- outdoors, so it could not be entered at all -- "no way to reach the
-		-- forbidden reach from the graph" while the same leg was happily priced
-		-- by a direct flight, which needs the very world position this refused
-		-- to ask for.
-		--
-		-- The continent comparison below is the real protection: an interior's
-		-- coordinate space reports a continent that matches no outdoor node, so
-		-- its candidates are rejected on their own merits rather than on a guess
-		-- about the map's type. Only a declared Dungeon is refused outright, and
-		-- those have doors.
-		local mapType = info and info.mapType
-		local worldly = info and not (Enum and Enum.UIMapType
-			and mapType == Enum.UIMapType.Dungeon)
-
-		-- AN INSTANCE LEAVES BY ITS DOOR.
-		--
-		-- Its interior has a private coordinate space, so measuring from inside
-		-- it to an outdoor flight master is meaningless -- and a meaningless
-		-- SMALL answer invents a cheap edge that Dijkstra will happily route
-		-- through. But the door is a real outdoor place we already ship a map
-		-- and a coordinate for, and it is where the player actually stands on
-		-- the way out. Measure from there instead of refusing.
-		if not worldly and MM.Network and MM.Network.EntranceNode then
-			local key = MM.Network.EntranceNode(zone)
-			local door = key and MM.TravelNodes and MM.TravelNodes[key]
-			if door and door.mapID and door.x and door.y then
-				local dx, dy = tonumber(door.x), tonumber(door.y)
-				-- TravelNodes store 0..1; everything here is 0..100.
-				if dx and dy then
-					originMap = door.mapID
-					ox = dx <= 1.0 and dx * 100 or dx
-					oy = dy <= 1.0 and dy * 100 or dy
-					worldly = true
-				end
-			end
-		end
-
-		local hereContinent
-		if worldly and U and U.GetWorldPos and U.WorldDistance and originMap then
-			hereContinent, here = U.GetWorldPos(originMap, ox, oy)
-		end
-		local best = {}
-		if here then
-			for z, names in pairs(byZone) do
-				local mz = mapFor(z)
-				if mz then
-					for _, name in ipairs(names) do
-						local n = graph[name]
-						if n and n.x and n.y then
-							-- You cannot fly to another continent. A candidate
-							-- on a different one is not near, however small the
-							-- arithmetic between their coordinates comes out.
-							local thereContinent, there =
-								nodeWorld(name, n.mapID or mz, n.x, n.y)
-							local d = there and thereContinent == hereContinent
-								and U.WorldDistance(here, there)
-							if d then best[#best + 1] = { name = name, d = d } end
-						end
-					end
-				end
-			end
-		end
-		table.sort(best, function(a, b) return a.d < b.d end)
-		-- A handful is enough. The graph decides which is genuinely worth the
-		-- flight; carrying all of them only widens the search.
-		if #best == 0 then
-			out.why = (not info and ("no map info for " .. tostring(originMap)))
-				or (not worldly and ("map %s is an instance interior and has no door")
-					:format(tostring(originMap)))
-				or (not here and ("no world position for map " .. tostring(originMap)))
-				or "no node anywhere shares its continent"
-		end
-		for i = 1, math.min(#best, 8) do out[i] = best[i] end
-		-- Record the continent this actually measured from. An audit that
-		-- re-derives it independently will get a DIFFERENT answer for an
-		-- instance, because the origin used here is the door's outdoor map and
-		-- not the interior -- and it will then report mismatches that are its
-		-- own. Store the value used; check against that.
-		out.originContinent = hereContinent
-		nearZoneCache[cacheKey] = out
-		return out
-	end
 
 	local fromCount, toCount = 0, 0
 	for _, p in ipairs(attachPoints(fromZone, fromX, fromY, fromMapID)) do
@@ -774,11 +1197,30 @@ function J.Describe(legs)
 			out[#out + 1] = { mode = leg.mode, to = leg.to, minutes = leg.minutes }
 		end
 	end
-	local bits = {}
-	for _, leg in ipairs(out) do
-		bits[#bits + 1] = ("%s %s (%.0f min)"):format(VERB[leg.mode] or leg.mode, leg.to, leg.minutes)
+	-- A PORTAL IS NOT FREE JUST BECAUSE IT ROUNDS TO ZERO.
+	--
+	-- Every leg printed "(%.0f min)", so a 15-second portal read "0 min" and a
+	-- thirteen-leg chain read as thirteen free steps and a one-minute total.
+	-- The arithmetic was right the whole time; the rendering made the router
+	-- look broken, and made a long chain look costless when it is the thing
+	-- most worth questioning.
+	local function legTime(m)
+		if not m or m <= 0 then return "0s" end
+		if m < 1 then return ("%.0fs"):format(m * 60) end
+		return ("%.0f min"):format(m)
 	end
-	return table.concat(bits, ", then ")
+	local bits, total = {}, 0
+	for _, leg in ipairs(out) do
+		total = total + (leg.minutes or 0)
+		bits[#bits + 1] = ("%s %s (%s)"):format(VERB[leg.mode] or leg.mode,
+			leg.to, legTime(leg.minutes))
+	end
+	local text = table.concat(bits, ", then ")
+	-- The hop count is the part a player judges the route by. Say it.
+	if #out > 1 then
+		text = ("%s  [%d legs, %s]"):format(text, #out, legTime(total))
+	end
+	return text
 end
 
 ------------------------------------------------------------

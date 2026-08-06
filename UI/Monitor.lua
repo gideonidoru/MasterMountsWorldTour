@@ -64,20 +64,29 @@ local function build()
 	frame.iconPlate:SetPoint("TOPLEFT", frame.icon, -2, 2)
 	frame.iconPlate:SetPoint("BOTTOMRIGHT", frame.icon, 2, -2)
 
+	-- The NAME is a title and stays on one line beside the icon; a clipped
+	-- title still identifies the goal.
 	frame.name = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	frame.name:SetPoint("TOPLEFT", frame.icon, "TOPRIGHT", 8, -2)
 	frame.name:SetPoint("RIGHT", -10, 0)
 	frame.name:SetJustifyH("LEFT")
 	frame.name:SetWordWrap(false)
 
+	-- THE INSTRUCTION MUST FINISH ITS SENTENCE.
+	--
+	-- This sat in the icon's 36px band with word wrap off, so it had one line
+	-- of about 236px and everything past it was replaced with an ellipsis:
+	-- "Queue at the Expedition Map in Dazar'alor -- ...". The single line that
+	-- tells you what to DO was the only line that could not finish. It now
+	-- flows the full width BELOW the icon and wraps, like every line under it
+	-- already did, and the height maths below counts it.
 	frame.goal = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	frame.goal:SetPoint("BOTTOMLEFT", frame.icon, "BOTTOMRIGHT", 8, 2)
+	frame.goal:SetPoint("TOPLEFT", frame.icon, "BOTTOMLEFT", 0, -6)
 	frame.goal:SetPoint("RIGHT", -10, 0)
 	frame.goal:SetJustifyH("LEFT")
-	frame.goal:SetWordWrap(false)
 
 	frame.est = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	frame.est:SetPoint("TOPLEFT", 10, -64)
+	frame.est:SetPoint("TOPLEFT", frame.goal, "BOTTOMLEFT", 0, -4)
 	frame.est:SetPoint("RIGHT", -10, 0)
 	frame.est:SetJustifyH("LEFT")
 	frame.est:SetTextColor(0.4, 0.8, 1)
@@ -96,7 +105,8 @@ local function build()
 	frame.also:SetPoint("TOPLEFT", frame.status, "BOTTOMLEFT", 0, -4)
 	frame.also:SetPoint("RIGHT", -10, 0)
 	frame.also:SetJustifyH("LEFT")
-	frame.also:SetWordWrap(false)
+	-- A five-mount stop listed four names and clipped the last two, which is
+	-- the half of the list you have not memorised. It wraps.
 
 	frame.nextUp = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	-- flows under `also`, which collapses to zero height when empty
@@ -212,9 +222,12 @@ local function refresh()
 	-- Size the window to the text rather than hoping 170px is enough. The
 	-- buttons sit at the bottom, so the frame has to be tall enough for the
 	-- flowed block plus their row.
+	-- 62 is the header plus the icon band; the goal line is no longer inside
+	-- that band, so it is measured rather than assumed to be one line.
 	local BUTTON_ROW = 40
-	local used = 64                                  -- header, icon, goal line
-		+ (frame.est:GetStringHeight() or 0)
+	local used = 62                                  -- header + icon band
+		+ 6 + (frame.goal:GetStringHeight() or 0)
+		+ 4 + (frame.est:GetStringHeight() or 0)
 		+ 4 + (frame.status:GetStringHeight() or 0)
 		+ 4 + (frame.also:GetStringHeight() or 0)
 		+ 6 + (frame.nextUp:GetStringHeight() or 0)

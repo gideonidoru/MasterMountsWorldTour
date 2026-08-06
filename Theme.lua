@@ -373,7 +373,7 @@ local function skinElv(frame, kind)
 	local S = elvSkins()
 	local c = PALETTE.elvui
 
-	-- Prefer ElvUI's own handlers: they match the user's exact settings.
+	-- Prefer ElvUI's own handlers: they match the player's exact settings.
 	if S then
 		local handler =
 			(kind == "button" and S.HandleButton)

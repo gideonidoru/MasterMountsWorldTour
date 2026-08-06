@@ -330,6 +330,108 @@ local function runLogic()
 		return three < one, ("1 goal %.0f, 3 goals %.0f"):format(one, three)
 	end)
 
+	-- PROGRESS PRICING
+	--
+	-- Every one of these guards a bug that shipped. They use synthetic records
+	-- so they assert the ARITHMETIC rather than whatever standing the character
+	-- running /mm happens to hold.
+	check("Rep gating recognises rep, renown and paragon", function()
+		local P = MM.Planner
+		local rep = { name = "t", conditions = { { type = "REP", factionID = 1 } } }
+		local drop = { name = "t", conditions = { { type = "DROP" } } }
+		if not P.IsRepGated(rep) then return false, "plain REP not detected" end
+		if P.IsRepGated(drop) then return false, "DROP wrongly detected" end
+		return true, "REP yes, DROP no"
+	end)
+
+	check("Plain rep is not charged a paragon bar", function()
+		-- THE REGRESSION: generalising paragon pricing to all reputations first
+		-- added a full paragon bar to every one of them, overcharging plain rep
+		-- and renown by five hours and burying them in the ranking.
+		local P = MM.Planner
+		local plain = { name = "t", conditions = { { type = "REP", factionID = 0 } } }
+		-- IsParagon reads the source text, so the fixture must too.
+		local para = { name = "t", source = "Paragon cache, Death's Advance",
+			conditions = { { type = "REP", factionID = 0 } } }
+		local a, b = P.RepRemainingMinutes(plain), P.RepRemainingMinutes(para)
+		if not (a and b) then return false, "no figure returned" end
+		if not (b > a) then
+			return false, ("paragon %.0f must exceed plain %.0f"):format(b, a)
+		end
+		return true, ("plain %.0fh, paragon %.0fh"):format(a / 60, b / 60)
+	end)
+
+	check("PvP cost is matches, not a flat season", function()
+		local P = MM.Planner
+		-- 1000 to earn, 100 a win, 50 a loss. At an even split that is 75 a
+		-- match, so 14 matches; at 12 minutes each, 168 minutes.
+		local rec = { name = "t", pvpBarTotal = 1000, pvpPerWin = 100,
+			pvpPerLoss = 50, pvpMatchMinutes = 12 }
+		local mins, matches = P.PvpRemainingMinutes(rec, 0)
+		if not mins then return false, "no figure returned" end
+		if matches ~= 14 then
+			return false, ("expected 14 matches, got %s"):format(tostring(matches))
+		end
+		-- Half the bar already filled must cost about half as much.
+		local half = P.PvpRemainingMinutes(rec, 0.5)
+		if not (half < mins) then return false, "progress did not reduce cost" end
+		return true, ("%d matches, %.0f min; half filled %.0f min")
+			:format(matches, mins, half)
+	end)
+
+	check("PvP win rate reads the client, or says it cannot", function()
+		local PS = MM.PvpStats
+		if not PS then return false, "PvpStats missing" end
+		local rate, played, bracket = PS.Best()
+		local fallback = PS.WinRate()
+		if fallback < 0 or fallback > 1 then
+			return false, ("win rate out of range: %s"):format(tostring(fallback))
+		end
+		if not rate then
+			-- Not a failure: a character with no rated games has no rate, and
+			-- saying so is the correct answer.
+			return nil, "no rated games this season; assuming 50%"
+		end
+		return true, ("%.0f%% over %d games (bracket %d)")
+			:format(rate * 100, played, bracket)
+	end)
+
+	check("PvP refuses to guess without data", function()
+		-- No bar total means no honest answer. Returning a number here would be
+		-- inventing the season, which is how the reagent lists went wrong.
+		local P = MM.Planner
+		return P.PvpRemainingMinutes({ name = "t" }, 0) == nil, "nil without inputs"
+	end)
+
+	check("Calendar-gated rep prices days, not hours", function()
+		local P = MM.Planner
+		local rec = { name = "t", repPacing = "DAILY", repDaysRemaining = 20 }
+		if not P.RepIsCalendarGated(rec) then return false, "not detected" end
+		local mins, days = P.CalendarRepMinutes(rec, 0)
+		if not mins then return false, "no figure returned" end
+		local part = P.CalendarRepMinutes(rec, 0.75)
+		if not (part and part < mins) then
+			return false, "progress did not reduce the day count"
+		end
+		return true, ("%d days -> %.0f min; 75%% done -> %.0f min")
+			:format(days, mins, part)
+	end)
+
+	check("Urgency scales with the window left", function()
+		-- Daily and weekly both returned URGENCY.LOCKOUT and both got the same
+		-- flat boost, so a Thursday weekly pushed as hard as a Monday-night one.
+		local R = MM.Router
+		if not R.WindowPressure then return nil, "not exposed for testing" end
+		local daily = R.WindowPressure({ attempts = "DAILY" })
+		local weekly = R.WindowPressure({ attempts = "WEEKLY" })
+		if not (daily and weekly) then return false, "no pressure returned" end
+		if daily < 0 or daily > 1 or weekly < 0 or weekly > 1 then
+			return false, ("out of range: %.2f / %.2f"):format(daily, weekly)
+		end
+		return true, ("daily %.0f%% spent, weekly %.0f%% spent")
+			:format(daily * 100, weekly * 100)
+	end)
+
 	check("Time formatting", function()
 		local s = U.FormatSeconds(3661)
 		return type(s) == "string" and #s > 0, s
@@ -414,7 +516,7 @@ local function runLogic()
 	end)
 
 	check("Tooltips do not say the same thing twice", function()
-		-- the user: tooltips must not repeat themselves. The exact-match guard was
+		-- the player: tooltips must not repeat themselves. The exact-match guard was
 		-- never enough -- the same sentence arrives worded two ways.
 		local cases = {
 			{ "Achievement: Glory of the Uldir Raider",
@@ -468,7 +570,7 @@ local function runLogic()
 	end)
 
 	check("Every goal can explain itself", function()
-		-- "Priority 7" with no reasoning is the opaque case the user hit. The rule
+		-- "Priority 7" with no reasoning is the opaque case players hit. The rule
 		-- is that the explanation must always exist and must always name the
 		-- points, so the answer to "why is this here" and the answer to "what
 		-- do I change" are the same screen.
@@ -720,7 +822,7 @@ local function runLogic()
 		-- dwarf any preference multiplier, so geography won nearly every tie
 		-- and goals arrived 57 places ahead of where preference put them.
 		--
-		-- The cap is the middle ground the user chose: the clock stays free inside
+		-- The cap is the middle ground the chosen middle ground is: the clock stays free inside
 		-- a band, and cannot pull anything outside it. This checks the promise
 		-- the slider makes, using the router's own measurement rather than
 		-- recomputing it here -- a check that re-derives the answer agrees with
@@ -1136,6 +1238,154 @@ local function runLogic()
 			:format(capped, uncapped, done)
 	end)
 
+	check("An id we supplied lands ON the condition, not beside it", function()
+		-- SetConditionID exists because OverrideMount cannot do this job.
+		-- conditionKey treats an id as authoritative, so merging in
+		-- { type = "QUEST", name = "...", id = N } keys as QUEST\0N while the
+		-- record's own condition keys as QUEST\0<name> -- and the record ends
+		-- up requiring the same quest TWICE, once with progress and once
+		-- without. The planner would then charge it twice.
+		--
+		-- So: no record may carry two conditions of one type naming the same
+		-- thing. This fails the moment someone reaches for OverrideMount again.
+		local dupes, checked, withID = 0, 0, 0
+		local firstBad
+		for _, rec in ipairs(MM.DBList or {}) do
+			local seen = {}
+			for _, c in ipairs(rec.conditions or {}) do
+				if c.name then
+					local key = (c.type or "?") .. "\0" .. c.name:lower()
+					if seen[key] then
+						dupes = dupes + 1
+						firstBad = firstBad or (rec.name .. " / " .. c.name)
+					end
+					seen[key] = true
+					checked = checked + 1
+					if c.id then withID = withID + 1 end
+				end
+			end
+		end
+		if dupes > 0 then
+			return false, ("%d duplicated condition(s), e.g. %s -- an id was "
+				.. "merged in as a NEW condition instead of annotating the old one")
+				:format(dupes, tostring(firstBad))
+		end
+		return true, ("%d named conditions, %d carry an id, 0 duplicated")
+			:format(checked, withID)
+	end)
+
+	check("A lockout retires its goal and moves nothing else", function()
+		-- The plan is a chart, and it holds still while you follow it. Taking a
+		-- lockout drops that ONE goal; the others keep the places they already
+		-- had. Re-optimizing here would reshuffle objectives two and three
+		-- while you were still flying to objective one.
+		--
+		-- So: nothing LOCKED may remain in the plan, and the removal must not
+		-- have gone through the auto-optimize path.
+		local P = MM.Planner
+		if not (P and MM.cdb and MM.cdb.plan and MM.Availability) then
+			return nil, "no plan"
+		end
+		local stuck, n = nil, 0
+		for _, item in ipairs(MM.cdb.plan) do
+			local entry = MM.Scanner and MM.Scanner.bySpell
+				and MM.Scanner.bySpell[item.spellID]
+			if entry then
+				n = n + 1
+				if MM.Availability.GetStatus(entry) == "LOCKED" then
+					stuck = stuck or (entry.name or item.spellID)
+				end
+			end
+		end
+		if stuck then
+			return false, ("%s is on lockout and still in the plan -- the router "
+				.. "will keep pointing at something you cannot act on")
+				:format(tostring(stuck))
+		end
+		if n == 0 then return nil, "plan is empty" end
+		return true, ("%d planned goals, none of them on lockout"):format(n)
+	end)
+
+	check("A goal retired by a lockout is owed a place back", function()
+		-- Retired and planned are mutually exclusive states. If a spellID is in
+		-- both, the restore will re-add something already there; if it is in
+		-- neither and was never collected or manually dropped, the goal has
+		-- been lost silently -- which is the failure that matters, because the
+		-- player never asked for it to go.
+		local retired = MM.db and MM.db.retired
+		if not retired then return nil, "nothing has been retired yet" end
+		local planned, n = {}, 0
+		for _, item in ipairs(MM.cdb and MM.cdb.plan or {}) do
+			planned[item.spellID] = true
+		end
+		local both, collected = nil, 0
+		for spellID in pairs(retired) do
+			n = n + 1
+			if planned[spellID] then both = both or spellID end
+			local e = MM.Scanner and MM.Scanner.bySpell and MM.Scanner.bySpell[spellID]
+			if e and e.collected then collected = collected + 1 end
+		end
+		if both then
+			return false, ("spell %s is retired AND in the plan -- restoring it "
+				.. "will add a goal that never left"):format(tostring(both))
+		end
+		if n == 0 then return nil, "nothing is retired right now" end
+		return true, ("%d goal(s) retired by lockout, none of them still planned%s")
+			:format(n, collected > 0
+				and (", %d collected meanwhile and owed nothing"):format(collected) or "")
+	end)
+
+	check("The plan does not re-chart while you walk", function()
+		-- The plan charts from where you STOOD when you charted it, not from
+		-- wherever you are now. Reading the live position made objectives two
+		-- and three reshuffle behind you while you flew to objective one.
+		--
+		-- So the anchor must exist and must be a stored place, not a live read.
+		local P = MM.Planner
+		if not (P and P.Anchor) then return nil, "planner not loaded" end
+		local a = P.Anchor()
+		if not a then return nil, "no plan has been charted yet" end
+		local here = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+		return true, ("charted from %s (map %s)%s"):format(
+			tostring(a.name), tostring(a.mapID),
+			(here and here ~= a.mapID)
+				and " -- you have moved since, and the plan has not" or "")
+	end)
+
+	check("Travel in the ease score is measured, not a continent flag", function()
+		-- "Add 10 Easiest" was instant, and that was the tell -- it did no
+		-- routing. Its whole travel input was 0 same continent / 1 another /
+		-- 0.5 unknown, so on your own continent every candidate scored travel
+		-- 0 and a mount 30 seconds away ranked level with one 8 minutes away.
+		--
+		-- A flag takes at most three values. A measurement takes many. This
+		-- counts the DISTINCT travel costs the planner actually charges, which
+		-- is the difference between the two and cannot be faked by a rename.
+		local P = MM.Planner
+		if not (P and P.CostParts and MM.Scanner) then return nil, "planner not loaded" end
+		local seen, n, sample = {}, 0, 0
+		for _, entry in ipairs(MM.Scanner.mounts or {}) do
+			if not entry.collected and entry.rec and entry.rec.zone then
+				local _, parts = P.CostParts(entry)
+				for _, part in ipairs(parts or {}) do
+					if part[1] == "Travel" then
+						local v = math.floor((part[2] or 0) * 100 + 0.5)
+						if not seen[v] then seen[v] = true n = n + 1 end
+						sample = sample + 1
+					end
+				end
+			end
+			if sample >= 400 then break end
+		end
+		if sample == 0 then return nil, "no located candidates to price" end
+		if n <= 3 then
+			return false, ("%d distinct travel costs across %d goals -- that is a "
+				.. "flag, not a measurement; the ease score is not using the router")
+				:format(n, sample)
+		end
+		return true, ("%d distinct travel costs across %d goals"):format(n, sample)
+	end)
+
 	check("Currency and faction ids resolve from the client", function()
 		-- The achievement fix exposed a pattern was not generalised: 127
 		-- conditions named a faction with no id and 107 named a currency with
@@ -1329,7 +1579,7 @@ local function runLogic()
 	end)
 
 	check("Every estimate knows where it came from", function()
-		-- the user asked how realistic the time costs are. The honest answer is a
+		-- the question was how realistic the time costs are. The honest answer is a
 		-- ratio, not a number: how much of the plan's total is READ from the
 		-- client and how much is a stand-in. That is only answerable if each
 		-- part carries its own provenance -- reconstructing it by matching
@@ -1734,7 +1984,7 @@ local function runLogic()
 	end)
 
 	check("Easiest means easiest, not whatever you put first", function()
-		-- The easiest list ranked tiers by the user's OWN priority order, so it
+		-- The easiest list ranked tiers by the player's OWN priority order, so it
 		-- returned "the highest in the order you already set" and called it
 		-- difficulty. Put INSTANCE first and a vendor mount you could buy
 		-- standing still ranked below a dungeon.
@@ -1745,7 +1995,15 @@ local function runLogic()
 			return nil, "planner or weights not loaded"
 		end
 		local before = P:Easiest(10)
-		if #before < 3 then return nil, "too few plannable mounts to compare" end
+		-- ONE IS ENOUGH TO CHECK.
+		--
+		-- This demanded three, which meant that with a full plan -- 286 goals,
+		-- almost everything already added -- the pool was never big enough and
+		-- the check has never run once. The threshold was arbitrary: with one
+		-- candidate "the easiest" is that candidate and reordering priorities
+		-- must still return it; with two the comparison is already real. Only
+		-- an EMPTY pool has nothing to say.
+		if #before < 1 then return nil, "nothing plannable outside the plan" end
 		local function names(list)
 			local out = {}
 			for _, e in ipairs(list) do out[#out + 1] = e.name or "?" end
@@ -1773,9 +2031,9 @@ local function runLogic()
 	end)
 
 	check("The plan follows you between characters", function()
-		-- The router now says "Kaeleth already qualifies", so following its
-		-- advice meant logging into a character with an EMPTY plan and no idea
-		-- where you were: the plan lived in per-character saved variables while
+		-- The router can report that another character already qualifies, and
+		-- following that meant logging into a character with an EMPTY plan and
+		-- no idea where you were: the plan lived in per-character saved data while
 		-- the collection it plans for is account-wide.
 		--
 		-- Two properties, and the second is the one that is easy to get wrong.
@@ -1865,6 +2123,48 @@ local function runLogic()
 		end
 		return true, ("%.0f%% reachable from %s (%d of %d nodes), %d transit links")
 			:format(pct, from, reached, total, J.transitLinks or 0)
+	end)
+
+	check("An island with no door is bridged, or says why not", function()
+		-- 47 zones had no edge into the graph AT ALL -- the Forbidden Reach
+		-- among them, which is why a Sanctum of Domination goal reported
+		-- "no path" and fell through to a flat 6.3-minute flight between two
+		-- continents. Counting links could never see it: all 1,496 were real.
+		--
+		-- This asserts the RELATIONSHIP the fix depends on: after bridging,
+		-- what is left unbridged is only what has nothing on its continent to
+		-- fly from -- never something we simply failed to try.
+		local J = MM.Journey
+		if not (J and J.Reachable) then return nil, "travel layer not loaded" end
+		J.Stats()      -- force the build, so the counters below exist
+		if J.components == nil then return nil, "no component walk recorded" end
+		local made, skipped = J.bridges or 0, J.bridgeSkipped or 0
+		if J.components > 1 and made == 0 and skipped == 0 then
+			return false, ("%d components and not one was even considered")
+				:format(J.components)
+		end
+		-- Every bridge must be priced at or above the floor.
+		--
+		-- This fired for real: Raven Hill's flight point sits on exactly the
+		-- same ground as a Raven Hill transit endpoint in another component,
+		-- so the bridge measured 0 yards and cost 0 seconds. A free edge is
+		-- teleportation -- Dijkstra pops both components at the same distance
+		-- and the search stopped finishing inside the frame budget. Same
+		-- ground still costs something to cross, and BorderData already priced
+		-- that at 5 seconds.
+		local FLOOR = 5 / 60      -- minutes; matches MIN_BRIDGE_SECONDS
+		for _, b in ipairs(J.bridgeDetail or {}) do
+			if not (b.minutes and b.minutes >= FLOOR - 1e-9) then
+				return false, ("bridge %s -> %s costs %s min -- below the floor, "
+					.. "and a free edge is teleportation")
+					:format(tostring(b.from), tostring(b.to), tostring(b.minutes))
+			end
+		end
+		return true, ("%d components, %d of them hold a goal: %d bridged by "
+			.. "flying, %d left alone; %d nearest-point lookups%s")
+			:format(J.components, J.bridgeRelevant or 0, made, skipped,
+				J.bridgeCompares or 0,
+				J.bridgeWhy and (" -- " .. J.bridgeWhy) or "")
 	end)
 
 	check("A teleport you have not earned is never offered", function()
@@ -2033,12 +2333,18 @@ local function runLogic()
 			for i = 1, math.min(planned, #R.route) do
 				local stop = R.route[i]
 				local travel = stop.travelMinutes or 0
-				-- `or 15` matches what S.Fit itself assumes for a stop with no
-				-- stated work, so the test costs the route the same way the
-				-- session costed it. Using 0 here would let an unpriced stop
-				-- silently satisfy any budget.
-				local work = stop.workMinutes or 15
-				if stop.travelMinutes or stop.workMinutes then priced = priced + 1 end
+				-- VISIT minutes, because that is what S.Fit spends.
+				--
+				-- This used workMinutes -- EffortMinutes, the whole grind. A
+				-- five-mount island stop is one five-minute run, but its grind
+				-- is 40 attempts, so the check totalled 732 minutes for a
+				-- 45-minute session and failed a session that was correct. The
+				-- test has to cost the route the way the session costed it or
+				-- it is measuring a different question.
+				local work = stop.visitMinutes or stop.workMinutes or 15
+				if stop.travelMinutes or stop.visitMinutes or stop.workMinutes then
+					priced = priced + 1
+				end
 				total = total + travel + work
 				counted = counted + 1
 			end
@@ -2275,7 +2581,7 @@ local function runLogic()
 		--   Protoform Synthesis      24 crafts with no reagents modelled, each
 		--                            a guaranteed mount at the effort floor
 		--
-		-- Each was found by the user reading a list and saying "that is wrong".
+		-- Each was found by someone reading a list and saying "that is wrong".
 		-- A guaranteed mount with no modelled cost has the highest density in
 		-- the plan by construction, so it always wins -- which makes this the
 		-- single most valuable invariant in the ranking.
@@ -2465,11 +2771,11 @@ local function runLogic()
 	end)
 
 	check("A portal hub is not a dead end", function()
-		-- the user stood in Zuldazar with three Orgrimmar teleports in his bags and
+		-- a player standing in Zuldazar with three Orgrimmar teleports in their bags and
 		-- was told to fly to the Dazar'alor portal room and "take the portal to
 		-- Orgrimmar, then the Dornogal portal". The engine had rejected all
 		-- three with "lands on a different continent" -- while the instruction
-		-- it printed proved Orgrimmar was exactly where it wanted him.
+		-- it printed proved Orgrimmar was exactly where it wanted them.
 		--
 		-- A landing is useful for everywhere it CONNECTS to, not only where it
 		-- lands. This proves the old blanket rejection is gone.
@@ -2651,7 +2957,7 @@ local function runLogic()
 	check("Non-soloable metas are flagged", function()
 		-- Wowhead's Soloist's guide marks the metas that cannot be soloed due to
 		-- game mechanics. Those carry solo = false; everything else is assumed
-		-- soloable, per the user: blanket-grouping punishes the many to guard
+		-- soloable, by design: blanket-grouping punishes the many to guard
 		-- against the few.
 		local flagged, group = 0, 0
 		for _, rec in pairs(MM.DBByName) do
@@ -2726,7 +3032,7 @@ local function runLogic()
 	end)
 
 	check("A sitting's worth of work leads", function()
-		-- the user: an 8-hour guaranteed grind one minute away must not beat a
+		-- the player: an 8-hour guaranteed grind one minute away must not beat a
 		-- 30-minute dungeon at 1% twenty minutes away. By raw density the grind
 		-- wins six to one; by what you can actually finish tonight it does not,
 		-- and a route is a list of things you DO.
@@ -2740,7 +3046,7 @@ local function runLogic()
 		if chain[1] ~= dungeon then
 			return false, "an 8-hour grind led over a closed 30-minute action"
 		end
-		-- and the exception the user named: with nothing shorter available, the
+		-- and the exception the named exception: with nothing shorter available, the
 		-- grind IS the best thing left, with no special case for it
 		local alone = R.NearestChain({ grind }, here)
 		if alone[1] ~= grind then return false, "the grind vanished when alone" end
@@ -2748,7 +3054,7 @@ local function runLogic()
 	end)
 
 	check("Detours are never worthless", function()
-		-- Bloodthirsty Dreadwing -- a mount the user cannot afford, expected value
+		-- Bloodthirsty Dreadwing -- a mount the player cannot afford, expected value
 		-- zero -- was slotted in at position ONE for being a minute off the
 		-- path. Free is not the same as worth doing, and the lead position is
 		-- the one place that must never be filler.
@@ -2771,7 +3077,7 @@ local function runLogic()
 	end)
 
 	check("Unfinishable goals are parked, not routed", function()
-		-- the user: a mount costing 1,000 medals he has none of was FIRST, then
+		-- the player: a mount costing 1,000 medals they have none of was FIRST, then
 		-- SECOND. Pushing it down was treating the symptom -- a goal that yields
 		-- nothing when you arrive is not a stop at all, and the fix is to park
 		-- it with the lockout-blocked goals where it is still visible.
@@ -2795,7 +3101,7 @@ local function runLogic()
 	end)
 
 	check("Prerequisites add up, they do not compete", function()
-		-- the user: a unique currency to farm, criteria to finish, a reputation to
+		-- the player: a unique currency to farm, criteria to finish, a reputation to
 		-- grind -- "these all factor into the total time equation". They are
 		-- SEQUENTIAL, so they add. Taking the worst would price a mount needing
 		-- exalted AND a thousand medals the same as one needing only the medals.
@@ -2981,7 +3287,7 @@ local function runLogic()
 	end)
 
 	check("Timed events gate like assaults", function()
-		-- the user: Hand of Bahmethra and Mawsworn Soulhunter need a Maw event to be
+		-- the player: Hand of Bahmethra and Mawsworn Soulhunter need a Maw event to be
 		-- LIVE. Off-cycle the cache and the boss simply do not exist, and
 		-- routing someone there is the Necroray Calling failure again.
 		local gated = {}
@@ -3056,7 +3362,7 @@ local function runLogic()
 	end)
 
 	check("Every weight explains itself", function()
-		-- A raw coefficient with no plain-language reading is a number the user
+		-- A raw coefficient with no plain-language reading is a number the player
 		-- cannot act on, which is the same as not exposing it at all.
 		for _, def in ipairs(MM.Weights.SLIDERS) do
 			if type(def.reading) ~= "function" then

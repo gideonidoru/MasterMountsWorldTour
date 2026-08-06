@@ -101,7 +101,31 @@ function S.Fit(minutes)
 				travel = MM.Teleports.TravelMinutes(continent, world,
 					stop.continent, stop.world) or 0
 			end
-			local work = stop.workMinutes or 15
+			-- WHAT IT TAKES TO DO IT, NOT WHAT IT TAKES TO GET IT.
+			--
+			-- stop.workMinutes is EffortMinutes -- visit x expected attempts,
+			-- the whole grind. That is the right number for "should I spend my
+			-- evening on this" and the wrong one for "what fits in three
+			-- hours": an island run is fifteen minutes whether the mount lands
+			-- on the first try or the two hundredth, but priced as the whole
+			-- grind it costs twenty-five hours and nothing fits in an evening.
+			-- Which is exactly what happened -- three hours admitted one goal.
+			--
+			-- Planner already draws this distinction and says so in as many
+			-- words; the session was simply asking the wrong one of the two.
+			--
+			-- Taken as the MAX across everything at the stop, not the sum: one
+			-- island run is one island run however many mounts can drop from it.
+			local work
+			local VM = MM.Planner and MM.Planner.VisitMinutes
+			if VM then
+				if stop.entry then work = VM(stop.entry) end
+				for _, m in ipairs(stop.members or {}) do
+					local v = m.entry and VM(m.entry)
+					if v and (not work or v > work) then work = v end
+				end
+			end
+			work = work or stop.workMinutes or 15
 			local cost = travel + work
 			-- Only things that actually fit in what is left. A session is a
 			-- promise, and half a raid is not a mount.
