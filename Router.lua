@@ -1457,7 +1457,22 @@ end
 
 function R:Build(force, sync)
 	-- A build already in flight owns R.route; asking again just lets it finish.
-	if building and coroutine.status(building) == "suspended" then return end
+	--
+	-- BUT THE ASK IS NOT DISCARDED. Letting it finish is right when nothing has
+	-- changed and wrong when something has: Clear Plan during a build was
+	-- dropped entirely, so the in-flight build completed against the OLD plan,
+	-- announced itself, and the planner drew a route for mounts that were no
+	-- longer planned. The compact list was right because it reads the plan
+	-- rather than the route.
+	--
+	-- So a request that arrives mid-build is remembered and re-issued when the
+	-- current one lands.
+	if building and coroutine.status(building) == "suspended" then
+		if force or buildSignature() ~= R.builtSignature then
+			R.rebuildWhenDone = true
+		end
+		return
+	end
 	local sig = buildSignature()
 	-- THE SIGNATURE DESCRIBES THE PLAN. IT DOES NOT DESCRIBE THE ROUTE.
 	--
@@ -1550,6 +1565,14 @@ function R:Build(force, sync)
 		end
 		if coroutine.status(building) == "dead" then
 			building = nil
+			-- Re-issue before announcing, so nothing renders the route this
+			-- build produced when we already know it is out of date.
+			if R.rebuildWhenDone then
+				R.rebuildWhenDone = nil
+				R.builtSignature, R.builtRouteCount = nil, nil
+				R:Build(false, sync)
+				return
+			end
 			MM:Fire("MM_ROUTE_ADVANCED")
 			return
 		end

@@ -165,6 +165,15 @@ function P:Move(spellID, delta)
 end
 
 function P:Clear()
+	-- CLEARING THE PLAN ENDS THE ROUTE.
+	--
+	-- A running route is a walk through the plan. Emptying the plan underneath
+	-- it left the route "active" with nothing to visit -- an arrow pointing at
+	-- a goal that was no longer wanted, and a monitor counting down a trip that
+	-- had been cancelled. Stopping first is what the button already means.
+	if MM.Router and MM.Router.Stop and MM.cdb and MM.cdb.routeActive then
+		MM.Router:Stop()
+	end
 	wipe(MM.cdb.plan)
 	MM:Fire("MM_PLAN_CHANGED")
 end

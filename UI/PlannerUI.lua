@@ -735,6 +735,25 @@ function UI.RefreshPlanner()
 		offRoute > 0 and (" · " .. offRoute .. " unplaced") or "",
 		waiting > 0 and (" · " .. waiting .. " waiting") or ""))
 	routeButton:SetRouteState(MM.cdb.routeActive)
+	-- NOTHING TO ROUTE, NOTHING TO START.
+	--
+	-- Start Route stayed pressable with an empty plan, which offered to walk a
+	-- route that does not exist. A control that cannot do anything should say
+	-- so before it is pressed rather than after.
+	--
+	-- Only when the route is STOPPED: an active route must always be stoppable,
+	-- including in the moment after the plan empties underneath it.
+	if not MM.cdb.routeActive then
+		if #items > 0 then
+			routeButton:Enable()
+			routeButton.mmTooltip = nil
+		else
+			routeButton:Disable()
+			routeButton.mmTooltip = "Add some mounts to your plan first."
+		end
+	else
+		routeButton:Enable()
+	end
 end
 
 MM:On("MM_ROUTE_STARTED", function() if routeButton then routeButton:SetRouteState(true) end end)

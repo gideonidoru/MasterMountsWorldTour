@@ -751,6 +751,30 @@ local function runLogic()
 		return true, ("standing-here work leads at position %d"):format(firstHere)
 	end)
 
+	check("A plan change during a build is not dropped", function()
+		-- Clear Plan while a build was in flight was discarded entirely: the
+		-- running build finished against the OLD plan, announced itself, and
+		-- the planner drew a route for mounts that were no longer planned. The
+		-- compact list was right because it reads the plan, not the route.
+		local R = MM.Router
+		if not (R and R.Build and R.BuildSync and R.IsBuilding) then
+			return nil, "no router"
+		end
+		R:BuildSync()
+		local before = #(R.route or {})
+		if before < 2 then return nil, "route too short to test" end
+		-- Ask twice in a row: the second must not be silently swallowed.
+		R.builtSignature, R.builtRouteCount = nil, nil
+		R:Build()
+		R.builtSignature = "deliberately-stale"
+		R:Build()
+		local queued = R.rebuildWhenDone
+		R:BuildSync()
+		if R.IsBuilding() then return false, "still building after a sync build" end
+		return true, queued and "second request queued and re-issued"
+			or "first build finished before the second arrived"
+	end)
+
 	check("An unfinished build is not reported as an empty plan", function()
 		-- Clear Plan then Auto-Plan All showed "your farm plan is empty" over a
 		-- plan of 286 goals. Build is chunked and returns with the work in
