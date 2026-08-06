@@ -1393,15 +1393,35 @@ local function runLogic()
 		local prevIndex = MM.cdb.routeIndex
 		local restore = S.Active and S.Active()
 		local len = S.LENGTHS[2] or S.LENGTHS[1]
-		local chosen = S.Fit(len.minutes)
-		if #chosen == 0 then return nil, "nothing fits the sample length" end
 
 		S.Start(len.minutes, true)  -- setOnly: must not launch a route
 		local st = S.Active and S.Active()
+
+		-- COMPARE AGAINST THE ROUTE THAT EXISTS NOW, not one captured earlier.
+		--
+		-- The previous version called Fit BEFORE Start and compared those stop
+		-- tables by identity afterwards. But Start fires MM_SESSION_CHANGED,
+		-- the Planner refresh rebuilds the route, and Build creates entirely new
+		-- stop tables -- so it was checking references to objects that no longer
+		-- existed. It failed for two runs while the feature worked.
+		--
+		-- Recomputed here, and compared as a SET: which stops lead the route is
+		-- the promise; their order among themselves is the router's business.
+		local chosen = S.Fit(st and st.minutes or len.minutes)
+		if not chosen or #chosen == 0 then
+			S.Stop(true)
+			MM.cdb.routeActive = wasActive
+			MM.cdb.routeIndex = prevIndex or 1
+			if R.Build then R:Build() end
+			return nil, "nothing fits the sample length"
+		end
+		local want = {}
+		for _, stop in ipairs(chosen) do want[stop] = true end
 		local misplaced
-		for i, stop in ipairs(chosen) do
-			if R.route[i] ~= stop then
-				misplaced = ("stop %d of the session is not at route position %d"):format(i, i)
+		for i = 1, #chosen do
+			if not want[R.route[i]] then
+				misplaced = ("route position %d is not one of the %d session stops")
+					:format(i, #chosen)
 				break
 			end
 		end
