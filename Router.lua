@@ -1545,6 +1545,33 @@ function R:Build()
 	-- stopBySpell index is built -- it only reorders, so the index stays valid.
 	if R.ApplySession then R.ApplySession() end
 
+	-- RESUME BY IDENTITY, NOT BY POSITION.
+	--
+	-- The route is rebuilt per character, from a different place with different
+	-- teleports and different things reachable, so index 7 here is not index 7
+	-- there. Carrying the number across a switch lands you at somebody else's
+	-- stop; carrying the GOAL finds the same mount wherever it now sits.
+	--
+	-- If it is gone -- collected in the meantime, or blocked for whoever you
+	-- are now -- the anchor is dropped rather than approximated, and the route
+	-- starts from the top.
+	local goal = MM.db and MM.db.routeGoal
+	if goal then
+		local found
+		for i, stop in ipairs(R.route) do
+			if stop.spellID == goal then found = i break end
+			for _, member in ipairs(stop.members or {}) do
+				if member.spellID == goal then found = i break end
+			end
+			if found then break end
+		end
+		if found then
+			MM.cdb.routeIndex = found
+		else
+			MM.db.routeGoal = nil
+		end
+	end
+
 	if MM.cdb.routeIndex > #R.route then MM.cdb.routeIndex = 1 end
 	-- Measured, not assumed. A route build froze the client for minutes and
 	-- nothing in the addon could say so.
@@ -2093,7 +2120,20 @@ end)
 
 function R:Current()
 	if not (MM.cdb and MM.cdb.routeActive) then return nil end
-	return R.route[MM.cdb.routeIndex]
+	local stop = R.route[MM.cdb.routeIndex]
+	-- Remember WHICH GOAL, account-wide, every time the current one is read.
+	--
+	-- This is the anchor the rebuild resumes from, and putting it here rather
+	-- than in each of the four places that move the index means no future one
+	-- can forget to. A goal with no spellID leaves the anchor alone rather than
+	-- clearing it -- losing your place is worse than an anchor going briefly
+	-- stale.
+	if stop and MM.db then
+		local id = stop.spellID
+			or (stop.members and stop.members[1] and stop.members[1].spellID)
+		if id then MM.db.routeGoal = id end
+	end
+	return stop
 end
 
 function R:Start()

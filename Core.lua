@@ -307,11 +307,30 @@ local accountDefaults = {
 }
 
 local charDefaults = {
+	-- `plan` lives here for compatibility only -- on load it is REPLACED by a
+	-- reference to the account-wide plan. See adoptAccountPlan below.
 	plan = {},                -- array of { spellID = n, added = serverTime }
 	routeIndex = 1,
 	routeActive = false,
 	attempts = {},            -- [spellID] = recorded attempt count
 }
+
+-- THE PLAN BELONGS TO THE ACCOUNT, NOT THE CHARACTER.
+--
+-- Mounts are collected account-wide, and the router now says things like
+-- "Kaeleth already qualifies" -- so following its advice meant logging into a
+-- character with an empty plan and no idea where you were. The plan followed
+-- you nowhere.
+--
+-- `routeGoal` is the anchor for resuming, and it is a spellID rather than an
+-- index on purpose: the route is REBUILT per character, from a different
+-- position with different teleports and different things reachable. Index 7 on
+-- one character is not index 7 on another, so position cannot survive the
+-- switch. Identity can.
+local function accountPlanDefaults(db)
+	db.plan = db.plan or nil            -- nil until migrated, so we can tell
+	db.routeGoal = db.routeGoal or nil  -- spellID we were heading to
+end
 
 local function applyDefaults(dst, src)
 	for k, v in pairs(src) do
@@ -339,6 +358,30 @@ MM:RegisterGameEvent("ADDON_LOADED", function(name)
 	applyDefaults(MasterMountsCharDB, charDefaults)
 	MM.db = MasterMountsDB
 	MM.cdb = MasterMountsCharDB
+	accountPlanDefaults(MM.db)
+
+	-- MIGRATE ONCE, THEN SHARE.
+	--
+	-- The first character to log in after the upgrade donates its plan; every
+	-- later one MERGES rather than overwrites, because two characters with
+	-- different plans both meant them and silently discarding one is the sort
+	-- of data loss nobody reports, they just stop trusting the addon.
+	if not MM.db.plan then MM.db.plan = {} end
+	if MM.cdb.plan and #MM.cdb.plan > 0 then
+		local have = {}
+		for _, item in ipairs(MM.db.plan) do have[item.spellID] = true end
+		for _, item in ipairs(MM.cdb.plan) do
+			if item.spellID and not have[item.spellID] then
+				MM.db.plan[#MM.db.plan + 1] = item
+				have[item.spellID] = true
+			end
+		end
+		wipe(MM.cdb.plan)
+	end
+	-- One table, two names. Every existing call site reads MM.cdb.plan and now
+	-- gets the account list; nothing assigns to it, only mutates, so the
+	-- reference holds.
+	MM.cdb.plan = MM.db.plan
 	MM.dbReady = true
 	MM:Fire("MM_DB_READY")
 end)

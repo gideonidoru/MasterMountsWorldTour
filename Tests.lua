@@ -1772,6 +1772,43 @@ local function runLogic()
 			:format(#before, #saved)
 	end)
 
+	check("The plan follows you between characters", function()
+		-- The router now says "Kaeleth already qualifies", so following its
+		-- advice meant logging into a character with an EMPTY plan and no idea
+		-- where you were: the plan lived in per-character saved variables while
+		-- the collection it plans for is account-wide.
+		--
+		-- Two properties, and the second is the one that is easy to get wrong.
+		local plan, db, cdb = MM.Planner, MM.db, MM.cdb
+		if not (plan and db and cdb) then return nil, "databases not ready" end
+
+		-- 1. One list, not two. The character table must BE the account table,
+		--    or a switch silently starts over.
+		if cdb.plan ~= db.plan then
+			return false, "the character plan is a separate table from the account plan"
+		end
+
+		-- 2. The resume anchor is an identity, not a position. A route is
+		--    rebuilt per character, so an index means something different on
+		--    each one -- carrying it lands you at somebody else's stop.
+		if db.routeGoal ~= nil and type(db.routeGoal) ~= "number" then
+			return false, "the resume anchor is not a spellID"
+		end
+		local R = MM.Router
+		if R and R.route and #R.route > 0 and cdb.routeActive then
+			local cur = R:Current()
+			if cur and db.routeGoal then
+				local id = cur.spellID
+					or (cur.members and cur.members[1] and cur.members[1].spellID)
+				if id and db.routeGoal ~= id then
+					return false, "the anchor does not match the current goal"
+				end
+			end
+		end
+		return true, ("%d goals in one account-wide plan%s"):format(#db.plan,
+			db.routeGoal and (", resuming at " .. tostring(db.routeGoal)) or "")
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%
