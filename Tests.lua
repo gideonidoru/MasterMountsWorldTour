@@ -274,6 +274,124 @@ local function runData()
 		return bad == 0, example
 	end)
 
+	check("Nothing is charged for the same cost twice", function()
+		-- Seven records listed one cost under two spellings: an ITEM condition
+		-- naming the token and a CURRENCY condition naming its plural. The
+		-- planner prices every cost condition, so those mounts were ranked as
+		-- costing double -- and a record with two requirements looks entirely
+		-- normal, which is why they lasted.
+		--
+		-- Comparing on the singular catches the shape that produced them.
+		if #recs == 0 then return nil, "no records loaded" end
+		local dupes, example = 0, nil
+		for _, r in ipairs(recs) do
+			local seen = {}
+			for _, c in ipairs(r.conditions or {}) do
+				if (c.type == "ITEM" or c.type == "CURRENCY") and c.name then
+					local key = c.name:lower():gsub("s$", "")
+					if seen[key] and seen[key] ~= c.type then
+						dupes = dupes + 1
+						example = example or (r.name .. ": " .. c.name)
+					end
+					seen[key] = c.type
+				end
+			end
+		end
+		if dupes > 0 then
+			return false, ("%d duplicated costs, e.g. %s"):format(dupes, example)
+		end
+		return true, "no cost appears under two condition types"
+	end)
+
+	check("Faction-split requirements resolved to this character's side", function()
+		-- Some requirements exist twice, one copy per faction: the collection
+		-- achievements, the Outland quartermaster talbuks, the Argent
+		-- Tournament city mounts. The data carries both and login picks one.
+		--
+		-- The failure this catches is silent and total: if the pick never runs,
+		-- the condition keeps a name and no id, the client cannot be asked
+		-- whether it is met, and the planner treats a finished achievement as
+		-- outstanding forever.
+		if #recs == 0 then return nil, "no records loaded" end
+		local paired, resolved, wrong = 0, 0, nil
+		local side = UnitFactionGroup and UnitFactionGroup("player")
+		if not (side == "Alliance" or side == "Horde") then
+			return nil, "player faction unknown"
+		end
+		local want = (side == "Alliance") and "idAlliance" or "idHorde"
+		for _, r in ipairs(recs) do
+			for _, c in ipairs(r.conditions or {}) do
+				if c.idAlliance and c.idHorde then
+					paired = paired + 1
+					if c.id == c[want] then
+						resolved = resolved + 1
+					else
+						wrong = wrong or ("%s: %s is %s, expected %s")
+							:format(r.name, c.name or "?", tostring(c.id), tostring(c[want]))
+					end
+				end
+			end
+		end
+		if paired == 0 then return false, "no faction-split requirements in the data" end
+		if resolved < paired then return false, wrong end
+		return true, ("%d requirements, all on the %s id"):format(paired, side)
+	end)
+
+	check("Every locationless record says why", function()
+		-- A record with no place is either a gap someone can close or a
+		-- category error nobody can. The difference has to be written down,
+		-- because a count that mixes them tells players to go and find
+		-- coordinates for a mount bought from Blizzard.
+		--
+		-- This asserts the remainder is explained: anything left without a
+		-- location, outside the categories that cannot have one, carries a
+		-- reason in the record.
+		if #recs == 0 then return nil, "no records loaded" end
+		local PLACELESS = {
+			STORE = true, PROMOTION = true, TCG = true, ACHIEVEMENT = true,
+			PROFESSION = true, PVP = true, CLASS = true, REMOVED = true,
+			TRADINGPOST = true,
+		}
+		local open, example = 0, nil
+		for _, r in ipairs(recs) do
+			if r.obtainable and not r.zone and not r.vendor
+				and not r.noLocationReason and not PLACELESS[r.category] then
+				open = open + 1
+				example = example or (r.name .. " (" .. tostring(r.category) .. ")")
+			end
+		end
+		if open > 0 then
+			return false, ("%d unexplained, e.g. %s"):format(open, example)
+		end
+		return true, "no unexplained locationless records"
+	end)
+
+	check("Gold prices are plausible", function()
+		-- goldCost is read straight into the planner's cost model, so a
+		-- mis-parsed price is a silently wrong plan rather than an error. The
+		-- import that produced most of these came off a page whose thousands
+		-- separator is a SPACE -- "10 000" reads as ten to anything that stops
+		-- at the first run of digits.
+		--
+		-- A thousandfold error cannot be spotted by eye in a list of prices, so
+		-- assert the shape instead: whole gold, above zero, and inside the
+		-- range the game actually charges.
+		if #recs == 0 then return nil, "no records loaded" end
+		local n, bad = 0, nil
+		for _, r in ipairs(recs) do
+			local g = r.goldCost
+			if g then
+				n = n + 1
+				if type(g) ~= "number" or g <= 0 or g ~= math.floor(g) or g > 5000000 then
+					bad = bad or ("%s: %s"):format(r.name, tostring(g))
+				end
+			end
+		end
+		if n == 0 then return false, "no record carries a gold price" end
+		if bad then return false, bad end
+		return true, ("%d gold prices, all whole and in range"):format(n)
+	end)
+
 	check("Journal coverage", function()
 		local S = MM.Scanner
 		-- S.mounts, not S.entries. The first draft of this check used a field
@@ -3322,6 +3440,59 @@ local function runLogic()
 			return false, "the client refused to play " .. first.file
 		end
 		return true, "murloc leads the list and the client accepts the file"
+	end)
+
+	check("Forcing the alert audible restores every setting it changed", function()
+		-- This one is worth a test because the failure is invisible and lasting:
+		-- a master volume left at 1.0 does not announce itself, and the player
+		-- has no reason to suspect a mount addon. Drive the whole cycle here --
+		-- read, force, restore -- and prove the numbers come back.
+		local RA = MM.RareAlert
+		if not (RA and RA.ForceAudible and RA.RestoreSound) then
+			return false, "force/restore not present"
+		end
+		if not (GetCVar and SetCVar) then return nil, "no CVar API on this client" end
+		local watched = { "Sound_EnableAllSound", "Sound_MasterVolume",
+			"Sound_EnableSoundWhenGameIsInBG" }
+		local before = {}
+		for _, cv in ipairs(watched) do before[cv] = GetCVar(cv) end
+
+		-- Start from a known-hostile state: everything a muted player would have.
+		pcall(SetCVar, "Sound_MasterVolume", "0")
+		local staged = GetCVar("Sound_MasterVolume")
+
+		local pending = MM.db.rareAlertCVarRestore
+		MM.db.rareAlertCVarRestore = nil
+		RA.ForceAudible()
+		local forced = GetCVar("Sound_MasterVolume")
+		local saved = MM.db.rareAlertCVarRestore
+		local persisted = saved and saved.Sound_MasterVolume
+		RA.RestoreSound()
+		local after = GetCVar("Sound_MasterVolume")
+
+		-- Whatever the outcome, hand the player back what they came in with.
+		for _, cv in ipairs(watched) do
+			if before[cv] ~= nil then pcall(SetCVar, cv, before[cv]) end
+		end
+		MM.db.rareAlertCVarRestore = pending
+
+		if tonumber(forced) ~= 1 then
+			return false, ("master volume was %s during the alert, expected 1")
+				:format(tostring(forced))
+		end
+		-- The saved copy lives in SavedVariables so a crash mid-alert can still
+		-- be undone at the next login. A local would not survive that.
+		if persisted ~= staged then
+			return false, ("saved %q for restore, had %q")
+				:format(tostring(persisted), tostring(staged))
+		end
+		if after ~= staged then
+			return false, ("restored to %s, expected %s"):format(tostring(after), tostring(staged))
+		end
+		if MM.db.rareAlertCVarRestore ~= pending then
+			return false, "restore left its own bookkeeping behind"
+		end
+		return true, "raised to 1, put back to " .. tostring(staged)
 	end)
 
 	check("Presets are coherent and round-trip", function()

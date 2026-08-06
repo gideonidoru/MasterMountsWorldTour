@@ -38,6 +38,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Human characters.",
+		goldCost = 1,
 	},
 	{
 		name = "Pinto",
@@ -463,6 +464,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Night Elf characters.",
+		goldCost = 1,
 	},
 	{
 		name = "Swift Mistsaber",
@@ -2323,6 +2325,7 @@ MM.AddMounts({
 			{
 				name = "Onyx Netherwing Drake",
 				cost = "200g from Drake Dealer Hurlunk on the Ledge, or 160g from the Lower City drakes in Shattrath",
+				id = 32857,
 				type = "ITEM",
 			},
 		},
@@ -2388,6 +2391,7 @@ MM.AddMounts({
 			{
 				name = "Azure Netherwing Drake",
 				cost = "200g from Drake Dealer Hurlunk on the Ledge, or 160g from the Lower City drakes in Shattrath",
+				id = 32858,
 				type = "ITEM",
 			},
 		},
@@ -2453,6 +2457,7 @@ MM.AddMounts({
 			{
 				name = "Cobalt Netherwing Drake",
 				cost = "200g from Drake Dealer Hurlunk on the Ledge, or 160g from the Lower City drakes in Shattrath",
+				id = 32859,
 				type = "ITEM",
 			},
 		},
@@ -2518,6 +2523,7 @@ MM.AddMounts({
 			{
 				name = "Purple Netherwing Drake",
 				cost = "200g from Drake Dealer Hurlunk on the Ledge, or 160g from the Lower City drakes in Shattrath",
+				id = 32860,
 				type = "ITEM",
 			},
 		},
@@ -2583,6 +2589,7 @@ MM.AddMounts({
 			{
 				name = "Veridian Netherwing Drake",
 				cost = "200g from Drake Dealer Hurlunk on the Ledge, or 160g from the Lower City drakes in Shattrath",
+				id = 32861,
 				type = "ITEM",
 			},
 		},
@@ -2648,6 +2655,7 @@ MM.AddMounts({
 			{
 				name = "Violet Netherwing Drake",
 				cost = "200g from Drake Dealer Hurlunk on the Ledge, or 160g from the Lower City drakes in Shattrath",
+				id = 32862,
 				type = "ITEM",
 			},
 		},
@@ -2893,6 +2901,7 @@ MM.AddMounts({
 			{
 				name = "Silver Riding Nether Ray",
 				cost = "200g, reduced to 160g by the Exalted reputation discount",
+				id = 32318,
 				type = "ITEM",
 			},
 		},
@@ -2951,6 +2960,8 @@ MM.AddMounts({
 			{
 				name = "Cobalt Riding Talbuk",
 				cost = "70g",
+				idAlliance = 31830,
+				idHorde = 31829,
 				type = "ITEM",
 			},
 		},
@@ -3011,13 +3022,15 @@ MM.AddMounts({
 				name = "Halaa Battle Token",
 				amount = 70,
 				how = "One per killing blow on an enemy PLAYER near Halaa. There is no NPC source.",
-				type = "CURRENCY",
+				id = 26045,
+				type = "ITEM",
 			},
 			{
 				name = "Halaa Research Token",
 				amount = 15,
 				how = "Turn in 10 Oshu'gun Crystal Powder Sample per token - farmable solo off Nagrand mobs.",
-				type = "CURRENCY",
+				id = 26044,
+				type = "ITEM",
 			},
 		},
 		timePerAttempt = 60,
@@ -3048,6 +3061,8 @@ MM.AddMounts({
 			{
 				name = "Silver Riding Talbuk",
 				cost = "70g",
+				idAlliance = 31832,
+				idHorde = 31831,
 				type = "ITEM",
 			},
 		},
@@ -3100,6 +3115,8 @@ MM.AddMounts({
 			{
 				name = "Tan Riding Talbuk",
 				cost = "70g",
+				idAlliance = 31834,
+				idHorde = 31833,
 				type = "ITEM",
 			},
 		},
@@ -3152,6 +3169,8 @@ MM.AddMounts({
 			{
 				name = "White Riding Talbuk",
 				cost = "70g",
+				idAlliance = 31836,
+				idHorde = 31835,
 				type = "ITEM",
 			},
 		},
@@ -3205,6 +3224,8 @@ MM.AddMounts({
 			{
 				name = "Cobalt War Talbuk",
 				cost = "100g",
+				idAlliance = 29227,
+				idHorde = 29102,
 				type = "ITEM",
 			},
 		},
@@ -3265,13 +3286,15 @@ MM.AddMounts({
 				name = "Halaa Battle Token",
 				amount = 100,
 				how = "One per killing blow on an enemy PLAYER near Halaa. There is no NPC source.",
-				type = "CURRENCY",
+				id = 26045,
+				type = "ITEM",
 			},
 			{
 				name = "Halaa Research Token",
 				amount = 20,
 				how = "Turn in 10 Oshu'gun Crystal Powder Sample per token - farmable solo off Nagrand mobs.",
-				type = "CURRENCY",
+				id = 26044,
+				type = "ITEM",
 			},
 		},
 		timePerAttempt = 60,
@@ -3302,6 +3325,8 @@ MM.AddMounts({
 			{
 				name = "Silver War Talbuk",
 				cost = "100g",
+				idAlliance = 29229,
+				idHorde = 29104,
 				type = "ITEM",
 			},
 		},
@@ -3354,6 +3379,8 @@ MM.AddMounts({
 			{
 				name = "Tan War Talbuk",
 				cost = "100g",
+				idAlliance = 29230,
+				idHorde = 29105,
 				type = "ITEM",
 			},
 		},
@@ -3406,6 +3433,8 @@ MM.AddMounts({
 			{
 				name = "White War Talbuk",
 				cost = "100g",
+				idAlliance = 29231,
+				idHorde = 29103,
 				type = "ITEM",
 			},
 		},
@@ -3523,6 +3552,7 @@ MM.AddMounts({
 			y = 52.6,
 		},
 		effort = 1,
+		goldCost = 10,
 	},
 	{
 		name = "Great Purple Elekk",
@@ -3661,6 +3691,7 @@ MM.AddMounts({
 			y = 54.6,
 		},
 		effort = 1,
+		goldCost = 10,
 	},
 	{
 		name = "Golden Gryphon",
@@ -3821,6 +3852,7 @@ MM.AddMounts({
 			y = 58.5,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Blue Wind Rider",
@@ -3841,6 +3873,7 @@ MM.AddMounts({
 			y = 58.5,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Green Wind Rider",
@@ -3861,6 +3894,7 @@ MM.AddMounts({
 			y = 58.5,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Swift Red Wind Rider",
@@ -3881,6 +3915,7 @@ MM.AddMounts({
 			y = 58.5,
 		},
 		effort = 1,
+		goldCost = 100,
 	},
 	{
 		name = "Swift Green Wind Rider",
@@ -3922,6 +3957,7 @@ MM.AddMounts({
 			y = 58.5,
 		},
 		effort = 1,
+		goldCost = 100,
 	},
 	{
 		name = "Swift Purple Wind Rider",
@@ -4810,6 +4846,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 10000,
 	},
 	{
 		name = "Armored Brown Bear",
@@ -4836,6 +4873,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 750,
 	},
 	{
 		name = "Armored Snowy Gryphon",
@@ -4885,6 +4923,7 @@ MM.AddMounts({
 			{
 				name = "Armored Blue Wind Rider",
 				cost = "2000g",
+				id = 44690,
 				type = "ITEM",
 			},
 		},
@@ -4902,6 +4941,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Hero",
+				id = 2136,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -4955,6 +4995,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Ulduar Raider (25 player)",
+				id = 2958,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -4985,6 +5026,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Ulduar Raider (10 player)",
+				id = 2957,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -5015,6 +5057,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Icecrown Raider (10 player)",
+				id = 4602,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -5044,6 +5087,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Icecrown Raider (25 player)",
+				id = 4603,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -5061,6 +5105,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Leading the Cavalry",
+				id = 2143,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -5079,6 +5124,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Mountain o' Mounts",
+				idAlliance = 2536,
+				idHorde = 2537,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -5097,6 +5144,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Mountain o' Mounts",
+				idAlliance = 2536,
+				idHorde = 2537,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -5114,6 +5163,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "What a Long, Strange Trip It's Been",
+				id = 2144,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -6512,6 +6562,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Brown Riding Camel",
 				cost = "100g",
+				id = 63044,
 				type = "ITEM",
 			},
 		},
@@ -6541,6 +6592,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Tan Riding Camel",
 				cost = "100g",
+				id = 63045,
 				type = "ITEM",
 			},
 		},
@@ -6698,6 +6750,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Guild Glory of the Cataclysm Raider",
+				id = 4988,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -6742,6 +6795,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Cataclysm Hero",
+				id = 4845,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -6810,6 +6864,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Dragon Soul Raider",
+				id = 6169,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -6831,6 +6886,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Veteran of the Molten Front",
+				id = 5879,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -6901,6 +6957,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Vial of the Sands",
+				id = 65891,
 				type = "ITEM",
 			},
 		},
@@ -7086,6 +7143,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Added with the worgen in Cataclysm; ridable by all Alliance races.",
+		goldCost = 1,
 	},
 	{
 		name = "Swift Mountain Horse",
@@ -7122,6 +7180,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Added with the goblins in Cataclysm; ridable by all Horde races.",
+		goldCost = 1,
 	},
 	{
 		name = "Goblin Turbo-Trike",
@@ -7143,6 +7202,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Epic version of the Goblin Trike.",
+		goldCost = 10,
 	},
 	{
 		name = "Winged Guardian",
@@ -7596,6 +7656,7 @@ MM.AddMounts({
 			{
 				name = "Sky Crystal",
 				cost = "10x Skyshard (rare drop from Vale mobs, or BMAH)",
+				id = 86546,
 				type = "ITEM",
 			},
 		},
@@ -7930,16 +7991,12 @@ MM.AddMounts({
 				name = "Giant Dinosaur Bone",
 				amount = 9999,
 				how = "Bones drop from dinosaurs on the Isle of Giants; turn in 9,999 to Ku'ma",
+				id = 94288,
 				type = "ITEM",
 			},
 			{
 				name = "A Mountain of Giant Dinosaur Bones",
 				type = "ACHIEVEMENT",
-			},
-			{
-				name = "Giant Dinosaur Bones",
-				amount = 9999,
-				type = "CURRENCY",
 			},
 		},
 		attempts = "NONE",
@@ -7970,6 +8027,7 @@ MM.AddMounts({
 			{
 				name = "Censer of Eternal Agony",
 				cost = "required buff; Fire-Watcher's Oath also works",
+				id = 102467,
 				type = "ITEM",
 			},
 		},
@@ -8022,6 +8080,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Lord of the Reins",
+				idAlliance = 10356,
+				idHorde = 10355,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -8044,6 +8104,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Pandaria Raider",
+				id = 6932,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -8565,6 +8626,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Non-pandaren must be exalted with Tushui Pandaren (Alliance) or Huojin Pandaren (Horde) to purchase.",
+		goldCost = 1,
 	},
 	{
 		name = "Blue Dragon Turtle",
@@ -8599,6 +8661,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Non-pandaren require exalted Tushui/Huojin Pandaren reputation.",
+		goldCost = 1,
 	},
 	{
 		name = "Black Dragon Turtle",
@@ -8636,6 +8699,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Non-pandaren require exalted Tushui/Huojin Pandaren reputation.",
+		goldCost = 1,
 	},
 	{
 		name = "Brown Dragon Turtle",
@@ -8670,6 +8734,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Non-pandaren require exalted Tushui/Huojin Pandaren reputation.",
+		goldCost = 1,
 	},
 	{
 		name = "Purple Dragon Turtle",
@@ -8704,6 +8769,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Non-pandaren require exalted Tushui/Huojin Pandaren reputation.",
+		goldCost = 1,
 	},
 	{
 		name = "Red Dragon Turtle",
@@ -8738,6 +8804,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Non-pandaren require exalted Tushui/Huojin Pandaren reputation.",
+		goldCost = 1,
 	},
 	{
 		name = "Great Green Dragon Turtle",
@@ -8772,6 +8839,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Armored (epic) version. Non-pandaren require exalted Tushui/Huojin Pandaren reputation.",
+		goldCost = 10,
 	},
 	{
 		name = "Great Blue Dragon Turtle",
@@ -8911,6 +8979,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Armored (epic) version.",
+		goldCost = 10,
 	},
 	{
 		name = "Great Red Dragon Turtle",
@@ -8945,6 +9014,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Armored (epic) version.",
+		goldCost = 10,
 	},
 	{
 		name = "Jade Panther",
@@ -9064,6 +9134,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Pandaria Hero",
+				id = 6927,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -9092,6 +9163,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Pandaria Raider",
+				id = 6932,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -9147,6 +9219,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Orgrimmar Raider",
+				id = 8454,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -9222,6 +9295,7 @@ MM.AddMounts({
 			{
 				name = "Vicious Saddle",
 				cost = "Fill the Vicious mount bar in rated PvP",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -9328,6 +9402,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Challenge Conqueror: Gold",
+				id = 6378,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -9344,6 +9419,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Challenge Conqueror: Gold",
+				id = 6378,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -9360,6 +9436,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Challenge Conqueror: Gold",
+				id = 6378,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -9376,6 +9453,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Challenge Conqueror: Gold",
+				id = 6378,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -9955,14 +10033,10 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Blackfang Claw",
+				amount = 5000,
 				cost = "5000",
 				id = 124099,
 				type = "ITEM",
-			},
-			{
-				name = "Blackfang Claws",
-				amount = 5000,
-				type = "CURRENCY",
 			},
 		},
 		timePerAttempt = 30,
@@ -10047,6 +10121,7 @@ MM.AddMounts({
 				name = "Apexis Crystal",
 				amount = 5000,
 				how = "Draenor Apexis daily quests, garrison missions, and Draenor treasures/rares.",
+				id = 823,
 				type = "CURRENCY",
 			},
 			{
@@ -10152,6 +10227,7 @@ MM.AddMounts({
 			{
 				name = "Witherhide Cliffstomper",
 				cost = "20,000 gold",
+				id = 116655,
 				type = "ITEM",
 			},
 		},
@@ -10213,11 +10289,13 @@ MM.AddMounts({
 				name = "Apexis Crystal",
 				amount = 5000,
 				how = "Draenor Apexis daily quests, garrison missions, and Draenor treasures/rares.",
+				id = 823,
 				type = "CURRENCY",
 			},
 			{
 				name = "Dusty Rockhide",
 				cost = "5,000g + 5,000 Apexis Crystals",
+				id = 116664,
 				type = "ITEM",
 			},
 		},
@@ -10242,6 +10320,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Draenor Hero",
+				id = 9396,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -10281,6 +10360,7 @@ MM.AddMounts({
 				name = "Apexis Crystal",
 				amount = 5000,
 				how = "Draenor Apexis daily quests, garrison missions, and Draenor treasures/rares.",
+				id = 823,
 				type = "CURRENCY",
 			},
 			{
@@ -10789,7 +10869,8 @@ MM.AddMounts({
 				name = "Nat's Lucky Coin",
 				amount = 100,
 				how = "The eight Lunker fishing turn-in quests at the garrison Fishing Shack; rarely from Lunarfall/Frostdeep Cavedwellers.",
-				type = "CURRENCY",
+				id = 117397,
+				type = "ITEM",
 			},
 		},
 		factionOverlay = {
@@ -10857,6 +10938,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Draenor Pathfinder",
+				id = 10018,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -11996,14 +12078,10 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Darkmoon Daggermaw",
-				cost = "500",
-				type = "ITEM",
-			},
-			{
-				name = "Darkmoon Daggermaw",
 				amount = 500,
-				how = "Fish any open water around Darkmoon Island - no special pools needed. Also tradeable, so the auction house works.",
-				type = "CURRENCY",
+				cost = "500",
+				id = 124669,
+				type = "ITEM",
 			},
 		},
 		attempts = "NONE",
@@ -12031,11 +12109,13 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Underbelly Tycoon",
+				id = 11066,
 				type = "ACHIEVEMENT",
 			},
 			{
 				name = "Sightless Eye",
 				amount = 20000,
+				id = 1149,
 				type = "CURRENCY",
 			},
 		},
@@ -12256,6 +12336,7 @@ MM.AddMounts({
 			{
 				name = "Amethyst Ruinstrider",
 				cost = "10000g",
+				id = 152794,
 				type = "ITEM",
 			},
 		},
@@ -12303,6 +12384,7 @@ MM.AddMounts({
 			{
 				name = "Beryl Ruinstrider",
 				cost = "10000g",
+				id = 152795,
 				type = "ITEM",
 			},
 		},
@@ -12350,6 +12432,7 @@ MM.AddMounts({
 			{
 				name = "Cerulean Ruinstrider",
 				cost = "10000g",
+				id = 152797,
 				type = "ITEM",
 			},
 		},
@@ -12397,6 +12480,7 @@ MM.AddMounts({
 			{
 				name = "Russet Ruinstrider",
 				cost = "10000g",
+				id = 152793,
 				type = "ITEM",
 			},
 		},
@@ -12444,6 +12528,7 @@ MM.AddMounts({
 			{
 				name = "Sable Ruinstrider",
 				cost = "10000g",
+				id = 152791,
 				type = "ITEM",
 			},
 		},
@@ -12491,6 +12576,7 @@ MM.AddMounts({
 			{
 				name = "Umber Ruinstrider",
 				cost = "10000g",
+				id = 152796,
 				type = "ITEM",
 			},
 		},
@@ -12689,6 +12775,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Insurrection",
+				id = 11340,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -12816,6 +12903,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Legion Hero",
+				id = 11163,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -12841,6 +12929,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Argus Raider",
+				id = 11987,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -12964,6 +13053,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Free For All, More For Me",
+				id = 11474,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -12984,6 +13074,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Free For All, More For Me",
+				id = 11474,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13161,6 +13252,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13183,6 +13275,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13205,6 +13298,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13227,6 +13321,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13249,6 +13344,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13319,6 +13415,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13341,6 +13438,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13363,6 +13461,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13466,6 +13565,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13488,6 +13588,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13594,6 +13695,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13616,6 +13718,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaching the Tomb",
+				id = 11546,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13817,6 +13920,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Uldir Raider",
+				id = 12806,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13842,6 +13946,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Dazar'alor Raider",
+				id = 13315,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13890,6 +13995,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Eternal Raider",
+				id = 13687,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -13916,6 +14022,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Ny'alotha Raider",
+				id = 14146,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -14223,6 +14330,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Wartorn Hero",
+				id = 12812,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -15041,6 +15149,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Frontline Warrior",
+				idAlliance = 13283,
+				idHorde = 13284,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -15065,6 +15175,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Frontline Warrior",
+				idAlliance = 13283,
+				idHorde = 13284,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -15096,12 +15208,31 @@ MM.AddMounts({
 			{
 				name = "Azsh'ari Stormsurger Cape",
 				cost = "must be EQUIPPED to see the mount in Mrrl's list",
+				id = 169489,
 				type = "ITEM",
 			},
 			{
 				name = "Crimson Tidestallion",
 				cost = "4x Cultist Pinky Finger + 2x Pulsating Blood Stone + 1x Hungry Herald's Tentacle Taco",
 				id = 169202,
+				type = "ITEM",
+			},
+			{
+				name = "Cultist Pinky Fingers",
+				amount = 4,
+				id = 169783,
+				type = "ITEM",
+			},
+			{
+				name = "Pulsating Blood Stone",
+				amount = 2,
+				id = 169780,
+				type = "ITEM",
+			},
+			{
+				name = "Hungry Herald's Tentacle Taco",
+				amount = 1,
+				id = 170100,
 				type = "ITEM",
 			},
 		},
@@ -15128,6 +15259,7 @@ MM.AddMounts({
 			{
 				name = "Prismatic Manapearl",
 				amount = 150,
+				id = 1721,
 				type = "CURRENCY",
 			},
 			{
@@ -15335,7 +15467,7 @@ MM.AddMounts({
 		source = "Reward for completing the Alliance War Campaign epilogue",
 		effort = 3,
 		notes = "Completes with the Alliance War Campaign epilogue. Alliance only.",
-		noLocationReason = "Quest reward -- granted on completion, nowhere to travel",
+		noLocationReason = "granted by an achievement, not collected anywhere",
 	},
 	{
 		name = "Dark Iron Core Hound",
@@ -15735,6 +15867,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Undersea Usurper",
+				id = 13638,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -15757,6 +15890,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Periodic Destruction",
+				id = 13699,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -15828,6 +15962,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Junkyard Tinkmaster",
+				id = 13555,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -15853,6 +15988,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Mecha-Done",
+				id = 13541,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -15913,6 +16049,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "We Have the Technology",
+				id = 14061,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -16272,6 +16409,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vicious Saddle",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -16952,6 +17090,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -17072,6 +17211,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 7500,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -17103,6 +17243,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Grateful Offering",
+				id = 1885,
 				type = "CURRENCY",
 			},
 			{
@@ -17114,6 +17255,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Anima from covenant activities; sold by Temel at the Ember Court",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -17203,6 +17345,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "On the Offensive",
+				id = 15035,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -17341,12 +17484,14 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 			{
 				name = "Grateful Offering",
 				amount = 100,
 				how = "Anima Conductor objectives and covenant callings once the Anima Conductor is upgraded; Warband transferable since 11.0.0.",
+				id = 1885,
 				type = "CURRENCY",
 			},
 		},
@@ -17374,6 +17519,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Learning from the Masters",
+				id = 14861,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -17426,6 +17572,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Death Foursworn",
+				id = 14863,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -17472,6 +17619,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -17585,6 +17733,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 7500,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -17732,6 +17881,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "On the Offensive",
+				id = 15035,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -17896,6 +18046,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -18016,6 +18167,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 7500,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -18041,6 +18193,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "The Gang's All Here",
+				id = 14751,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -18068,6 +18221,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Things To Do When You're Dead",
+				id = 14752,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -18135,6 +18289,7 @@ MM.AddMounts({
 			},
 			{
 				name = "Grateful Offering",
+				id = 1885,
 				type = "CURRENCY",
 			},
 			{
@@ -18146,6 +18301,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Anima from covenant activities; sold by Atticus at the Abomination Factory",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -18515,6 +18671,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "On the Offensive",
+				id = 15035,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -18792,6 +18949,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -18915,6 +19073,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 7500,
 				how = "Shadowlands world quests, callings and covenant activities. Not Warband transferable; caps at 35,000.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -19032,6 +19191,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -19066,6 +19226,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -19104,6 +19265,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -19139,6 +19301,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -19213,6 +19376,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Ardenweald's a Stage",
+				id = 14353,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -19336,6 +19500,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "On the Offensive",
+				id = 15035,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -19598,6 +19763,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Breaking the Chains",
+				id = 15064,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -19655,6 +19821,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Flawless Master (Layer 12)",
+				id = 15089,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -19678,6 +19845,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Flawless Master (Layer 16)",
+				id = 15322,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -19701,6 +19869,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "The Jailer's Gauntlet: Layer 4",
+				id = 15254,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -20034,6 +20203,7 @@ MM.AddMounts({
 				name = "Stygia",
 				amount = 5000,
 				how = "Killing mobs and looting chests in The Maw and Korthia.",
+				id = 1767,
 				type = "CURRENCY",
 			},
 		},
@@ -20126,6 +20296,7 @@ MM.AddMounts({
 				name = "Cataloged Research",
 				amount = 5000,
 				how = "Korthia dailies, rares, treasures and relic turn-ins.",
+				id = 1931,
 				type = "CURRENCY",
 			},
 		},
@@ -20290,6 +20461,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Fake It 'Til You Make It",
+				id = 15178,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -20315,6 +20487,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Shadowlands Hero",
+				id = 14322,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -20343,6 +20516,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Nathria Raider",
+				id = 14355,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -20434,6 +20608,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Dominant Raider",
+				id = 15130,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -20494,6 +20669,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Sepulcher Raider",
+				id = 15491,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -20516,6 +20692,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Fates of the Shadowlands Raids",
+				id = 15684,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -20542,6 +20719,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "From A to Zereth",
+				id = 15336,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -20650,6 +20828,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities; trivial to accumulate at max level.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -20687,6 +20866,7 @@ MM.AddMounts({
 				name = "Reservoir Anima",
 				amount = 5000,
 				how = "Shadowlands world quests, callings and covenant activities; trivial to accumulate at max level.",
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -20742,7 +20922,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 450,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20771,7 +20952,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20795,7 +20977,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20824,7 +21007,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 500,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20848,7 +21032,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20872,7 +21057,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 450,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20901,7 +21087,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 450,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 4,
@@ -20925,7 +21112,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20970,7 +21158,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -20999,7 +21188,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21023,7 +21213,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 500,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21051,7 +21242,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 500,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21092,7 +21284,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21116,7 +21309,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21145,7 +21339,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 450,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21174,7 +21369,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 350,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21198,7 +21394,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 350,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21227,7 +21424,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 500,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21251,7 +21449,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 300,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21280,7 +21479,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 450,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21309,7 +21509,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 300,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		altSources = {
@@ -21353,7 +21554,8 @@ MM.AddMounts({
 			{
 				name = "Genesis Mote",
 				amount = 400,
-				type = "CURRENCY",
+				id = 188957,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -21672,6 +21874,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "A Tour of Towers",
+				id = 15310,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -21709,6 +21912,7 @@ MM.AddMounts({
 			{
 				name = "Timewarped Badge",
 				amount = 5000,
+				id = 1166,
 				type = "CURRENCY",
 			},
 		},
@@ -21761,6 +21965,7 @@ MM.AddMounts({
 			{
 				name = "Timewarped Badge",
 				amount = 5000,
+				id = 1166,
 				type = "CURRENCY",
 			},
 		},
@@ -21939,6 +22144,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Vault Raider",
+				id = 16355,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -21962,6 +22168,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Aberrus Raider",
+				id = 18251,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -21985,6 +22192,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "A World Awoken",
+				id = 19458,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -22119,6 +22327,7 @@ MM.AddMounts({
 			{
 				name = "Vicious Saddle",
 				cost = "1 Vicious Saddle",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -22160,6 +22369,7 @@ MM.AddMounts({
 			{
 				name = "Vicious Saddle",
 				cost = "1 Vicious Saddle",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -22201,6 +22411,7 @@ MM.AddMounts({
 			{
 				name = "Vicious Saddle",
 				cost = "1 Vicious Saddle",
+				id = 103533,
 				type = "ITEM",
 			},
 		},
@@ -22825,6 +23036,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Paracausal Flakes",
+				id = 2594,
 				type = "CURRENCY",
 			},
 			{
@@ -22968,6 +23180,7 @@ MM.AddMounts({
 			{
 				name = "Dream Infusion",
 				amount = 1,
+				id = 2777,
 				type = "CURRENCY",
 			},
 		},
@@ -23065,6 +23278,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Requires a Blood Elf character and the heritage questline to purchase.",
+		goldCost = 40,
 	},
 	{
 		name = "Obsidian Vorquin",
@@ -23082,6 +23296,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Requires a Blood Elf character and the heritage questline to purchase.",
+		goldCost = 40,
 	},
 	{
 		name = "Sapphire Vorquin",
@@ -23099,6 +23314,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Requires a Blood Elf character and the heritage questline to purchase.",
+		goldCost = 40,
 	},
 	{
 		name = "Amber Vorquin",
@@ -23463,6 +23679,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "The Derby Dash",
+				id = 40539,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -23481,6 +23698,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Khaz Algar Glyph Hunter",
+				id = 40702,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -23504,6 +23722,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Allied Races: Earthen",
+				id = 40307,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -23576,6 +23795,7 @@ MM.AddMounts({
 			{
 				name = "Resonance Crystals",
 				amount = 8125,
+				id = 2815,
 				type = "CURRENCY",
 			},
 			{
@@ -23617,6 +23837,7 @@ MM.AddMounts({
 			{
 				name = "Resonance Crystals",
 				amount = 11375,
+				id = 2815,
 				type = "CURRENCY",
 			},
 			{
@@ -23658,6 +23879,7 @@ MM.AddMounts({
 			{
 				name = "Resonance Crystals",
 				amount = 8125,
+				id = 2815,
 				type = "CURRENCY",
 			},
 			{
@@ -23698,6 +23920,7 @@ MM.AddMounts({
 			{
 				name = "Resonance Crystals",
 				amount = 11375,
+				id = 2815,
 				type = "CURRENCY",
 			},
 			{
@@ -23738,6 +23961,7 @@ MM.AddMounts({
 			{
 				name = "Resonance Crystals",
 				amount = 8125,
+				id = 2815,
 				type = "CURRENCY",
 			},
 			{
@@ -23779,6 +24003,7 @@ MM.AddMounts({
 			{
 				name = "Resonance Crystals",
 				amount = 11375,
+				id = 2815,
 				type = "CURRENCY",
 			},
 			{
@@ -23814,6 +24039,7 @@ MM.AddMounts({
 			{
 				name = "Kej",
 				amount = 2815,
+				id = 3056,
 				type = "CURRENCY",
 			},
 		},
@@ -23842,6 +24068,7 @@ MM.AddMounts({
 			{
 				name = "Kej",
 				amount = 3940,
+				id = 3056,
 				type = "CURRENCY",
 			},
 		},
@@ -23869,6 +24096,7 @@ MM.AddMounts({
 			{
 				name = "Kej",
 				amount = 2020,
+				id = 3056,
 				type = "CURRENCY",
 			},
 		},
@@ -23897,6 +24125,7 @@ MM.AddMounts({
 			{
 				name = "Kej",
 				amount = 2020,
+				id = 3056,
 				type = "CURRENCY",
 			},
 		},
@@ -23924,6 +24153,7 @@ MM.AddMounts({
 			{
 				name = "Kej",
 				amount = 2020,
+				id = 3056,
 				type = "CURRENCY",
 			},
 		},
@@ -24088,6 +24318,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Nerub-ar Raider",
+				id = 40232,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24110,7 +24341,8 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Glory of the Delver",
+				name = "Glory of the War Within Delver",
+				id = 40438,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24145,6 +24377,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "The War Within Keystone Master: Season One",
+				id = 20525,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24206,6 +24439,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Gladiator: The War Within Season 1",
+				id = 40393,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24223,6 +24457,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Ruffious's Bid",
+				id = 40097,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24276,6 +24511,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "A Cool Twenty Years",
+				id = 40976,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24576,6 +24812,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Isle Remember You",
+				id = 41133,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24616,6 +24853,7 @@ MM.AddMounts({
 				name = "Flame-Blessed Iron",
 				amount = 10000,
 				how = "Siren Isle trash 1-5, rares 100-150, Runed Storm Caches 25-75, weekly quests 200 each.",
+				id = 3090,
 				type = "CURRENCY",
 			},
 			{
@@ -24661,6 +24899,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "A Farewell to Arms",
+				id = 40953,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24703,6 +24942,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "You Xal Not Pass",
+				id = 41201,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -24832,6 +25072,7 @@ MM.AddMounts({
 		effort = 2,
 		anyEra = true,
 		notes = "Available during Timewalking events for Timewalking currency.",
+		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
 	{
 		name = "Broodling of Sinestra",
@@ -25299,7 +25540,8 @@ MM.AddMounts({
 				name = "Miscellaneous Mechanica",
 				amount = 25,
 				how = "Earned at a low rate from D.R.I.V.E. races, Undermine rares, and weekly Undermine activities",
-				type = "CURRENCY",
+				id = 234741,
+				type = "ITEM",
 			},
 		},
 		effort = 2,
@@ -25335,7 +25577,8 @@ MM.AddMounts({
 				name = "Miscellaneous Mechanica",
 				amount = 25,
 				how = "Earned at a low rate from D.R.I.V.E. races, Undermine rares, and weekly Undermine activities",
-				type = "CURRENCY",
+				id = 234741,
+				type = "ITEM",
 			},
 		},
 		effort = 2,
@@ -25371,7 +25614,8 @@ MM.AddMounts({
 				name = "Miscellaneous Mechanica",
 				amount = 25,
 				how = "Earned at a low rate from D.R.I.V.E. races, Undermine rares, and weekly Undermine activities",
-				type = "CURRENCY",
+				id = 234741,
+				type = "ITEM",
 			},
 		},
 		effort = 2,
@@ -25417,6 +25661,7 @@ MM.AddMounts({
 				name = "Resonance Crystals",
 				amount = 8125,
 				how = "Khaz Algar renown activities - campaign chapters, weekly quests and Renown caches across all TWW factions.",
+				id = 2815,
 				type = "CURRENCY",
 			},
 		},
@@ -25723,6 +25968,7 @@ MM.AddMounts({
 				name = "Resonance Crystals",
 				amount = 8125,
 				how = "Khaz Algar renown activities - campaign chapters, weekly quests and Renown caches across all TWW factions.",
+				id = 2815,
 				type = "CURRENCY",
 			},
 		},
@@ -25770,6 +26016,7 @@ MM.AddMounts({
 				name = "Resonance Crystals",
 				amount = 11375,
 				how = "Khaz Algar renown activities - campaign chapters, weekly quests and Renown caches across all TWW factions.",
+				id = 2815,
 				type = "CURRENCY",
 			},
 		},
@@ -25852,6 +26099,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Liberation of Undermine Raider",
+				id = 41286,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -26177,6 +26425,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Gladiator: The War Within Season 2",
+				id = 41032,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -26260,6 +26509,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Mastering the Visions",
+				id = 41966,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -26524,6 +26774,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Titan Console Overcharged",
+				id = 42212,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -26568,6 +26819,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		anyEra = true,
+		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
 	{
 		name = "Ivory Savagemane",
@@ -26723,6 +26975,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Vigilante",
+				id = 41980,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -26742,6 +26995,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Phase-Lost-and-Found",
+				id = 61017,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -26891,6 +27145,7 @@ MM.AddMounts({
 			{
 				name = "Untethered Coin",
 				amount = 7,
+				id = 3303,
 				type = "CURRENCY",
 			},
 		},
@@ -26914,6 +27169,7 @@ MM.AddMounts({
 			{
 				name = "Untethered Coin",
 				amount = 10,
+				id = 3303,
 				type = "CURRENCY",
 			},
 		},
@@ -27042,6 +27298,7 @@ MM.AddMounts({
 				name = "Resonance Crystals",
 				amount = 8125,
 				how = "Khaz Algar renown activities; Om'sirik also sells Resonance Crystal caches at Renown 5, 8, 13 and 18.",
+				id = 2815,
 				type = "CURRENCY",
 			},
 		},
@@ -27082,6 +27339,7 @@ MM.AddMounts({
 				name = "Resonance Crystals",
 				amount = 11375,
 				how = "Khaz Algar renown activities; Om'sirik also sells Resonance Crystal caches at Renown 5, 8, 13 and 18.",
+				id = 2815,
 				type = "CURRENCY",
 			},
 		},
@@ -27148,6 +27406,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Ahead of the Curve: Dimensius, the All-Devouring",
+				id = 41624,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -27175,6 +27434,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Omega Raider",
+				id = 41597,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -27243,6 +27503,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Gladiator: The War Within Season 3",
+				id = 41049,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -28493,6 +28754,7 @@ MM.AddMounts({
 		anyEra = true,
 		notes = "Only during a Timewalking Dungeon Event week. Every dungeon boss (and TW raid bosses) has a chance.",
 		noLocationReason = "Drops from ANY Timewalking boss, weekly cache or the Quantum Courser -- no single source to route to",
+		unpriced = "a rare drop from any Timewalking boss",
 	},
 	{
 		name = "Eclipse Dragonhawk",
@@ -28906,6 +29168,7 @@ MM.AddMounts({
 		effort = 3,
 		anyEra = true,
 		notes = "Any Timewalking week works. One free pick via Ta'readon's Mount Voucher from Master of the Turbulent Timeways IV (Turbulent Timeways V, 11.2.7); the rest are vendor purchases.",
+		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
 	{
 		name = "Bronze Corpsefly",
@@ -28925,6 +29188,7 @@ MM.AddMounts({
 		effort = 3,
 		anyEra = true,
 		notes = "Any Timewalking week works. One free pick via Ta'readon's Mount Voucher from Master of the Turbulent Timeways IV (Turbulent Timeways V, 11.2.7); the rest are vendor purchases.",
+		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
 	{
 		name = "Bronze Gravewing",
@@ -28944,6 +29208,7 @@ MM.AddMounts({
 		effort = 3,
 		anyEra = true,
 		notes = "Any Timewalking week works. One free pick via Ta'readon's Mount Voucher from Master of the Turbulent Timeways IV (Turbulent Timeways V, 11.2.7); the rest are vendor purchases.",
+		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
 	{
 		name = "Bronze Aquilon",
@@ -28963,6 +29228,7 @@ MM.AddMounts({
 		effort = 3,
 		anyEra = true,
 		notes = "Any Timewalking week works. One free pick via Ta'readon's Mount Voucher from Master of the Turbulent Timeways IV (Turbulent Timeways V, 11.2.7); the rest are vendor purchases.",
+		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
 	{
 		name = "Spawn of Vyranoth",
@@ -29006,6 +29272,7 @@ MM.AddMounts({
 		timePerAttempt = 20,
 		effort = 3,
 		notes = "Turbulent Timeways VI event (12.0.7, June 30 - Aug 11, 2026). Past Turbulent Timeways rewards later move to all Timewalking vendors for 5000 Timewarped Badges.",
+		unpriced = "awarded by an achievement",
 	},
 	{
 		name = "Fantastical Goblin Waveshredder",
@@ -29180,6 +29447,7 @@ MM.AddMounts({
 				name = "Trader's Tender",
 				amount = 550,
 				how = "Earn monthly Trader's Tender by logging in and completing Traveler's Log activities at the Trading Post.",
+				id = 2032,
 				type = "CURRENCY",
 			},
 		},
@@ -29235,6 +29503,7 @@ MM.AddMounts({
 				name = "Trader's Tender",
 				amount = 700,
 				how = "Earn monthly Trader's Tender by logging in and completing Traveler's Log activities at the Trading Post.",
+				id = 2032,
 				type = "CURRENCY",
 			},
 		},
@@ -29322,6 +29591,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Two Minutes to Midnight",
+				id = 42300,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -29352,6 +29622,7 @@ MM.AddMounts({
 				name = "Twilight's Blade Insignia",
 				amount = 100,
 				how = "Midnight pre-patch event activities; sold by Materialist Ophinell in the Twilight Highlands",
+				id = 3319,
 				type = "CURRENCY",
 			},
 		},
@@ -29377,6 +29648,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Insurmountable Collection",
+				idAlliance = 62103,
+				idHorde = 62096,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -30708,6 +30981,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Light Up the Night",
+				id = 62386,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -30738,6 +31012,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Midnight Glyph Hunter",
+				id = 61584,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -30768,6 +31043,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Treasures of Harandar",
+				id = 61263,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -30798,6 +31074,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Staring Into The Void",
+				id = 62385,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -30828,6 +31105,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Allied Race: Haranir",
+				id = 61506,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -30858,6 +31136,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Life of the Party",
+				id = 62190,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -30889,6 +31168,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "A Trip Around the Stars",
+				id = 62873,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -30929,12 +31209,14 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "A Trip Through the Stars",
+				id = 62874,
 				type = "ACHIEVEMENT",
 			},
 			{
 				name = "Voidlight Marl",
 				amount = 15,
 				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
+				id = 3316,
 				type = "CURRENCY",
 			},
 		},
@@ -30970,6 +31252,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Heroic Showdowns",
+				id = 63264,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -31005,6 +31288,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Let Me Solo Him: Nullaeus",
+				id = 61799,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -31035,6 +31319,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Glory of the Midnight Delver",
+				id = 61906,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -31070,6 +31355,7 @@ MM.AddMounts({
 				name = "Undercoin",
 				amount = 10000,
 				how = "Delves and Delver's Journey rewards; sold by Naleidea Rivergleam in Silvermoon City",
+				id = 2803,
 				type = "CURRENCY",
 			},
 		},
@@ -31106,6 +31392,7 @@ MM.AddMounts({
 				name = "Undercoin",
 				amount = 10000,
 				how = "Delves; requires the 5th Delver's Journey milestone of Midnight Season 1",
+				id = 2803,
 				type = "CURRENCY",
 			},
 		},
@@ -31143,12 +31430,14 @@ MM.AddMounts({
 				name = "Remnant of Anguish",
 				amount = 2000,
 				how = "Complete Prey hunts and Preyseeker's Journey activities to earn Remnant of Anguish.",
+				id = 3392,
 				type = "CURRENCY",
 			},
 			{
 				name = "Remnants of Anguish",
 				amount = 2000,
 				how = "Prey hunts (Midnight Season 1), Preyseeker's Journey Rank 5; sold by Construct V'anore in Silvermoon City",
+				id = 3392,
 				type = "CURRENCY",
 			},
 		},
@@ -31185,12 +31474,14 @@ MM.AddMounts({
 				name = "Remnant of Anguish",
 				amount = 2000,
 				how = "Complete Prey hunts and Preyseeker's Journey activities to earn Remnant of Anguish.",
+				id = 3392,
 				type = "CURRENCY",
 			},
 			{
 				name = "Remnants of Anguish",
 				amount = 2000,
 				how = "Prey hunts (Midnight Season 1), Preyseeker's Journey Rank 10; sold by Construct V'anore in Silvermoon City",
+				id = 3392,
 				type = "CURRENCY",
 			},
 		},
@@ -31221,6 +31512,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Prey: Nightmare Mode III",
+				id = 42703,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -31357,7 +31649,8 @@ MM.AddMounts({
 		source = "Achievement: Midnight Keystone Master: Season One (2000 Mythic+ rating).",
 		conditions = {
 			{
-				name = "Midnight Keystone Master: Season One",
+				name = "Midnight Keystone Master: Season 1",
+				id = 61256,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -31384,7 +31677,8 @@ MM.AddMounts({
 		source = "Achievement: Midnight Keystone Legend: Season One.",
 		conditions = {
 			{
-				name = "Midnight Keystone Legend: Season One",
+				name = "Midnight Keystone Legend: Season 1",
+				id = 61258,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -31417,7 +31711,8 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Keystone Myth",
+				name = "Midnight Keystone Myth: Season 1",
+				id = 63097,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -31455,7 +31750,8 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Keystone Myth",
+				name = "Midnight Keystone Myth: Season 1",
+				id = 63097,
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -31640,6 +31936,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Gladiator: Midnight Season 1",
+				id = 61188,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -32017,6 +32314,7 @@ MM.AddMounts({
 				name = "Luminous Dust",
 				amount = 10,
 				how = "Catch moths around Harandar; sold by Mothkeeper Wew'tam at the Den",
+				id = 3385,
 				type = "CURRENCY",
 			},
 		},
@@ -32058,6 +32356,7 @@ MM.AddMounts({
 				name = "Luminous Dust",
 				amount = 10,
 				how = "Catch moths around Harandar; sold by Mothkeeper Wew'tam at the Den",
+				id = 3385,
 				type = "CURRENCY",
 			},
 		},
@@ -32198,6 +32497,7 @@ MM.AddMounts({
 				name = "Unalloyed Abundance",
 				amount = 6400,
 				how = "Abundance world events; sold by Chel the Chip (heavily discounted while an Abundance event is active)",
+				id = 3377,
 				type = "CURRENCY",
 			},
 		},
@@ -32233,6 +32533,7 @@ MM.AddMounts({
 				name = "Unalloyed Abundance",
 				amount = 6400,
 				how = "Abundance world events; sold by Chel the Chip (heavily discounted while an Abundance event is active)",
+				id = 3377,
 				type = "CURRENCY",
 			},
 		},
@@ -32294,6 +32595,7 @@ MM.AddMounts({
 				name = "Illusionary Coins",
 				amount = 500,
 				how = "Compete in Decor Duels event rounds in Silvermoon City to earn Illusionary Coins.",
+				id = 3393,
 				type = "CURRENCY",
 			},
 		},
@@ -32315,16 +32617,19 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Void Response Team",
+				id = 62563,
 				type = "ACHIEVEMENT",
 			},
 			{
 				name = "Ritual Site Disruptor",
+				id = 62562,
 				type = "ACHIEVEMENT",
 			},
 			{
 				name = "Voidlight Marl",
 				amount = 6000,
 				how = "Earned broadly from Midnight world quests, events, rares, and weekly activities in the Quel'Thalas zones.",
+				id = 3316,
 				type = "CURRENCY",
 			},
 		},
@@ -33509,7 +33814,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "From the quest Good Fiery Boy. Usable only by Dark Iron Dwarves, so it needs a Dark Iron character, not a journey.",
-		noLocationReason = "Quest reward -- granted on completion, nowhere to travel",
+		noLocationReason = "race-locked heritage questline",
 	},
 	{
 		name = "Starcursed Voidstrider",
@@ -33700,12 +34005,14 @@ MM.AddMounts({
 			{
 				name = "Swift Burgundy Wolf",
 				cost = "500g",
+				id = 46749,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Orgrimmar first, then pay 500g + 5 Champion's Seals to Freka Bloodaxe.",
 		notes = "Sold by Freka Bloodaxe in the Sunreaver Pavilion alongside the Orgrimmar Wolf. Not a separate unlock - it shares the Champion of Orgrimmar gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -33737,12 +34044,14 @@ MM.AddMounts({
 			{
 				name = "Swift Gray Steed",
 				cost = "500g",
+				id = 46752,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Stormwind first, then pay 500g + 5 Champion's Seals to Corporal Arthur Flew.",
 		notes = "Sold by Corporal Arthur Flew in the Silver Covenant Pavilion alongside the Stormwind Steed. Not a separate unlock - it shares the Champion of Stormwind gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -33774,12 +34083,14 @@ MM.AddMounts({
 			{
 				name = "Swift Moonsaber",
 				cost = "500g",
+				id = 46744,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Darnassus first, then pay 500g + 5 Champion's Seals to Rook Hawkfist.",
 		notes = "Sold by Rook Hawkfist in the Silver Covenant Pavilion alongside the Darnassian Nightsaber. Not a separate unlock - it shares the Champion of Darnassus gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -33811,12 +34122,14 @@ MM.AddMounts({
 			{
 				name = "Swift Purple Raptor",
 				cost = "500g",
+				id = 46743,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Sen'jin first, then pay 500g + 5 Champion's Seals to Samamba.",
 		notes = "Sold by Samamba in the Sunreaver Pavilion alongside the Darkspear Raptor. Not a separate unlock - it shares the Champion of Sen'jin gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -33848,12 +34161,14 @@ MM.AddMounts({
 			{
 				name = "Swift Red Hawkstrider",
 				cost = "500g",
+				id = 46751,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Silvermoon City first, then pay 500g + 5 Champion's Seals to Trellis Morningsun.",
 		notes = "Sold by Trellis Morningsun in the Sunreaver Pavilion alongside the Silvermoon Hawkstrider. Not a separate unlock - it shares the Champion of Silvermoon City gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -33885,12 +34200,14 @@ MM.AddMounts({
 			{
 				name = "Swift Violet Ram",
 				cost = "500g",
+				id = 46748,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Ironforge first, then pay 500g + 5 Champion's Seals to Derrick Brindlebeard.",
 		notes = "Sold by Derrick Brindlebeard in the Silver Covenant Pavilion alongside the Ironforge Ram. Not a separate unlock - it shares the Champion of Ironforge gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -33922,12 +34239,14 @@ MM.AddMounts({
 			{
 				name = "Turbostrider",
 				cost = "500g",
+				id = 46747,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Gnomeregan first, then pay 500g + 5 Champion's Seals to Rillie Spindlenut.",
 		notes = "Sold by Rillie Spindlenut in the Silver Covenant Pavilion alongside the Gnomeregan Mechanostrider. Not a separate unlock - it shares the Champion of Gnomeregan gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -33959,12 +34278,14 @@ MM.AddMounts({
 			{
 				name = "White Skeletal Warhorse",
 				cost = "500g",
+				id = 46746,
 				type = "ITEM",
 			},
 		},
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of the Undercity first, then pay 500g + 5 Champion's Seals to Eliza Killian.",
 		notes = "Sold by Eliza Killian in the Sunreaver Pavilion alongside the Forsaken Warhorse. Not a separate unlock - it shares the Champion of the Undercity gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 })
@@ -34212,6 +34533,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Awake the Drakes",
+				id = 9713,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -34458,6 +34780,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "We're Going to Need More Saddles",
+				idAlliance = 7860,
+				idHorde = 7862,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -34587,6 +34911,7 @@ MM.AddMounts({
 			{
 				name = "Reins of the Palehide Direhorn",
 				cost = "500000g",
+				id = 163589,
 				type = "ITEM",
 			},
 		},
@@ -34916,7 +35241,7 @@ MM.AddMounts({
 		obtainable = true,
 		source = "Reward from Breaker Two, a rare garrison mission.",
 		effort = 4,
-		noLocationReason = "Garrison mission reward (Breaker Two) -- completed from the mission table",
+		noLocationReason = "a rare garrison mission",
 	},
 	{
 		name = "Gorestrider Gronnling",
@@ -35022,6 +35347,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Advanced Husbandry",
+				idAlliance = 9539,
+				idHorde = 9705,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -35123,6 +35450,7 @@ MM.AddMounts({
 				name = "Apexis Crystal",
 				amount = 5000,
 				how = "Draenor Apexis daily quests, garrison missions, and Draenor treasures/rares.",
+				id = 823,
 				type = "CURRENCY",
 			},
 			{
@@ -35162,11 +35490,13 @@ MM.AddMounts({
 				name = "Apexis Crystal",
 				amount = 5000,
 				how = "Draenor Apexis daily quests, garrison missions, and Draenor treasures/rares.",
+				id = 823,
 				type = "CURRENCY",
 			},
 			{
 				name = "Swift Frostwolf",
 				cost = "5,000g + 5,000 Apexis Crystals",
+				id = 116785,
 				type = "ITEM",
 			},
 		},
@@ -35285,7 +35615,7 @@ MM.AddMounts({
 		source = "Rare loot from Savage Gifts (5 Merry Supplies each) during Feast of Winter Veil.",
 		attempts = "NONE",
 		effort = 4,
-		noLocationReason = "Opened from Savage Gifts (Feast of Winter Veil) -- no place to travel to",
+		noLocationReason = "a garrison vendor, during Winter Veil",
 	},
 	{
 		name = "Cindermane Charger",
@@ -35500,12 +35830,8 @@ MM.AddMounts({
 				name = "Drowned Mana",
 				amount = 100,
 				how = "Fish Drowned Mana at Margoss's Retreat near Dalaran (Broken Isles)",
+				id = 138777,
 				type = "ITEM",
-			},
-			{
-				name = "Drowned Mana",
-				amount = 100,
-				type = "CURRENCY",
 			},
 		},
 		effort = 4,
@@ -35990,14 +36316,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Seafarer's Dubloon",
-				amount = 1000,
-				how = "Awarded from Island Expeditions; sold by Captain Klarisa (A) / Captain Zen'taga (H)",
-				type = "ITEM",
-			},
-			{
 				name = "Seafarer's Dubloons",
 				amount = 1000,
+				how = "Awarded from Island Expeditions; sold by Captain Klarisa (Alliance) or Captain Zen'taga (Horde)",
+				id = 1710,
 				type = "CURRENCY",
 			},
 		},
@@ -36042,14 +36364,10 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Seafarer's Dubloon",
-				amount = 500,
-				how = "Awarded from Island Expeditions; sold by Captain Klarisa (A) / Captain Zen'taga (H)",
-				type = "ITEM",
-			},
-			{
 				name = "Seafarer's Dubloons",
 				amount = 500,
+				how = "Awarded from Island Expeditions; sold by Captain Klarisa (Alliance) or Captain Zen'taga (Horde)",
+				id = 1710,
 				type = "CURRENCY",
 			},
 		},
@@ -36157,6 +36475,7 @@ MM.AddMounts({
 			{
 				name = "Dusky Waycrest Gryphon",
 				cost = "90000g",
+				id = 161908,
 				type = "ITEM",
 			},
 		},
@@ -36187,6 +36506,7 @@ MM.AddMounts({
 			{
 				name = "Stormsong Coastwatcher",
 				cost = "90000g",
+				id = 161909,
 				type = "ITEM",
 			},
 		},
@@ -36216,6 +36536,7 @@ MM.AddMounts({
 			{
 				name = "Proudmoore Sea Scout",
 				cost = "90000g",
+				id = 161879,
 				type = "ITEM",
 			},
 		},
@@ -36245,6 +36566,7 @@ MM.AddMounts({
 			{
 				name = "Admiralty Stallion",
 				cost = "10000g",
+				id = 161911,
 				type = "ITEM",
 			},
 		},
@@ -36274,6 +36596,7 @@ MM.AddMounts({
 			{
 				name = "Voldunai Dunescraper",
 				cost = "90000g",
+				id = 161667,
 				type = "ITEM",
 			},
 		},
@@ -36304,6 +36627,7 @@ MM.AddMounts({
 			{
 				name = "Captured Swampstalker",
 				cost = "90000g",
+				id = 161666,
 				type = "ITEM",
 			},
 		},
@@ -36453,6 +36777,7 @@ MM.AddMounts({
 			{
 				name = "Blue Marsh Hopper",
 				cost = "333333g",
+				id = 166442,
 				type = "ITEM",
 			},
 		},
@@ -36477,6 +36802,7 @@ MM.AddMounts({
 			{
 				name = "Green Marsh Hopper",
 				cost = "333333g",
+				id = 163183,
 				type = "ITEM",
 			},
 		},
@@ -36501,6 +36827,7 @@ MM.AddMounts({
 			{
 				name = "Yellow Marsh Hopper",
 				cost = "333333g",
+				id = 166443,
 				type = "ITEM",
 			},
 		},
@@ -36597,6 +36924,7 @@ MM.AddMounts({
 			{
 				name = "Rustbolt Resistor",
 				cost = "524288g",
+				id = 168829,
 				type = "ITEM",
 			},
 		},
@@ -36650,6 +36978,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Conqueror of Azeroth",
+				idAlliance = 12605,
+				idHorde = 12604,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -36790,7 +37120,8 @@ MM.AddMounts({
 			{
 				name = "Pristine Cloud Serpent Scale",
 				amount = 1,
-				type = "CURRENCY",
+				id = 174230,
+				type = "ITEM",
 			},
 		},
 		effort = 3,
@@ -36838,7 +37169,7 @@ MM.AddMounts({
 		source = "Collect 200 badges in Alterac Valley Classic during the WoW Anniversary event. The Alliance version is granted automatically to an Alliance character.",
 		attempts = "NONE",
 		effort = 2,
-		noLocationReason = "200 badges in Alterac Valley Classic (Korrak's Revenge) -- earned inside the battleground",
+		noLocationReason = "queued battleground, anniversary only",
 	},
 	{
 		name = "Stormpike Battle Ram",
@@ -36851,7 +37182,7 @@ MM.AddMounts({
 		source = "Collect 200 badges in Alterac Valley Classic during the WoW Anniversary event. The Horde version is granted automatically to a Horde character.",
 		attempts = "NONE",
 		effort = 2,
-		noLocationReason = "200 badges in Alterac Valley Classic (Korrak's Revenge) -- earned inside the battleground",
+		noLocationReason = "queued battleground, anniversary only",
 	},
 	{
 		name = "Harbor Gryphon",
@@ -36977,16 +37308,19 @@ MM.AddMounts({
 				name = "Dragon Isles Supplies",
 				amount = 750,
 				how = "World quests and weekly caches; sold by Granpap Whiskers at Dragonscale Basecamp",
+				id = 2003,
 				type = "CURRENCY",
 			},
 			{
 				name = "Iridescent Plume",
 				amount = 5,
+				id = 201401,
 				type = "ITEM",
 			},
 			{
 				name = "Contoured Fowlfeather",
 				amount = 20,
+				id = 193053,
 				type = "ITEM",
 			},
 		},
@@ -37016,16 +37350,19 @@ MM.AddMounts({
 				name = "Dragon Isles Supplies",
 				amount = 750,
 				how = "World quests and weekly caches; sold by Granpap Whiskers at Dragonscale Basecamp",
+				id = 2003,
 				type = "CURRENCY",
 			},
 			{
 				name = "Iridescent Plume",
 				amount = 5,
+				id = 201401,
 				type = "ITEM",
 			},
 			{
 				name = "Contoured Fowlfeather",
 				amount = 20,
+				id = 193053,
 				type = "ITEM",
 			},
 		},
@@ -37049,6 +37386,7 @@ MM.AddMounts({
 			{
 				name = "Bronze Vorquin",
 				cost = "40g",
+				id = 201720,
 				type = "ITEM",
 			},
 		},
@@ -37073,6 +37411,7 @@ MM.AddMounts({
 			{
 				name = "Guardian Vorquin",
 				cost = "80g",
+				id = 198808,
 				type = "ITEM",
 			},
 		},
@@ -37097,6 +37436,7 @@ MM.AddMounts({
 			{
 				name = "Majestic Armored Vorquin",
 				cost = "80g",
+				id = 198811,
 				type = "ITEM",
 			},
 		},
@@ -37121,6 +37461,7 @@ MM.AddMounts({
 			{
 				name = "Swift Armored Vorquin",
 				cost = "80g",
+				id = 198810,
 				type = "ITEM",
 			},
 		},
@@ -37148,6 +37489,7 @@ MM.AddMounts({
 			{
 				name = "Armored Vorquin Leystrider",
 				cost = "80g",
+				id = 198809,
 				type = "ITEM",
 			},
 		},
@@ -37165,6 +37507,20 @@ MM.AddMounts({
 			mapID = 2024,
 			x = 14,
 			y = 49.6,
+		},
+		conditions = {
+			{
+				name = "Terros's Captive Core",
+				amount = 1,
+				id = 195502,
+				type = "ITEM",
+			},
+			{
+				name = "Eye of the Vengeful Hurricane",
+				amount = 1,
+				id = 195496,
+				type = "ITEM",
+			},
 		},
 		effort = 3,
 	},
@@ -37186,6 +37542,7 @@ MM.AddMounts({
 				name = "Elemental Overflow",
 				amount = 2000,
 				how = "Primal Storm invasions and storm-touched rares; sold by Mythressa in Valdrakken",
+				id = 2118,
 				type = "CURRENCY",
 			},
 		},
@@ -37268,12 +37625,8 @@ MM.AddMounts({
 				name = "Magmote",
 				amount = 1000,
 				how = "Gather Magmotes in Zaralek Cavern; sold by Dealer Vexil at the Smoldering Perch after The Shadow of His Wings",
+				id = 202173,
 				type = "ITEM",
-			},
-			{
-				name = "Magmotes",
-				amount = 1000,
-				type = "CURRENCY",
 			},
 		},
 		effort = 3,
@@ -37344,6 +37697,7 @@ MM.AddMounts({
 				name = "Dragon Isles Supplies",
 				amount = 800,
 				how = "World quests and weekly caches across the Dragon Isles; sold by Harlowe Marl in Loamm",
+				id = 2003,
 				type = "CURRENCY",
 			},
 		},
@@ -37367,12 +37721,8 @@ MM.AddMounts({
 				name = "Coveted Bauble",
 				amount = 400,
 				how = "Trade Unearthed Fragrant Coins from Zaralek Cavern events to Spinsoa; sold by Saccratros in Loamm",
+				id = 204727,
 				type = "ITEM",
-			},
-			{
-				name = "Coveted Baubles",
-				amount = 400,
-				type = "CURRENCY",
 			},
 		},
 		effort = 3,
@@ -37395,12 +37745,8 @@ MM.AddMounts({
 				name = "Coveted Bauble",
 				amount = 100,
 				how = "Trade Unearthed Fragrant Coins from Zaralek Cavern events to Spinsoa; sold by Saccratros in Loamm",
+				id = 204727,
 				type = "ITEM",
-			},
-			{
-				name = "Coveted Baubles",
-				amount = 100,
-				type = "CURRENCY",
 			},
 		},
 		effort = 3,
@@ -37810,11 +38156,7 @@ MM.AddMounts({
 				name = "Dream Infusion",
 				amount = 1,
 				how = "Fill an Emerald Bounty's 7,000-energy bar (once daily) for a Dream Infusion; sold by Elianna in the Emerald Dream",
-				type = "ITEM",
-			},
-			{
-				name = "Dream Infusion",
-				amount = 1,
+				id = 2777,
 				type = "CURRENCY",
 			},
 		},
@@ -37838,11 +38180,7 @@ MM.AddMounts({
 				name = "Dream Infusion",
 				amount = 1,
 				how = "Fill an Emerald Bounty's 7,000-energy bar (once daily) for a Dream Infusion; sold by Elianna in the Emerald Dream",
-				type = "ITEM",
-			},
-			{
-				name = "Dream Infusion",
-				amount = 1,
+				id = 2777,
 				type = "CURRENCY",
 			},
 		},
@@ -37866,11 +38204,7 @@ MM.AddMounts({
 				name = "Dream Infusion",
 				amount = 1,
 				how = "Fill an Emerald Bounty's 7,000-energy bar (once daily) for a Dream Infusion; sold by Elianna in the Emerald Dream",
-				type = "ITEM",
-			},
-			{
-				name = "Dream Infusion",
-				amount = 1,
+				id = 2777,
 				type = "CURRENCY",
 			},
 		},
@@ -37894,11 +38228,7 @@ MM.AddMounts({
 				name = "Dream Infusion",
 				amount = 1,
 				how = "Fill an Emerald Bounty's 7,000-energy bar (once daily) for a Dream Infusion; sold by Elianna in the Emerald Dream",
-				type = "ITEM",
-			},
-			{
-				name = "Dream Infusion",
-				amount = 1,
+				id = 2777,
 				type = "CURRENCY",
 			},
 		},
@@ -37922,11 +38252,7 @@ MM.AddMounts({
 				name = "Dream Infusion",
 				amount = 1,
 				how = "Fill an Emerald Bounty's 7,000-energy bar (once daily) for a Dream Infusion; sold by Elianna in the Emerald Dream",
-				type = "ITEM",
-			},
-			{
-				name = "Dream Infusion",
-				amount = 1,
+				id = 2777,
 				type = "CURRENCY",
 			},
 		},
@@ -37950,11 +38276,7 @@ MM.AddMounts({
 				name = "Dream Infusion",
 				amount = 1,
 				how = "Fill an Emerald Bounty's 7,000-energy bar (once daily) for a Dream Infusion; sold by Elianna in the Emerald Dream",
-				type = "ITEM",
-			},
-			{
-				name = "Dream Infusion",
-				amount = 1,
+				id = 2777,
 				type = "CURRENCY",
 			},
 		},
@@ -37986,6 +38308,7 @@ MM.AddMounts({
 				name = "Seedbloom",
 				amount = 1,
 				how = "Seedblooms come from Emerald Bounty plantings and Dream Wardens rewards",
+				id = 211376,
 				type = "ITEM",
 			},
 		},
@@ -38017,6 +38340,7 @@ MM.AddMounts({
 				name = "Seedbloom",
 				amount = 1,
 				how = "Seedblooms come from Emerald Bounty plantings and Dream Wardens rewards",
+				id = 211376,
 				type = "ITEM",
 			},
 		},
@@ -38048,6 +38372,7 @@ MM.AddMounts({
 				name = "Seedbloom",
 				amount = 1,
 				how = "Seedblooms come from Emerald Bounty plantings and Dream Wardens rewards",
+				id = 211376,
 				type = "ITEM",
 			},
 		},
@@ -38079,6 +38404,7 @@ MM.AddMounts({
 				name = "Dragon Isles Supplies",
 				amount = 1200,
 				how = "World quests and weekly caches across the Dragon Isles; sold by Moon Priestess Lasara",
+				id = 2003,
 				type = "CURRENCY",
 			},
 		},
@@ -38565,6 +38891,7 @@ MM.AddMounts({
 				name = "Residual Memories",
 				amount = 20000,
 				how = "Radiant Echoes memory events in Dustwallow Marsh, Dragonblight and Searing Gorge; sold by Remembrancer Amuul in Dalaran",
+				id = 3089,
 				type = "CURRENCY",
 			},
 		},
@@ -38588,6 +38915,7 @@ MM.AddMounts({
 				name = "Residual Memories",
 				amount = 20000,
 				how = "Radiant Echoes memory events in Dustwallow Marsh, Dragonblight and Searing Gorge; sold by Remembrancer Amuul in Dalaran",
+				id = 3089,
 				type = "CURRENCY",
 			},
 		},
@@ -38659,6 +38987,7 @@ MM.AddMounts({
 			{
 				name = "Timewarped Badge",
 				amount = 5000,
+				id = 1166,
 				type = "CURRENCY",
 			},
 		},
@@ -41856,6 +42185,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Awakening the Dragonflight Raids",
+				id = 19574,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -41874,6 +42204,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Into the Storm",
+				id = 16492,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -42065,7 +42396,8 @@ MM.AddMounts({
 		source = "Reward from the achievement Que Zara(lek), Zara(lek).",
 		conditions = {
 			{
-				name = "Que Zara",
+				name = "Que Zara(lek), Zara(lek)",
+				id = 17785,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -42085,6 +42417,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Whodunnit?",
+				id = 18646,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -42299,6 +42632,7 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Heirloom Hoarder",
+				id = 9909,
 				type = "ACHIEVEMENT",
 			},
 		},

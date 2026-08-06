@@ -131,6 +131,10 @@ local function buildPanel()
 	check("Alert me when a needed rare is up nearby", "rareAlert",
 		"Reads the game's own vignette markers, so it fires before you see the rare.")
 	check("Drop a waypoint on alerted rares", "rareAlertWaypoint", nil, 16)
+	check("Play the alert even if the game is muted", "rareAlertForceAudible",
+		"Raises the master volume, the global sound switch and the play-while-"
+		.. "alt-tabbed setting for the length of the alert, then puts all three "
+		.. "back exactly as they were. Nothing else is touched.", 16)
 	check("On entering a zone, list what's farmable there", "zoneAlert",
 		"Uncollected mounts in the zone you just entered, rarest first.")
 	check("Open it whenever I enter a zone that has mounts", "zoneAlertAutoOpen",

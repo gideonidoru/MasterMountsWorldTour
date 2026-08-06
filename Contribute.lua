@@ -79,6 +79,15 @@ local GAPS = {
 		-- findable under a hundred and fifty that are not.
 		test = function(rec)
 			if not rec.obtainable or rec.zone or rec.vendor then return false end
+			-- Records that say why they have no location. The field was
+			-- already on 211 records and nothing read it -- the category list
+			-- happened to cover every one, so it looked like it was working.
+			-- A dozen records sit in ordinary categories and still have no
+			-- destination: sold in every capital at once, granted by an
+			-- achievement, or inside a garrison only that player can enter.
+			-- Each of those is marked individually with its reason rather than
+			-- swept up by a second category rule, which would hide real gaps.
+			if rec.noLocationReason then return false end
 			return not PLACELESS[rec.category]
 		end,
 	},
@@ -113,11 +122,29 @@ local GAPS = {
 		-- coverage more than doubled while this number moved by three, which
 		-- reads as data that did not land. It had landed; the counter was
 		-- looking at the wrong thing.
+		--
+		-- A CRAFTED MOUNT IS NOT SOLD.
+		--
+		-- PROFESSION was in this list, so thirty-two crafted mounts were asked
+		-- for a vendor price that cannot exist. Nobody sells a Sky Golem; an
+		-- Engineer makes one, and what it costs is a reagent list. This gap
+		-- exports a template for someone to fill in, so leaving crafts in it
+		-- invited exactly the invented reagent lists Crafting.lua refuses to
+		-- write.
+		--
+		-- They are not untracked. Crafting harvests real reagents from
+		-- C_TradeSkillUI the first time a profession window is opened, and the
+		-- coverage report counts that under "harvested reagents" -- a number
+		-- that goes up by opening a window rather than by guessing.
 		test = function(rec)
 			if not rec.obtainable then return false end
 			local priced = rec.category == "VENDOR" or rec.category == "CURRENCY"
-				or rec.category == "TIMEWALKING" or rec.category == "PROFESSION"
+				or rec.category == "TIMEWALKING"
 			if not priced then return false end
+			-- Categories are where a player looks for a mount, not a statement
+			-- that it is for sale: a rare drop from a Timewalking boss belongs
+			-- under Timewalking and has no price at all.
+			if rec.unpriced then return false end
 			if (rec.source or ""):lower():find("gold") then return false end
 			-- Gold is a field rather than a condition.
 			if rec.goldCost then return false end

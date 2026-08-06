@@ -36,15 +36,6 @@ local SOUND_CANDIDATES = {
 	-- A rare alert competes with combat, music and whatever else is on screen.
 	-- Polite UI chimes lose that fight, so the list favours sounds that are
 	-- deliberately hard to ignore over ones that are pleasant.
-	-- THE MURLOC IS BACK, AND IT IS OURS.
-	--
-	-- It stayed out because SOUNDKIT publishes no MURLOC_* entry and the game's
-	-- own cry exists only as a raw FileDataID -- guessing one is what produced
-	-- six menu entries that all played the same fallback. None of that applies
-	-- to a file we ship: PlaySoundFile takes a PATH for addon audio, and the
-	-- FileDataID requirement is on the game's own assets, not ours.
-	--
-	-- Declared below the kit-built list because it needs no kit at all.
 	{ key = "queue",   label = "Queue Pop",    kits = { "PVPTHROUGHQUEUE", "UI_PVP_QUEUE_POP",
 	                                                   "UI_BATTLEGROUND_COUNTDOWN_FINISHED" } },
 	{ key = "flare",   label = "Air Horn",     kits = { "UI_BATTLEGROUND_COUNTDOWN_TIMER",
@@ -72,6 +63,21 @@ do
 	if #RA.SOUNDS == 0 then
 		RA.SOUNDS[1] = { key = "raid", label = "Raid Warning", id = 8959 }
 	end
+	-- A SHIPPED FILE, WHICH IS WHY IT NEEDS NO KIT.
+	--
+	-- The murloc stayed out of the list for a long time because SOUNDKIT
+	-- publishes no MURLOC_* entry and the game's own cry exists only as a raw
+	-- FileDataID -- guessing one is what produced six menu entries that all
+	-- played the same fallback. None of that applies to a file in the addon
+	-- folder: PlaySoundFile takes a PATH, and the FileDataID requirement is on
+	-- the game's own assets.
+	--
+	-- The file is mastered for the job rather than used as found: leading
+	-- silence removed so the cry lands the instant the alert fires, and levels
+	-- evened out so the quiet half is as audible as the loud half. A third of a
+	-- second of dead air at the front of an alert is a third of a second the
+	-- player spends not knowing.
+	--
 	-- FIRST IN THE LIST, because first is the default: RA.PlaySound falls back
 	-- to SOUNDS[1] and the options menu reads the same slot.
 	tinsert(RA.SOUNDS, 1, {
@@ -91,6 +97,85 @@ function RA.AddSoundByID(key, label, fileDataID)
 	RA.SOUNDS[#RA.SOUNDS + 1] = { key = key, label = label, id = fileDataID }
 end
 
+------------------------------------------------------------
+-- Making the alert audible regardless of the sound settings
+------------------------------------------------------------
+-- The Master channel escapes the SFX slider, and that is as far as a channel
+-- can get you. Three settings sit BELOW it and silence everything:
+--
+--   Sound_EnableAllSound              sound switched off entirely
+--   Sound_MasterVolume                the master slider, including 0
+--   Sound_EnableSoundWhenGameIsInBG   alt-tabbed, which is exactly when an
+--                                     audible alert is worth the most
+--
+-- So the alert raises those three for the length of the clip and puts them
+-- back. Nothing else is touched: music, ambience and dialogue keep whatever
+-- the player chose, and the SFX slider is not involved because the Master
+-- channel never asked it.
+local FORCED = { "Sound_EnableAllSound", "Sound_MasterVolume", "Sound_EnableSoundWhenGameIsInBG" }
+local FORCE_TO = {
+	Sound_EnableAllSound = "1",
+	Sound_MasterVolume = "1",
+	Sound_EnableSoundWhenGameIsInBG = "1",
+}
+
+-- Longest clip in the list, plus margin. Restoring early cuts the alert off
+-- mid-cry, which is worse than holding the volume up a moment too long.
+local FORCE_SECONDS = 3
+
+local restoreTimer
+
+-- THE SAVED VALUES LIVE IN SAVEDVARIABLES, NOT IN A LOCAL.
+--
+-- Raising someone's master volume and then losing the original because the
+-- client crashed, or they alt-F4'd, or a UI error stopped the timer, would
+-- leave the game permanently loud with no clue why. Written to disk before the
+-- change and cleared after it, the next login can always finish the job.
+local function restoreSound()
+	restoreTimer = nil
+	local saved = MM.db and MM.db.rareAlertCVarRestore
+	if not saved then return end
+	for _, cv in ipairs(FORCED) do
+		if saved[cv] ~= nil then pcall(SetCVar, cv, saved[cv]) end
+	end
+	MM.db.rareAlertCVarRestore = nil
+end
+RA.RestoreSound = restoreSound
+
+-- Returns true if anything was actually changed.
+local function forceAudible()
+	if not (GetCVar and SetCVar) then return false end
+	-- Already forced by an alert that has not finished: keep the ORIGINAL
+	-- values and just push the restore further out. Re-reading now would
+	-- capture our own forced settings and make them permanent.
+	if MM.db.rareAlertCVarRestore then
+		if restoreTimer then restoreTimer:Cancel() end
+		restoreTimer = C_Timer.NewTimer(FORCE_SECONDS, restoreSound)
+		return true
+	end
+	local saved, changed = {}, false
+	for _, cv in ipairs(FORCED) do
+		local ok, cur = pcall(GetCVar, cv)
+		if ok and cur ~= nil and cur ~= FORCE_TO[cv] then
+			saved[cv] = cur
+			changed = true
+		end
+	end
+	if not changed then return false end
+	MM.db.rareAlertCVarRestore = saved
+	for cv in pairs(saved) do pcall(SetCVar, cv, FORCE_TO[cv]) end
+	restoreTimer = C_Timer.NewTimer(FORCE_SECONDS, restoreSound)
+	return true
+end
+RA.ForceAudible = forceAudible
+
+-- Anything left forced by a session that ended mid-alert gets put back before
+-- the player notices. Deliberately at login rather than on the next alert:
+-- waiting for another rare could be days.
+MM:On("MM_LOGIN", function()
+	if MM.db and MM.db.rareAlertCVarRestore then restoreSound() end
+end)
+
 -- Play one entry. Returns the label that actually played, or nil if nothing did.
 --
 -- The return value is checked rather than pcall alone: PlaySound answers
@@ -101,6 +186,9 @@ function RA.PlaySound(key)
 	for _, s in ipairs(RA.SOUNDS) do if s.key == key then chosen = s break end end
 	chosen = chosen or RA.SOUNDS[1]
 	if not chosen then return nil end
+	-- Before the play call, never after: the channel volume is read when the
+	-- sound starts, so raising it a frame later changes nothing.
+	if MM.db.rareAlertForceAudible ~= false then forceAudible() end
 	-- A shipped FILE plays by path; a game sound plays by id. Two different
 	-- calls, and using the wrong one on either is silent rather than an error,
 	-- which is how this went unnoticed the last time.
@@ -512,15 +600,15 @@ function RA.Alert(npcName, hit, mapPos, force)
 		alertFrame.targetButton:SetAlpha(0.5)
 	end
 
-	-- On the Master channel deliberately.
+	-- On the Master channel deliberately, and loud on purpose.
 	--
 	-- The old RAID_WARNING ping went out on the default channel, so it rode the
 	-- player's SFX slider and vanished under combat noise -- which is exactly
-	-- when a rare alert matters. Master ignores that slider, which is why the
-	-- competition sounds louder despite using the same engine. A war horn also
-	-- carries further than a UI blip: it has to be identifiable without looking.
-	-- Always on Master: the SFX slider must not be able to mute this in combat,
-	-- which is exactly when a rare alert matters most.
+	-- when a rare alert matters. Master ignores that slider. What Master does
+	-- NOT ignore is the master volume, the global sound switch and the
+	-- alt-tabbed setting, so PlaySound raises those three for the length of the
+	-- clip and hands them straight back. A rare is up for minutes; an alert
+	-- that loses to a muted client is an alert that did not happen.
 	if MM.db.rareAlertSound ~= false then
 		RA.lastSound = RA.PlaySound(MM.db.rareAlertSoundKey) or "NONE PLAYED"
 	end

@@ -178,7 +178,13 @@ end
 --
 -- Returns true only when a condition was actually found and changed, so a
 -- generated file cannot quietly annotate nothing after a record is renamed.
-function MM.SetConditionID(mountName, kind, condName, id)
+--
+-- `properName` is optional and corrects the wording at the same time. Some
+-- conditions were written the way a person says the requirement rather than
+-- the way the game titles it -- "Keystone Myth" for "Midnight Keystone Myth:
+-- Season 1". The id is what makes the requirement checkable; the title is what
+-- the player reads in the tooltip, and the two should agree.
+function MM.SetConditionID(mountName, kind, condName, id, properName)
 	local rec = MM.DBByName[mountName:lower()]
 	if not (rec and rec.conditions and id) then return false end
 	local want = condName and condName:lower()
@@ -186,6 +192,32 @@ function MM.SetConditionID(mountName, kind, condName, id)
 		if cond.type == kind and not cond.id
 			and cond.name and cond.name:lower() == want then
 			cond.id = id
+			if properName then cond.name = properName end
+			return true
+		end
+	end
+	return false
+end
+
+-- The same requirement under two ids, one per side.
+--
+-- Some things exist twice: the collection achievements, the Argent Tournament
+-- and Outland quartermaster mounts, anything a faction sells through its own
+-- vendor. Both copies carry the same name, so "the name is not unique" is the
+-- wrong conclusion -- there are two answers and which one applies depends on
+-- who is asking.
+--
+-- Recorded rather than resolved here because the data layer runs before the
+-- player's faction is known. ResolveFactionVariants picks one at login, which
+-- is the same moment it promotes faction-specific sources.
+function MM.SetConditionIDByFaction(mountName, kind, condName, allianceID, hordeID)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions and allianceID and hordeID) then return false end
+	local want = condName and condName:lower()
+	for _, cond in ipairs(rec.conditions) do
+		if cond.type == kind and not cond.id
+			and cond.name and cond.name:lower() == want then
+			cond.idAlliance, cond.idHorde = allianceID, hordeID
 			return true
 		end
 	end
@@ -238,6 +270,52 @@ function MM.SetNpcID(npcName, id)
 		end
 	end
 	return n
+end
+
+-- Remove one requirement by type and NAME.
+--
+-- For the case where a record carries the SAME cost twice under two spellings
+-- -- an ITEM condition naming the token and a CURRENCY condition naming its
+-- plural. Both charge, so the mount reads as costing double, and neither
+-- OverrideMount nor SetConditionID can help: merging keys them apart, and
+-- filling in the second one's id only makes the duplicate look deliberate.
+--
+-- Returns true only when something was actually removed, so a generated file
+-- cannot quietly drop nothing after a record is renamed.
+function MM.DropCondition(mountName, kind, condName)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions) then return false end
+	local want = condName and condName:lower()
+	for i, cond in ipairs(rec.conditions) do
+		if cond.type == kind and cond.name and cond.name:lower() == want then
+			tremove(rec.conditions, i)
+			return true
+		end
+	end
+	return false
+end
+
+-- Correct a requirement filed under the wrong kind, in place.
+--
+-- Written for costs recorded as CURRENCY that are really items. The client
+-- resolves a nameless currency against the player's own currency list, so a
+-- CURRENCY condition naming something that is not a currency can never resolve
+-- -- it reads as "you have none" forever, whatever is in the bags. Retyped to
+-- ITEM with its item id, the same requirement becomes answerable.
+--
+-- Amount and how-text are left alone: only the kind was wrong.
+function MM.RetypeCondition(mountName, fromKind, condName, toKind, id)
+	local rec = MM.DBByName[mountName:lower()]
+	if not (rec and rec.conditions) then return false end
+	local want = condName and condName:lower()
+	for _, cond in ipairs(rec.conditions) do
+		if cond.type == fromKind and cond.name and cond.name:lower() == want then
+			cond.type = toKind
+			if id then cond.id = id end
+			return true
+		end
+	end
+	return false
 end
 
 -- Escape hatch for a record whose old requirements are genuinely wrong
@@ -315,6 +393,17 @@ function MM.ResolveFactionVariants(playerFaction)
 				else
 					rec[k] = v
 				end
+			end
+		end
+		-- Requirements that exist twice, once per side. Only one of the pair
+		-- belongs to this player, and until it is chosen the condition carries
+		-- no id at all -- which is the state where the client cannot be asked
+		-- whether the requirement has been met.
+		for _, cond in ipairs(rec.conditions or {}) do
+			if not cond.id then
+				local pick = (playerFaction == "Alliance") and cond.idAlliance
+					or (playerFaction == "Horde") and cond.idHorde
+				if pick then cond.id = pick end
 			end
 		end
 	end

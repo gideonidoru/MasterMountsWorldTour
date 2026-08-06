@@ -285,6 +285,11 @@ local accountDefaults = {
 	groupSync = { share = "none" }, -- opt-in collection sharing: none/group
 	rareAlert = true,         -- pop an alert when a needed rare is up
 	rareAlertWaypoint = true, -- and drop a waypoint on it
+	-- Lift the master volume for the length of the alert and put it back. On by
+	-- default: someone who turned rare alerts ON wants to hear them, and a
+	-- muted client is the one case where a working alert is indistinguishable
+	-- from a broken one.
+	rareAlertForceAudible = true,
 	lockouts = {},            -- account-wide per-encounter save roster
 	alts = {},                -- per-character progress snapshots
 	-- chat announcements when a mount is collected (opt-in; public channels
