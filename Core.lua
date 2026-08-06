@@ -15,7 +15,7 @@ _G.MasterMounts = MM
 -- ADDON_NAME is the folder name from WoW itself, so this cannot drift again.
 MM.MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\"
 
-MM.VERSION = "1.6.0"
+MM.VERSION = "1.0.0"
 MM.PREFIX = "|cff33c1ffMaster Mounts|r: "
 
 function MM:Print(msg, ...)

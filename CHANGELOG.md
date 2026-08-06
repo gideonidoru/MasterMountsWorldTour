@@ -1,6 +1,12 @@
 # Changelog
 
-## 1.6.0
+## 1.0.0 — unreleased
+
+Everything below happened before first publish. The version stays 1.0.0
+until it actually ships; the interim numbers were bookkeeping noise, not
+releases anyone could have installed.
+
+### 1.6.0
 
 **The travel network was 91 disconnected islands.**
 
@@ -21,7 +27,7 @@ node, not per pair.
 
 `/mm routertest` now reports recorded and generated connections separately.
 
-## 1.5.0
+### 1.5.0
 
 **The measured flight times were never actually being used.** `/mm routertest`
 reported `direct 8 · taxi 0 · network 0` -- eight legs, zero uses -- which is
@@ -42,7 +48,7 @@ Two naming faults, both mine:
 Also removed a duplicate flight-point dataset I had built without noticing that
 `Nav/FlightPointData.lua` already shipped the same 813 points.
 
-## 1.4.0
+### 1.4.0
 
 **Chat discipline, and a Timewalking mount that was telling you to wait for the
 wrong week.**
@@ -64,7 +70,7 @@ wrong week.**
   instead of three. The MountsRarity notice is said once, ever, not at every
   login.
 
-## 1.3.0
+### 1.3.0
 
 - **`/mm routertest` is now verbose about travel data.** It answers the three
   questions that fail differently: did the data load, is it reachable by name,
@@ -76,7 +82,7 @@ wrong week.**
   the taxi graph alone. Without it the comparison columns contain each other and
   cannot show which dataset is doing the work.
 
-## 1.2.0
+### 1.2.0
 
 Completes the travel-data work in 1.1.0 after a full re-audit of both sources.
 
@@ -94,7 +100,7 @@ Completes the travel-data work in 1.1.0 after a full re-audit of both sources.
   reachable by name, and that no edge is priced at zero. All three failures
   above were silent; none of them errored.
 
-## 1.1.0
+### 1.1.0
 
 **Routing now runs on measured times instead of straight-line guesses.**
 
