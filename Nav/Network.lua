@@ -221,16 +221,25 @@ end
 -- Minutes from one world position to another using the network, including the
 -- ground legs at each end. nil when the network cannot connect them, so the
 -- caller falls back to its own estimate rather than being handed a wrong number.
+-- Second return on failure is the REASON, not just nil.
+--
+-- "network -" told me nothing three times running and I guessed wrong twice.
+-- A nil here has four distinct causes and they need different fixes: no node
+-- near the start, none near the end, both ends resolving to the same node, or
+-- genuinely no path between them. The diagnostic prints whichever it was.
 function NW.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
 	build()
-	if not (graph and fromMapID and toMapID) then return nil end
+	if not (graph and fromMapID and toMapID) then return nil, "no graph or map" end
 	local depart = NW.Nearest(fromMapID, fromX, fromY)
 	local arrive = NW.Nearest(toMapID, toX, toY)
-	if not (depart and arrive) then return nil end
-	if depart.key == arrive.key then return nil end
+	if not depart then return nil, ("no node on map %s"):format(tostring(fromMapID)) end
+	if not arrive then return nil, ("no node on map %s"):format(tostring(toMapID)) end
+	if depart.key == arrive.key then return nil, "same node both ends" end
 
 	local secs, path = NW.NodeSeconds(depart.key, arrive.key)
-	if not secs then return nil end
+	if not secs then
+		return nil, ("no path %s -> %s"):format(depart.key, arrive.key)
+	end
 
 	local ypm = MM.YARDS_PER_MINUTE or 1500
 	local legs = 0

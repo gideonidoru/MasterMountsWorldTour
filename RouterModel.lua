@@ -559,19 +559,26 @@ function RM.TravelReport()
 			end
 			local taxi = MM.Taxi and MM.Taxi.TravelMinutes
 				and MM.Taxi.TravelMinutes(a.mapID, a.x, a.y, b.mapID, b.x, b.y, true)
-			local net = MM.Network and MM.Network.TravelMinutes
-				and MM.Network.TravelMinutes(a.mapID, a.x, a.y, b.mapID, b.x, b.y)
+			local net, netWhy
+			if MM.Network and MM.Network.TravelMinutes then
+				net, netWhy = MM.Network.TravelMinutes(a.mapID, a.x, a.y,
+					b.mapID, b.x, b.y)
+			end
 			local best, who = direct, "direct"
 			if taxi and (not best or taxi < best) then best, who = taxi, "flight" end
 			if net and (not best or net < best) then best, who = net, "network" end
 			if best then
 				wins[who] = (wins[who] or 0) + 1
 				shown = shown + 1
-				w("   %-26s direct %s · taxi %s · network %s  -> |cff40d860%s|r",
-					((a.label or (a.entry and a.entry.name) or "?"):sub(1, 26)),
+				w("   %-24s map %-5s direct %s · taxi %s · network %s -> |cff40d860%s|r",
+					((a.label or (a.entry and a.entry.name) or "?"):sub(1, 24)),
+					tostring(a.mapID),
 					direct and ("%.1fm"):format(direct) or "  -  ",
 					taxi and ("%.1fm"):format(taxi) or "  -  ",
 					net and ("%.1fm"):format(net) or "  -  ", who)
+				-- Why the network declined, when it did. Four different causes
+				-- need four different fixes and "-" distinguishes none of them.
+				if not net and netWhy then w("      network: %s", netWhy) end
 			end
 		end
 	end
