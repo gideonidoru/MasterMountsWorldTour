@@ -624,7 +624,7 @@ function RM.TravelReport()
 	w("")
 	w("  Live legs, priced every way. WON marks what the router will use:")
 	local U, ypm = MM.Util, MM.YARDS_PER_MINUTE or 1500
-	local wins = { flight = 0, network = 0, direct = 0 }
+	local wins = { flight = 0, network = 0, direct = 0, journey = 0 }
 	local shown = 0
 	for i = 1, math.min(#R.route - 1, 8) do
 		local a, b = R.route[i], R.route[i + 1]
@@ -647,21 +647,47 @@ function RM.TravelReport()
 				net, netWhy = MM.Network.TravelMinutes(a.mapID, a.x, a.y,
 					b.mapID, b.x, b.y, bInst, aInst)
 			end
+			-- THE ONE THAT ACTUALLY DECIDES.
+			--
+			-- This report compared the taxi table and the network module and
+			-- declared "neither dataset won a leg -- suspicious", while the
+			-- route it was describing was full of real multi-leg journeys. It
+			-- was not measuring the router. Journey.Plan is what travelMinutes
+			-- consults, and it chains every mode together; leaving it out made
+			-- the diagnostic contradict the thing it was diagnosing, which is
+			-- worse than reporting nothing.
+			local journey, jlegs
+			if MM.Journey and MM.Journey.Plan and C_Map and C_Map.GetMapInfo then
+				local fi, ti = C_Map.GetMapInfo(a.mapID), C_Map.GetMapInfo(b.mapID)
+				if fi and ti and fi.name and ti.name then
+					journey, jlegs = MM.Journey.Plan(fi.name, a.x, a.y,
+						ti.name, b.x, b.y, direct)
+				end
+			end
+
 			local best, who = direct, "direct"
 			if taxi and (not best or taxi < best) then best, who = taxi, "flight" end
 			if net and (not best or net < best) then best, who = net, "network" end
+			if journey and (not best or journey < best) then best, who = journey, "journey" end
 			if best then
 				wins[who] = (wins[who] or 0) + 1
 				shown = shown + 1
-				w("   %-24s map %-5s direct %s · taxi %s · network %s -> |cff40d860%s|r",
+				w("   %-24s map %-5s direct %s · taxi %s · network %s · route %s -> |cff40d860%s|r",
 					((a.label or (a.entry and a.entry.name) or "?"):sub(1, 24)),
 					tostring(a.mapID),
 					direct and ("%.1fm"):format(direct) or "  -  ",
 					taxi and ("%.1fm"):format(taxi) or "  -  ",
-					net and ("%.1fm"):format(net) or "  -  ", who)
+					net and ("%.1fm"):format(net) or "  -  ",
+					journey and ("%.1fm"):format(journey) or "  -  ", who)
 				-- Why the network declined, when it did. Four different causes
 				-- need four different fixes and "-" distinguishes none of them.
 				if not net and netWhy then w("      network: %s", netWhy) end
+				-- And what the winning journey actually was, when it won. A
+				-- number with no route behind it cannot be checked by a human.
+				if who == "journey" and jlegs and MM.Journey.Describe then
+					local desc = MM.Journey.Describe(jlegs)
+					if desc then w("      route: %s", desc) end
+				end
 			end
 		end
 	end
@@ -669,10 +695,12 @@ function RM.TravelReport()
 		w("   (no comparable legs -- stops lack coordinates)")
 	else
 		w("")
-		w("  Winner across %d legs: direct %d · taxi %d · network %d",
-			shown, wins.direct or 0, wins.flight or 0, wins.network or 0)
-		if (wins.network or 0) == 0 and (wins.flight or 0) == 0 then
-			w("  |cffff9a3cNeither dataset won a leg here. That is possible on a")
+		w("  Winner across %d legs: direct %d · taxi %d · network %d · route %d",
+			shown, wins.direct or 0, wins.flight or 0, wins.network or 0,
+			wins.journey or 0)
+		if (wins.network or 0) == 0 and (wins.flight or 0) == 0
+			and (wins.journey or 0) == 0 then
+			w("  |cffff9a3cNo travel dataset won a leg here. That is possible on a")
 			w("  short local route, and suspicious on a long one.|r")
 		end
 	end
