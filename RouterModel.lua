@@ -283,6 +283,11 @@ local function observe(sample)
 			need = need,
 			arrive = stop.arriveBy and (stop.arriveBy.name or stop.arriveBy.key) or "fly",
 			travel = stop.travelMinutes or 0,
+			-- The OTHER half of the cost: what the goal itself takes once you
+			-- are standing there. A dungeon clear times the expected number of
+			-- attempts, a reputation grind, a currency total. Travel alone
+			-- makes a 3-minute flight to a 40-hour rep look cheap.
+			work = stop.workMinutes or 0,
 			access = rec and rec.access or nil,
 		}
 	end
@@ -429,7 +434,14 @@ function RM.Format(run)
 				note = "<< zone centre only, no x/y"
 			end
 			w("    %2d. %-30s -> %-26s %s", st.order, st.name, st.place, note)
-			w("        arrive: %-24s %.0f min%s", st.arrive, st.travel,
+			-- travel + work = total, stated rather than implied. The two are
+			-- different kinds of cost and the router weighs them differently;
+			-- showing only travel hid the number that usually dominates.
+			w("        arrive: %-22s travel %.0f + do %s = %s%s",
+				st.arrive, st.travel,
+				st.work > 0 and ("%.0f"):format(st.work) or "?",
+				st.work > 0 and (MM.Util.FormatSeconds((st.travel + st.work) * 60))
+					or ("%.0f min"):format(st.travel),
 				st.mounts > 1 and (" · %d mounts here"):format(st.mounts) or "")
 			if st.access then w("        access: %s", st.access) end
 		end
