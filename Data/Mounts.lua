@@ -6809,6 +6809,11 @@ MM.AddMounts({
 				name = "Archaeology",
 				type = "PROFESSION",
 			},
+			{
+				amount = 100,
+				id = 393,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		notes = "Fossil fragments are common on Eastern Kingdoms/Kalimdor dig sites; the rare solve appears with average luck within days-weeks of digging.",
@@ -7947,6 +7952,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Complete the cloud serpent training questline; one serpent is a free quest reward, the others are purchasable.",
+		goldCost = 3000,
 	},
 	{
 		name = "Golden Cloud Serpent",
@@ -7973,6 +7979,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 3000,
 	},
 	{
 		name = "Jade Cloud Serpent",
@@ -7999,6 +8006,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 3000,
 	},
 	{
 		name = "Green Shado-Pan Riding Tiger",
@@ -8022,6 +8030,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 1500,
 	},
 	{
 		name = "Blue Shado-Pan Riding Tiger",
@@ -8045,6 +8054,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 500,
 	},
 	{
 		name = "Red Shado-Pan Riding Tiger",
@@ -8068,6 +8078,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 2500,
 	},
 	{
 		name = "Azure Riding Crane",
@@ -8114,6 +8125,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 500,
 	},
 	{
 		name = "Golden Riding Crane",
@@ -8155,6 +8167,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 2500,
 	},
 	{
 		name = "Regal Riding Crane",
@@ -8196,6 +8209,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 1500,
 	},
 	{
 		name = "Amber Scorpion",
@@ -8219,6 +8233,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 10000,
 	},
 	{
 		name = "Golden Primal Direhorn",
@@ -8245,6 +8260,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Alliance counterpart of the Crimson Primal Direhorn.",
+		goldCost = 3000,
 	},
 	{
 		name = "Crimson Primal Direhorn",
@@ -8271,6 +8287,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Horde counterpart of the Golden Primal Direhorn.",
+		goldCost = 3000,
 	},
 	{
 		name = "Azure Water Strider",
@@ -8295,6 +8312,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Famous water-walking mount; since BfA the water walking comes from the Anglers' Water Striders mount equipment rather than being innate.",
+		goldCost = 950,
 	},
 	{
 		name = "Red Flying Cloud",
@@ -8345,6 +8363,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Lorewalkers rep is earned quickly by collecting Pandaria lore objects in one session.",
+		goldCost = 600,
 		solo = false,
 	},
 	{
@@ -12320,6 +12339,7 @@ MM.AddMounts({
 		attempts = "NONE",
 		effort = 4,
 		notes = "Talon's Vengeance rep comes from Marks of Prey, earned by defeating enemy players while using the falcosaur PvP items; slow grind.",
+		goldCost = 10000,
 		solo = false,
 	},
 	{
@@ -14335,6 +14355,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "BfA reputations benefit from repeated 100% account-wide rep event buffs; no paragon mounts exist in BfA.",
+		goldCost = 12500,
 	},
 	{
 		name = "Expedition Bloodswarmer",
@@ -14359,6 +14380,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 12500,
 	},
 	{
 		name = "Alabaster Hyena",
@@ -14382,6 +14404,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 12500,
 	},
 	{
 		name = "Dapple Gray",
@@ -14405,6 +14428,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 10000,
 	},
 	{
 		name = "Smoky Charger",
@@ -14429,6 +14453,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 12500,
 	},
 	{
 		name = "Goldenmane",
@@ -16334,6 +16359,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Revendreth zone reputation; earned via world quests and callings.",
+		goldCost = 30000,
 	},
 	{
 		name = "Inquisition Gargon",
@@ -33352,7 +33378,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
-		goldCost = 1500,
+		goldCost = 1275,
 	},
 	{
 		name = "Brown Riding Goat",
@@ -33380,7 +33406,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
-		goldCost = 1500,
+		goldCost = 425,
 	},
 	{
 		name = "White Riding Goat",
@@ -33408,7 +33434,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
-		goldCost = 1500,
+		goldCost = 2762,
 	},
 	{
 		name = "Grey Riding Yak",
@@ -34254,6 +34280,13 @@ MM.AddMounts({
 			name = "Ashran",
 			x = 50,
 			y = 45,
+		},
+		conditions = {
+			{
+				amount = 5000,
+				id = 823,
+				type = "CURRENCY",
+			},
 		},
 		effort = 3,
 		goldCost = 5000,
@@ -35765,6 +35798,7 @@ MM.AddMounts({
 			y = 32.6,
 		},
 		effort = 3,
+		goldCost = 22800,
 	},
 	{
 		name = "Ren's Stalwart Hound",
@@ -40915,6 +40949,23 @@ MM.AddMounts({
 		category = "PROFESSION",
 		obtainable = true,
 		source = "Assembled with Jumpjet Fusion",
+		conditions = {
+			{
+				amount = 1,
+				id = 209055,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 209781,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 208984,
+				type = "ITEM",
+			},
+		},
 		effort = 4,
 		notes = "Created by combining components rather than dropping whole.",
 		noLocationReason = "Assembled from a multi-step group project -- no single place",
