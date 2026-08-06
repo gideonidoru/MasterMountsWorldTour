@@ -36,10 +36,15 @@ local SOUND_CANDIDATES = {
 	-- A rare alert competes with combat, music and whatever else is on screen.
 	-- Polite UI chimes lose that fight, so the list favours sounds that are
 	-- deliberately hard to ignore over ones that are pleasant.
-	-- No murloc. SOUNDKIT publishes no MURLOC_* entry (confirmed with
-	-- /mm sounds murloc), and the cry only exists as a raw FileDataID. Guessing
-	-- one is what produced six menu entries that all played the same fallback,
-	-- so it stays out until someone supplies a verified id.
+	-- THE MURLOC IS BACK, AND IT IS OURS.
+	--
+	-- It stayed out because SOUNDKIT publishes no MURLOC_* entry and the game's
+	-- own cry exists only as a raw FileDataID -- guessing one is what produced
+	-- six menu entries that all played the same fallback. None of that applies
+	-- to a file we ship: PlaySoundFile takes a PATH for addon audio, and the
+	-- FileDataID requirement is on the game's own assets, not ours.
+	--
+	-- Declared below the kit-built list because it needs no kit at all.
 	{ key = "queue",   label = "Queue Pop",    kits = { "PVPTHROUGHQUEUE", "UI_PVP_QUEUE_POP",
 	                                                   "UI_BATTLEGROUND_COUNTDOWN_FINISHED" } },
 	{ key = "flare",   label = "Air Horn",     kits = { "UI_BATTLEGROUND_COUNTDOWN_TIMER",
@@ -67,6 +72,12 @@ do
 	if #RA.SOUNDS == 0 then
 		RA.SOUNDS[1] = { key = "raid", label = "Raid Warning", id = 8959 }
 	end
+	-- FIRST IN THE LIST, because first is the default: RA.PlaySound falls back
+	-- to SOUNDS[1] and the options menu reads the same slot.
+	tinsert(RA.SOUNDS, 1, {
+		key = "murloc", label = "Murloc",
+		file = "Interface\\AddOns\\MasterMountsWorldTour\\Media\\murloc.mp3",
+	})
 end
 
 -- Add a sound by raw FileDataID. Sounds the client has but SOUNDKIT does not
@@ -90,6 +101,21 @@ function RA.PlaySound(key)
 	for _, s in ipairs(RA.SOUNDS) do if s.key == key then chosen = s break end end
 	chosen = chosen or RA.SOUNDS[1]
 	if not chosen then return nil end
+	-- A shipped FILE plays by path; a game sound plays by id. Two different
+	-- calls, and using the wrong one on either is silent rather than an error,
+	-- which is how this went unnoticed the last time.
+	if chosen.file then
+		local ok, willPlay = pcall(PlaySoundFile, chosen.file, "Master")
+		if ok and willPlay ~= false then return chosen.label end
+		-- A file that will not play must not leave the alert mute. Fall through
+		-- to the next entry, which is a kit sound the client published.
+		local backup = RA.SOUNDS[2]
+		if backup and backup.id then
+			local ok2, w2 = pcall(PlaySound, backup.id, "Master")
+			if ok2 and w2 ~= false then return backup.label end
+		end
+		return nil
+	end
 	local ok, willPlay = pcall(PlaySound, chosen.id, "Master")
 	if ok and willPlay ~= false then return chosen.label end
 	return nil

@@ -3299,6 +3299,31 @@ local function runLogic()
 			:format(flagged, group)
 	end)
 
+	check("The default rare alert actually plays", function()
+		-- Six alert sounds once shared one fallback because the code guessed
+		-- FileDataIDs for game audio. The murloc is a file WE ship, which plays
+		-- by path -- a different call, and silent rather than erroring if the
+		-- wrong one is used. This asserts the file is reachable and the default
+		-- is the one we think it is.
+		local RA = MM.RareAlert
+		if not (RA and RA.SOUNDS and RA.SOUNDS[1]) then return false, "no alert sounds" end
+		local first = RA.SOUNDS[1]
+		if first.key ~= "murloc" then
+			return false, ("default is %q, expected murloc"):format(tostring(first.key))
+		end
+		if not first.file then return false, "murloc has no file path" end
+		-- Ask the client whether it will actually play. willPlay == false means
+		-- the file is missing or the format is not supported, which is exactly
+		-- the failure the old id-guessing produced and nobody could see.
+		if not PlaySoundFile then return nil, "no PlaySoundFile on this client" end
+		local ok, willPlay = pcall(PlaySoundFile, first.file, "Master")
+		if not ok then return false, "PlaySoundFile threw on the shipped file" end
+		if willPlay == false then
+			return false, "the client refused to play " .. first.file
+		end
+		return true, "murloc leads the list and the client accepts the file"
+	end)
+
 	check("Presets are coherent and round-trip", function()
 		-- A preset that does not restore exactly, or that no longer matches
 		-- itself after being applied, silently strands the player on settings
