@@ -30191,6 +30191,13 @@ MM.AddMounts({
 			x = 42.1,
 			y = 58.8,
 		},
+		conditions = {
+			{
+				name = "Master of the Turbulent Timeways V",
+				id = 61463,
+				type = "ACHIEVEMENT",
+			},
+		},
 		altSources = {
 			{
 				name = "Spawn of Vyranoth",
