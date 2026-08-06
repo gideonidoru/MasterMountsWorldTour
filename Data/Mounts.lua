@@ -35647,16 +35647,28 @@ MM.AddMounts({
 	},
 	{
 		name = "Gooey Snailemental",
+		itemID = 192785,
 		expansion = 9,
 		category = "DROP",
 		obtainable = true,
-		source = "Combine 50 Leftover Elemental Slime from Froststone Vault Primal Storm bosses (10.0.7).",
+		source = "Combine 50 Leftover Elemental Slime, 0-5 per kill of the final boss of the Froststone Vault Primal Storm event in The Forbidden Reach.",
 		zone = {
 			name = "The Forbidden Reach",
 			x = 50,
 			y = 50,
 		},
+		acquire = {
+			name = "Leftover Elemental Slime",
+			count = 50,
+			note = "0-5 per kill of the Froststone Vault final boss",
+			perAttempt = {
+				max = 5,
+				min = 0,
+			},
+		},
+		attempts = "NONE",
 		effort = 3,
+		notes = "NOT a single drop -- an accumulation. The Froststone Vault Primal Storm runs on a cycle of a few hours and has NO daily lockout, so the same character can loot the final boss every time it comes round. The binding constraint is how often the event is up, not how often you may loot it. The 0-5 range is stated; the distribution inside it is not published, so the plan assumes the midpoint and says so.",
 	},
 	{
 		name = "Slumbering Worldsnail",

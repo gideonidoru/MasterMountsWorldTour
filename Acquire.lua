@@ -164,7 +164,20 @@ function A.ChainProgress(rec)
 	local need = acq.count or 1
 
 	if acq.count and acq.count > 1 then
-		local line = ("%s: %d / %d"):format(acq.name or "Required item", have, need)
+		-- NO ITEM ID MEANS NO PROGRESS, NOT ZERO PROGRESS.
+		--
+		-- `have` defaults to 0 when the block names an item but carries no id,
+		-- and WoW exposes no reverse item-name lookup to supply one. Printing
+		-- "0 / 50" then states a measurement that was never taken, and states it
+		-- to someone who may well be holding 40 of them. Say what is true: the
+		-- target is known, the count is not.
+		local line
+		if not acq.item then
+			line = ("Collect %d %s — the client cannot count these without an item id")
+				:format(need, acq.name or "of the required item")
+		else
+			line = ("%s: %d / %d"):format(acq.name or "Required item", have, need)
+		end
 		if acq.note then line = line .. " — " .. acq.note end
 		return line, math.max(0, need - have)
 	end

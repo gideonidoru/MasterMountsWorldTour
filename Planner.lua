@@ -886,7 +886,32 @@ local function computeTimeCommitment(entry)
 		-- Items still to collect for a trade-in or hatch chain.
 		local _, remaining = MM.Acquire.ChainProgress(rec)
 		if remaining and remaining > 0 then
-			add(("%d more to collect"):format(remaining), CHAIN_STEP_MINUTES * remaining)
+			-- CHAIN_STEP_MINUTES is per ACQUISITION, not per item, and some
+			-- chains hand you a stack at a time: 50 Leftover Elemental Slime at
+			-- 0-5 a kill is about twenty kills, not fifty. Charging per item
+			-- overstates those by the batch size and pushes a modest grind above
+			-- real work in the order.
+			--
+			-- The midpoint of a stated range is an ASSUMPTION -- the drop
+			-- distribution is not published -- so it is labelled as one and
+			-- lands in the assumed column of /mm timemodel rather than passing
+			-- for a measurement.
+			local per = rec.acquire and rec.acquire.perAttempt
+			local avg, assumed
+			if type(per) == "table" and per.min and per.max then
+				avg, assumed = (per.min + per.max) / 2, true
+			elseif type(per) == "number" and per > 0 then
+				avg = per
+			end
+			if avg and avg > 0 then
+				local runs = math.ceil(remaining / avg)
+				add(("%d to collect, about %d run%s at an %s%.1f each"):format(
+					remaining, runs, runs == 1 and "" or "s",
+					assumed and "assumed " or "", avg),
+					CHAIN_STEP_MINUTES * runs)
+			else
+				add(("%d more to collect"):format(remaining), CHAIN_STEP_MINUTES * remaining)
+			end
 		end
 	end
 
