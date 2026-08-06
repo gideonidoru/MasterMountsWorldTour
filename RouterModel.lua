@@ -684,33 +684,30 @@ function RM.TravelReport()
 				-- Why the network declined, when it did. Four different causes
 				-- need four different fixes and "-" distinguishes none of them.
 				if not net and netWhy then w("      network: %s", netWhy) end
-				-- And what the winning journey actually was, when it won. A
-				-- number with no route behind it cannot be checked by a human.
+				-- What the winning journey actually was. A number with no route
+				-- behind it cannot be checked by a human.
 				if who == "journey" and jlegs and MM.Journey.Describe then
 					local desc = MM.Journey.Describe(jlegs)
 					if desc then w("      route: %s", desc) end
-					-- WHERE THE GOAL ATTACHED, and how it was chosen.
-					--
-					-- Several legs with different origins AND different
-					-- destinations came back with the same route and the same
-					-- cost, which cannot be right. The leg line named neither
-					-- the destination zone nor how it was reached, so there was
-					-- nothing to reason from -- only a story to invent about
-					-- what might be happening. This prints the fact.
-					local ti = C_Map.GetMapInfo(b.mapID)
-					if ti and ti.name and MM.Journey.AttachAudit then
-						local same, other, how = MM.Journey.AttachAudit(ti.name, b.x, b.y, b.mapID)
-						w("      to %s (map %s): %s, %s entry point(s)%s",
-							ti.name, tostring(b.mapID), how or "not attached yet",
-							tostring(same or 0),
-							(other or 0) > 0 and (", " .. other .. " off-continent") or "")
-					end
 				elseif not journey and jwhy then
-					-- And why it declined, for the same reason the network says
-					-- so: "could not get on to the graph", "could not get off at
-					-- the far end" and "genuinely no path" are three different
-					-- faults with three different fixes.
+					-- And why it declined otherwise. "Could not get on to the
+					-- graph", "could not get off at the far end" and "genuinely
+					-- no path" are three faults with three different fixes.
 					w("      route: %s", jwhy)
+				end
+				-- WHERE THE GOAL ATTACHED, printed WHETHER OR NOT the journey
+				-- won. This first printed only on a win, which is precisely
+				-- backwards: a leg that failed is the one whose attachment
+				-- nobody can see, and the Forbidden Reach sat unexplained for a
+				-- whole round because of it.
+				local ti = b.mapID and C_Map and C_Map.GetMapInfo
+					and C_Map.GetMapInfo(b.mapID)
+				if ti and ti.name and MM.Journey and MM.Journey.AttachAudit then
+					local same, other, how = MM.Journey.AttachAudit(ti.name, b.x, b.y, b.mapID)
+					w("      to %s (map %s, type %s): %s, %s entry point(s)%s",
+						ti.name, tostring(b.mapID), tostring(ti.mapType),
+						how or "not attached yet", tostring(same or 0),
+						(other or 0) > 0 and (", " .. other .. " off-continent") or "")
 				end
 			end
 		end

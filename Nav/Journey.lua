@@ -364,7 +364,7 @@ function J.AttachAudit(zone, x, y, mapID)
 	-- doing -- a false alarm on working code, which costs as much trust as a
 	-- missed fault. Read the value that was used; never reconstruct it.
 	local hereC = cached.originContinent
-	if not hereC then return 0, 0, "no origin continent recorded" end
+	if not hereC then return 0, 0, cached.why or "no origin continent recorded" end
 	local same, other = 0, 0
 	for _, p in ipairs(cached) do
 		local n = graph[p.name]
@@ -472,9 +472,23 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
 		local originMap, ox, oy = knownMapID or mapFor(zone), x or 50, y or 50
 		local info = originMap and C_Map and C_Map.GetMapInfo
 			and C_Map.GetMapInfo(originMap)
-		local worldly = info and Enum and Enum.UIMapType
-			and (info.mapType == Enum.UIMapType.Zone
-				or info.mapType == Enum.UIMapType.Continent)
+		-- REFUSE ONLY WHAT IS ACTUALLY AN INTERIOR.
+		--
+		-- This demanded mapType Zone or Continent, which is a guess about which
+		-- maps are outdoors. The Forbidden Reach is neither and is very much
+		-- outdoors, so it could not be entered at all -- "no way to reach the
+		-- forbidden reach from the graph" while the same leg was happily priced
+		-- by a direct flight, which needs the very world position this refused
+		-- to ask for.
+		--
+		-- The continent comparison below is the real protection: an interior's
+		-- coordinate space reports a continent that matches no outdoor node, so
+		-- its candidates are rejected on their own merits rather than on a guess
+		-- about the map's type. Only a declared Dungeon is refused outright, and
+		-- those have doors.
+		local mapType = info and info.mapType
+		local worldly = info and not (Enum and Enum.UIMapType
+			and mapType == Enum.UIMapType.Dungeon)
 
 		-- AN INSTANCE LEAVES BY ITS DOOR.
 		--
@@ -526,6 +540,13 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
 		table.sort(best, function(a, b) return a.d < b.d end)
 		-- A handful is enough. The graph decides which is genuinely worth the
 		-- flight; carrying all of them only widens the search.
+		if #best == 0 then
+			out.why = (not info and ("no map info for " .. tostring(originMap)))
+				or (not worldly and ("map %s is an instance interior and has no door")
+					:format(tostring(originMap)))
+				or (not here and ("no world position for map " .. tostring(originMap)))
+				or "no node anywhere shares its continent"
+		end
 		for i = 1, math.min(#best, 8) do out[i] = best[i] end
 		-- Record the continent this actually measured from. An audit that
 		-- re-derives it independently will get a DIFFERENT answer for an
