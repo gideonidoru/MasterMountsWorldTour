@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0
+
+- **`/mm routertest` is now verbose about travel data.** It answers the three
+  questions that fail differently: did the data load, is it reachable by name,
+  and is it actually being USED. The last one is the one nobody checks -- a
+  dataset can be loaded, valid, and never consulted, which looks identical to
+  working. It prices real legs from your current route three ways (direct /
+  taxi / network) and marks which one the router will pick.
+- `TX.TravelMinutes` takes a `skipNetwork` flag so the diagnostic can measure
+  the taxi graph alone. Without it the comparison columns contain each other and
+  cannot show which dataset is doing the work.
+
 ## 1.2.0
 
 Completes the travel-data work in 1.1.0 after a full re-audit of both sources.

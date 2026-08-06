@@ -441,10 +441,130 @@ end
 -- mistake: it is hundreds of lines, chat truncates and reflows it, and the
 -- entire point of the report is that a human can paste it somewhere and read
 -- the destinations. A report you cannot copy is a report nobody checks.
+-- TRAVEL DATA INTEGRATION REPORT.
+--
+-- "Is it working" is three separate questions and they fail differently:
+--   1. did the data load           -- a missing .toc line loads nothing, silently
+--   2. is it reachable             -- a hop with no name mapping is inert
+--   3. is it actually being USED   -- a dataset can be loaded, valid, and never
+--                                     consulted, which looks identical to
+--                                     working from the outside
+--
+-- The third is the one that matters and the one nobody checks, so this prices
+-- real legs from the current route and reports which method won each. If the
+-- network never wins anywhere, it is decorative.
+function RM.TravelReport()
+	local L = {}
+	local function w(f, ...) L[#L + 1] = select("#", ...) > 0 and f:format(...) or f end
+
+	w("----- TRAVEL DATA -----")
+
+	-- 1. loaded?
+	local fs = MM.FlightSeconds
+	if not fs then
+		w("  |cffff4444Measured flight times: NOT LOADED|r")
+	else
+		local nodes, hops = 0, 0
+		for _, nb in pairs(fs) do
+			nodes = nodes + 1
+			for _ in pairs(nb) do hops = hops + 1 end
+		end
+		-- 2. reachable?
+		local named, projected = MM.FlightNodeName, 0
+		if named then
+			for id, nb in pairs(fs) do
+				if named[id] then
+					for oid in pairs(nb) do if named[oid] then projected = projected + 1 end end
+				end
+			end
+		end
+		w("  Flight times   %d nodes, %d measured hops, %d projected (%.1f%%)",
+			nodes, hops, projected, hops > 0 and (projected / hops * 100) or 0)
+		if projected < hops then
+			w("     |cffff4444%d hops have no name mapping and cannot be routed|r",
+				hops - projected)
+		end
+	end
+
+	local tn, te = MM.TravelNodes, MM.TravelEdges
+	if not (tn and te) then
+		w("  |cffff4444Travel network: NOT LOADED|r")
+	else
+		local n, byMethod, zero = 0, {}, 0
+		for _ in pairs(tn) do n = n + 1 end
+		for _, e in ipairs(te) do
+			byMethod[e.method] = (byMethod[e.method] or 0) + 1
+			local s = MM.Network and MM.Network.EdgeSeconds and MM.Network.EdgeSeconds(e)
+			if not s or s <= 0 then zero = zero + 1 end
+		end
+		local parts = {}
+		for m, c in pairs(byMethod) do parts[#parts + 1] = ("%s %d"):format(m, c) end
+		table.sort(parts)
+		w("  Travel network %d endpoints, %d connections", n, #te)
+		w("     %s", table.concat(parts, " · "))
+		if zero > 0 then
+			w("     |cffff4444%d edges priced at ZERO -- free teleportation|r", zero)
+		end
+	end
+
+	-- 3. actually used? price real legs three ways and show the winner.
+	local R = MM.Router
+	if not (R and R.route and #R.route > 1) then
+		w("  (no route built -- run /mm route to compare live legs)")
+		return table.concat(L, "\n")
+	end
+
+	w("")
+	w("  Live legs, priced every way. WON marks what the router will use:")
+	local U, ypm = MM.Util, MM.YARDS_PER_MINUTE or 1500
+	local wins = { flight = 0, network = 0, direct = 0 }
+	local shown = 0
+	for i = 1, math.min(#R.route - 1, 8) do
+		local a, b = R.route[i], R.route[i + 1]
+		if a and b and a.mapID and b.mapID then
+			local direct
+			if U and a.world and b.world then
+				local d = U.WorldDistance(a.world, b.world)
+				direct = d and (d / ypm)
+			end
+			local taxi = MM.Taxi and MM.Taxi.TravelMinutes
+				and MM.Taxi.TravelMinutes(a.mapID, a.x, a.y, b.mapID, b.x, b.y, true)
+			local net = MM.Network and MM.Network.TravelMinutes
+				and MM.Network.TravelMinutes(a.mapID, a.x, a.y, b.mapID, b.x, b.y)
+			local best, who = direct, "direct"
+			if taxi and (not best or taxi < best) then best, who = taxi, "flight" end
+			if net and (not best or net < best) then best, who = net, "network" end
+			if best then
+				wins[who] = (wins[who] or 0) + 1
+				shown = shown + 1
+				w("   %-26s direct %s · taxi %s · network %s  -> |cff40d860%s|r",
+					((a.label or (a.entry and a.entry.name) or "?"):sub(1, 26)),
+					direct and ("%.1fm"):format(direct) or "  -  ",
+					taxi and ("%.1fm"):format(taxi) or "  -  ",
+					net and ("%.1fm"):format(net) or "  -  ", who)
+			end
+		end
+	end
+	if shown == 0 then
+		w("   (no comparable legs -- stops lack coordinates)")
+	else
+		w("")
+		w("  Winner across %d legs: direct %d · taxi %d · network %d",
+			shown, wins.direct or 0, wins.flight or 0, wins.network or 0)
+		if (wins.network or 0) == 0 and (wins.flight or 0) == 0 then
+			w("  |cffff9a3cNeither dataset won a leg here. That is possible on a")
+			w("  short local route, and suspicious on a long one.|r")
+		end
+	end
+	return table.concat(L, "\n")
+end
+
 local function show(n)
 	local run = RM.Run(n)
 	if not run then return end
-	local text = RM.Format(run)
+	-- The travel report leads: it answers "is the data even reaching the
+	-- router" before the invariants answer "does the router behave".
+	local text = RM.TravelReport() .. "\n\n" .. RM.Format(run)
 	if MM.Diagnostics and MM.Diagnostics.ShowExport then
 		MM.Diagnostics.ShowExport(text, "Router model")
 	else

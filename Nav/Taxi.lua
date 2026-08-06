@@ -517,7 +517,14 @@ end
 local routeCache = {}
 function TX.ForgetRoutes() wipe(routeCache) wipe(tripCache) end
 
-function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
+-- skipNetwork: price the TAXI GRAPH ALONE, ignoring portals and ships.
+--
+-- Only the diagnostic passes this. Normally the network competes here and the
+-- cheaper answer wins, which is right for routing and useless for reporting:
+-- a comparison whose columns already contain each other cannot show which one
+-- is doing the work. /mm routertest needs the unmixed number to prove the
+-- network is earning its place rather than merely loaded.
+function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY, skipNetwork)
 	local U = MM.Util
 	if not (U and fromMapID and toMapID) then return nil end
 
@@ -525,7 +532,9 @@ function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
 	-- and the ground legs are computed from zone centres unless a caller has a
 	-- real coordinate, so the answer barely moves within a pair. The one time
 	-- this addon froze a client it was per-candidate work in a greedy loop.
-	local key = fromMapID .. "\1" .. toMapID
+	-- Separate cache line for the unmixed answer, or the diagnostic would poison
+	-- the routing cache with taxi-only numbers.
+	local key = fromMapID .. "\1" .. toMapID .. (skipNetwork and "\1n" or "")
 	local c = routeCache[key]
 	if c ~= nil then
 		if c == false then return nil end
@@ -566,7 +575,7 @@ function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
 	-- It returns nil when it cannot connect the two points, so this only ever
 	-- REPLACES an answer with a cheaper one -- never invents a leg where the
 	-- taxi graph already had a real route.
-	if MM.Network and MM.Network.TravelMinutes then
+	if not skipNetwork and MM.Network and MM.Network.TravelMinutes then
 		local nMin, nDesc, nDep, nArr =
 			MM.Network.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
 		if nMin and nMin < total then
