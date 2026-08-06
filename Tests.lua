@@ -444,17 +444,24 @@ local function runData()
 		-- costing double -- and a record with two requirements looks entirely
 		-- normal, which is why they lasted.
 		--
-		-- Comparing on the singular catches the shape that produced them.
+		-- THE PAIR OF TYPES IS NOT THE POINT. This first compared ITEM against
+		-- CURRENCY, and the next duplicate to appear was ITEM against MATERIAL
+		-- -- twenty-two Protoform mounts carrying Genesis Mote as both, which
+		-- this test watched go past. A guard that enumerates the pairs it knows
+		-- about will always miss the pair it does not, so it now compares any
+		-- two cost conditions naming one thing, whatever their types.
 		if #recs == 0 then return nil, "no records loaded" end
+		local COST = { ITEM = true, CURRENCY = true, MATERIAL = true }
 		local dupes, example = 0, nil
 		for _, r in ipairs(recs) do
 			local seen = {}
 			for _, c in ipairs(r.conditions or {}) do
-				if (c.type == "ITEM" or c.type == "CURRENCY") and c.name then
+				if COST[c.type] and c.name then
 					local key = c.name:lower():gsub("s$", "")
 					if seen[key] and seen[key] ~= c.type then
 						dupes = dupes + 1
-						example = example or (r.name .. ": " .. c.name)
+						example = example or ("%s: %s as %s and %s")
+							:format(r.name, c.name, seen[key], c.type)
 					end
 					seen[key] = c.type
 				end
@@ -464,6 +471,43 @@ local function runData()
 			return false, ("%d duplicated costs, e.g. %s"):format(dupes, example)
 		end
 		return true, "no cost appears under two condition types"
+	end)
+
+	check("Crafts know what they are made of", function()
+		-- Crafted mounts were costed on a flat guess because reagent lists are
+		-- not invented here, and the only route to real ones was a player
+		-- opening a profession window for every recipe in turn.
+		--
+		-- They come from the client's own tables now -- the spell that creates
+		-- the teaching item, that spell's reagents, and their names. This
+		-- asserts the import is actually present and actually reaches Crafting,
+		-- because a MATERIAL condition that MaterialsFor cannot read would look
+		-- identical in the data and change nothing in the plan.
+		if #recs == 0 then return nil, "no records loaded" end
+		local crafts, withMats, gathered = 0, 0, 0
+		local sample
+		for _, r in ipairs(recs) do
+			if r.obtainable and r.category == "PROFESSION" then
+				crafts = crafts + 1
+				if r.unpriced then gathered = gathered + 1 end
+				for _, c in ipairs(r.conditions or {}) do
+					if c.type == "MATERIAL" and c.itemID and (c.count or 0) > 0 then
+						withMats = withMats + 1
+						sample = sample or r
+						break
+					end
+				end
+			end
+		end
+		if withMats == 0 then return false, "no craft carries a reagent list" end
+		-- Reached through the same call the planner uses, not by reading the
+		-- record again: the point is that Crafting can see it.
+		local mats, known = MM.Crafting.MaterialsFor(sample)
+		if not (known and mats and #mats > 0) then
+			return false, ("%s has reagents that Crafting cannot read"):format(sample.name)
+		end
+		return true, ("%d of %d crafts have real reagents, %d are gathered; %s reads %d")
+			:format(withMats, crafts, gathered, sample.name, #mats)
 	end)
 
 	check("Faction-split requirements resolved to this character's side", function()
