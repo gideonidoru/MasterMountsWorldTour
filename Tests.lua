@@ -302,6 +302,20 @@ end
 ------------------------------------------------------------
 local function approx(a, b) return math.abs(a - b) < 0.001 end
 
+-- The first routed stop that has somewhere to be.
+--
+-- Stands in for Router:Current() in checks that only need A destination to
+-- price. Current() is gated on the player having started a route, which is
+-- correct for the arrow and wrong as a test precondition -- it made two travel
+-- checks unrunnable unless somebody happened to be mid-route when they typed
+-- /mm test.
+local function firstPlacedStop()
+	local R = MM.Router
+	for _, stop in ipairs(R and R.route or {}) do
+		if stop.world then return stop end
+	end
+end
+
 local function runLogic()
 	current = "LOGIC"
 
@@ -1944,8 +1958,17 @@ local function runLogic()
 		-- lands. This proves the old blanket rejection is gone.
 		local TP = MM.Teleports
 		if not (TP and TP.Evaluate) then return false, "teleport layer missing" end
+		-- Router:Current() answers only once the player has STARTED a route,
+		-- which is right for the arrow and wrong here: a built route with 106
+		-- stops is not "nothing to price". Gating on it left this check and the
+		-- one below permanently degraded, and the summary then described them as
+		-- optional features this client lacks -- which they are not. They were
+		-- features nobody had switched on.
+		--
+		-- Any stop with a world position exercises the same pricing path.
 		local goal = MM.Router and MM.Router:Current()
-		if not (goal and goal.world) then return nil, "no active route goal to price" end
+		if not (goal and goal.world) then goal = firstPlacedStop() end
+		if not (goal and goal.world) then return nil, "no placed stop to price" end
 		TP.Evaluate(goal.continent, goal.world, math.huge)
 		for _, r in ipairs(TP.rejections) do
 			if r:find("lands on a different continent") then
@@ -1966,7 +1989,14 @@ local function runLogic()
 		-- describing a route we did not take.
 		local TP = MM.Teleports
 		if not (TP and TP.considered) then return false, "no ledger" end
-		if #TP.considered == 0 then return nil, "nothing priced yet — run /mm travel" end
+		-- Price something first rather than reporting an empty ledger as
+		-- "nothing to check". The ledger is a side effect of Evaluate, so a
+		-- check that only reads it can never run on its own.
+		if #TP.considered == 0 then
+			local goal = firstPlacedStop()
+			if goal and TP.Evaluate then TP.Evaluate(goal.continent, goal.world, math.huge) end
+		end
+		if #TP.considered == 0 then return nil, "no placed stop to price" end
 		for _, c in ipairs(TP.considered) do
 			local sum = c.flight + c.hub + c.wait * 25
 			if math.abs(sum - c.cost) > 1 then
@@ -2608,7 +2638,8 @@ function T.Run()
 	if counts.FAIL == 0 and counts.WARN == 0 then
 		MM:Print("|cff40d860Everything this client can do, it is doing.|r")
 	elseif counts.FAIL == 0 then
-		MM:Print("No failures. Degraded items are optional features this client lacks.")
+		MM:Print("No failures. Degraded items are checks that could not run — an "
+			.. "optional feature this client lacks, or state nothing has produced yet.")
 	else
 		MM:Print("|cffff4d4dFailures above are real — do not release with these outstanding.|r")
 	end
@@ -2761,7 +2792,7 @@ function T.RunSync()
 		MM:Print("|cff40d860Self-test clean|r (%d passed, %d degraded). |cffffd84dOutstanding:|r %s",
 			counts.PASS, counts.WARN, table.concat(todo, ", "))
 	elseif counts.WARN > 0 then
-		MM:Print("|cff40d860VERDICT: green.|r %d degraded item%s — optional features this client lacks.",
+		MM:Print("|cff40d860VERDICT: green.|r %d degraded item%s — checks that could not run.",
 			counts.WARN, counts.WARN == 1 and "" or "s")
 	else
 		MM:Print("|cff40d860VERDICT: everything green, nothing outstanding.|r")

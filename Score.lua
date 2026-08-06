@@ -50,7 +50,7 @@ local DIMENSIONS = {
 				why = ("%d self-test failure%s — these are promises being broken")
 					:format(t.failed, t.failed == 1 and "" or "s")
 			elseif (t.degraded or 0) > 0 then
-				why = ("%d degraded — optional features this client lacks, not defects")
+				why = ("%d degraded — checks that could not run, not defects")
 					:format(t.degraded)
 			end
 			return frac, why

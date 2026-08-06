@@ -239,11 +239,32 @@ local function withProfile(profile, fn)
 	-- session is not left holding the last profile's answers.
 	if MM.Journey and MM.Journey.Forget then MM.Journey.Forget() end
 
+	-- AND the per-stop teleport costs, which are the fast path and therefore the
+	-- one that actually decides the leg.
+	--
+	-- R.PrecomputeTravel caches a sorted landing list on every stop so the
+	-- improvement pass does not re-walk the teleport list thousands of times.
+	-- It runs inside Build, once, against the player's REAL teleports -- and
+	-- travelMinutes reads that cache before it ever consults the overridden
+	-- TP.TravelMinutes. So swapping the teleport layer changed only the slow
+	-- fallback, every profile replayed the same cached costs, and "no teleports
+	-- at all (fresh character)" routed via a Cloak of Coordination it does not
+	-- own. All four profiles reported an identical 33 minutes, which is how the
+	-- bug hid: the monotonicity invariant compared four copies of one answer and
+	-- passed every time.
+	--
+	-- Recomputing it here costs one pass over the route and is the only way the
+	-- profile reaches the decision. Recomputed again on the way out so the
+	-- player's real session does not keep the last profile's impoverished list.
+	local R = MM.Router
+	if R and R.PrecomputeTravel and R.route then R.PrecomputeTravel(R.route) end
+
 	local ok, err = pcall(fn)
 	TP.Options, TP.Landings, TP.Refresh = realOptions, realLandings, realRefresh
 	TP.TravelMinutes = realTravel
 
 	if MM.Journey and MM.Journey.Forget then MM.Journey.Forget() end
+	if R and R.PrecomputeTravel and R.route then R.PrecomputeTravel(R.route) end
 	if not ok then error(err, 0) end
 	return #allowed
 end
@@ -331,10 +352,33 @@ local function checkInvariants(results, sample)
 	--    grows. If it does, the router is not using what it has been given --
 	--    which is the single most valuable thing this harness can catch,
 	--    because it is invisible from inside any one route.
-	local usedAny = false
+	-- A PROFILE THAT OWNS NOTHING MUST USE NOTHING.
+	--
+	-- This is the assertion that should have existed first, because it needs no
+	-- comparison between profiles and cannot be satisfied by accident: a
+	-- character with zero landings has no teleport to take. When the per-stop
+	-- cost cache survived the capability swap, "no teleports at all" happily
+	-- reported two teleport legs and every other check still passed.
+	for _, r in ipairs(results) do
+		if r.landings == 0 and r.obs.teleports > 0 then
+			fail("[%s] owns 0 teleports and still took %d teleport leg(s) -- "
+				.. "the capability filter is not reaching the routing decision",
+				r.profile.key, r.obs.teleports)
+		end
+	end
+
+	-- "Exercised" means THE PROFILES DIFFERED, not that some teleport was used.
+	--
+	-- The old test asked whether any profile used a teleport, which was true
+	-- even while the bug made all four identical -- so it printed the confident
+	-- line about monotonicity holding, over four copies of a single answer.
+	-- Four equal numbers are one measurement, and one measurement cannot
+	-- demonstrate a trend.
+	local usedAny, first = false, results[1]
 	for i = 2, #results do
 		local prev, cur = results[i - 1], results[i]
-		if cur.obs.teleports > 0 then usedAny = true end
+		if first and (cur.obs.travel ~= first.obs.travel
+			or cur.obs.teleports ~= first.obs.teleports) then usedAny = true end
 		if cur.obs.travel > prev.obs.travel + 0.5 then
 			fail("[%s] travel got LONGER than [%s] despite more teleports: %.0f -> %.0f min",
 				cur.profile.key, prev.profile.key, prev.obs.travel, cur.obs.travel)
@@ -458,10 +502,12 @@ function RM.Format(run)
 			-- A pass that could not have failed is not evidence. Say so, or the
 			-- report claims the router handles capability correctly when in
 			-- fact nothing in this sample ever consulted a teleport.
-			w("   - travel monotonicity: |cffff9a3cNOT EXERCISED|r — no profile used a")
-			w("     teleport on this sample, so identical travel proves nothing.")
-			w("     Every leg fell back to the flat cross-continent cost. Re-run with")
-			w("     a larger n, or from a continent your teleports actually land on.")
+			w("   - travel monotonicity: |cffff9a3cNOT EXERCISED|r — every profile")
+			w("     returned the same travel and the same teleport count, so there")
+			w("     is only one measurement here and it cannot show a trend. Either")
+			w("     no leg on this sample can use a teleport, or capability is not")
+			w("     reaching the routing decision. Re-run with a larger n, or from a")
+			w("     continent your teleports actually land on.")
 		end
 	else
 		w("## Invariants: %d FAILED", #run.fails)

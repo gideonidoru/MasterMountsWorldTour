@@ -605,7 +605,7 @@ MM:On("MM_RELEASE_DEBUG", function()
 				t.failed, t.failed == 1 and "" or "s")
 		end
 		if (t.degraded or 0) > 0 then
-			warnings[#warnings + 1] = ("%d degraded (optional features this client lacks)")
+			warnings[#warnings + 1] = ("%d degraded (checks that could not run)")
 				:format(t.degraded)
 		end
 	end
