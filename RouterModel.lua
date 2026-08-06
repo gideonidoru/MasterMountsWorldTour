@@ -410,7 +410,19 @@ local function checkInvariants(results, sample)
 	for i = 1, #results do
 		for k = i + 1, #results do
 			local a, b = results[i], results[k]
-			if a.landings == b.landings and a.landingKeys and b.landingKeys
+			-- BOTH EMPTY IS NOT A FILTER MISTAKE.
+			--
+			-- This fired on a character whose Hearthstone is bound to an inn
+			-- whose map we have not learned: the [hearth] profile then has
+			-- nothing to offer and matches [none] exactly. That is the profile
+			-- being untestable on this character, not two profiles selecting
+			-- the same thing -- and reporting it as a routing failure blocked a
+			-- release over a hearthstone binding.
+			--
+			-- The invariant is about two DIFFERENT filters landing on the same
+			-- non-empty set, which is what a mistyped filter looks like.
+			if a.landings == b.landings and a.landings > 0
+				and a.landingKeys and b.landingKeys
 				and a.landingKeys == b.landingKeys then
 				fail("[%s] and [%s] select the SAME %d teleport(s) (%s) -- "
 					.. "one of them is not testing anything",

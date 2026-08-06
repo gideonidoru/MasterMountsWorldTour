@@ -3416,14 +3416,27 @@ local function runLogic()
 		-- here failed for a boring reason -- an invented faction name yields no
 		-- progress at all, so there was nothing to add -- and a test that fails
 		-- because its fixture is unreadable tells you nothing about the code.
+		-- AMOUNTS NO CHARACTER COULD ALREADY HOLD.
+		--
+		-- This asked for 5,000 of each and failed on a character who happened to
+		-- be sitting on 5,000 War Resources: that prerequisite then cost nothing,
+		-- the two-condition case equalled the one-condition case, and the check
+		-- reported a costing bug that did not exist. It passed on the character
+		-- it was written against, which is the whole trouble with a fixture that
+		-- reads live state.
+		--
+		-- The cost model SHOULD subtract what you already have -- that is the
+		-- point of it. So the fixture asks for more than anyone can have, and
+		-- the check goes back to testing the one thing it is about: that two
+		-- prerequisites add up rather than compete.
 		local both = { rec = { category = "CURRENCY", timePerAttempt = 10, effort = 3,
 			conditions = {
-				{ type = "CURRENCY", id = 1166, name = "Timewarped Badge", amount = 5000 },
-				{ type = "CURRENCY", id = 1560, name = "War Resources", amount = 5000 },
+				{ type = "CURRENCY", id = 1166, name = "Timewarped Badge", amount = 5000000 },
+				{ type = "CURRENCY", id = 1560, name = "War Resources", amount = 5000000 },
 			} } }
 		local justCurrency = { rec = { category = "CURRENCY", timePerAttempt = 10, effort = 3,
 			conditions = {
-				{ type = "CURRENCY", id = 1166, name = "Timewarped Badge", amount = 5000 },
+				{ type = "CURRENCY", id = 1166, name = "Timewarped Badge", amount = 5000000 },
 			} } }
 		local a = P.TimeCommitment(both)
 		local b = P.TimeCommitment(justCurrency)
