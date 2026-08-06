@@ -307,3 +307,63 @@ MM:RegisterGameEvent("PLAYER_LOGOUT", function() pcall(A.Snapshot) end)
 MM:RegisterGameEvent("MAJOR_FACTION_RENOWN_LEVEL_CHANGED", function()
 	C_Timer.After(2, A.Snapshot)
 end)
+
+------------------------------------------------------------
+-- Who in the warband can actually DO this
+------------------------------------------------------------
+-- BestCharacterFor answers "who is furthest along", which is the right question
+-- while nobody qualifies and the wrong one once somebody does. A goal you have
+-- already earned the standing for on an alt is not blocked: it is a character
+-- switch away, and a switch costs about a minute.
+--
+-- That distinction is the whole of it. The ranking treated "this character
+-- cannot do it" as "nobody can", so a mount sitting behind exalted reputation
+-- an alt already has ranked below things needing weeks of work.
+--
+-- Returns: key, isCurrentCharacter, needsCurrencyTransfer, reason
+function A.WhoMeets(rec)
+	if not (rec and rec.conditions and #rec.conditions > 0 and MM.db.alts) then
+		return nil
+	end
+	local me = charKey()
+
+	-- A currency the warband shares still has to be ON the character spending
+	-- it -- the vendor checks the character's own balance, not the account's.
+	-- So "an alt has the badges" is a real answer AND a real extra step.
+	local function meets(snapshot)
+		local transfer = false
+		for _, cond in ipairs(rec.conditions) do
+			local score = scoreCondition(snapshot, cond)
+			if (score or 0) < COMPLETION_BONUS then return false end
+			if cond.type == "CURRENCY" and cond.id and snapshot ~= MM.db.alts[me] then
+				transfer = true
+			end
+		end
+		return true, transfer
+	end
+
+	local mine = MM.db.alts[me]
+	if mine then
+		local ok = meets(mine)
+		if ok then return me, true, false, "you can do this on this character" end
+	end
+
+	for key, snapshot in pairs(MM.db.alts) do
+		if key ~= me then
+			local ok, transfer = meets(snapshot)
+			if ok then
+				local colored = key
+				local color = snapshot.class and RAID_CLASS_COLORS
+					and RAID_CLASS_COLORS[snapshot.class]
+				if color and color.colorStr then
+					colored = "|c" .. color.colorStr .. key .. "|r"
+				end
+				return key, false, transfer, transfer
+					and ("%s already qualifies — move the currency to them first")
+						:format(colored)
+					or ("%s already qualifies"):format(colored)
+			end
+		end
+	end
+	return nil
+end

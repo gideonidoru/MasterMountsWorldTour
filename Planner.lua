@@ -317,6 +317,15 @@ function P.Rank(entry)
 	return tier, sub, reason
 end
 
+-- Logging out and back in. Cheap on its own, which is the point -- a
+-- requirement an alt has already earned is a minute away, not a wall. It is
+-- not FREE though: switches want batching, because every one of them breaks
+-- the chain the route is built on.
+local SWITCH_MINUTES = 1
+-- Moving a warband-wide currency onto the character that will spend it. The
+-- balance is shared; the vendor still checks the pocket in front of it.
+local TRANSFER_MINUTES = 2
+
 function computeRank(entry)
 	local rec = entry.rec
 	if not rec then return P.TIER.GRIND, 5000, "Uncatalogued" end
@@ -329,11 +338,36 @@ function computeRank(entry)
 	-- ranking charged, never a second calculation of the same idea.
 	local sub = P.CostParts(entry, prox)
 
+	-- BLOCKED ON THIS CHARACTER IS NOT BLOCKED.
+	--
+	-- A requirement someone in the warband has already earned is not a wall,
+	-- it is a character switch -- about a minute, and then you are standing in
+	-- front of the same vendor with the standing you needed. Ranking it BLOCKED
+	-- put a mount that is minutes away below things needing weeks, because the
+	-- question asked was "can THIS character" when the useful one is "can I".
+	--
+	-- Only a PREREQ can be answered this way. A lockout is a lockout on every
+	-- character; a rotation and a holiday are the world's state, not yours; and
+	-- unobtainable is unobtainable.
+	local altKey, altIsMe, altTransfer, altWhy
+	if status == "PREREQ" then
+		altKey, altIsMe, altTransfer, altWhy = MM.Alts and MM.Alts.WhoMeets
+			and MM.Alts.WhoMeets(rec)
+	end
+
 	-- 9. blocked outright
-	if status == "LOCKED" or status == "HOLIDAY" or status == "ROTATION"
-		or status == "PREREQ" or status == "UNOBTAINABLE" then
+	if (status == "LOCKED" or status == "HOLIDAY" or status == "ROTATION"
+		or status == "UNOBTAINABLE")
+		or (status == "PREREQ" and not (altKey and not altIsMe)) then
 		return P.TIER.BLOCKED, sub, MM.Availability and status == "LOCKED"
 			and "On lockout" or "Not available right now"
+	end
+
+	-- Reachable by switching. Charged for the switch, and for the currency move
+	-- when the vendor will check the spending character's own balance rather
+	-- than the warband's -- shared does not mean already in the right pocket.
+	if altKey and not altIsMe then
+		sub = sub + SWITCH_MINUTES + (altTransfer and TRANSFER_MINUTES or 0)
 	end
 
 	-- Daily Calling rotation. When today's Calling IS in the right zone this is
