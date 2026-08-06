@@ -776,6 +776,29 @@ end
 
 -- /mm travel — what the travel layer considered, and why it said no
 MM:On("MM_TRAVEL_DEBUG", function()
+	-- Say what the travel data actually covers, before pricing anything.
+	--
+	-- Two datasets feed routing now and both can be silently absent -- a file
+	-- missing from the .toc loads nothing and errors never. Printing the counts
+	-- means "the route looks wrong" can be answered without guessing which
+	-- half is missing.
+	if MM.FlightSeconds then
+		local nodes, edges = 0, 0
+		for _, nb in pairs(MM.FlightSeconds) do
+			nodes = nodes + 1
+			for _ in pairs(nb) do edges = edges + 1 end
+		end
+		MM:Print("  Flight times: %d nodes, %d measured hops.", nodes, edges)
+	else
+		MM:Print("  |cffff4444No measured flight times loaded.|r")
+	end
+	if MM.Network and MM.Network.Coverage then
+		local n, e, maps = MM.Network.Coverage()
+		MM:Print("  Travel network: %d endpoints, %d connections, %d maps.", n, e, maps)
+	else
+		MM:Print("  |cffff4444No travel network loaded.|r")
+	end
+
 	local cur = MM.Router and MM.Router:Current()
 	if not (cur and cur.world) then
 		MM:Print("No active route goal to evaluate travel for.")

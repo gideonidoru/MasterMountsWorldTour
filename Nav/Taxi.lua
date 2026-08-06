@@ -431,8 +431,50 @@ end)
 -- exactly what we do not have for a taxi.
 local tripCache = {}
 
+-- The measured graph, name-keyed, built once.
+--
+-- MM.FlightSeconds holds OBSERVED seconds per hop but is keyed by taxi nodeID;
+-- the pathfinder below keys on lowercase flight-master name. This projects one
+-- onto the other so the SAME Dijkstra runs over real durations instead of
+-- distance/speed guesses -- including multi-hop routes, not just direct flights.
+--
+-- Measured edges win where they exist. Anything the measured set does not cover
+-- falls through to the shipped graph, so coverage is a gradient rather than a
+-- switch, and a missing node degrades one edge instead of the whole route.
+local measuredGraph
+local function measured()
+	if measuredGraph ~= nil then return measuredGraph or nil end
+	local secs, byName = MM.FlightSeconds, MM.FlightNodeByName
+	if not (secs and byName) then measuredGraph = false return nil end
+	-- Use the emitted reverse map, not an inversion of the name index.
+	-- The index is first-wins, so inverting it silently dropped 46 nodes and
+	-- 263 edges wherever two flight masters shared a name form.
+	local idToName = MM.FlightNodeName
+	if not idToName then
+		idToName = {}
+		for name, id in pairs(byName) do
+			if not idToName[id] or #name > #idToName[id] then idToName[id] = name end
+		end
+	end
+	local g, edges = {}, 0
+	for id, nb in pairs(secs) do
+		local from = idToName[id]
+		if from then
+			local row = g[from] or {}
+			for otherID, s in pairs(nb) do
+				local to = idToName[otherID]
+				if to then row[to] = s edges = edges + 1 end
+			end
+			g[from] = row
+		end
+	end
+	measuredGraph = edges > 0 and g or false
+	return measuredGraph or nil
+end
+TX.MeasuredGraph = measured
+
 function TX.TripSeconds(fromName, toName)
-	local g = MM.TaxiGraphData
+	local g = measured() or MM.TaxiGraphData
 	if not (g and fromName and toName) then return nil end
 	local a, b = fromName:lower(), toName:lower()
 	if a == b then return 0 end
@@ -513,6 +555,25 @@ function TX.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
 	local total = legs + (secs / 60)
 	local desc = ("fly to %s, taxi to %s (%d min), then fly in")
 		:format(depart.name, arrive.name, math.max(1, math.floor(secs / 60 + 0.5)))
+
+	-- THE PORTAL / SHIP / ZEPPELIN NETWORK COMPETES HERE.
+	--
+	-- A taxi is not always the answer and a straight line never was. A portal is
+	-- fifteen seconds and half a world; the flight graph cannot express that,
+	-- and distance actively lies about it. MM.Network routes the connections
+	-- that are not distance at all, and whichever is genuinely faster wins.
+	--
+	-- It returns nil when it cannot connect the two points, so this only ever
+	-- REPLACES an answer with a cheaper one -- never invents a leg where the
+	-- taxi graph already had a real route.
+	if MM.Network and MM.Network.TravelMinutes then
+		local nMin, nDesc, nDep, nArr =
+			MM.Network.TravelMinutes(fromMapID, fromX, fromY, toMapID, toX, toY)
+		if nMin and nMin < total then
+			total, desc, depart, arrive = nMin, nDesc or desc, nDep or depart, nArr or arrive
+		end
+	end
+
 	routeCache[key] = { total, desc, depart, arrive }
 	return total, desc, depart, arrive
 end

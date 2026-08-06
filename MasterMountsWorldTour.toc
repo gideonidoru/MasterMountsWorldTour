@@ -2,7 +2,7 @@
 ## Title: Master Mounts – World Tour
 ## Notes: The definitive mount collector — collection audit, availability and lockouts, farm planning, routing and navigation.
 ## Author: Indrik - Mal'Ganis
-## Version: 1.0.0
+## Version: 1.1.0
 ## SavedVariables: MasterMountsDB
 ## SavedVariablesPerCharacter: MasterMountsCharDB
 ## IconTexture: Interface\AddOns\MasterMountsWorldTour\Media\icon
@@ -20,6 +20,8 @@ Theme.lua
 
 Data\Schema.lua
 Data\Mounts.lua
+Data\FlightSeconds.lua
+Data\TravelNetwork.lua
 
 Attempts.lua
 Scanner.lua
@@ -47,6 +49,7 @@ Nav\FlightPointData.lua
 Nav\TaxiGraphData.lua
 Nav\TransitData.lua
 Nav\Taxi.lua
+Nav\Network.lua
 Nav\BorderData.lua
 Nav\Journey.lua
 Nav\Teleports.lua

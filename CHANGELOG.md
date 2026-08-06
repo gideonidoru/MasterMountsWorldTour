@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.1.0
+
+**Routing now runs on measured times instead of straight-line guesses.**
+
+- **Measured flight durations.** 785 flight masters, 4,054 hops, real observed
+  seconds each. A flight follows a scripted path with turns, altitude and a
+  takeoff, so distance-over-speed was wrong in both directions and never by a
+  consistent factor. Multi-hop routes use them too, not just direct flights.
+- **The portal / ship / zeppelin / tram network.** 1,156 endpoints with real
+  coordinates and 238 connections. These legs are not distance at all — a portal
+  is fifteen seconds and half a world — and were previously priced as a flat hub
+  charge or not modelled as connections at all.
+- The two compete: whichever is genuinely faster wins, and the network returns
+  nothing when it cannot connect two points, so it only ever replaces an answer
+  with a cheaper one.
+- `/mm travel` now opens by stating what both datasets cover, so a suspicious
+  route can be diagnosed without guessing which half failed to load.
+
+Durations that the source states are used as given; the rest take a per-method
+default that is labelled ASSUMED, so the time model keeps reporting measured
+versus assumed honestly.
+
 ## 1.0.0
 
 First release.
