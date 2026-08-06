@@ -679,6 +679,30 @@ local function runLogic()
 		return true, ("all %d weights move a routing input"):format(#probes)
 	end)
 
+	check("A swapped route is not mistaken for a cache hit", function()
+		-- The signature describes the PLAN. It was being read as proof that
+		-- R.route was still the route it built, and anything that replaced the
+		-- route without touching the signature got a cache hit on a route that
+		-- was gone -- which is how the router model's six-goal sample survived
+		-- into the planner.
+		local R = MM.Router
+		if not (R and R.Build) then return nil, "no router" end
+		R:Build()
+		local real = #(R.route or {})
+		if real < 3 then return nil, "route too short to test" end
+		-- Replace the route WITHOUT touching the signature, exactly as the
+		-- harness used to, and ask for a build.
+		local stolen = {}
+		for i = 1, 2 do stolen[i] = R.route[i] end
+		R.route = stolen
+		R:Build()
+		local after = #(R.route or {})
+		if after <= 2 then
+			return false, ("Build accepted a swapped %d-stop route as current"):format(after)
+		end
+		return true, ("%d stops, swapped to 2, rebuilt to %d"):format(real, after)
+	end)
+
 	check("The router model gives the route back", function()
 		-- The planner showed six mounts across five stops after a /mm report --
 		-- the harness's own sample, not the plan. RouterModel swaps the plan
@@ -700,6 +724,31 @@ local function runLogic()
 				:format(before, after)
 		end
 		return true, ("%d stops before the model, %d after"):format(before, after)
+	end)
+
+	check("What you are standing on is not reordered away", function()
+		-- Standing at the Island Expedition NPC -- one minute off, five mounts
+		-- on one stop -- the plan opened by flying to Tazavesh. Layer 2
+		-- promoted the island correctly and layer 3 moved it to third, because
+		-- minimising travel across a hundred stops barely notices where a
+		-- zero-travel stop sits. It notices a great deal if you only have time
+		-- for two.
+		local R = MM.Router
+		if not (R and R.route and #R.route > 1) then return nil, "no route" end
+		local firstHere, firstOther
+		for i, stop in ipairs(R.route) do
+			if stop.hereNow and stop.urgency ~= MM.Planner.URGENCY.EXPIRING then
+				firstHere = firstHere or i
+			elseif stop.urgency ~= MM.Planner.URGENCY.EXPIRING then
+				firstOther = firstOther or i
+			end
+		end
+		if not firstHere then return nil, "nothing promoted for being here" end
+		if firstOther and firstOther < firstHere then
+			return false, ("a stop you must travel to leads at %d, "
+				.. "the one you are standing on is at %d"):format(firstOther, firstHere)
+		end
+		return true, ("standing-here work leads at position %d"):format(firstHere)
 	end)
 
 	check("The route builds cleanly", function()

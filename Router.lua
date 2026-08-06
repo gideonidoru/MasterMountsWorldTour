@@ -1436,7 +1436,28 @@ function R:Build(force)
 	-- A build already in flight owns R.route; asking again just lets it finish.
 	if building and coroutine.status(building) == "suspended" then return end
 	local sig = buildSignature()
-	if not force and R.builtSignature == sig and #R.route > 0 then
+	-- THE SIGNATURE DESCRIBES THE PLAN. IT DOES NOT DESCRIBE THE ROUTE.
+	--
+	-- Matching signature was taken as proof that R.route was still the route
+	-- this signature built, and nothing enforced that. Anything which replaced
+	-- the route without touching the signature got a cache hit on a route that
+	-- was no longer there:
+	--
+	--   the router model swapped in its six-goal sample, and its restoring
+	--   Build returned early -- so the planner showed six mounts, not a hundred
+	--   the speed check timed that same early return and reported 0 ms in a run
+	--   where the route section said 1483 ms
+	--
+	-- Both were fixed by clearing the signature by hand at the call site, which
+	-- is a fix that has to be repeated by every future caller and was already
+	-- missed twice. So the guard now also checks that the route is the SIZE the
+	-- build left it. A swapped route almost never has the same stop count, and
+	-- when it does it is the same length of work anyway.
+	--
+	-- This does not make the signature honest, it makes the guard suspicious,
+	-- which is the property that was actually missing.
+	if not force and R.builtSignature == sig and #R.route > 0
+		and R.builtRouteCount == #R.route then
 		return
 	end
 	-- SAY WHY, when it did not hit.
@@ -1466,6 +1487,10 @@ function R:Build(force)
 	end
 
 	R.builtSignature = sig
+	-- Set at COMPLETION, not here: the build runs in a coroutine started below,
+	-- so at this point R.route is still the previous route and recording its
+	-- length would bless the very thing this check exists to catch.
+	R.builtRouteCount = nil
 
 	local n = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
 	R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
@@ -1731,6 +1756,10 @@ function R.RunBuild(sig)
 
 	local nearby = {}
 	for _, stop in ipairs(grouped) do
+		-- Cleared every build. The flag means "you are standing here NOW", and
+		-- a stop object that survives into a build made somewhere else would
+		-- otherwise stay pinned to the front of a route in another hemisphere.
+		stop.hereNow = nil
 		local allRare = true
 		for _, m in ipairs(stop.members) do
 			if m.tier ~= MM.Planner.TIER.RARE then allRare = false break end
@@ -1756,6 +1785,7 @@ function R.RunBuild(sig)
 			-- PICKUP/INSTANCE/RARE/FIELD are "go do a thing now". REP, GRIND,
 			-- ACHIEVE and GROUP are projects and stay in their proper band,
 			-- where difficulty decides their place.
+			stop.hereNow = true
 			tinsert(nearby, stop)
 		else
 			-- Two bands now, not three: what genuinely disappears, and
@@ -1958,7 +1988,11 @@ function R.RunBuild(sig)
 		R.ImproveTotalTime(playerContinent, playerWorld)
 	end
 	R.ApplyPreferenceCap()
+	R.PinHereNow()
 	for i, stop in ipairs(R.route) do stop.layerRouted = i end
+	-- The route is final here. Recording its length now is what lets the next
+	-- Build tell "nothing changed" from "someone replaced my route".
+	R.builtRouteCount = #R.route
 	R.Measure()
 
 	-- Index the finished route so a goal can be asked what it was batched with.
@@ -2136,6 +2170,46 @@ function R.PreferenceCap()
 	local v = (W and W.Get) and W.Get("orderCap") or 0
 	if not v or v <= 0 then return nil end   -- 0 means no cap at all
 	return v
+end
+
+-- A stop you are STANDING ON cannot be reordered away from the front.
+--
+-- Layer 2 promotes short work in the zone you are in, and layer 3 was free to
+-- undo it. Standing at the Island Expedition NPC -- one minute away, five
+-- mounts on the one stop -- the plan opened by flying to Tazavesh, because the
+-- clock minimises TOTAL travel across a hundred stops and moving a zero-travel
+-- stop later costs that total almost nothing.
+--
+-- It costs THIS SESSION everything. Anyone who does two stops and logs out
+-- gets the worst answer in the plan, and a zero-travel stop is exactly the
+-- case a total-distance objective undervalues -- there is no distance for it
+-- to weigh.
+--
+-- So the promotion is made sticky rather than advisory. Relative order among
+-- the pinned stops is left as the earlier layers arranged it, and everything
+-- else keeps the clock's ordering; only the boundary moves.
+function R.PinHereNow()
+	local route = R.route
+	if not route or #route < 2 then return 0 end
+	local here, rest = {}, {}
+	for _, stop in ipairs(route) do
+		-- EXPIRING work still leads: a window closing forever outranks
+		-- convenience, and layer 2 already placed those ahead of the promotion.
+		if stop.hereNow and stop.urgency ~= MM.Planner.URGENCY.EXPIRING then
+			here[#here + 1] = stop
+		else
+			rest[#rest + 1] = stop
+		end
+	end
+	if #here == 0 or #rest == 0 then return 0 end
+	local moved = 0
+	for i = 1, #here do
+		if route[i] ~= here[i] then moved = moved + 1 end
+	end
+	wipe(route)
+	for _, stop in ipairs(here) do route[#route + 1] = stop end
+	for _, stop in ipairs(rest) do route[#route + 1] = stop end
+	return moved
 end
 
 function R.ApplyPreferenceCap()
