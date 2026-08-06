@@ -18,6 +18,20 @@ teleports, hearthstones and portals.
   Island Expedition mounts are one visit rather than five.
 - **Fits your session.** Tell it you have 45 minutes and it gives you a plan
   that fits in 45 minutes.
+- **Learns your pace.** It times how long you actually take to clear an
+  instance and folds that into a running average — per character, because the
+  same raid falls over faster to a hunter than to a warrior.
+- **Charges what's left, not the whole grind.** A reputation mount two-thirds
+  of the way to exalted costs the remaining third. A paragon cache already
+  earned costs five minutes. A PvP season reward is priced as the number of
+  matches you still need to win, at your own win rate.
+- **Urgency is a clock.** A daily whose window closes tonight outranks a weekly
+  you still have four days for — scaled by how much of the window is spent,
+  not by a flag saying a lockout exists.
+- **Points at the right character.** Mounts gated on reputation, currency or a
+  profession say which of your characters is closest — and a craft names the
+  trade and the rank, so "Blacksmithing 300" doesn't read as satisfied by an
+  apprentice.
 - **Tracks attempts** account-wide, and never implies a pity timer, because
   there isn't one.
 - **Explains itself.** Every goal can say why it landed where it did —
@@ -28,7 +42,7 @@ teleports, hearthstones and portals.
 
 **The addon knows what it doesn't know, and says so.**
 
-Around 40% of its time estimates are assumptions rather than measurements —
+Around a third of its time estimates are assumptions rather than measurements —
 prices only readable while standing at a vendor, drop rates nobody has ever
 observed, achievements it can only read as prose. Rather than hiding that behind
 a confident number:
@@ -42,8 +56,12 @@ a confident number:
 
 Some things genuinely cannot be known by anyone: soloability of legacy raids
 depends on class, gear and patch and no API exposes it; a drop rate nobody has
-observed does not exist to look up. Those are recorded as unknown rather than
-guessed. Inventing them would make the numbers look better and be worth less.
+observed does not exist to look up; WoW exposes no reverse lookup from an item
+or quest NAME to its id, from the client or anywhere else. Those are recorded as
+unknown rather than guessed, and the scorecard leaves the platform limits out of
+its denominator rather than pegging itself below 100 forever for something
+nobody can fix. Inventing the numbers would make them look better and be worth
+less.
 
 ## Commands
 
@@ -57,6 +75,14 @@ guessed. Inventing them would make the numbers look better and be worth less.
 | `/mm timemodel` | measured vs assumed split |
 | `/mm contribute` | export the gaps a player could answer |
 | `/mm resolve` | resolve ids from the client |
+| `/mm costs` | where each estimate's number comes from |
+| `/mm gaps` | what's missing, and whether anyone could supply it |
+| `/mm whynot` | why a planned mount isn't in the route |
+| `/mm compare` | mounts someone in your group has that you don't |
+| `/mm selftest` | run the checks (145 of them) against live state |
+
+`/mm` on its own opens the window; `/mm report` bundles every diagnostic into
+one copyable dump.
 
 ## Helping it get better
 
