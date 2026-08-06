@@ -170,7 +170,7 @@ function UI.BuildCollection(panel)
 		filters.expansion = v
 		MM.db.ui.colExpansion = v or false
 		UI.RefreshCollection()
-	end, filters.expansion, "All", 170)
+	end, filters.expansion, "All expansions", 170)
 	expBtn:SetPoint("LEFT", search, "RIGHT", 12, 0)
 
 	local catValues = { "GROUP_DROPS", "GROUP_BUY", "GROUP_ACH" }
@@ -184,15 +184,16 @@ function UI.BuildCollection(panel)
 		filters.category = v
 		MM.db.ui.colCategory = v or false
 		UI.RefreshCollection()
-	end, filters.category, "All", 140)
+	end, filters.category, "All types", 140)
 	catBtn:SetPoint("LEFT", expBtn, "RIGHT", 6, 0)
 
 	local sortBtn = UI.MakePicker(panel, "Sort", { "EASE", "STATUS", "EXPANSION" },
-		{ EASE = "Easiest", STATUS = "Status", EXPANSION = "Expansion" }, function(v)
+		{ EASE = "Sort by easiest", STATUS = "Sort by status",
+		  EXPANSION = "Sort by expansion" }, function(v)
 			filters.sort = v
 			MM.db.ui.colSort = v or false
 			UI.RefreshCollection()
-		end, filters.sort, "Name", 130)
+		end, filters.sort, "Sort by name", 150)
 	sortBtn:SetPoint("LEFT", catBtn, "RIGHT", 6, 0)
 
 	local missing = UI.MakeCheck(panel, "Missing only", function(v)

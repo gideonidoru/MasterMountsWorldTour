@@ -83,11 +83,15 @@ local function initPlanRow(row, data)
 
 		row.num = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		row.num:SetPoint("LEFT", 6, 0)
-		row.num:SetWidth(22)
+		-- Wide enough for THREE digits and the full stop. A hundred-stop route
+		-- is normal and 22px truncated every one of them past 99 to "1...",
+		-- so the end of a long plan lost its numbering entirely.
+		row.num:SetWidth(30)
+		row.num:SetJustifyH("RIGHT")
 
 		row.icon = row:CreateTexture(nil, "ARTWORK")
 		row.icon:SetSize(30, 30)
-		row.icon:SetPoint("LEFT", 26, 0)
+		row.icon:SetPoint("LEFT", 40, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
 		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -261,7 +265,12 @@ function UI.BuildPlanner(panel)
 	-- way to learn which did what was to try them. Each group now sits above
 	-- the pane it affects.
 	local sessionDrop = UI.MakeSessionPicker(panel)
-	sessionDrop:SetPoint("TOPLEFT", panel, "TOPLEFT", 446, -2)
+	-- Anchored to the RIGHT EDGE, not a fixed x. A fixed 446 put it exactly
+	-- where the Type filter lands once the checkbox before it is laid out, and
+	-- the two drew on top of each other -- "NAllimit", with both arrows.
+	-- Anchoring to the edge it belongs to cannot collide with a group that
+	-- grows from the other side.
+	sessionDrop:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -12, -2)
 	panel.sessionDrop = sessionDrop
 	clearBtn:SetScript("OnClick", function() MM.Planner:Clear() end)
 
@@ -286,15 +295,16 @@ function UI.BuildPlanner(panel)
 		MM.Planner.filters.category = v
 		MM.db.ui.plnCategory = v or false
 		UI.RefreshPlanner()
-	end, MM.Planner.filters.category, "All", 140)
+	end, MM.Planner.filters.category, "All types", 140)
 	catBtn:SetPoint("LEFT", availChk.labelText, "RIGHT", 12, 0)
 
 	local sortBtn = UI.MakePicker(panel, "Sort", { "EASE", "STATUS", "EXPANSION" },
-		{ EASE = "Easiest", STATUS = "Status", EXPANSION = "Expansion" }, function(v)
+		{ EASE = "Sort by easiest", STATUS = "Sort by status",
+		  EXPANSION = "Sort by expansion" }, function(v)
 			MM.Planner.filters.sort = v
 			MM.db.ui.plnSort = v or false
 			UI.RefreshPlanner()
-		end, MM.Planner.filters.sort, "Name", 130)
+		end, MM.Planner.filters.sort, "Sort by name", 150)
 	sortBtn:SetPoint("LEFT", catBtn, "RIGHT", 6, 0)
 
 	-- left pane: missing

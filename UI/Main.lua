@@ -137,8 +137,17 @@ function UI.MakePicker(parent, prefix, values, labels, onChange, initial, allLab
 		local v = values[drop.mmIndex]
 		return prefix .. ": " .. (v and labels[v] or allLabel or "All")
 	end
-	-- SetText does nothing on a DropdownButton; the label setter is
-	-- SetDefaultText. Same trap the session picker hit.
+	-- THE VALUES HAVE TO NAME THEMSELVES.
+	--
+	-- SetText does nothing on a DropdownButton, and SetDefaultText only shows
+	-- while nothing is selected -- once a radio is ticked the template draws
+	-- that entry's text and any prefix set here is gone. Two filters side by
+	-- side both read "All" and nothing said which was which, which is worse
+	-- than the cyclers they replaced.
+	--
+	-- So the prefix lives in the VALUE: "All expansions", "All types", "Sort
+	-- by easiest". The menu title still names the filter, and the closed
+	-- control reads as a sentence rather than a fragment.
 	drop.mmSetLabel = function(self)
 		if self.SetDefaultText then self:SetDefaultText(text())
 		elseif self.SetText then self:SetText(text()) end
