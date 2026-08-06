@@ -15,6 +15,50 @@ local _, MM = ...
 MM.Diagnostics = {}
 local D = MM.Diagnostics
 
+-- WHAT COUNTS AS UNPRICED, in one place.
+--
+-- Defined as a function rather than inline because two things ask the
+-- question -- the report, and the self-test that keeps it honest -- and the
+-- last time this logic existed in two places the two answers drifted.
+--
+-- PROFESSION belongs here for the same reason the others do: a craft needs
+-- materials, and a craft with no cost at all is a mount the planner would
+-- treat as free. This is the list that turns "charged as unknown" back into
+-- real data.
+--
+-- ONLY WHAT SOMEONE CAN ACTUALLY GO AND BUY. 62 of the original 160 were
+-- mounts nobody can obtain any more -- 33 of them MoP Remix, whose vendor and
+-- currency both left with the event. This list exists to ask a player to stand
+-- at a till and read a price, and it was sending them to tills that no longer
+-- exist.
+--
+-- A STATED GOLD PRICE IS A PRICE. This asked whether a record had CONDITIONS,
+-- and gold is a FIELD -- so the Dragon Turtles at 1g and the wind riders at
+-- 50g, priced from two independent sources agreeing to the copper, were listed
+-- as needing someone to go and read a price off a vendor. Fifty of the
+-- sixty-eight were already answered. The same shape of error as the
+-- contribution counter, which measured "has no conditions" while calling
+-- itself "has no price", and a list that asks for work already done spends the
+-- one resource it exists to collect.
+--
+-- Crafts likewise: reagents ARE their cost, harvested from the profession
+-- window, and Crafting knows which ones it has.
+function D.IsUnpriced(rec)
+	if not rec or not rec.obtainable then return false end
+	local cat = rec.category
+	if not (cat == "CURRENCY" or cat == "VENDOR"
+		or cat == "TIMEWALKING" or cat == "PROFESSION") then return false end
+	if rec.conditions and #rec.conditions > 0 then return false end
+	if rec.goldCost then return false end
+	if rec.acquire then return false end
+	if (rec.source or ""):lower():find("gold") then return false end
+	if cat == "PROFESSION" and MM.Crafting and MM.Crafting.IsPriced
+		and MM.Crafting.IsPriced(rec) then return false end
+	return true
+end
+
+
+
 -- Strip WoW colour escapes and texture links so the result is paste-clean.
 local function plain(s)
 	s = tostring(s or "")
@@ -452,22 +496,7 @@ MM:On("MM_GAPS_DEBUG", function()
 	-- to "we don't know" and the wrong answer to "we could have looked it up".
 	local unpriced, withNumber = {}, 0
 	for _, rec in pairs(MM.DBByName) do
-		-- PROFESSION belongs here for the same reason the others do: a craft
-		-- needs materials, and a craft with no conditions block is a mount the
-		-- planner would otherwise treat as free. This is the list that turns
-		-- "charged as unknown" back into real data.
-		-- ONLY WHAT SOMEONE CAN ACTUALLY GO AND BUY.
-		--
-		-- 62 of the 160 were mounts nobody can obtain any more -- 33 of them
-		-- MoP Remix, whose vendor and currency both left with the event. This
-		-- list exists to ask a player to stand at a till and read a price, and
-		-- it was sending them to tills that no longer exist.
-		if rec.obtainable
-			and (rec.category == "CURRENCY" or rec.category == "VENDOR"
-			or rec.category == "TIMEWALKING" or rec.category == "PROFESSION")
-			and not (rec.conditions and #rec.conditions > 0)
-			and not (rec.acquire)
-			and not (rec.source or ""):lower():find("gold") then
+		if D.IsUnpriced(rec) then
 			unpriced[#unpriced + 1] = rec.name
 			-- Whether the source text states a PRICE, not merely a digit.
 			-- Counting any digit called "Renown 39", "added 11.0.7" and

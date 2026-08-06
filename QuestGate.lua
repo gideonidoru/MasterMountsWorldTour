@@ -143,6 +143,59 @@ local function wrongClass(rec)
 	end
 	return nil
 end
+QG.WrongClass = wrongClass
+
+-- Race, read the same way and for the same reason: a heritage mount names its
+-- race in prose and nowhere else.
+--
+-- NOT a routing gate -- it is not in HardGate. A record is race-locked for the
+-- CHARACTER, and the plan is account-wide, so a Blood Elf mount is real work
+-- for someone in the warband. What it does explain is why a mount is missing
+-- from THIS character's journal, which is a question the audit asks.
+local RACE_TOKENS = {
+	"blood elf", "night elf", "void elf", "lightforged draenei", "dark iron dwarf",
+	"highmountain tauren", "mag'har orc", "zandalari troll", "kul tiran",
+	"mechagnome", "vulpera", "nightborne", "earthen", "haranir", "dracthyr",
+	"pandaren", "worgen", "goblin", "gnome", "dwarf", "orc", "tauren", "troll",
+	"undead", "draenei", "human",
+}
+
+-- THE RACE HAS TO BE THE THING BEING REQUIRED.
+--
+-- A first cut looked for a requirement WORD anywhere in the text and a race
+-- name anywhere else in it. "Only available during Brewfest" plus a dwarf
+-- mentioned in the flavour text is then a race lock, and a mount quietly
+-- stops being reported as missing for the wrong reason -- which is worse than
+-- not checking, because it silences the very list that would have shown it.
+--
+-- So the race and the requirement must be the SAME phrase. These four
+-- wordings are the ones the database actually uses.
+local function requirementFor(hay, race)
+	local r = race:gsub("%-", "%%-"):gsub("'", "'")
+	return hay:find("requires? an? " .. r)
+		or hay:find(r .. "%-only")
+		or hay:find(r .. " heritage")
+		or hay:find(r .. " characters? only")
+		or hay:find(r .. " only")
+end
+
+function QG.WrongRace(rec)
+	if not rec then return nil end
+	local hay = ((rec.source or "") .. " " .. (rec.notes or "")):lower()
+	local mine = select(2, UnitRace("player"))
+	mine = mine and mine:lower():gsub("[^%a]", "") or ""
+	-- Longest first, so "blood elf" is not shadowed by "elf" inside it.
+	for _, word in ipairs(RACE_TOKENS) do
+		if requirementFor(hay, word) then
+			if mine ~= word:gsub("[^%a]", "") then
+				return (word:gsub("(%a)([%w']*)", function(a, b)
+					return a:upper() .. b end) .. " only")
+			end
+			return nil
+		end
+	end
+	return nil
+end
 
 local function knownProfessions()
 	local set = {}

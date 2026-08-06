@@ -274,6 +274,76 @@ local function runData()
 		return bad == 0, example
 	end)
 
+	check("A mount we already priced is not asked about again", function()
+		-- The unpriced list asks a player to stand at a vendor and read a price
+		-- off the screen. That is the scarcest thing this addon can request, so
+		-- asking for something already answered is worse than not asking.
+		--
+		-- It tested for CONDITIONS, and a gold price is a FIELD -- so fifty of
+		-- the sixty-eight it listed were priced, most of them from two
+		-- independent sources agreeing to the copper. Exactly the shape of the
+		-- contribution counter that measured "has no conditions" while calling
+		-- itself "has no price".
+		if not (MM.Diagnostics and MM.Diagnostics.IsUnpriced) then
+			return nil, "IsUnpriced not present"
+		end
+		if #recs == 0 then return nil, "no records loaded" end
+		local listed, priced, bad = 0, 0, nil
+		for _, r in ipairs(recs) do
+			if r.goldCost then priced = priced + 1 end
+			if MM.Diagnostics.IsUnpriced(r) then
+				listed = listed + 1
+				if r.goldCost then bad = bad or (r.name .. " costs " .. r.goldCost .. "g") end
+				for _, c in ipairs(r.conditions or {}) do
+					if (c.type == "CURRENCY" or c.type == "ITEM") and c.amount then
+						bad = bad or (r.name .. " already states its cost")
+					end
+				end
+			end
+		end
+		if bad then return false, bad end
+		if priced == 0 then return false, "no record carries a gold price" end
+		return true, ("%d still unpriced; none of the %d priced ones are on the list")
+			:format(listed, priced)
+	end)
+
+	check("A mount locked to another class is not reported as missing", function()
+		-- The audit listed twenty records as "obtainable, this faction, and
+		-- still missing", which reads as twenty mounts the addon cannot see. A
+		-- Druid form and a heritage mount are absent from a Hunter's journal
+		-- for the same reason the other faction's are -- and calling them
+		-- suspects sends someone hunting for a typo in a name that is correct.
+		--
+		-- Asserts the gates identify a real mismatch AND refuse to invent one:
+		-- a record naming this character's own class or race must come back
+		-- clean, or every mount would be excused and the list would empty
+		-- itself into looking healthy.
+		local QG = MM.QuestGate
+		if not (QG and QG.WrongClass and QG.WrongRace) then
+			return false, "class/race gates not present"
+		end
+		local myClass = select(2, UnitClass("player"))
+		local myRace = select(2, UnitRace("player"))
+		if not (myClass and myRace) then return nil, "class or race unreadable" end
+
+		local mine = { category = "CLASS", source = "", notes = myClass:lower() .. " only." }
+		if QG.WrongClass(mine) then
+			return false, "claimed a mismatch against this character's own class"
+		end
+		local other = (myClass == "DRUID") and "paladin" or "druid"
+		local theirs = { category = "CLASS", source = "", notes = other .. " only." }
+		if not QG.WrongClass(theirs) then
+			return false, "did not spot a " .. other .. "-only mount"
+		end
+		-- Race wording has to be a REQUIREMENT. "Sold in Silvermoon" names no
+		-- race; "Requires a Blood Elf character" does.
+		local place = { notes = "Sold in Silvermoon City by a blood elf vendor." }
+		if QG.WrongRace(place) then
+			return false, "read a race requirement out of a vendor's description"
+		end
+		return true, ("class and race gates agree with %s %s"):format(myRace, myClass)
+	end)
+
 	check("A repeated notice stays quiet, a changed one speaks", function()
 		-- Chat is shared with the guild, the group, loot and every other addon,
 		-- so a line has to earn its place. Two notices were repeating at every

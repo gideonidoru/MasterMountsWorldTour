@@ -316,6 +316,8 @@ MM:On("MM_AUDIT", function()
 	-- including the duplicates AddMounts demoted to altSources; counting those
 	-- inflates the total and is the same mistake the offline audit made once.
 	local orphans, byCategory, realGaps, otherFaction, unreleased = 0, {}, {}, 0, 0
+	local charLocked, noSpell = 0, 0
+	local QG = MM.QuestGate
 	for _, rec in ipairs(MM.DBList) do
 		local canon = (rec.spellID and MM.DBBySpell[rec.spellID] == rec)
 			or (rec.name and MM.DBByName[rec.name:lower()] == rec)
@@ -332,14 +334,27 @@ MM:On("MM_AUDIT", function()
 				-- those are expected to be absent and are not evidence of
 				-- anything. Counting them as suspects reported 157 "likely wrong
 				-- names" that were simply Alliance mounts on a Horde character.
+				local locked = QG and ((QG.WrongClass and QG.WrongClass(rec))
+					or (QG.WrongRace and QG.WrongRace(rec)))
 				if rec.unreleased then
 					-- Content from a patch that is not live. Its absence from the
 					-- journal is the expected state, not a gap.
 					unreleased = unreleased + 1
 				elseif rec.faction and MM.playerFaction and rec.faction ~= MM.playerFaction then
 					otherFaction = otherFaction + 1
+				elseif locked then
+					-- A Druid form or a heritage mount is absent from a Hunter's
+					-- journal for the same reason the other faction's are, and
+					-- listing it as a suspect sends someone looking for a typo
+					-- in a name that is perfectly correct.
+					charLocked = charLocked + 1
 				elseif rec.obtainable ~= false then
 					tinsert(realGaps, rec.name or "?")
+					-- A record with no spellID can only be matched on its NAME,
+					-- so a name that differs by a punctuation mark misses
+					-- silently. Worth counting: it says which half of the list
+					-- is a naming problem and which half is a real absence.
+					if not rec.spellID then noSpell = noSpell + 1 end
 				end
 			end
 		end
@@ -377,20 +392,36 @@ MM:On("MM_AUDIT", function()
 	MM:Print("  (%d further journal entries are hidden for this character — other faction, class or race — and are matched but not listed.)",
 		S.hiddenCount or 0)
 
-	local order = {}
-	for cat in pairs(byCategory) do tinsert(order, cat) end
-	table.sort(order, function(a, b) return byCategory[a] > byCategory[b] end)
-	local parts = {}
-	for _, cat in ipairs(order) do
-		tinsert(parts, ("%s %d"):format(cat, byCategory[cat]))
-	end
-	MM:Print("  by category: %s", table.concat(parts, ", "))
-	if unreleased > 0 then
-		MM:Print("  %d are unreleased patch content — no journal entry exists yet.", unreleased)
-	end
-	if otherFaction > 0 then
-		MM:Print("  %d are the other faction's mounts — the journal never lists those.",
-			otherFaction)
+	-- TWO DIFFERENT POPULATIONS, AND THEY WERE PRINTED AS ONE.
+	--
+	-- Above this line: journal mounts we have no record for. Below it: OUR
+	-- records with no journal entry. Opposite directions, different fixes --
+	-- and with no heading between them the category breakdown and the three
+	-- lines that follow read as a continuation of the list above, so "20 are
+	-- obtainable, this faction, and still missing" looked like twenty mounts
+	-- the addon could not see. It is twenty records the journal does not list.
+	if orphans > 0 then
+		MM:Print("  |cffffd84d%d records of ours have no journal entry|r "
+			.. "(the opposite direction to the list above):", orphans)
+		local order = {}
+		for cat in pairs(byCategory) do tinsert(order, cat) end
+		table.sort(order, function(a, b) return byCategory[a] > byCategory[b] end)
+		local parts = {}
+		for _, cat in ipairs(order) do
+			tinsert(parts, ("%s %d"):format(cat, byCategory[cat]))
+		end
+		MM:Print("     by category: %s", table.concat(parts, ", "))
+		if unreleased > 0 then
+			MM:Print("     %d are unreleased patch content — no journal entry exists yet.", unreleased)
+		end
+		if otherFaction > 0 then
+			MM:Print("     %d are the other faction's mounts — the journal never lists those.",
+				otherFaction)
+		end
+		if charLocked > 0 then
+			MM:Print("     %d are locked to another class or race — absent from THIS "
+				.. "character's journal, and still real work for the warband.", charLocked)
+		end
 	end
 
 	-- For each genuine gap, suggest the journal mount it probably IS. Most of
@@ -462,16 +493,31 @@ MM:On("MM_AUDIT", function()
 	end
 
 	if #realGaps == 0 then
-		MM:Print("  |cff40d860The rest are unobtainable or other-faction records — all expected.|r")
+		MM:Print("     |cff40d860Every one is accounted for — unreleased, other faction, "
+			.. "or locked to another class or race.|r")
 	else
-		MM:Print("  |cffffd84d%d are obtainable, this faction, and still missing — check these:|r", #realGaps)
+		MM:Print("     |cffffd84d%d are unaccounted for — this faction, this character, "
+			.. "obtainable, and the journal still does not list them:|r", #realGaps)
 		for i = 1, math.min(#realGaps, 25) do
 			local name = realGaps[i]
 			local match, why = suggest(name)
-			MM:Print("     %s%s", name,
+			MM:Print("        %s%s", name,
 				match and ("  |cff40d860-> probably \"%s\"|r |cff9a9a9a(%s)|r"):format(match, why) or "")
 		end
-		if #realGaps > 25 then MM:Print("     ...and %d more.", #realGaps - 25) end
+		if #realGaps > 25 then MM:Print("        ...and %d more.", #realGaps - 25) end
+		-- WHICH HALF IS A NAMING PROBLEM.
+		--
+		-- A record carrying a spellID is matched on the spell, which is exact,
+		-- so its absence is real. A record without one can only be matched on
+		-- its name -- and a name differing by an apostrophe or a hyphen misses
+		-- in silence, which looks identical to a mount that is genuinely not
+		-- there. Splitting the list says which of the two to go and look for.
+		if noSpell > 0 then
+			MM:Print("        |cff9a9a9a%d of those carry no spellID, so only the NAME "
+				.. "can match — check the spelling before assuming the mount is absent. "
+				.. "The other %d are matched on their spell and are genuinely not listed.|r",
+				noSpell, #realGaps - noSpell)
+		end
 	end
 end)
 
