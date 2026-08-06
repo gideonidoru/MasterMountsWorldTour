@@ -48,6 +48,9 @@ local nodeWorldCache = {}
 -- Nearest entry points for a zone that has no flight point of its own.
 -- Keyed by zone: every journey out of Tazavesh asks the same question.
 local nearZoneCache = {}
+-- Why a plan failed, kept beside the plan cache so a repeat query gets the
+-- reason and not just another silent nil.
+local planWhy = {}
 local function nodeWorld(name, mapID, x, y)
 	local hit = nodeWorldCache[name]
 	if hit ~= nil then return hit or nil end
@@ -96,6 +99,7 @@ function J.Forget()
 	planCache = {}
 	nodeWorldCache = {}
 	nearZoneCache = {}
+	planWhy = {}
 end
 
 local function build()
@@ -333,12 +337,15 @@ end
 function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 	build()
 	planCache = planCache or {}
-	if not (fromZone and toZone) then return nil end
+	if not (fromZone and toZone) then return nil, nil, "no zone name at one end" end
 	fromZone, toZone = fromZone:lower(), toZone:lower()
 
 	local key = ("%s|%s"):format(fromZone, toZone)
 	local hit = planCache[key]
-	if hit ~= nil then return hit ~= false and hit[1] or nil, hit ~= false and hit[2] or nil end
+	if hit ~= nil then
+		if hit == false then return nil, nil, planWhy[key] end
+		return hit[1], hit[2]
+	end
 
 	local ypm = J.SpeedFor(nil)
 	local START, GOAL = "\1start", "\1goal"
@@ -455,11 +462,14 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 		return out
 	end
 
+	local fromCount, toCount = 0, 0
 	for _, p in ipairs(attachPoints(fromZone, fromX, fromY)) do
 		addEdge(START, p.name, p.d / ypm * 60, "fly")
+		fromCount = fromCount + 1
 	end
 	for _, p in ipairs(attachPoints(toZone, toX, toY)) do
 		addEdge(p.name, GOAL, p.d / ypm * 60, "fly")
+		toCount = toCount + 1
 	end
 	-- Flying the whole way is always on the table, never assumed.
 	if directFlyMinutes then addEdge(START, GOAL, directFlyMinutes * 60, "fly") end
@@ -555,7 +565,28 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes)
 	for _, name in ipairs(byZone[toZone] or {}) do
 		if edges[name] then edges[name][GOAL] = nil end
 	end
-	if not best then planCache[key] = false return nil end
+	-- SAY WHY, and say which of the three it was.
+	--
+	-- A bare nil reads as "no route exists" when it usually means we could not
+	-- get ON to the graph, or could not get OFF it at the far end -- three
+	-- different faults needing three different fixes, and "-" tells them apart
+	-- from nothing. The network layer already reports its reason; this one
+	-- staying silent made it the harder of the two to diagnose despite being
+	-- the one that decides the route.
+	if not best then
+		local why
+		if fromCount == 0 then
+			why = ("no way into the travel graph from %s"):format(fromZone)
+		elseif toCount == 0 then
+			why = ("no way to reach %s from the graph"):format(toZone)
+		else
+			why = ("no path %s -> %s (%d start / %d goal attachments)")
+				:format(fromZone, toZone, fromCount, toCount)
+		end
+		planCache[key] = false
+		planWhy[key] = why
+		return nil, nil, why
+	end
 
 	local legs, node = {}, GOAL
 	while prev[node] do

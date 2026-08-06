@@ -656,12 +656,14 @@ function RM.TravelReport()
 			-- consults, and it chains every mode together; leaving it out made
 			-- the diagnostic contradict the thing it was diagnosing, which is
 			-- worse than reporting nothing.
-			local journey, jlegs
+			local journey, jlegs, jwhy
 			if MM.Journey and MM.Journey.Plan and C_Map and C_Map.GetMapInfo then
 				local fi, ti = C_Map.GetMapInfo(a.mapID), C_Map.GetMapInfo(b.mapID)
 				if fi and ti and fi.name and ti.name then
-					journey, jlegs = MM.Journey.Plan(fi.name, a.x, a.y,
+					journey, jlegs, jwhy = MM.Journey.Plan(fi.name, a.x, a.y,
 						ti.name, b.x, b.y, direct)
+				else
+					jwhy = "this client cannot name one of these maps"
 				end
 			end
 
@@ -687,6 +689,12 @@ function RM.TravelReport()
 				if who == "journey" and jlegs and MM.Journey.Describe then
 					local desc = MM.Journey.Describe(jlegs)
 					if desc then w("      route: %s", desc) end
+				elseif not journey and jwhy then
+					-- And why it declined, for the same reason the network says
+					-- so: "could not get on to the graph", "could not get off at
+					-- the far end" and "genuinely no path" are three different
+					-- faults with three different fixes.
+					w("      route: %s", jwhy)
 				end
 			end
 		end
