@@ -679,6 +679,29 @@ local function runLogic()
 		return true, ("all %d weights move a routing input"):format(#probes)
 	end)
 
+	check("The router model gives the route back", function()
+		-- The planner showed six mounts across five stops after a /mm report --
+		-- the harness's own sample, not the plan. RouterModel swaps the plan
+		-- for a small sample, and its restoring Build returned EARLY because
+		-- the build signature had already been put back, so the signature
+		-- claimed a route that R.route no longer held.
+		local R = MM.Router
+		if not (R and R.Build and MM.RouterModel and MM.RouterModel.Run) then
+			return nil, "router model not available"
+		end
+		R:Build()
+		local before = #(R.route or {})
+		if before < 2 then return nil, "no route to protect" end
+		local ok = pcall(MM.RouterModel.Run)
+		if not ok then return nil, "model did not run" end
+		local after = #(R.route or {})
+		if after < before then
+			return false, ("the model kept the route: %d stops -> %d")
+				:format(before, after)
+		end
+		return true, ("%d stops before the model, %d after"):format(before, after)
+	end)
+
 	check("The route builds cleanly", function()
 		-- A one-line omission broke every route build in the addon and 57 checks
 		-- did not notice, because every one of them tested a PIECE. Nothing ran

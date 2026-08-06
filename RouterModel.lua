@@ -476,6 +476,20 @@ function RM.Run(n)
 		end
 	end)
 	-- Leave the player looking at their own route, not the model's.
+	--
+	-- THIS BUILD HAS TO BE FORCED. withProfile restores builtSignature on its
+	-- way out, so by the time we get here the signature says the route is
+	-- already correct for the current plan -- and Build returns early on
+	-- exactly that test. R.route was still holding the model's six-goal
+	-- sample, so the restore did nothing and the planner showed the harness's
+	-- route: six mounts across five stops, in place of a hundred.
+	--
+	-- Clearing the signature first is the same admission withProfile makes
+	-- above for its own builds. A signature is a claim that the route matches
+	-- the plan, and after the harness has been swapping plans underneath it,
+	-- that claim is not true.
+	local R = MM.Router
+	if R then R.builtSignature, R.chartRank = nil, nil end
 	MM.Router:Build()
 	local fails, exercised = checkInvariants(results, sample)
 	return { sample = sample, results = results, fails = fails, exercised = exercised,
