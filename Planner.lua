@@ -670,6 +670,9 @@ local ACHIEVEMENT_MINUTES = 6 * 60         -- a meta from nothing
 local CRITERION_MINUTES = 20
 local CHAIN_STEP_MINUTES = 20              -- per outstanding item in a chain
 local UNKNOWN_COST_MINUTES = 240
+-- Walking up to a vendor you can already afford and clicking buy. Small, and
+-- an assumption, but the alternative was ranking a 10 gold ram like a raid.
+local PURCHASE_MINUTES = 2
 -- Categories whose real cost is a PRICE -- currency, reputation, materials --
 -- rather than a fight or a lockout. When one of these carries no conditions we
 -- can read, it is charged as unknown rather than free, and reported in /mm gaps
@@ -954,7 +957,36 @@ local function computeTimeCommitment(entry)
 		end
 	end
 
-	if not craftPriced and PRICED[rec.category]
+	-- A STATED GOLD PRICE, CHECKED AGAINST WHAT YOU HAVE.
+	--
+	-- 86 vendor mounts name their price in prose -- "for about 10g" -- and were
+	-- excluded from the assumption above by the `gold` test, which meant they
+	-- carried no cost term at all and fell to the category effort rating. A ten
+	-- gold ram and a raid grind were ranked by the same number.
+	--
+	-- Gold is neither a currency id nor a duration, so the useful question is
+	-- not "how long is 10 gold" but "can this character already afford it",
+	-- which the client answers exactly. If it can, the only real cost left is
+	-- walking up and clicking. If it cannot, we are back to not knowing, because
+	-- how long gold takes to earn depends on things no API exposes.
+	local goldPriced = false
+	if rec.goldCost and rec.goldCost > 0 then
+		local have = GetMoney and GetMoney() or nil
+		local need = rec.goldCost * 10000  -- copper
+		if have then
+			goldPriced = true
+			if have >= need then
+				add(("%s gold, which you already have"):format(U.Comma(rec.goldCost)),
+					PURCHASE_MINUTES, "assumed")
+			else
+				add(("%s gold, and you are %s short"):format(
+					U.Comma(rec.goldCost), U.Comma(math.ceil((need - have) / 10000))),
+					UNKNOWN_COST_MINUTES, "assumed")
+			end
+		end
+	end
+
+	if not craftPriced and not goldPriced and PRICED[rec.category]
 		and not (rec.conditions and #rec.conditions > 0)
 		and not (rec.source or ""):lower():find("gold") then
 		add("cost not yet modelled", UNKNOWN_COST_MINUTES, "assumed")

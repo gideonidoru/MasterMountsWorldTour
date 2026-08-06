@@ -1579,6 +1579,61 @@ local function runLogic()
 			:format(obj.label, obj.tocname, version, tostring(category or "none"))
 	end)
 
+	check("A price you can already pay is not a grind", function()
+		-- 86 vendor mounts state a gold price in prose and carried no cost the
+		-- planner could read, so each fell to its category's effort rating: a
+		-- ten gold ram ranked like a raid. Gold is not a duration, so what is
+		-- checked is affordability, which the client answers exactly.
+		--
+		-- The failure this guards is silence. If the overrides stop loading, or
+		-- GetMoney stops answering, nothing errors -- the mounts simply drift
+		-- back to being costed like grinds and the order quietly worsens.
+		local db = MM.DBByName
+		if not db then return nil, "database not loaded" end
+		local priced, cheapest, dearest = 0, nil, nil
+		for _, rec in pairs(db) do
+			if rec.goldCost then
+				priced = priced + 1
+				if rec.goldCost <= 0 then
+					return false, (rec.name or "?") .. " has a goldCost of zero"
+				end
+				cheapest = math.min(cheapest or rec.goldCost, rec.goldCost)
+				dearest = math.max(dearest or rec.goldCost, rec.goldCost)
+			end
+		end
+		if priced == 0 then return false, "no gold prices loaded at all" end
+		if not GetMoney then return nil, "this client has no GetMoney" end
+
+		-- And it must actually reach the estimate. A number in the record that
+		-- no cost term reads is the shape of bug this suite keeps missing.
+		local sample, entry
+		for _, rec in pairs(db) do
+			if rec.goldCost and rec.goldCost * 10000 <= (GetMoney() or 0) then
+				local e = rec.spellID and MM.Scanner and MM.Scanner.bySpell
+					and MM.Scanner.bySpell[rec.spellID]
+				if e then sample, entry = rec, e break end
+			end
+		end
+		if not entry then
+			return true, ("%d priced %sg-%sg; none affordable and scanned right now")
+				:format(priced, U.Comma(cheapest), U.Comma(dearest))
+		end
+		local _, parts = MM.Planner.TimeCommitment(entry)
+		if parts then
+			for _, part in ipairs(parts) do
+				if (part.label or ""):find("already have") then
+					return true, ("%d priced %sg-%sg; %s costs %d min, not %d")
+						:format(priced, U.Comma(cheapest), U.Comma(dearest),
+							sample.name, part.minutes, 240)
+				end
+			end
+			return false, (sample.name or "?")
+				.. " is affordable but no cost term says so"
+		end
+		return true, ("%d gold prices loaded, %sg to %sg"):format(
+			priced, U.Comma(cheapest), U.Comma(dearest))
+	end)
+
 	check("Most of the world is reachable from one place", function()
 		-- THE CHECK NOTHING WAS DOING. Node and edge counts were healthy while
 		-- the graph was 115 separate islands whose largest held 94 nodes -- 7.9%

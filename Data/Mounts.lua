@@ -197,6 +197,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Dwarf characters.",
+		goldCost = 10,
 	},
 	{
 		name = "White Ram",
@@ -226,6 +227,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Dwarf characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Brown Ram",
@@ -255,6 +257,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Dwarf characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Swift Brown Ram",
@@ -284,6 +287,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Dwarf characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Gray Ram",
@@ -313,6 +317,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Dwarf characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift White Ram",
@@ -342,6 +347,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Dwarf characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Striped Frostsaber",
@@ -368,6 +374,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Night Elf characters. Darnassus is still reachable in retail despite the Teldrassil story.",
+		goldCost = 10,
 	},
 	{
 		name = "Spotted Frostsaber",
@@ -397,6 +404,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Night Elf characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Striped Nightsaber",
@@ -423,6 +431,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Night Elf characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Striped Dawnsaber",
@@ -475,6 +484,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Night Elf characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Frostsaber",
@@ -501,6 +511,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Night Elf characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Stormsaber",
@@ -527,6 +538,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Night Elf characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Blue Mechanostrider",
@@ -556,6 +568,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Gnome characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Red Mechanostrider",
@@ -585,6 +598,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Gnome characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Green Mechanostrider",
@@ -614,6 +628,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Gnome characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Unpainted Mechanostrider",
@@ -643,6 +658,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Gnome characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Swift Yellow Mechanostrider",
@@ -672,6 +688,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Gnome characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift White Mechanostrider",
@@ -701,6 +718,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Gnome characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Green Mechanostrider",
@@ -730,6 +748,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Gnome characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Timber Wolf",
@@ -756,6 +775,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Orc characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Dire Wolf",
@@ -782,6 +802,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Orc characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Brown Wolf",
@@ -808,6 +829,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Orc characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Swift Gray Wolf",
@@ -834,6 +856,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Orc characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Brown Wolf",
@@ -860,6 +883,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Orc characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Timber Wolf",
@@ -886,6 +910,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Orc characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Emerald Raptor",
@@ -915,6 +940,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Troll characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Turquoise Raptor",
@@ -941,6 +967,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Troll characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Violet Raptor",
@@ -967,6 +994,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Troll characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Swift Blue Raptor",
@@ -993,6 +1021,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Troll characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Olive Raptor",
@@ -1019,6 +1048,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Troll characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Swift Orange Raptor",
@@ -1045,6 +1075,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Troll characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Gray Kodo",
@@ -1074,6 +1105,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Tauren characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Brown Kodo",
@@ -1100,6 +1132,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Tauren characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Great White Kodo",
@@ -1126,6 +1159,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Tauren characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Great Gray Kodo",
@@ -1152,6 +1186,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Tauren characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Great Brown Kodo",
@@ -1178,6 +1213,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Tauren characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Red Skeletal Horse",
@@ -1204,6 +1240,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Undead characters. If Brill looks war-torn, talk to Zidormi to return to the pre-Fourth War phase.",
+		goldCost = 10,
 	},
 	{
 		name = "Blue Skeletal Horse",
@@ -1230,6 +1267,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Undead characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Brown Skeletal Horse",
@@ -1256,6 +1294,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Undead characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Green Skeletal Warhorse",
@@ -1282,6 +1321,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Undead characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Purple Skeletal Warhorse",
@@ -1308,6 +1348,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Undead characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Ochre Skeletal Warhorse",
@@ -1334,6 +1375,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Added to the vendor in Cataclysm (4.0.3) but part of the classic skeletal horse line. Reputation requirement waived for Undead characters.",
+		goldCost = 100,
 	},
 	{
 		name = "Winterspring Frostsaber",
@@ -4599,6 +4641,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Three-person mount with onboard repair and reagent vendors (vendors can be dismissed to seat passengers).",
+		goldCost = 20000,
 	},
 	{
 		name = "Wooly Mammoth",
@@ -6439,6 +6482,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Giant golden lion. Originally required Guild Level 25; since guild levels were removed it only needs Exalted guild rep.",
+		goldCost = 1500,
 	},
 	{
 		name = "Kor'kron Annihilator",
@@ -6467,6 +6511,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Armored war wolf. Originally required Guild Level 25; now only Exalted guild rep.",
+		goldCost = 1500,
 	},
 	{
 		name = "Dark Phoenix",
@@ -6508,6 +6553,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "The guild achievement is trivially completed today by a few guildmates running old Cataclysm raids together.",
+		goldCost = 3000,
 		solo = true,
 	},
 	{
@@ -8175,6 +8221,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Carries a Mystic Birdhat reforger (now transmog vendor) and repair vendor. No reputation discounts apply.",
+		goldCost = 120000,
 	},
 	{
 		name = "Green Dragon Turtle",
@@ -8683,6 +8730,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Mogu'shan Vaults, Heart of Fear and Terrace of Endless Spring achievements; soloable.",
+		goldCost = 3000,
 		solo = false,
 	},
 	{
@@ -9726,6 +9774,7 @@ MM.AddMounts({
 		effort = 2,
 		access = "Not in Ashran. Upgrade your garrison Town Hall to level 3, then buy from the trader standing inside it for 20,000 gold.",
 		notes = "Level 3 garrison Town Hall. The vendor moves as the garrison levels, so only the garrison itself is recorded.",
+		goldCost = 20000,
 		paths = {
 			{
 				faction = "Alliance",
@@ -11390,6 +11439,7 @@ MM.AddMounts({
 		attempts = "NONE",
 		effort = 5,
 		notes = "One of the game's largest direct gold sinks.",
+		goldCost = 2000000,
 	},
 	{
 		name = "Darkwater Skate",
@@ -31842,6 +31892,7 @@ MM.AddMounts({
 			y = 58,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Black Skeletal Horse",
@@ -31862,6 +31913,7 @@ MM.AddMounts({
 			y = 51,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Black Wolf",
@@ -31882,6 +31934,7 @@ MM.AddMounts({
 			y = 35.2,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Trainee's Sentinel Nightsaber",
@@ -31896,6 +31949,7 @@ MM.AddMounts({
 			y = 83.9,
 		},
 		effort = 1,
+		goldCost = 8,
 	},
 	{
 		name = "Trainee's Outrider Wolf",
@@ -31910,6 +31964,7 @@ MM.AddMounts({
 			y = 19.9,
 		},
 		effort = 1,
+		goldCost = 8,
 	},
 	{
 		name = "Felsaber",
@@ -32788,6 +32843,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 1500,
 	},
 	{
 		name = "Brown Riding Goat",
@@ -32815,6 +32871,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 1500,
 	},
 	{
 		name = "White Riding Goat",
@@ -32842,6 +32899,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		goldCost = 1500,
 	},
 	{
 		name = "Grey Riding Yak",
@@ -32858,6 +32916,7 @@ MM.AddMounts({
 			y = 61.8,
 		},
 		effort = 1,
+		goldCost = 3000,
 	},
 	{
 		name = "Blonde Riding Yak",
@@ -32877,6 +32936,7 @@ MM.AddMounts({
 			y = 61.8,
 		},
 		effort = 1,
+		goldCost = 3000,
 	},
 	{
 		name = "Thundering August Cloud Serpent",
@@ -32903,6 +32963,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 10000,
 	},
 	{
 		name = "Onyx Cloud Serpent",
@@ -33008,6 +33069,7 @@ MM.AddMounts({
 			y = 60,
 		},
 		effort = 3,
+		goldCost = 2000,
 	},
 	{
 		name = "Grand Armored Wyvern",
@@ -33024,6 +33086,7 @@ MM.AddMounts({
 			y = 76,
 		},
 		effort = 3,
+		goldCost = 2000,
 	},
 	{
 		name = "Depleted-Kyparium Rocket",
@@ -33059,6 +33122,7 @@ MM.AddMounts({
 		source = "Old Brawler's Guild rank reward (1,500g at high rank); unavailable while that version is retired.",
 		effort = 4,
 		notes = "Brawler's Guild returned in patch 11.2.7 - check current season offerings.",
+		goldCost = 1500,
 	},
 	{
 		name = "Palehide Direhorn",
@@ -33081,6 +33145,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 500000,
 	},
 	{
 		name = "August Phoenix",
@@ -33385,6 +33450,7 @@ MM.AddMounts({
 			y = 59,
 		},
 		effort = 3,
+		goldCost = 100000,
 	},
 	{
 		name = "Warlord's Deathwheel",
@@ -33436,6 +33502,7 @@ MM.AddMounts({
 			y = 67,
 		},
 		effort = 3,
+		goldCost = 4000,
 		solo = true,
 	},
 	{
@@ -33667,6 +33734,7 @@ MM.AddMounts({
 			y = 45,
 		},
 		effort = 3,
+		goldCost = 5000,
 	},
 	{
 		name = "Bloodhoof Bull",
@@ -34548,6 +34616,7 @@ MM.AddMounts({
 			y = 71.7,
 		},
 		effort = 4,
+		goldCost = 90000,
 	},
 	{
 		name = "Snapdragon Kelpstalker",
@@ -34609,6 +34678,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 90000,
 	},
 	{
 		name = "Stormsong Coastwatcher",
@@ -34638,6 +34708,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 90000,
 	},
 	{
 		name = "Proudmoore Sea Scout",
@@ -34666,6 +34737,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 90000,
 	},
 	{
 		name = "Admiralty Stallion",
@@ -34694,6 +34766,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 10000,
 	},
 	{
 		name = "Voldunai Dunescraper",
@@ -34722,6 +34795,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 90000,
 	},
 	{
 		name = "Captured Swampstalker",
@@ -34751,6 +34825,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 90000,
 	},
 	{
 		name = "Priestess' Moonsaber",
@@ -34892,6 +34967,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 333333,
 	},
 	{
 		name = "Green Marsh Hopper",
@@ -34915,6 +34991,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 333333,
 	},
 	{
 		name = "Yellow Marsh Hopper",
@@ -34938,6 +35015,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 333333,
 	},
 	{
 		name = "Skullripper",
@@ -35033,6 +35111,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		goldCost = 524288,
 	},
 	{
 		name = "Mechanized Lumber Extractor",
@@ -35477,6 +35556,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 1,
+		goldCost = 40,
 	},
 	{
 		name = "Guardian Vorquin",
@@ -35500,6 +35580,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 1,
+		goldCost = 80,
 	},
 	{
 		name = "Majestic Armored Vorquin",
@@ -35523,6 +35604,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 1,
+		goldCost = 80,
 	},
 	{
 		name = "Swift Armored Vorquin",
@@ -35546,6 +35628,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 1,
+		goldCost = 80,
 	},
 	{
 		name = "Armored Vorquin Leystrider",
@@ -35572,6 +35655,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 1,
+		goldCost = 80,
 	},
 	{
 		name = "Iskaara Trader's Ottuk",
@@ -36890,6 +36974,7 @@ MM.AddMounts({
 			y = 21,
 		},
 		effort = 4,
+		goldCost = 10000,
 	},
 	{
 		name = "Brawlin' Bruno",
@@ -36904,6 +36989,7 @@ MM.AddMounts({
 			y = 21,
 		},
 		effort = 3,
+		goldCost = 4000,
 	},
 	{
 		name = "Skypaw Glimmerfur",
