@@ -473,6 +473,42 @@ local function runData()
 		return true, "no cost appears under two condition types"
 	end)
 
+	check("Promoting a faction variant keeps the ids it was given", function()
+		-- Every id, amount and factionID the data layers apply lands on the
+		-- CANONICAL record. Promoting the other faction's variant replaced that
+		-- table wholesale, so one side got a requirement with nothing on it:
+		-- three Vicious mounts asked for a "Vicious Saddle" with no item id, on
+		-- Horde only.
+		--
+		-- That is the worst shape a bug can have here -- correct on the client
+		-- you are testing, broken on the one you are not, and identical in the
+		-- data file. Assert it from the character actually running.
+		if #recs == 0 then return nil, "no records loaded" end
+		local bare, example, promoted = 0, nil, 0
+		for _, r in ipairs(recs) do
+			-- A record that HAD an alternate for this side has been promoted;
+			-- altSources still holds the ones that were not taken.
+			if r.altSources then promoted = promoted + 1 end
+			for _, c in ipairs(r.conditions or {}) do
+				-- A cost that names something and cannot say what it is cannot
+				-- be counted against the player's bags or balance.
+				if (c.type == "ITEM" or c.type == "CURRENCY") and c.name
+					and not c.id and not c.idAlliance and not c.idHorde
+					and c.amount then
+					bare = bare + 1
+					example = example or (r.name .. ": " .. c.name)
+				end
+			end
+		end
+		-- Two are known and explained in the data: Glowing Moths are world
+		-- objects rather than a currency, so no id exists to find.
+		if bare > 2 then
+			return false, ("%d costs name something with no id, e.g. %s"):format(bare, example)
+		end
+		return true, ("%d records carry alternates; %d unidentified costs, both explained")
+			:format(promoted, bare)
+	end)
+
 	check("Crafts know what they are made of", function()
 		-- Crafted mounts were costed on a flat guess because reagent lists are
 		-- not invented here, and the only route to real ones was a player

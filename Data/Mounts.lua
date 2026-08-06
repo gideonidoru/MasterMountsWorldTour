@@ -2676,7 +2676,8 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				name = "To Skettis! (after Threat from Above; opens the Skyguard dailies)",
+				id = 11098,
 				type = "QUEST",
 			},
 			{
@@ -2717,7 +2718,8 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				name = "To Skettis! (after Threat from Above; opens the Skyguard dailies)",
+				id = 11098,
 				type = "QUEST",
 			},
 			{
@@ -2758,7 +2760,8 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				name = "To Skettis! (after Threat from Above; opens the Skyguard dailies)",
+				id = 11098,
 				type = "QUEST",
 			},
 			{
@@ -2799,7 +2802,8 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				name = "To Skettis! (after Threat from Above; opens the Skyguard dailies)",
+				id = 11098,
 				type = "QUEST",
 			},
 			{
@@ -2840,7 +2844,8 @@ MM.AddMounts({
 				type = "REP",
 			},
 			{
-				name = "Threat from Above, then To Skettis! (opens the Skyguard dailies)",
+				name = "To Skettis! (after Threat from Above; opens the Skyguard dailies)",
+				id = 11098,
 				type = "QUEST",
 			},
 			{
@@ -12437,13 +12442,7 @@ MM.AddMounts({
 			x = 43.2,
 			y = 46.6,
 		},
-		conditions = {
-			{
-				name = "Bloodfang Widow",
-				cost = "2,000,000 gold",
-				type = "ITEM",
-			},
-		},
+		conditions = {},
 		attempts = "NONE",
 		effort = 5,
 		notes = "One of the game's largest direct gold sinks.",
@@ -17293,7 +17292,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr (for the drop; vendor alternative exists)",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 		},
 		dropRate = 1.488,
@@ -17325,7 +17325,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr (for the drop; vendor alternative exists)",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 			{
 				amount = 100,
@@ -17417,7 +17418,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 		},
 		effort = 3,
@@ -17440,7 +17442,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -17463,7 +17466,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -17486,7 +17490,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 		},
 		effort = 3,
@@ -17508,7 +17513,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Venthyr",
@@ -17545,7 +17551,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Venthyr",
@@ -17585,7 +17592,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Venthyr",
@@ -17614,7 +17622,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Venthyr",
@@ -17653,7 +17662,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 			{
 				name = "Grateful Offering",
@@ -17765,7 +17775,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Venthyr",
-				type = "QUEST",
+				id = 2,
+				type = "COVENANT",
 			},
 			{
 				amount = 1000,
@@ -17848,7 +17859,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -17870,7 +17882,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -17893,7 +17906,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				name = "Reservoir Anima",
@@ -17939,7 +17953,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				amount = 2500,
@@ -17966,7 +17981,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 		},
 		effort = 3,
@@ -17992,7 +18008,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				amount = 2500,
@@ -18018,7 +18035,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Kyrian",
@@ -18055,7 +18073,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Kyrian",
@@ -18085,7 +18104,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Kyrian",
@@ -18117,7 +18137,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Kyrian",
@@ -18177,7 +18198,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				name = "Grateful Offering",
@@ -18281,7 +18303,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Kyrian",
-				type = "QUEST",
+				id = 1,
+				type = "COVENANT",
 			},
 			{
 				amount = 1000,
@@ -18312,7 +18335,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord (for the drop; vendor alternative exists)",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 		},
 		dropRate = 0.62,
@@ -18343,7 +18367,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord (for the drop; vendor alternative exists)",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				amount = 100,
@@ -18382,7 +18407,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -18404,7 +18430,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -18425,7 +18452,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Necrolord",
@@ -18462,7 +18490,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Necrolord",
@@ -18502,7 +18531,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Necrolord",
@@ -18531,7 +18561,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Necrolord",
@@ -18573,7 +18604,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 		},
 		effort = 4,
@@ -18601,7 +18633,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 		},
 		effort = 4,
@@ -18623,7 +18656,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				amount = 3500,
@@ -18660,7 +18694,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				name = "Grateful Offering",
@@ -18769,7 +18804,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Necrolord (for the drop; vendor alternative exists)",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 		},
 		dropRate = 3.0303,
@@ -19052,7 +19088,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Necrolord",
-				type = "QUEST",
+				id = 4,
+				type = "COVENANT",
 			},
 			{
 				amount = 1000,
@@ -19227,7 +19264,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae (for the drop; vendor alternative exists)",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				amount = 75,
@@ -19266,7 +19304,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -19288,7 +19327,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 		},
 		effort = 2,
@@ -19309,7 +19349,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Night Fae",
@@ -19346,7 +19387,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Night Fae",
@@ -19386,7 +19428,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Night Fae",
@@ -19418,7 +19461,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionName = "Night Fae",
@@ -19454,7 +19498,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				amount = 1,
@@ -19496,7 +19541,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				amount = 1,
@@ -19536,7 +19582,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionID = 2464,
@@ -19572,7 +19619,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionID = 2464,
@@ -19612,7 +19660,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionID = 2463,
@@ -19649,7 +19698,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				factionID = 2463,
@@ -19790,7 +19840,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				name = "Grateful Offering",
@@ -19865,7 +19916,8 @@ MM.AddMounts({
 			},
 			{
 				name = "Covenant: Night Fae",
-				type = "QUEST",
+				id = 3,
+				type = "COVENANT",
 			},
 			{
 				amount = 1000,
@@ -24441,6 +24493,42 @@ MM.AddMounts({
 				name = "Engineering",
 				type = "PROFESSION",
 			},
+			{
+				name = "Bountiful Bolts",
+				itemID = 227769,
+				count = 1000,
+				type = "MATERIAL",
+			},
+			{
+				name = "Assorted Whirligigs",
+				itemID = 227770,
+				count = 200,
+				type = "MATERIAL",
+			},
+			{
+				name = "Blinker Fluid",
+				itemID = 227771,
+				count = 80,
+				type = "MATERIAL",
+			},
+			{
+				name = "Cataclysmic Converter",
+				itemID = 227772,
+				count = 50,
+				type = "MATERIAL",
+			},
+			{
+				name = "Pummel-Proof Plating",
+				itemID = 227773,
+				count = 20,
+				type = "MATERIAL",
+			},
+			{
+				name = "Pummel Permit",
+				itemID = 227774,
+				count = 1,
+				type = "MATERIAL",
+			},
 		},
 		effort = 2,
 		notes = "Can simply be bought from the Auction House without the profession.",
@@ -27214,6 +27302,30 @@ MM.AddMounts({
 				name = "Jewelcrafting",
 				type = "PROFESSION",
 			},
+			{
+				name = "Void-Bound Orb of Mystery",
+				itemID = 238924,
+				count = 1,
+				type = "MATERIAL",
+			},
+			{
+				name = "Unusual Gems",
+				itemID = 239105,
+				count = 1,
+				type = "MATERIAL",
+			},
+			{
+				name = "Shadow-Infused Onyx",
+				itemID = 239106,
+				count = 20,
+				type = "MATERIAL",
+			},
+			{
+				name = "Black Blood Infused Bar",
+				itemID = 239107,
+				count = 4,
+				type = "MATERIAL",
+			},
 		},
 		effort = 3,
 		notes = "Crafted mount; can be purchased from other players.",
@@ -28162,6 +28274,13 @@ MM.AddMounts({
 			mapID = 2393,
 			x = 42.1,
 			y = 58.8,
+		},
+		conditions = {
+			{
+				name = "The War Within Keystone Legend: Season Three",
+				id = 42172,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 5,
 		notes = "Reported to require roughly 3000 Mythic+ rating; seasonal.",
@@ -33016,6 +33135,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		notes = "Glowing Moths are gathered world objects around Harandar rather than a currency, so no id exists for that half of the cost.",
 	},
 	{
 		name = "Elder Glowmite",
@@ -33058,6 +33178,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		notes = "Glowing Moths are gathered world objects around Harandar rather than a currency, so no id exists for that half of the cost.",
 	},
 	{
 		name = "Frenzied Shredclaw",
@@ -35187,6 +35308,14 @@ MM.AddMounts({
 			x = 52,
 			y = 70,
 		},
+		conditions = {
+			{
+				name = "For the Alliance!",
+				idAlliance = 614,
+				idHorde = 619,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		solo = false,
 	},
@@ -36337,6 +36466,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Challenge Warlord: Silver (Gladiator's Sanctum garrison building).",
+		conditions = {
+			{
+				name = "Challenge Warlord: Silver",
+				id = 8898,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 		solo = false,
@@ -36376,6 +36512,13 @@ MM.AddMounts({
 			mapID = 84,
 			x = 58,
 			y = 71,
+		},
+		conditions = {
+			{
+				name = "Heirloom Hoarder",
+				id = 9909,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 4,
 	},
@@ -36513,6 +36656,13 @@ MM.AddMounts({
 			x = 58.6,
 			y = 45.4,
 		},
+		conditions = {
+			{
+				name = "Glory of the Legion Raider",
+				id = 11180,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 		solo = true,
 	},
@@ -36563,6 +36713,13 @@ MM.AddMounts({
 			name = "Eredath",
 			x = 50,
 			y = 50,
+		},
+		conditions = {
+			{
+				name = "...And Chew Mana Buns",
+				id = 12103,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 3,
 	},
@@ -37766,6 +37923,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Remember to Share: collect 300 toys.",
+		conditions = {
+			{
+				name = "Remember to Share",
+				id = 11176,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
@@ -37775,6 +37939,14 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "No Stable Big Enough: collect 350 mounts.",
+		conditions = {
+			{
+				name = "No Stable Big Enough",
+				idAlliance = 12932,
+				idHorde = 12931,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
@@ -37784,6 +37956,14 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "A Horde of Hoofbeats: collect 400 mounts.",
+		conditions = {
+			{
+				name = "A Horde of Hoofbeats",
+				idAlliance = 12933,
+				idHorde = 12934,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 4,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
@@ -37793,6 +37973,14 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Mountacular: collect 500 mounts.",
+		conditions = {
+			{
+				name = "Mountacular",
+				idAlliance = 9598,
+				idHorde = 9599,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 5,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
@@ -37823,6 +38011,13 @@ MM.AddMounts({
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "100 Exalted Reputations achievement.",
+		conditions = {
+			{
+				name = "100 Exalted Reputations",
+				id = 12866,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 5,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
@@ -38663,6 +38858,13 @@ MM.AddMounts({
 			x = 50,
 			y = 50,
 		},
+		conditions = {
+			{
+				name = "Glory of the Dragonflight Hero",
+				id = 16295,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 	},
 	{
@@ -38676,6 +38878,13 @@ MM.AddMounts({
 			mapID = 2112,
 			x = 50,
 			y = 50,
+		},
+		conditions = {
+			{
+				name = "Across the Isles",
+				id = 19486,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 3,
 	},
@@ -38691,6 +38900,13 @@ MM.AddMounts({
 			x = 25,
 			y = 57,
 		},
+		conditions = {
+			{
+				name = "Wake Me Up",
+				id = 19479,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 	},
 	{
@@ -38704,6 +38920,13 @@ MM.AddMounts({
 			mapID = 2112,
 			x = 50,
 			y = 50,
+		},
+		conditions = {
+			{
+				name = "Flight Club",
+				id = 19483,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 3,
 	},
@@ -38719,6 +38942,13 @@ MM.AddMounts({
 			x = 50,
 			y = 50,
 		},
+		conditions = {
+			{
+				name = "Closing Time",
+				id = 19485,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 	},
 	{
@@ -38732,6 +38962,13 @@ MM.AddMounts({
 			mapID = 2023,
 			x = 50,
 			y = 50,
+		},
+		conditions = {
+			{
+				name = "Centaur of Attention",
+				id = 19481,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 3,
 	},
@@ -38747,6 +38984,13 @@ MM.AddMounts({
 			x = 15.6,
 			y = 48.6,
 		},
+		conditions = {
+			{
+				name = "Army of the Fed",
+				id = 19482,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 	},
 	{
@@ -38760,6 +39004,13 @@ MM.AddMounts({
 			mapID = 2112,
 			x = 50,
 			y = 50,
+		},
+		conditions = {
+			{
+				name = "A World Awoken",
+				id = 19458,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 5,
 	},
@@ -39271,6 +39522,13 @@ MM.AddMounts({
 			x = 46,
 			y = 41,
 		},
+		conditions = {
+			{
+				name = "Glory of the Dream Raider",
+				id = 19349,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 	},
 	{
@@ -39781,6 +40039,13 @@ MM.AddMounts({
 			mapID = 2339,
 			x = 48,
 			y = 45,
+		},
+		conditions = {
+			{
+				name = "Worldsoul-Searching",
+				id = 61451,
+				type = "ACHIEVEMENT",
+			},
 		},
 		effort = 5,
 	},

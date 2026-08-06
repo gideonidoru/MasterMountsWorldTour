@@ -478,9 +478,37 @@ local function evalProfession(cond)
 	return true, label
 end
 
+-- A COVENANT IS NOT A QUEST, AND THE CLIENT CAN BE ASKED WHICH ONE YOU ARE.
+--
+-- 53 conditions read { type = "QUEST", name = "Covenant: Night Fae" } and had
+-- no id, which is how they came to be counted among the quest ids "nobody can
+-- supply". They were never quests. There is no quest called Covenant: Night
+-- Fae, so no lookup anywhere was ever going to find one -- the report was
+-- promising a dead end and calling it a platform limit.
+--
+-- C_Covenants.GetActiveCovenantID answers it outright, and Callings.lua has
+-- been using it for other purposes the whole time.
+--
+-- Deliberately soft. Covenants can be switched freely now, so this is "you are
+-- not in the one that drops it" rather than a wall -- which is exactly what a
+-- collector wants to be told, since the fix is a visit to Oribos.
+local COVENANTS = { [1] = "Kyrian", [2] = "Venthyr", [3] = "Night Fae", [4] = "Necrolord" }
+
+local function evalCovenant(cond)
+	local label = ("Covenant: %s"):format(cond.name or COVENANTS[cond.id] or "?")
+	if not (cond.id and C_Covenants and C_Covenants.GetActiveCovenantID) then
+		return nil, label
+	end
+	local ok, active = pcall(C_Covenants.GetActiveCovenantID)
+	if not ok or not active or active == 0 then return nil, label end
+	if active == cond.id then return true, label .. " (active)" end
+	return false, ("%s — you are %s"):format(label, COVENANTS[active] or "another covenant")
+end
+
 local EVAL = {
 	REP = evalRep, QUEST = evalQuest, ACHIEVEMENT = evalAchievement,
 	ITEM = evalItem, CURRENCY = evalCurrency, PROFESSION = evalProfession,
+	COVENANT = evalCovenant,
 }
 
 -- How far through a record's CURRENCY requirements are you? 0 = none of it,

@@ -534,8 +534,36 @@ function MM.ResolveFactionVariants(playerFaction)
 		if rec.altSources and rec.faction and rec.faction ~= playerFaction then
 			for i, alt in ipairs(rec.altSources) do
 				if alt.faction == playerFaction then
+					-- THE ALTERNATE HAS ITS OWN CONDITIONS, AND THEY WERE NEVER
+					-- ANNOTATED.
+					--
+					-- Every id, amount and factionID the data layers apply is
+					-- written onto the CANONICAL record. Promoting an alternate
+					-- replaced that table wholesale, so a Horde player got the
+					-- Horde variant with none of it -- the Vicious mounts asked
+					-- for a "Vicious Saddle" with no item id, on one faction
+					-- only, which is invisible to anyone testing on the other.
+					--
+					-- Carried across by type and name, and only into fields the
+					-- alternate LACKS. The alternate is still the authority on
+					-- what this side actually needs -- a different vendor, a
+					-- different faction -- so nothing it states is overwritten
+					-- and no requirement is added that it did not have.
+					local known = {}
+					for _, c in ipairs(rec.conditions or {}) do
+						known[(c.type or "") .. "\0" .. ((c.name or ""):lower())] = c
+					end
 					for k, v in pairs(alt) do
 						if k ~= "altSources" then rec[k] = v end
+					end
+					for _, c in ipairs(rec.conditions or {}) do
+						local was = known[(c.type or "") .. "\0" .. ((c.name or ""):lower())]
+						if was then
+							for _, f in ipairs({ "id", "factionID", "amount",
+								"idAlliance", "idHorde", "how" }) do
+								if c[f] == nil then c[f] = was[f] end
+							end
+						end
 					end
 					tremove(rec.altSources, i)
 					break
