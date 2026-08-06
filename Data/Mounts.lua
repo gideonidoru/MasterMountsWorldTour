@@ -64,6 +64,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Human characters.",
+		goldCost = 1,
 	},
 	{
 		name = "Chestnut Mare",
@@ -90,6 +91,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Human characters.",
+		goldCost = 1,
 	},
 	{
 		name = "Swift Palomino",
@@ -116,6 +118,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Human characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Swift White Steed",
@@ -142,6 +145,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Human characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Swift Brown Steed",
@@ -168,6 +172,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Reputation requirement waived for Human characters.",
+		goldCost = 10,
 	},
 	{
 		name = "Gray Ram",
@@ -3443,6 +3448,7 @@ MM.AddMounts({
 			y = 52.6,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Gray Elekk",
@@ -3459,6 +3465,7 @@ MM.AddMounts({
 			y = 52.6,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Purple Elekk",
@@ -3475,6 +3482,7 @@ MM.AddMounts({
 			y = 52.6,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Great Green Elekk",
@@ -3491,6 +3499,7 @@ MM.AddMounts({
 			y = 52.6,
 		},
 		effort = 1,
+		goldCost = 10,
 	},
 	{
 		name = "Great Blue Elekk",
@@ -3526,6 +3535,7 @@ MM.AddMounts({
 			y = 52.6,
 		},
 		effort = 1,
+		goldCost = 10,
 	},
 	{
 		name = "Red Hawkstrider",
@@ -3542,6 +3552,7 @@ MM.AddMounts({
 			y = 54.6,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Blue Hawkstrider",
@@ -3558,6 +3569,7 @@ MM.AddMounts({
 			y = 54.6,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Black Hawkstrider",
@@ -3577,6 +3589,7 @@ MM.AddMounts({
 			y = 54.6,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Purple Hawkstrider",
@@ -3593,6 +3606,7 @@ MM.AddMounts({
 			y = 54.6,
 		},
 		effort = 1,
+		goldCost = 1,
 	},
 	{
 		name = "Swift Green Hawkstrider",
@@ -3609,6 +3623,7 @@ MM.AddMounts({
 			y = 54.6,
 		},
 		effort = 1,
+		goldCost = 10,
 	},
 	{
 		name = "Swift Purple Hawkstrider",
@@ -3625,6 +3640,7 @@ MM.AddMounts({
 			y = 54.6,
 		},
 		effort = 1,
+		goldCost = 10,
 	},
 	{
 		name = "Swift Pink Hawkstrider",
@@ -3881,6 +3897,7 @@ MM.AddMounts({
 			y = 58.5,
 		},
 		effort = 1,
+		goldCost = 100,
 	},
 	{
 		name = "Swift Yellow Wind Rider",
@@ -3921,6 +3938,7 @@ MM.AddMounts({
 			y = 58.5,
 		},
 		effort = 1,
+		goldCost = 100,
 	},
 	{
 		name = "Flying Machine",
@@ -7073,6 +7091,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Epic version of the worgen Mountain Horse.",
+		goldCost = 10,
 	},
 	{
 		name = "Goblin Trike",
@@ -8774,6 +8793,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Armored (epic) version.",
+		goldCost = 10,
 	},
 	{
 		name = "Great Black Dragon Turtle",
@@ -8808,6 +8828,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Armored (epic) version.",
+		goldCost = 10,
 	},
 	{
 		name = "Great Brown Dragon Turtle",
@@ -8842,6 +8863,7 @@ MM.AddMounts({
 		},
 		effort = 1,
 		notes = "Armored (epic) version.",
+		goldCost = 10,
 	},
 	{
 		name = "Great Purple Dragon Turtle",
