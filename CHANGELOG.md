@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.12 — unreleased
+## 1.1.12 — 2026-08-07
 
 - **`/mm report` died with "script ran too long" on slower hardware.** All 33
   sections ran in one uninterrupted execution, and the client's watchdog
