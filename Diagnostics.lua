@@ -1115,13 +1115,9 @@ MM:On("MM_ROWPROBE_DEBUG", function()
 		if r.btnMissing then
 			MM:Print("        NO ACTION BUTTON ON THIS ROW")
 		else
-			MM:Print("        row level %s / button level %s%s",
-				tostring(r.rowLevel), tostring(r.btnLevel),
-				(r.btnLevel and r.rowLevel and r.btnLevel <= r.rowLevel)
-					and "   <-- the row can take the click" or "")
-			MM:Print("        button %sx%s, shown %s, mouse %s, alpha %s%%, OnClick %s",
+			MM:Print("        glyph %sx%s, shown %s, alpha %s%%, row OnMouseDown %s",
 				tostring(r.btnW), tostring(r.btnH), tostring(r.btnShown),
-				tostring(r.btnMouse), tostring(r.btnAlpha), tostring(r.hasClick))
+				tostring(r.btnAlpha), tostring(r.hasClick))
 			MM:Print("        row width %s, button inset left %s right %s%s",
 				tostring(r.rowWidth), tostring(r.insetLeft), tostring(r.insetRight),
 				(r.insetLeft and r.rowWidth and r.insetLeft > r.rowWidth)

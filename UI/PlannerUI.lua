@@ -53,10 +53,38 @@ local function initMissingRow(row, entry)
 		row.sub:SetTextColor(0.6, 0.6, 0.6)
 		row.sub:SetWordWrap(false)
 
-		row.add = UI.MakeRowAction(row)
-		row.add:SetPoint("RIGHT", -6, 0)
-		-- One function, reachable from the button AND from the row, so it does
-		-- not matter which of the two the game hands the click to.
+		-- NO CHILD BUTTON HERE. THAT IS THE FIX.
+		--
+		-- [+] in this pane has now failed across four attempts, each of which
+		-- assumed a different part of the child-Button machinery: the handler,
+		-- the frame level, the click registration, the scroll box's anchors.
+		-- The handlers are identical to the two that work, so every one of
+		-- those was a guess, and guessing has cost five rounds.
+		--
+		-- So the machinery goes. A child Button brings a hit test against its
+		-- parent, a frame level, a click registration, an anchor whose width is
+		-- derived from a scroll box, and a mouse-down/mouse-up pair that must
+		-- land on the SAME frame -- and a scroll view is entitled to recycle
+		-- that frame underneath the cursor between the two. Any one of those
+		-- fails silently and looks exactly like a dead button.
+		--
+		-- What replaces it cannot fail in any of those ways:
+		--
+		--   * the glyph is a FontString on the row, so it has no hit test, no
+		--     frame level and no click registration of its own
+		--   * the region that responds is the GLYPH'S OWN RECT, so what you see
+		--     and what you can press are the same rectangle by construction --
+		--     they cannot drift apart however the row is sized
+		--   * it acts on OnMouseDown, so it does not need a press and a release
+		--     to land on one frame that survives both
+		--
+		-- The row already receives mouse events -- its tooltip has worked
+		-- throughout -- so this rests on the one thing observed to work.
+		row.plus = row:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+		row.plus:SetPoint("RIGHT", -12, 0)
+		row.plus:SetText("+")
+		row.plus:SetTextColor(0.45, 1, 0.5)
+
 		row.mmToggle = function(self)
 			local e = self.entry
 			-- A SILENT DECLINE LOOKS EXACTLY LIKE A DEAD BUTTON. Planner:Add
@@ -76,15 +104,18 @@ local function initMissingRow(row, entry)
 				MM.Planner:Add(e.spellID)
 			end
 		end
-		row.add:SetScript("OnClick", function(self) row.mmToggle(self:GetParent()) end)
 
 		row:SetScript("OnEnter", function(self) UI.ShowMountTooltip(self, self.entry) end)
 		row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+		row:SetScript("OnMouseDown", function(self, button)
+			-- Recorded so OnClick does not ALSO open the journal for the same
+			-- press, and recomputed every time so a stale flag cannot leak into
+			-- the next click.
+			self.mmHitPlus = (button == "LeftButton") and UI.CursorOver(self.plus) or false
+			if self.mmHitPlus then self.mmToggle(self) end
+		end)
 		row:SetScript("OnClick", function(self, mouse)
-			-- Forward a click that landed on the action button. The anchor fix
-			-- below should mean this never fires; it costs one rect test and
-			-- removes the dependence on which frame won the hit test.
-			if UI.CursorOver(self.add) then return self.mmToggle(self) end
+			if self.mmHitPlus then self.mmHitPlus = false return end
 			UI.RowClick(self.entry, mouse)
 		end)
 	end
@@ -95,7 +126,11 @@ local function initMissingRow(row, entry)
 	local status = MM.Availability.GetStatus(entry)
 	row.sub:SetText(U.Color(status, U.STATUS_LABEL[status] or status)
 		.. "|cff9a9a9a — " .. (entry.rec.source or "") .. "|r")
-	row.add:mmSet(MM.Planner:InPlan(entry.spellID))
+	-- This pane only ever contains mounts that are NOT on the plan -- the
+	-- refresh filters on exactly that -- so the glyph is always [+] and saying
+	-- so is simpler than asking. A row that cannot be planned at all is dimmed,
+	-- because a control that will refuse should not look like one that will not.
+	row.plus:SetAlpha(entry.spellID and 1 or 0.35)
 end
 
 ------------------------------------------------------------
@@ -963,7 +998,7 @@ function UI.InspectMissingPane()
 
 	for i = 1, math.min(#frames, 3) do
 		local row = frames[i]
-		local b = row and row.add
+		local b = row and row.plus
 		local e = row and row.entry
 		local r = {}
 		r.name = e and e.name or "?"
@@ -972,13 +1007,14 @@ function UI.InspectMissingPane()
 		r.rowWidth = row.GetWidth and math.floor(row:GetWidth() or 0)
 		r.rowMouse = row.IsMouseEnabled and row:IsMouseEnabled()
 		if b then
-			r.btnLevel = b.GetFrameLevel and b:GetFrameLevel()
+			-- A FontString now, not a Button: no level, no mouse, no OnClick of
+			-- its own. What matters is where its rect is, because that rect IS
+			-- the region that responds.
 			r.btnShown = b.IsShown and b:IsShown()
-			r.btnMouse = b.IsMouseEnabled and b:IsMouseEnabled()
 			r.btnAlpha = b.GetAlpha and math.floor((b:GetAlpha() or 0) * 100)
 			r.btnW = b.GetWidth and math.floor(b:GetWidth() or 0)
 			r.btnH = b.GetHeight and math.floor(b:GetHeight() or 0)
-			r.hasClick = b.GetScript and b:GetScript("OnClick") ~= nil
+			r.hasClick = row.GetScript and row:GetScript("OnMouseDown") ~= nil
 			-- Where the button sits INSIDE its row. A negative left or a right
 			-- edge past the row's width means it is anchored off the row.
 			local okL, bl = pcall(b.GetLeft, b)
