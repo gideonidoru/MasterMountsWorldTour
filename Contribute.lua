@@ -187,7 +187,14 @@ local GAPS = {
 			.. "raids were built for groups and are often soloable anyway, "
 			.. "depending on class, gear and patch. It is a judgement, and it "
 			.. "is the kind of judgement a collector makes every week.",
-		want = "solo = true   -- or false",
+		-- "?" NOT "true". The old placeholder was a real value with the hint
+		-- glued to it -- `solo = true   -- or false` -- which parsed as the
+		-- string "true   -- or false" and was REJECTED. Filling the file in and
+		-- pasting it back produced one error per line. It could not be fixed by
+		-- stripping the comment alone: that turns every untouched line into an
+		-- assertion that the mount solos, which is the one thing a template
+		-- must never do.
+		want = "solo = ?   -- true or false",
 		-- TWO EXPANSIONS OLD IS SOLOABLE, AND WE ALREADY ACT AS IF IT IS.
 		--
 		-- A record with no solo flag is ALREADY treated as soloable unless its
@@ -372,9 +379,15 @@ function CO.Import(text)
 						-- Placeholder values from the template are ignored, not
 						-- stored: an untouched line must be a no-op.
 						local vt = strtrim(v)
-						if vt ~= "0" and vt ~= "0.0" and vt ~= "00.0"
+						-- An inline hint is not part of the answer. Only taken
+						-- off values that are NOT quoted names, so a zone whose
+						-- name contains "--" survives whole.
+						if not vt:match('^"') then
+							vt = strtrim((vt:gsub("%s*%-%-.*$", "")))
+						end
+						if vt ~= "0" and vt ~= "0.0" and vt ~= "00.0" and vt ~= "?"
 							and vt ~= '"Zone Name"' and vt ~= '"Name"' then
-							local parsed, err = parseValue(k, v)
+							local parsed, err = parseValue(k, vt)
 							if parsed ~= nil then fields[k] = parsed
 							elseif err then bad = ("%s: %s"):format(k, err) end
 						end

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.12 — unreleased
+
+- **The contribution file could not be imported back for soloability.** Its own
+  export wrote `solo = true   -- or false`, and the hint parsed as part of the
+  value, so every answered line was refused. Filling the file in and pasting it
+  back produced one complaint per answer. The placeholder is now `?`, which is
+  ignored like every other placeholder, and an inline hint is taken off the
+  value before it is read — but never off a quoted zone name, which is allowed
+  to contain anything.
+- The round-trip check could not have caught this. An untouched template is a
+  no-op, and a rejected line is also a no-op — two different reasons for the
+  same silence. It now asserts the import raised **no complaints**, and fills a
+  line in whichever gap this client actually has rather than only drop rates.
+- **Twelve soloability judgements recorded**, each one answered rather than
+  inferred from the category or the expansion.
+
 ## 1.1.11 — 2026-08-07
 
 - **The built-in arrow is now the default, and TomTom is opt-in.** TomTom has a

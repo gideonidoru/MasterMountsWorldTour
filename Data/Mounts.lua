@@ -24898,6 +24898,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		effort = 3,
 		notes = "Fishing Derby runs on a weekly schedule in Hallowfall.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Swarmite Skyhunter",
@@ -24916,6 +24917,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		},
 		effort = 2,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Slatestone Ramolith",
@@ -24940,6 +24942,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		},
 		effort = 2,
 		notes = "Requires completing the Khaz Algar campaign and Earthen unlock requirements.",
+		solo = true,
 	},
 	{
 		name = "Earthen Ordinant's Ramolith",
@@ -25607,6 +25610,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		},
 		effort = 3,
 		notes = "Delve meta-achievement covering Tier 8+ challenges and delve objectives.",
+		solo = true,
 	},
 	{
 		name = "Delver's Dirigible",
@@ -26078,6 +26082,7 @@ MM.AddMounts({
 		effort = 4,
 		notes = "Flying ship mount; meta covers most Siren Isle activities.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Thrayir, Eyes of the Siren",
@@ -26192,6 +26197,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Honeyback Hivemother",
@@ -26213,6 +26219,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Shadow of Doubt",
@@ -27805,6 +27812,7 @@ MM.AddMounts({
 		},
 		effort = 4,
 		notes = "Requires high-mask Horrific Visions Revisited clears.",
+		solo = true,
 	},
 	{
 		name = "Void-Crystal Panther",
@@ -28188,6 +28196,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Titan mech-style mount from the Overcharged Delves event.",
+		solo = true,
 	},
 	{
 		name = "Chrono Corsair",
@@ -28389,6 +28398,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Phase-Lost Slateback",
@@ -28410,6 +28420,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "Involves phase-diving exploration content.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Curious Slateback",
@@ -40943,6 +40954,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 5,
+		solo = false,
 	},
 	{
 		name = "Ballistic Bronco",

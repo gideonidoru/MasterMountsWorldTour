@@ -3606,7 +3606,7 @@ local function runLogic()
 		local saved = MM.db.contributions
 		MM.db.contributions = {}
 		local text, total = CO.Export()
-		local applied = CO.Import(text)
+		local applied, _, problems = CO.Import(text)
 		local wrote = 0
 		for _ in pairs(MM.db.contributions) do wrote = wrote + 1 end
 		if applied > 0 or wrote > 0 then
@@ -3614,6 +3614,19 @@ local function runLogic()
 			pcall(CO.Apply)
 			return false, ("its own export wrote %d records back — placeholders "
 				.. "are being treated as data"):format(wrote)
+		end
+		-- IGNORED AND REJECTED ARE BOTH SILENT, AND ONLY ONE IS CORRECT.
+		--
+		-- The soloability placeholder used to read `solo = true   -- or false`,
+		-- which parsed as the whole string INCLUDING the hint and was refused.
+		-- The template round-tripped as a no-op the entire time -- by erroring
+		-- on every line. Anyone who filled the file in got one complaint per
+		-- answer. A no-op is only proof of a template if nothing complained.
+		if #problems > 0 then
+			MM.db.contributions = saved
+			pcall(CO.Apply)
+			return false, ("its own export raised %d complaint(s), e.g. %s — the "
+				.. "template is not importable"):format(#problems, problems[1])
 		end
 
 		-- A NO-OP PROVES NOTHING ON ITS OWN.
@@ -3626,29 +3639,38 @@ local function runLogic()
 		-- test could not tell them apart.
 		--
 		-- So it now fills one line in and checks the value actually lands.
-		local target
+		-- Whichever gap this client actually has. Pinning it to dropRate meant
+		-- the half of the check that matters -- a real answer landing -- was
+		-- skipped on any client with no drop rates left to give.
+		local target, field, value, want
 		for name in text:gmatch("([^\n|]+)|%s*dropRate") do
-			target = strtrim(name)
+			target, field, value, want = strtrim(name), "dropRate", "dropRate = 3.5", 3.5
 			break
+		end
+		if not target then
+			for name in text:gmatch("([^\n|]+)|%s*solo") do
+				target, field, value, want = strtrim(name), "solo", "solo = false", false
+				break
+			end
 		end
 		if not target then
 			MM.db.contributions = saved
 			pcall(CO.Apply)
-			return nil, "no drop-rate line in the export to test with"
+			return nil, "nothing in the export to fill in and test with"
 		end
 		MM.db.contributions = {}
-		local ok = CO.Import(("%s | dropRate = 3.5"):format(target))
-		local stored = MM.db.contributions[target] and MM.db.contributions[target].dropRate
+		local ok = CO.Import(("%s | %s"):format(target, value))
+		local stored = MM.db.contributions[target] and MM.db.contributions[target][field]
 		MM.db.contributions = saved
 		pcall(CO.Apply)
 
-		if ok < 1 or stored ~= 3.5 then
-			return false, ("a filled line for %q applied %d and stored %s — the "
+		if ok < 1 or stored ~= want then
+			return false, ("a filled %s line for %q applied %d and stored %s — the "
 				.. "import cannot recognise its own export"):format(
-				target, ok, tostring(stored))
+				field, target, ok, tostring(stored))
 		end
-		return true, ("%d gaps exported; placeholders no-op and a filled line lands")
-			:format(total)
+		return true, ("%d gaps exported; placeholders no-op without complaint, and "
+			.. "a filled %s line lands"):format(total, field)
 	end)
 
 	check("Reagents are priced by how you get them", function()
