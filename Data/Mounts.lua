@@ -24649,7 +24649,7 @@ MM.AddMounts({
 		expansion = 10,
 		category = "DROP",
 		obtainable = true,
-		source = "Combine 10 Crackling Shards (very rare drops from any Isle of Dorn mob) into a Storm Vessel, then defeat Alunira above Dhar Oztan",
+		source = "Collect 10 Crackling Shards from any Isle of Dorn mob, combine them into a Storm Vessel, and use it to break Alunira's shield above Dhar Oztan.",
 		npc = {
 			name = "Alunira",
 			id = 219281,
@@ -24659,11 +24659,20 @@ MM.AddMounts({
 			x = 23,
 			y = 58.6,
 		},
-		dropRate = 10,
+		conditions = {
+			{
+				name = "Crackling Shard",
+				amount = 10,
+				how = "Very low chance from most mobs on the Isle of Dorn. The Faithful of Zirix drop them while you are farming Nerubian Chitin for Siesbarg.",
+				id = 224025,
+				type = "ITEM",
+			},
+		},
+		dropRate = 100,
 		attempts = "NONE",
 		timePerAttempt = 300,
 		effort = 4,
-		notes = "Shards drop from all mobs on the Isle of Dorn at a very low rate. Using the Storm Vessel strips Alunira's protection; the mount is a guaranteed drop for the user once defeated.",
+		notes = "The CRACKLING SHARD (item 224025) is the thing to look for -- a very low chance from most Isle of Dorn mobs, and it is the whole cost. Ten of them combine into a Storm Vessel (224026), which strips Alunira's shield; she circles the summit of the tallest mountain in the far south-west of the isle and cannot be attacked before that. The mount goes to whoever used the vessel.",
 	},
 	{
 		name = "Beledar's Spawn",
@@ -36011,6 +36020,15 @@ MM.AddMounts({
 			x = 58,
 			y = 71,
 		},
+		conditions = {
+			{
+				name = "Love Token",
+				amount = 270,
+				how = "Love is in the Air: daily quests, the Crown Chemical Co. bosses, and opening Lovely Charm Bracelets.",
+				id = 49927,
+				type = "ITEM",
+			},
+		},
 		attempts = "NONE",
 		effort = 2,
 	},
@@ -36025,6 +36043,15 @@ MM.AddMounts({
 			mapID = 37,
 			x = 42,
 			y = 65,
+		},
+		conditions = {
+			{
+				name = "Noblegarden Chocolate",
+				amount = 500,
+				how = "Noblegarden: looted from the coloured eggs scattered around the starting zones.",
+				id = 44791,
+				type = "ITEM",
+			},
 		},
 		attempts = "NONE",
 		effort = 2,
@@ -37213,6 +37240,15 @@ MM.AddMounts({
 		category = "HOLIDAY",
 		obtainable = true,
 		source = "Rare loot from Savage Gifts (5 Merry Supplies each) during Feast of Winter Veil.",
+		conditions = {
+			{
+				name = "Merry Supplies",
+				amount = 5,
+				how = "Winter Veil: the reward bag from the daily Grumpus kill.",
+				id = 128659,
+				type = "ITEM",
+			},
+		},
 		attempts = "NONE",
 		effort = 4,
 		noLocationReason = "a garrison vendor, during Winter Veil",
@@ -38887,6 +38923,15 @@ MM.AddMounts({
 				{
 					text = "Use them to summon the Blood Serpent",
 				},
+			},
+		},
+		conditions = {
+			{
+				name = "Abyssal Fragment",
+				amount = 20,
+				how = "Nazjatar: from rares, chests and world quests around the zone.",
+				id = 161344,
+				type = "ITEM",
 			},
 		},
 		timePerAttempt = 120,
@@ -40935,6 +40980,15 @@ MM.AddMounts({
 			mapID = 1,
 			x = 41.9,
 			y = 17.3,
+		},
+		conditions = {
+			{
+				name = "Love Token",
+				amount = 270,
+				how = "Love is in the Air: daily quests, the Crown Chemical Co. bosses, and opening Lovely Charm Bracelets.",
+				id = 49927,
+				type = "ITEM",
+			},
 		},
 		attempts = "NONE",
 		effort = 2,
