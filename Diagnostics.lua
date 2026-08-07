@@ -694,11 +694,12 @@ MM:On("MM_GAPS_DEBUG", function()
 		paragon)
 	MM:Print("   combat-log npc kills            %s",
 		combatLog and "working" or "OFF -- 12.0 makes raw combat log Blizzard-only")
+	MM:Print("   looting a watched rare          working (loot source GUID)")
 	MM:Print("   tracking quests                 %d record(s) carry one", tq)
 	if tq == 0 then
-		MM:Print("      so world rares, chests and %d treasure goals record", treasure)
-		MM:Print("      NOTHING on this client. Each needs a verified quest id;")
-		MM:Print("      inventing them is how the secret chains went wrong.")
+		MM:Print("      never populated -- rares are covered by loot instead;")
+		MM:Print("      %d treasure goals still record nothing, and each needs a", treasure)
+		MM:Print("      verified quest id rather than an invented one.")
 	end
 
 	MM:Print("|cffffd84dNeeds a human lookup:|r")

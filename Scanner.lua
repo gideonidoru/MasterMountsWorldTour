@@ -291,6 +291,49 @@ MM:RegisterGameEvent("BOSS_KILL", function(_, encounterName)
 	onEncounterEnd(nil, encounterName, nil, nil, 1)
 end)
 
+-- OUTDOOR RARES, WITHOUT THE COMBAT LOG AND WITHOUT A QUEST ID.
+--
+-- The combat-log path above is off on 12.0, and the replacement written at the
+-- time -- a per-record trackingQuest -- was never populated: not one record in
+-- the database carries one. So since Midnight, killing a rare has recorded
+-- nothing at all, and "Attempts: 0 recorded" has been reading as "you have not
+-- farmed anything" when it meant "nothing can be counted".
+--
+-- LOOT is the signal that survives. GetLootSourceInfo hands back the GUID of
+-- whatever each loot slot came from, and a creature GUID carries its creature
+-- id -- the same id watchedNPCs is already keyed on, from the same helper that
+-- read the combat log. No new data, no ids to verify, and no forbidden API.
+--
+-- Looting is arguably the better question anyway: a kill you never looted is
+-- not an attempt at the drop, and this counts the moment you actually looked.
+local lootSeen = {}
+
+local function onLootOpened()
+	if not (GetNumLootItems and GetLootSourceInfo) then return end
+	local now = GetTime()
+	-- One corpse can be opened more than once -- partial loot, a full bag, a
+	-- second pass -- and each is one attempt, not several.
+	for guid, at in pairs(lootSeen) do
+		if now - at > 600 then lootSeen[guid] = nil end
+	end
+	for slot = 1, (GetNumLootItems() or 0) do
+		local ok, a, _, b = pcall(GetLootSourceInfo, slot)
+		if ok then
+			for _, guid in ipairs({ a, b }) do
+				if type(guid) == "string" and not lootSeen[guid] then
+					local npcID = npcIDFromGUID(guid)
+					local spellID = npcID and watchedNPCs[npcID]
+					if spellID then
+						lootSeen[guid] = now
+						MM.Attempts.Record(spellID)
+					end
+				end
+			end
+		end
+	end
+end
+MM:RegisterGameEvent("LOOT_OPENED", onLootOpened)
+
 -- Outdoor rare attempts without the combat log: watch each planned mount's
 -- attempt-tracking quest and count the false -> true flip.
 --
