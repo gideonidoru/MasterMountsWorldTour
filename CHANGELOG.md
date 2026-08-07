@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **A Burning Crusade mount routed to Draenor.** Warlords rebuilt Draenor using
+  names Outland already had: Nagrand is map 107 and 550, Shadowmoon Valley 104
+  and 539, Shattrath City 111 and 594. Dark War Talbuk is bought with Halaa
+  tokens in Outland's Nagrand and resolved to Draenor's — a different continent,
+  not a misplaced pin. Every record naming one of those three zones now states
+  its own map, read from that record's own source text, and the resolver has to
+  agree with it.
+
+  No rule decides this, because every rule tried was wrong. The expansion looks
+  like the answer until Amani Hunting Bear, a Dragonflight-era record whose
+  vendor stands in Outland's Shattrath selling for Timewarped Badges.
+
 - **A check for the one routing mistake the data can actually make.** Warlords
   rebuilt Draenor using names Outland already had, so Nagrand, Shadowmoon Valley
   and Shattrath City are each two maps on two continents, and the shipped id

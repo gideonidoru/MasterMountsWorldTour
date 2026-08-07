@@ -1705,71 +1705,58 @@ local function runLogic()
 	end)
 
 	check("Outland and Draenor share three zone names, and are told apart", function()
-		-- Warlords rebuilt Draenor using names Outland already had. Nagrand is
+		-- Warlords rebuilt Draenor using names Outland already had: Nagrand is
 		-- map 107 AND 550, Shadowmoon Valley 104 AND 539, Shattrath City 111 AND
-		-- 594 -- one pair per name, one copy per continent. The shipped id table
-		-- picks the Outland copy for all three and says AMBIGUOUS in its own
-		-- comment; every Draenor stable mount names one of those zones, so the
-		-- wrong copy is a different continent and a wasted trip.
+		-- 594. Picking the wrong copy does not misplace a goal by a few yards,
+		-- it sends someone to a different world.
 		--
-		-- SIMULATED, BECAUSE IT CANNOT BE ASKED FOR. Confirming this by hand
-		-- needs the mount set as a goal, and a mount already collected can never
-		-- be a goal. GetRecordMapID is what the router and the arrow call.
+		-- SIMULATED, BECAUSE IT CANNOT BE ASKED FOR. Checking this by hand needs
+		-- the mount set as a goal, and a mount already collected can never be a
+		-- goal. GetRecordMapID is what the router and the arrow call.
 		--
-		-- NARROW ON PURPOSE, AFTER TWO WIDER VERSIONS WERE WRONG. The first
-		-- treated any name with several maps as risky and failed on Azsuna,
-		-- which is several maps all on the Broken Isles. The second asked
-		-- whether a goal sat on a continent its expansion uses elsewhere, and
-		-- failed on a PvP mount sold in Stormwind -- because an expansion does
-		-- not confine its mounts to its own continent. Vendors sit in capitals,
-		-- holidays sit in old zones, and neither is a fault.
+		-- NO RULE IS APPLIED HERE, DELIBERATELY. Two earlier versions of this
+		-- check each invented one and each was wrong: a name with several maps
+		-- is not a name with several continents, and an expansion does not
+		-- confine its mounts to its own continent. The expansion rule that
+		-- replaced them is wrong too -- Amani Hunting Bear is a Dragonflight
+		-- record whose vendor stands in Outland -- which is the whole reason
+		-- these are written down one by one rather than derived.
 		--
-		-- What survives both is small and certain: these six maps, and which
-		-- side of Warlords a record falls on. Anything broader was a guess
-		-- dressed as an invariant, and each one cost a live report to disprove.
+		-- So the question asked is only: did the record say, and did the
+		-- resolver agree? A new mount in one of these zones with no line in the
+		-- pinned file fails here, rather than silently inheriting whichever copy
+		-- the name resolver happened to prefer.
 		local U2 = MM.Util
 		if not (U2 and U2.GetRecordMapID) then return nil, "map helpers unavailable" end
-		local WOD = 5
-		local TWINS = {
-			["Nagrand"]           = { old = 107, new = 550 },
-			["Shadowmoon Valley"] = { old = 104, new = 539 },
-			["Shattrath City"]    = { old = 111, new = 594 },
-		}
-		local checked, wrong, example, seen = 0, 0, nil, {}
+		local TWINS = { ["Nagrand"] = true, ["Shadowmoon Valley"] = true,
+			["Shattrath City"] = true }
+		local checked, unpinned, disagreed, example = 0, 0, 0, nil
 		for _, rec in pairs(MM.DBByName) do
 			local zn = rec.zone and rec.zone.name
-			local pair = zn and TWINS[zn]
-			if pair and rec.expansion then
-				local want = (rec.expansion >= WOD) and pair.new or pair.old
-				local got = U2.GetRecordMapID(rec)
-				if got then
-					checked = checked + 1
-					-- Recorded per era whatever the verdict, so a pass still
-					-- says which map each side actually chose. A check that
-					-- proves something and then reports only "fine" leaves the
-					-- next question starting from nothing.
-					seen[zn .. " exp" .. rec.expansion] = got
-					if got ~= want then
-						wrong = wrong + 1
-						example = example or ("%s (expansion %d) -> %s map %d, wanted %d")
-							:format(rec.name, rec.expansion, zn, got, want)
+			if zn and TWINS[zn] then
+				checked = checked + 1
+				local pinned = rec.zone.mapID
+				if not pinned then
+					unpinned = unpinned + 1
+					example = example or ("%s (%s) states no map"):format(rec.name, zn)
+				else
+					local got = U2.GetRecordMapID(rec)
+					if got ~= pinned then
+						disagreed = disagreed + 1
+						example = example or ("%s (%s) states map %d, resolver chose %s")
+							:format(rec.name, zn, pinned, tostring(got))
 					end
 				end
 			end
 		end
-		if checked == 0 then return nil, "no record names a twinned zone yet" end
-		if wrong > 0 then
-			return false, ("%d of %d land on the wrong side of Warlords, e.g. %s")
-				:format(wrong, checked, example)
+		if checked == 0 then return nil, "no record names a twinned zone" end
+		if unpinned > 0 or disagreed > 0 then
+			return false, ("%d of %d twinned-zone goal(s) unresolved: %d state no "
+				.. "map, %d disagree with the resolver — e.g. %s")
+				:format(unpinned + disagreed, checked, unpinned, disagreed, example)
 		end
-		local shown, n = {}, 0
-		for k, v in pairs(seen) do
-			n = n + 1
-			shown[#shown + 1] = ("%s=%d"):format(k, v)
-		end
-		table.sort(shown)
-		return true, ("%d reference(s) across %d zone-and-era pairs, each on the "
-			.. "right continent (%s)"):format(checked, n, table.concat(shown, " "))
+		return true, ("%d goal(s) name a zone that exists on two continents, "
+			.. "every one pinned to a stated map"):format(checked)
 	end)
 
 	check("Source comparison scores real disagreement", function()

@@ -2298,6 +2298,7 @@ MM.AddMounts({
 		},
 		zone = {
 			name = "Shadowmoon Valley",
+			mapID = 104,
 			x = 70,
 			y = 85,
 		},
@@ -2359,6 +2360,7 @@ MM.AddMounts({
 		},
 		zone = {
 			name = "Shadowmoon Valley",
+			mapID = 104,
 			x = 70,
 			y = 85,
 		},
@@ -2420,6 +2422,7 @@ MM.AddMounts({
 		},
 		zone = {
 			name = "Shadowmoon Valley",
+			mapID = 104,
 			x = 70,
 			y = 85,
 		},
@@ -2481,6 +2484,7 @@ MM.AddMounts({
 		},
 		zone = {
 			name = "Shadowmoon Valley",
+			mapID = 104,
 			x = 70,
 			y = 85,
 		},
@@ -2542,6 +2546,7 @@ MM.AddMounts({
 		},
 		zone = {
 			name = "Shadowmoon Valley",
+			mapID = 104,
 			x = 70,
 			y = 85,
 		},
@@ -2603,6 +2608,7 @@ MM.AddMounts({
 		},
 		zone = {
 			name = "Shadowmoon Valley",
+			mapID = 104,
 			x = 70,
 			y = 85,
 		},
@@ -2962,7 +2968,7 @@ MM.AddMounts({
 		source = "70 Halaa Battle Tokens + 15 Halaa Research Tokens, while your faction controls Halaa",
 		zone = {
 			name = "Nagrand",
-			mapID = 550,
+			mapID = 107,
 			x = 42,
 			y = 42,
 		},
@@ -3246,7 +3252,7 @@ MM.AddMounts({
 		source = "100 Halaa Battle Tokens + 20 Halaa Research Tokens, while your faction controls Halaa",
 		zone = {
 			name = "Nagrand",
-			mapID = 550,
+			mapID = 107,
 			x = 42,
 			y = 42,
 		},
