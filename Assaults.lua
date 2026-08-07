@@ -367,7 +367,17 @@ local function collectRotating()
 		end
 	end
 end
-MM:On("MM_LOGIN", collectRotating)
+MM:On("MM_LOGIN", function()
+	collectRotating()
+	-- Gates first, THEN ask about them: the refresh only looks at keys that are
+	-- currently declared, so the order is load-bearing rather than tidy.
+	-- Resolved at call time, which is long after this file finishes loading.
+	local caughtUp = A.RefreshWeeklyFromQuests and A.RefreshWeeklyFromQuests() or 0
+	if caughtUp > 0 then
+		MM:Print("%d weekly event%s already done this week — taken off the plan.",
+			caughtUp, caughtUp == 1 and "" or "s")
+	end
+end)
 
 ------------------------------------------------------------
 -- A named object on one map: treasures
@@ -406,6 +416,40 @@ function A.FindPOI(rec)
 	return nil
 end
 
+-- A LEARNED QUEST ID IS NOT AN INVENTED ONE.
+--
+-- Completion was only ever seen live, on QUEST_TURNED_IN. Turn the hunt in
+-- while the addon is not watching -- another session, before this shipped, an
+-- alt -- and it stays at the top of the plan all week with no way to say
+-- otherwise. Writing a quest id into the data was refused, and rightly: nobody
+-- had verified one.
+--
+-- Watching one arrive is a different thing entirely. The id the CLIENT hands
+-- us on a turn-in that matched by title is observed, not guessed, so it is
+-- kept and asked about on later logins. The first completion still has to be
+-- seen; every one after it is answerable cold.
+local function questStore()
+	MM.db.rotatingQuests = MM.db.rotatingQuests or {}
+	return MM.db.rotatingQuests
+end
+
+-- Ask the client about the ids it taught us. Cheap, and only for gates that
+-- are not already known to be done.
+function A.RefreshWeeklyFromQuests()
+	if not (C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted) then return 0 end
+	local learned, found = questStore(), 0
+	for key, id in pairs(learned) do
+		if A.rotatingGates[key] and not A.WeeklyDone(key) then
+			local ok, done = pcall(C_QuestLog.IsQuestFlaggedCompleted, id)
+			if ok and done then
+				A.MarkWeeklyDone(key)
+				found = found + 1
+			end
+		end
+	end
+	return found
+end
+
 MM:RegisterGameEvent("QUEST_TURNED_IN", function(questID)
 	if not next(A.rotatingGates) then return end
 	local title = MM.Util.ReadableString(C_QuestLog.GetTitleForQuestID
@@ -417,6 +461,7 @@ MM:RegisterGameEvent("QUEST_TURNED_IN", function(questID)
 			for _, needle in ipairs(needles(gate)) do
 				if needle and hay:find(needle:lower(), 1, true) then
 					A.MarkWeeklyDone(key)
+					if questID then questStore()[key] = questID end
 					MM:Print("%s done for the week — it comes off the plan until "
 						.. "the weekly reset.", gate.label or key)
 					return

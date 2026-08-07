@@ -4763,6 +4763,52 @@ local function runLogic()
 			.. "last stop lands at %.0f"):format(travel, whole, final)
 	end)
 
+	check("The arrow and the plan cannot disagree about where you are going", function()
+		-- Reported from play: the guide led with one mount and the arrow with
+		-- another, on the same route, at the same moment.
+		--
+		-- Two causes, and this asks about both. READING where you are heading
+		-- used to WRITE the resume anchor, so drawing a panel -- or running
+		-- this very report -- re-stamped it; and the anchor is account-wide
+		-- while the index is per-character, so an alt inherited a place its own
+		-- plan never had. Then a rebuild that found no anchor left the index
+		-- pointing into the ROUTE THAT NO LONGER EXISTED.
+		local R = MM.Router
+		if not (R and R.SetIndex) then return false, "R.SetIndex missing" end
+		if #R.route == 0 then return nil, "no route built yet" end
+		if not MM.cdb.routeActive then return nil, "no route running to read" end
+
+		-- 1. a read must not move the anchor
+		local before = MM.db.routeGoal
+		R:Current(); R:Current()
+		if MM.db.routeGoal ~= before then
+			return false, ("reading the current goal changed the anchor from %s "
+				.. "to %s"):format(tostring(before), tostring(MM.db.routeGoal))
+		end
+
+		-- 2. the arrow's step IS the route's current step
+		local cur = R:Current()
+		if cur ~= R.route[MM.cdb.routeIndex] then
+			return false, "the current goal is not the stop the index points at"
+		end
+
+		-- 3. with nothing to resume to, the route leads from the top
+		local savedGoal, savedIndex = MM.db.routeGoal, MM.cdb.routeIndex
+		MM.db.routeGoal = nil
+		MM.cdb.routeIndex = math.min(5, #R.route)
+		R.Invalidate(); R:Build()
+		local landed = MM.cdb.routeIndex
+		MM.db.routeGoal, MM.cdb.routeIndex = savedGoal, savedIndex
+		R.Invalidate(); R:Build()
+		if landed ~= 1 then
+			return false, ("a rebuild with no anchor left the index at %d rather "
+				.. "than leading from the top"):format(landed)
+		end
+		return true, ("a read leaves the anchor alone, the arrow tracks index %d, "
+			.. "and an unanchored rebuild leads from the top")
+			:format(MM.cdb.routeIndex)
+	end)
+
 	check("A teleport count counts teleports, not stops", function()
 		-- The failure this exists to catch is a count that silently equals the
 		-- route length, which reads like a measurement and is really just

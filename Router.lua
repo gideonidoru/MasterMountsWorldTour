@@ -2176,8 +2176,17 @@ function R.RunBuild(sig)
 		if found then
 			MM.cdb.routeIndex = found
 		else
+			-- The anchored goal is gone -- collected, unplanned, or blocked for
+			-- whoever this is. Dropping the anchor was right and leaving the
+			-- INDEX where it was, was not: it still pointed into the old route,
+			-- so a rebuilt plan led with one goal and the arrow with another.
 			MM.db.routeGoal = nil
+			MM.cdb.routeIndex = 1
 		end
+	elseif MM.cdb.routeIndex ~= 1 then
+		-- Never anchored at all -- a fresh plan, or one just cleared. There is
+		-- nothing to resume TO, so the route starts where it reads: the top.
+		MM.cdb.routeIndex = 1
 	end
 
 	if MM.cdb.routeIndex > #R.route then MM.cdb.routeIndex = 1 end
@@ -2803,22 +2812,34 @@ MM:On("MM_ROUTE_DEBUG", function()
 	end
 end)
 
-function R:Current()
-	if not (MM.cdb and MM.cdb.routeActive) then return nil end
-	local stop = R.route[MM.cdb.routeIndex]
-	-- Remember WHICH GOAL, account-wide, every time the current one is read.
-	--
-	-- This is the anchor the rebuild resumes from, and putting it here rather
-	-- than in each of the four places that move the index means no future one
-	-- can forget to. A goal with no spellID leaves the anchor alone rather than
-	-- clearing it -- losing your place is worse than an anchor going briefly
-	-- stale.
+-- MOVING THE ROUTE GOES THROUGH HERE, and nowhere else.
+--
+-- The anchor used to be written inside R:Current, so that reading where you
+-- are heading CHANGED where you were heading. Anything that rendered the arrow
+-- or drew a panel re-stamped it, including /mm report -- and because the
+-- anchor is account-wide while the index is per-character, a stale one dragged
+-- the index somewhere the plan was not. That is how the arrow ended up on one
+-- mount while the guide showed another.
+--
+-- A read is a read now. The anchor moves when the ROUTE moves, which is the
+-- thing it was always meant to record, and every mover calls this so none of
+-- them can forget.
+function R.SetIndex(i)
+	if not MM.cdb then return end
+	MM.cdb.routeIndex = i
+	local stop = R.route[i]
 	if stop and MM.db then
 		local id = stop.spellID
 			or (stop.members and stop.members[1] and stop.members[1].spellID)
+		-- A stop with no spellID leaves the anchor alone rather than clearing
+		-- it: losing your place is worse than an anchor going briefly stale.
 		if id then MM.db.routeGoal = id end
 	end
-	return stop
+end
+
+function R:Current()
+	if not (MM.cdb and MM.cdb.routeActive) then return nil end
+	return R.route[MM.cdb.routeIndex]
 end
 
 function R:Start()
@@ -2828,7 +2849,9 @@ function R:Start()
 		return false
 	end
 	MM.cdb.routeActive = true
-	MM.cdb.routeIndex = 1
+	-- Re-anchors to the new leader, so the next rebuild resumes to what the
+	-- plan actually shows rather than to whatever was current before.
+	R.SetIndex(1)
 	MM.Nav.SetWaypoint(R:Current())
 	MM:Fire("MM_ROUTE_STARTED")
 	MM:Fire("MM_ROUTE_ADVANCED")
@@ -2860,7 +2883,7 @@ end
 function R:JumpTo(index)
 	if not (MM.cdb and MM.cdb.routeActive) then return false end
 	if not (index and R.route[index]) then return false end
-	MM.cdb.routeIndex = index
+	R.SetIndex(index)
 	MM.Nav.SetWaypoint(R:Current())
 	MM:Fire("MM_ROUTE_ADVANCED")
 	return true
@@ -2933,7 +2956,7 @@ function R:Advance(step)
 		return
 	end
 	if nextIndex < 1 then nextIndex = 1 end
-	MM.cdb.routeIndex = nextIndex
+	R.SetIndex(nextIndex)
 
 	-- FINISHING A GOAL IS WHERE THE PLAN IS ALLOWED TO MOVE ON.
 	--
@@ -2962,12 +2985,12 @@ function R:Advance(step)
 		if sid then
 			for i, stop in ipairs(R.route) do
 				if stop.entry and stop.entry.spellID == sid then
-					MM.cdb.routeIndex = i
+					R.SetIndex(i)
 					break
 				end
 				for _, m in ipairs(stop.members or {}) do
 					if m.entry and m.entry.spellID == sid then
-						MM.cdb.routeIndex = i
+						R.SetIndex(i)
 						break
 					end
 				end
@@ -3061,7 +3084,7 @@ function R.FinishResume()
 		R:Stop()
 		return
 	end
-	if MM.cdb.routeIndex > #R.route then MM.cdb.routeIndex = 1 end
+	if MM.cdb.routeIndex > #R.route then R.SetIndex(1) end
 	MM.Nav.SetWaypoint(R:Current())
 	MM:Fire("MM_ROUTE_STARTED")
 	MM:Fire("MM_ROUTE_ADVANCED")

@@ -2,6 +2,25 @@
 
 ## 1.1.12 — unreleased
 
+- **The arrow and the plan could point at different mounts.** Reported from
+  play: the guide led with Island Expeditions while the arrow said queue for
+  Timewalking. Reading where you were heading also WROTE the resume anchor, so
+  drawing a panel — or running `/mm report` — re-stamped it. The anchor is
+  account-wide and the index is per-character, so an alt inherited a place its
+  own plan never had. A read is a read now, and the anchor moves when the route
+  moves.
+- **A rebuilt plan could still lead with the old plan's goal.** When the anchor
+  was missing or its mount was gone, the anchor was dropped and the index was
+  left pointing into a route that no longer existed. Clearing the plan and
+  rebuilding therefore led with whatever had been current before. An unanchored
+  rebuild starts from the top.
+- **A weekly event you finished while the addon was not watching now catches
+  up.** Completion was only ever seen live on the turn-in, so finishing the
+  Grand Hunt in another session left it at the top of the plan all week. The
+  quest id is not invented — it is LEARNED from a turn-in that matched by
+  title, kept, and asked about on later logins. The first completion still has
+  to be seen; every one after it is answerable cold.
+
 - **The contribution file could not be imported back for soloability.** Its own
   export wrote `solo = true   -- or false`, and the hint parsed as part of the
   value, so every answered line was refused. Filling the file in and pasting it
