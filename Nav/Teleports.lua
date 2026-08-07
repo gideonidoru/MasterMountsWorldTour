@@ -135,6 +135,18 @@ local OPTIONS = {
 --
 -- `skillLine` therefore accepts a list of acceptable names, which also leaves
 -- room for the next expansion that does this.
+-- ONE SKILL LINE, TWO NAMES, and the client picks by faction.
+--
+-- SkillLine 2499 is DisplayName "Kul Tiran Engineering" and HordeDisplayName
+-- "Zandalari Engineering" -- the same profession, labelled differently
+-- depending on who is reading. Both generators require that one line, so both
+-- names have to be accepted: a Horde engineer never sees the Alliance string
+-- and would be refused a wormhole they can plainly use.
+--
+-- IT IS THE ONLY ENGINEERING LINE THAT DOES THIS. Every other one -- Draenor,
+-- Legion, Shadowlands, Dragon Isles, Khaz Algar, Midnight -- carries the same
+-- name for both factions, which is why the single-name entries below are safe
+-- and why this one is not.
 local BFA_ENGINEERING = { "Kul Tiran Engineering", "Zandalari Engineering" }
 
 local MORE = {

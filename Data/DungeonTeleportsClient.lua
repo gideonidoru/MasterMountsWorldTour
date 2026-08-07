@@ -24,6 +24,14 @@ local FIX = {
 	["Path of the Draconic Diploma"] = 393273,
 }
 
+-- And the other direction: the id is right, the name was not. Cosmetic on its
+-- own -- everything matches by spell id -- but a label that disagrees with the
+-- client is a small lie in a tooltip, and it is the same drift that produced
+-- the wrong id above.
+local RENAME = {
+	[393764] = "Path of Proven Worth",   -- shipped with an extra "the"
+}
+
 local ADD = {
 	{spell=373262,name="Path of the Fallen Guardian",place="Karazhan",mapID=42,x=47.30,y=75.30,cooldown=28800,cast=10},
 	{spell=1254559,name="Path of Cavernous Depths",place="Maisara Caverns",mapID=2437,x=43.85,y=39.53,cooldown=28800,cast=10},
@@ -52,6 +60,10 @@ for _, t in ipairs(MM.DungeonTeleports or {}) do by_name[t.name] = t end
 for name, spell in pairs(FIX) do
 	local t = by_name[name]
 	if t then t.spell = spell end
+end
+
+for _, t in ipairs(MM.DungeonTeleports or {}) do
+	if RENAME[t.spell] then t.name = RENAME[t.spell] end
 end
 
 for _, t in ipairs(ADD) do

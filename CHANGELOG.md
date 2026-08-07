@@ -2,6 +2,10 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **A teleport name that disagreed with the client** — `Path of Proven Worth`
+  shipped with an extra "the". Cosmetic on its own, since everything matches by
+  spell id, but it is the same drift that produced a wrong id elsewhere.
+
 - **Three more travel items**, with their requirements read from the client
   rather than remembered: the **Wormhole Centrifuge** (Draenor Engineering), the
   **Wormhole Generator: Quel'Thalas** (Midnight Engineering) and the **Personal
