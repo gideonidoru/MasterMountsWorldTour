@@ -2125,6 +2125,35 @@ local function runLogic()
 			.. "turn-in"):format(records, gates)
 	end)
 
+	check("A paragon cache is a completion the router acts on", function()
+		-- Asked directly whether paragon mounts register and move the route on.
+		-- They did not: an attempt came from a combat-log kill (off in 12.0),
+		-- an encounter name, or a trackingQuest that NO record carries.
+		local A = MM.Attempts
+		if not (A and A.IsParagonGoal) then return nil, "attempts module unavailable" end
+		local goals, withFaction = 0, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			if rec.obtainable and A.IsParagonGoal(rec) then
+				goals = goals + 1
+				for _, c in ipairs(rec.conditions or {}) do
+					if c.type == "REP" and c.standingName == "Paragon" and c.factionID then
+						withFaction = withFaction + 1
+						break
+					end
+				end
+			end
+		end
+		if goals == 0 then return nil, "no paragon goals in the database" end
+		-- A paragon goal with no factionID cannot be watched: hasRewardPending
+		-- is asked per faction, so the id is the whole mechanism.
+		if withFaction < goals then
+			return false, ("%d of %d paragon goals carry no factionID, so their "
+				.. "cache cannot be watched"):format(goals - withFaction, goals)
+		end
+		return true, ("%d paragon goals, every one with a factionID to watch")
+			:format(goals)
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked

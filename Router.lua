@@ -3073,7 +3073,14 @@ MM:On("MM_ATTEMPT", function(spellID)
 	if not match then return end
 	-- The lockout covers the whole stop: every mount here shares the one run.
 	local lockout = cur.rec.attempts or (cur.rec.instance and cur.rec.instance.lockout)
-	if lockout == "DAILY" or lockout == "WEEKLY" then
+	-- A SPENT PARAGON CACHE IS A LOCKOUT WITHOUT THE FIELD.
+	--
+	-- Paragon records carry no `attempts` value, so this rule never covered
+	-- them -- and opening the cache is precisely "nothing more to do here": it
+	-- is consumed, the bar has reset, and the next one is a rep grind away.
+	-- Reported as "did it register and move on", and it did not.
+	local spent = MM.Attempts.IsParagonGoal and MM.Attempts.IsParagonGoal(cur.rec)
+	if lockout == "DAILY" or lockout == "WEEKLY" or spent then
 		MM:Print("Attempt recorded for %s — advancing the route.", cur.label)
 		C_Timer.After(3, function() R:Advance() end)
 	end

@@ -648,6 +648,37 @@ MM:On("MM_GAPS_DEBUG", function()
 	end
 
 	-- 6. things only a person can look up
+	-- WHAT CAN ACTUALLY RECORD AN ATTEMPT, counted rather than assumed.
+	--
+	-- Asked directly whether paragon and chest mounts register their completion
+	-- and move the route on. They did not, and the reason was wider than either:
+	-- an attempt comes from a combat-log kill (registered only on pre-12.0
+	-- clients), an encounter name, or a record's trackingQuest -- and NO record
+	-- carries a trackingQuest. On Midnight that leaves boss kills alone.
+	--
+	-- Paragon is now watched exactly, through hasRewardPending. The rest is
+	-- printed rather than quietly assumed to work.
+	local tq, treasure, paragon = 0, 0, 0
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.trackingQuest then tq = tq + 1 end
+		if rec.obtainable and rec.category == "TREASURE" then treasure = treasure + 1 end
+		if rec.obtainable and MM.Attempts.IsParagonGoal
+			and MM.Attempts.IsParagonGoal(rec) then paragon = paragon + 1 end
+	end
+	local combatLog = (select(4, GetBuildInfo()) or 0) < 120000
+	MM:Print("|cffffd84dAttempt tracking:|r what can mark a goal attempted here")
+	MM:Print("   boss kills by encounter name    working")
+	MM:Print("   paragon caches                  %d goal(s), watched via hasRewardPending",
+		paragon)
+	MM:Print("   combat-log npc kills            %s",
+		combatLog and "working" or "OFF -- 12.0 makes raw combat log Blizzard-only")
+	MM:Print("   tracking quests                 %d record(s) carry one", tq)
+	if tq == 0 then
+		MM:Print("      so world rares, chests and %d treasure goals record", treasure)
+		MM:Print("      NOTHING on this client. Each needs a verified quest id;")
+		MM:Print("      inventing them is how the secret chains went wrong.")
+	end
+
 	MM:Print("|cffffd84dNeeds a human lookup:|r")
 	if MM.TradingPost.travelersLog then
 		MM:Print("   - Traveler's Log: modelled. %d mount(s) among this month's rewards.",

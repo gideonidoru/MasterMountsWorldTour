@@ -219,3 +219,87 @@ MM:On("MM_ATTEMPTS_DEBUG", function()
 	MM:Print("   Drops are memoryless: a long streak changes nothing about the")
 	MM:Print("   next attempt. This is context, never a prediction.")
 end)
+
+------------------------------------------------------------
+-- Paragon caches: a completion the client volunteers
+------------------------------------------------------------
+-- Asked directly: are paragon and chest mounts registering their completion
+-- and moving the route on? They were not, and the reason is bigger than
+-- paragon. An attempt is recorded from exactly three places -- a combat-log
+-- npc kill, an encounter name, and a record's `trackingQuest`. The first is
+-- REGISTERED ONLY ON PRE-12.0 CLIENTS, and no record in the database carries a
+-- trackingQuest, so on Midnight the only live source is a boss kill by name.
+-- Fifteen paragon goals and twenty-one chest goals registered nothing at all.
+--
+-- Paragon is the half that can be fixed exactly, with no invented ids. The
+-- client already answers `hasRewardPending` per faction, and the addon already
+-- reads it -- Conditions.evalRep uses it to stop a paragon mount being ranked
+-- as a pickup. Opening the cache flips it true -> false, and that transition is
+-- the completion: the cache is gone, the bar has reset, and there is nothing
+-- more to do at that vendor today.
+--
+-- The chest half is NOT fixed here and is not pretended to be. It needs a
+-- tracking quest id per treasure, and inventing 21 of them is exactly the
+-- failure mode this database refuses.
+local paragonPending = {}     -- [factionID] = cache waiting, last time we looked
+local paragonGoals            -- [factionID] = { spellID, ... }, built once
+
+local function buildParagonGoals()
+	paragonGoals = {}
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.spellID and rec.obtainable then
+			for _, cond in ipairs(rec.conditions or {}) do
+				if cond.type == "REP" and cond.standingName == "Paragon"
+					and cond.factionID then
+					paragonGoals[cond.factionID] = paragonGoals[cond.factionID] or {}
+					tinsert(paragonGoals[cond.factionID], rec.spellID)
+				end
+			end
+		end
+	end
+	return paragonGoals
+end
+
+local function pollParagon()
+	if not (C_Reputation and C_Reputation.GetFactionParagonInfo) then return end
+	for factionID, spellIDs in pairs(paragonGoals or buildParagonGoals()) do
+		local ok, _, _, _, hasRewardPending =
+			pcall(C_Reputation.GetFactionParagonInfo, factionID)
+		local now = (ok and hasRewardPending) or false
+		local was = paragonPending[factionID]
+		paragonPending[factionID] = now
+		-- ONLY the true -> false edge. `nil -> false` is the first look at a
+		-- faction with no cache waiting, which is not a completion, and
+		-- treating it as one would record an attempt at every login.
+		if was == true and now == false then
+			for _, spellID in ipairs(spellIDs) do
+				A.paragonSpent = spellID   -- read by the router's advance rule
+				A.Record(spellID)
+			end
+			A.paragonSpent = nil
+		end
+	end
+end
+
+-- Opening a cache changes bags and reputation, and both fire already. The
+-- delayed bag event is the reliable one -- the cache is looted, then the items
+-- land -- and UPDATE_FACTION covers earning the next one.
+MM:RegisterGameEvent("BAG_UPDATE_DELAYED", pollParagon)
+MM:RegisterGameEvent("UPDATE_FACTION", pollParagon)
+MM:On("MM_LOGIN", function()
+	-- Seed the baseline without recording anything: the first look establishes
+	-- what is pending, and only later changes mean a cache was opened.
+	C_Timer.After(5, function() buildParagonGoals() pollParagon() end)
+end)
+MM:On("MM_SCANNED", function() paragonGoals = nil end)
+
+-- Is this goal gated on a paragon cache? The router needs to know, because a
+-- spent cache means "nothing more here today" exactly like a daily lockout,
+-- and a paragon record carries no `attempts` field to say so.
+function A.IsParagonGoal(rec)
+	if not rec then return false end
+	for _, cond in ipairs(rec.conditions or {}) do
+		if cond.type == "REP" and cond.standingName == "Paragon" then return true end
+	end
+	return false
+end
