@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.12 — 2026-08-07
+## 1.1.13 — 2026-08-07
 
 - **A teleport name that disagreed with the client** — `Path of Proven Worth`
   shipped with an extra "the". Cosmetic on its own, since everything matches by
