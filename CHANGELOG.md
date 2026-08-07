@@ -2,6 +2,14 @@
 
 ## 1.1.14 — unreleased
 
+- **Zoning into a delve threw on every nameplate.** A unit's GUID is a
+  client-supplied string exactly as its name is, so splitting one to read the
+  npc id throws when 12.0 withholds it — and the GUID is read on the line
+  *before* the name, so the name guard added earlier went straight past it.
+  Three files each kept their own copy of that six-line parse, which is why the
+  same fault existed in three places at once. It is parsed in one guarded place
+  now, and the build fails if another copy appears.
+
 - **The guard against unreadable client strings was itself throwing.** It
   concatenated inside a pcall and then tested the result outside it, on the
   belief that concatenation is the operation a secret value refuses. It is not —

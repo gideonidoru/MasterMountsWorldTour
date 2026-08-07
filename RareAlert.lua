@@ -382,11 +382,10 @@ function RA.RecentlyAlerted(rec, within)
 end
 
 -- Creature id out of a GUID.
+-- Parsed in one place, because a GUID is a client string and 12.0 can
+-- withhold it. See U.NpcIDFromGUID.
 local function npcIDFromGUID(guid)
-	if not guid then return nil end
-	local kind, _, _, _, _, id = strsplit("-", guid)
-	if kind == "Creature" or kind == "Vehicle" then return tonumber(id) end
-	return nil
+	return MM.Util.NpcIDFromGUID(guid)
 end
 
 -- id first, name as the fallback for anything not yet resolved

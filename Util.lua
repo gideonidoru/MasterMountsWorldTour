@@ -573,6 +573,30 @@ end
 -- matters more here than saving it.
 U.secretReads = 0
 
+-- The npc id inside a unit GUID, when the client will let us look.
+--
+-- REPORTED FROM ZONING INTO A DELVE, and this is the fourth shape of the same
+-- 12.0 change. A GUID is a client-supplied string like the names were, so
+-- strsplit on one is a string conversion and throws when it is secret. Three
+-- files each had their own copy of this parse -- Scanner, IDResolver and
+-- RareAlert -- so the fault was in three places at once and the name guard
+-- added to two of them sailed straight past it, because the GUID is read on the
+-- line BEFORE the name and nobody was looking at it.
+--
+-- Losing the id costs the automatic attempt count and the id-first rare match;
+-- the name fallback still works when the name is readable. Nothing throws.
+function U.NpcIDFromGUID(guid)
+	local readable = U.ReadableString(guid)
+	if not readable then return nil end
+	local ok, kind, id = pcall(function()
+		local k, _, _, _, _, n = strsplit("-", readable)
+		return k, n
+	end)
+	if not ok then return nil end
+	if kind == "Creature" or kind == "Vehicle" then return tonumber(id) end
+	return nil
+end
+
 function U.ReadableString(v)
 	if v == nil then return nil end
 	local ok, s = pcall(function()
