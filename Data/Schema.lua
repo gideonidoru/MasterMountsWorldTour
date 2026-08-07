@@ -522,6 +522,40 @@ function MM.CollapseDuplicateCosts()
 	return merged, conflicts
 end
 
+-- 50, 50 IS NOT A PLACE. It is the middle of the map.
+--
+-- Forty-eight records carried exactly 50/50, and the Nether-Swept Drake is how
+-- it surfaced: a player reported the real spot as 50/30 at Slayer's Rise, and
+-- the value we were sending people to turned out to be the zone centre with a
+-- confident-looking decimal point on it.
+--
+-- This is WORSE than carrying no coordinate. A record with only a zone is
+-- already handled honestly everywhere -- Router flags it "zone centre only, no
+-- x/y", the model ranks it as a routing risk, and /mm contribute asks a player
+-- to supply the point. A record at 50/50 gets none of that, because every one
+-- of those checks asks whether an x exists rather than whether it means
+-- anything. The arrow points at the middle of the zone and says nothing.
+--
+-- The odds a genuine coordinate lands on exactly 50.0 / 50.0 are about one in
+-- ten thousand per record. Forty-eight of them did.
+--
+-- One rule in one place rather than forty-eight overrides, so it keeps holding
+-- as data is added -- and it is deliberately EXACT. 50.1 stays: someone typed
+-- that from a map, and second-guessing real digits is how you lose them.
+function MM.DropPlaceholderCoords()
+	local dropped = 0
+	for _, rec in ipairs(MM.DBList) do
+		local z = rec.zone
+		if z and z.x == 50 and z.y == 50 then
+			-- The zone itself stays. Losing that would turn a goal we CAN
+			-- route to a zone into one we cannot route at all.
+			z.x, z.y = nil, nil
+			dropped = dropped + 1
+		end
+	end
+	return dropped
+end
+
 -- Reputation requirements written with the wrong field names.
 --
 -- The database settled on factionID / factionName / standingName, and a few

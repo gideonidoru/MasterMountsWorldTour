@@ -1927,6 +1927,32 @@ local function runLogic()
 			:format(checked, withID)
 	end)
 
+	check("No goal points at the exact middle of its zone", function()
+		-- 50/50 is what a coordinate looks like when nobody knew, and it is
+		-- worse than an absent one: "zone centre only" is handled honestly
+		-- everywhere, while a placeholder passes every check that asks whether
+		-- an x exists rather than whether it means anything.
+		--
+		-- Found because a player reported the Nether-Swept Drake's real spot as
+		-- 50/30 and ours read 50/50. Forty-seven others were the same.
+		local bad, firstBad, positioned = 0, nil, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			local z = rec.zone
+			if z and z.x and z.y then
+				positioned = positioned + 1
+				if z.x == 50 and z.y == 50 then
+					bad = bad + 1
+					firstBad = firstBad or rec.name
+				end
+			end
+		end
+		if bad > 0 then
+			return false, ("%d goal(s) sit at exactly 50/50, e.g. %s -- that is "
+				.. "the zone centre, not a location"):format(bad, tostring(firstBad))
+		end
+		return true, ("%d positioned goals, none at the zone centre"):format(positioned)
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked

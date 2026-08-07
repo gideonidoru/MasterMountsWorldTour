@@ -20113,8 +20113,6 @@ MM.AddMounts({
 		zone = {
 			name = "Oribos",
 			mapID = 1670,
-			x = 50,
-			y = 50,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -20131,8 +20129,6 @@ MM.AddMounts({
 		zone = {
 			name = "Oribos",
 			mapID = 1670,
-			x = 50,
-			y = 50,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -20148,8 +20144,6 @@ MM.AddMounts({
 		zone = {
 			name = "Oribos",
 			mapID = 1670,
-			x = 50,
-			y = 50,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -20165,8 +20159,6 @@ MM.AddMounts({
 		zone = {
 			name = "Oribos",
 			mapID = 1670,
-			x = 50,
-			y = 50,
 		},
 		attempts = "NONE",
 		effort = 3,
@@ -21282,8 +21274,6 @@ MM.AddMounts({
 		zone = {
 			name = "Oribos",
 			mapID = 1670,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -23291,8 +23281,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -31066,8 +31054,6 @@ MM.AddMounts({
 		zone = {
 			name = "Eversong Woods",
 			mapID = 2395,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -31207,8 +31193,6 @@ MM.AddMounts({
 		zone = {
 			name = "Eversong Woods",
 			mapID = 2395,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -31348,8 +31332,6 @@ MM.AddMounts({
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -31466,8 +31448,6 @@ MM.AddMounts({
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -31591,8 +31571,6 @@ MM.AddMounts({
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -31702,8 +31680,6 @@ MM.AddMounts({
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -31813,8 +31789,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -31929,8 +31903,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -32181,8 +32153,6 @@ MM.AddMounts({
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -32208,8 +32178,6 @@ MM.AddMounts({
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -32233,8 +32201,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -32283,8 +32249,6 @@ MM.AddMounts({
 		zone = {
 			name = "Eversong Woods",
 			mapID = 2395,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -32476,8 +32440,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -33215,8 +33177,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -33253,8 +33213,6 @@ MM.AddMounts({
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
-			x = 50,
-			y = 50,
 		},
 		instance = {
 			name = "Sporefall",
@@ -33610,8 +33568,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -33650,8 +33606,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -33777,8 +33731,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -33816,8 +33768,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -33857,8 +33807,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -33958,8 +33906,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		altSources = {
 			{
@@ -34009,8 +33955,6 @@ MM.AddMounts({
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -34065,8 +34009,6 @@ MM.AddMounts({
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
-			x = 50,
-			y = 50,
 		},
 		acquire = {
 			hours = 1,
@@ -34106,8 +34048,6 @@ MM.AddMounts({
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
-			x = 50,
-			y = 50,
 		},
 		acquire = {
 			hours = 1,
@@ -34155,8 +34095,6 @@ MM.AddMounts({
 		zone = {
 			name = "Eversong Woods",
 			mapID = 2395,
-			x = 50,
-			y = 50,
 		},
 		acquire = {
 			hours = 3,
@@ -34227,8 +34165,6 @@ MM.AddMounts({
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -34291,12 +34227,28 @@ MM.AddMounts({
 		expansion = 11,
 		category = "PROFESSION",
 		obtainable = true,
-		source = "Voidstorm Fishing.",
+		source = "Hatches from a Nether-Warped Egg, fished from OPEN WATER at Slayer's Rise in Voidstorm, or found in a Patient Treasure Chest.",
 		zone = {
 			name = "Voidstorm",
 			mapID = 2405,
 			x = 50,
-			y = 50,
+			y = 30,
+		},
+		acquire = {
+			name = "Nether-Warped Egg",
+			hours = 20,
+			item = 268730,
+			steps = {
+				{
+					text = "Fish OPEN WATER at Slayer's Rise, Voidstorm -- 50, 30. Not the Oceanic Vortex pools: the egg is reported from open water, and open water there is also what grants fishing skill, which is how you can tell you are in the right spot",
+				},
+				{
+					text = "Patient Treasure Chests are the second source and spawn from successful casts in ANY Midnight zone -- so fishing here farms both at once, which is why this one spot beats splitting the session",
+				},
+				{
+					text = "The Nether-Warped Egg becomes the mount",
+				},
+			},
 		},
 		altSources = {
 			{
@@ -34309,7 +34261,12 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
-		notes = "Rare catch from Oceanic Vortex fishing pools.",
+		notes = "NOT the Oceanic Vortex pools, which is where this record used to send people. Open water at Slayer's Rise, and the tell is that open water there gives fishing skill while the vortex pools give none.\
+\
+What a reporting player used to speed it up, as reported rather than measured: Blood Hunter Lure with the Amani Angler's Ward, because the ward blocks the extra Bloodhunters and those extras still count as successful casts -- visible in the fishing endeavor quest progress. The Midnight Angler's Grand Line is said to double Patient Treasure Chest spawns. Sin'dorei Angler's Rod, Nat's Fishing Hat, a Sharpened Tuskarr Spear; Kalu'ak Figurine, Sanguithorn Tea and a Haranir Phial of Perception as consumables. Walking over the scuttling crabs is also reported to yield a chest.\
+\
+Expect a long haul: the one detailed account is in the high thousands of casts.",
+		rateReason = "no published rate; one detailed report puts it in the high thousands of casts and distrusts its own attempt counter",
 		unpriced = "gathered, not crafted -- no reagents exist",
 	},
 	{
@@ -37459,8 +37416,6 @@ MM.AddMounts({
 		source = "Reward from ...And Chew Mana Buns (Argus).",
 		zone = {
 			name = "Eredath",
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39072,8 +39027,6 @@ MM.AddMounts({
 		zone = {
 			name = "Oribos",
 			mapID = 1670,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39219,8 +39172,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39244,8 +39195,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39269,8 +39218,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39297,8 +39244,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39349,8 +39294,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39428,8 +39371,6 @@ MM.AddMounts({
 		source = "Combine 50 Leftover Elemental Slime, 0-5 per kill of the final boss of the Froststone Vault Primal Storm event in The Forbidden Reach.",
 		zone = {
 			name = "The Forbidden Reach",
-			x = 50,
-			y = 50,
 		},
 		acquire = {
 			name = "Leftover Elemental Slime",
@@ -39654,8 +39595,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39675,8 +39614,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39717,8 +39654,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39738,8 +39673,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39759,8 +39692,6 @@ MM.AddMounts({
 		zone = {
 			name = "Ohn'ahran Plains",
 			mapID = 2023,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -39801,8 +39732,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		conditions = {
 			{
@@ -40055,8 +39984,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		acquire = {
 			name = "Charred Elemental Remains",
@@ -40811,8 +40738,6 @@ MM.AddMounts({
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
-			x = 50,
-			y = 50,
 		},
 		effort = 4,
 		solo = false,
