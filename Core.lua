@@ -15,7 +15,7 @@ _G.MasterMounts = MM
 -- ADDON_NAME is the folder name from WoW itself, so this cannot drift again.
 MM.MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\"
 
-MM.VERSION = "1.1.13"
+MM.VERSION = "1.1.14"
 MM.PREFIX = "|cff33c1ffMaster Mounts|r: "
 
 -- WHEN THIS IS THE RIGHT TOOL, AND WHEN IT IS NOT.
