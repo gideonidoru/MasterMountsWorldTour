@@ -37,6 +37,11 @@ A.active = {}      -- [mapID] = { { name = ..., source = "poi"|"quest", questID 
 A.scanned = false
 
 -- Zones whose assaults gate a mount. Nothing else is worth polling.
+-- The three zones where an ASSAULT runs. Kept separate from WATCHED because
+-- WATCHED now also holds every map a treasure or a rotating event sits on, and
+-- only these three want their world quests read.
+local ASSAULT_MAPS = { [1543] = true, [1527] = true, [1530] = true }
+
 local WATCHED = {
 	[1543] = "The Maw",
 	[1527] = "Uldum",
@@ -113,7 +118,15 @@ function A.Scan()
 	local any = false
 	for mapID in pairs(WATCHED) do
 		local entries = poiNames(mapID)
-		local quests = questEntries(mapID)
+		-- QUESTS ONLY WHERE ASSAULTS LIVE.
+		--
+		-- questEntries calls RequestLoadQuestByID for every world quest on the
+		-- map, and this table grew from three maps to seventeen when treasures
+		-- and the Grand Hunt were added. Those need the POI list and nothing
+		-- else; firing a burst of quest-load requests across fourteen extra
+		-- maps to answer a question none of them asks is exactly the kind of
+		-- cost that gets reported as "this addon is heavy".
+		local quests = ASSAULT_MAPS[mapID] and questEntries(mapID) or nil
 		if entries or quests then
 			any = true
 			entries = entries or {}
@@ -332,8 +345,57 @@ local function collectRotating()
 			A.rotatingGates[rec.rotating.key] = rec.rotating
 		end
 	end
+	-- Every map a record wants watched, gathered from the records themselves.
+	-- A treasure names an object on ONE map -- its own zone -- so the scan has
+	-- to cover those maps too, and hardcoding a second list would go stale the
+	-- first time a record moved.
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.poi and rec.zone and rec.zone.mapID and not WATCHED[rec.zone.mapID] then
+			WATCHED[rec.zone.mapID] = rec.zone.name or ("map " .. rec.zone.mapID)
+		end
+		for _, mapID in ipairs((rec.rotating and rec.rotating.maps) or {}) do
+			if not WATCHED[mapID] then WATCHED[mapID] = "map " .. mapID end
+		end
+	end
 end
 MM:On("MM_LOGIN", collectRotating)
+
+------------------------------------------------------------
+-- A named object on one map: treasures
+------------------------------------------------------------
+-- A treasure sits at a fixed point, but the record only stores the ZONE for
+-- most of them -- so the route aimed at a zone centre or a hand-typed guess.
+-- The map POI carries the exact point, and the client only shows it while the
+-- treasure is still there for YOU.
+--
+-- ABSENCE PROVES NOTHING, and nothing here treats it as proof. A POI can be
+-- missing because the treasure is looted, or undiscovered, or filtered off the
+-- map, or the zone is not loaded. So this only ever IMPROVES a location; it
+-- never gates a goal, never marks one complete and never hides one. A miss
+-- falls back to whatever the record already said.
+function A.FindPOI(rec)
+	if not (rec and rec.poi and A.scanned) then return nil end
+	local mapID = rec.zone and rec.zone.mapID
+	if not mapID then return nil end
+	local list = needles(rec.poi)
+	for _, e in ipairs(A.active[mapID] or {}) do
+		local hay = e.name and e.name:lower()
+		if hay and e.position then
+			for _, needle in ipairs(list) do
+				if needle and hay:find(needle:lower(), 1, true) then
+					return {
+						mapID = mapID,
+						zone = rec.zone.name or WATCHED[mapID],
+						x = e.position.x and (e.position.x * 100),
+						y = e.position.y and (e.position.y * 100),
+						name = e.name,
+					}
+				end
+			end
+		end
+	end
+	return nil
+end
 
 MM:RegisterGameEvent("QUEST_TURNED_IN", function(questID)
 	if not next(A.rotatingGates) then return end

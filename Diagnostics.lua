@@ -666,6 +666,28 @@ MM:On("MM_GAPS_DEBUG", function()
 			and MM.Attempts.IsParagonGoal(rec) then paragon = paragon + 1 end
 	end
 	local combatLog = (select(4, GetBuildInfo()) or 0) < 120000
+	-- Treasure POIs: how many are readable RIGHT NOW.
+	--
+	-- Printed because absence is ambiguous by design -- looted, undiscovered,
+	-- filtered off the map, or a zone the client has not loaded all look the
+	-- same -- and a number nobody can see is a number nobody can question.
+	local poiGoals, poiLive = 0, 0
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.poi then
+			poiGoals = poiGoals + 1
+			if MM.Assaults.FindPOI and MM.Assaults.FindPOI(rec) then
+				poiLive = poiLive + 1
+			end
+		end
+	end
+	if poiGoals > 0 then
+		MM:Print("|cffffd84dTreasure locations:|r %d of %d readable from the map "
+			.. "right now", poiLive, poiGoals)
+		MM:Print("   The rest fall back to their stored zone. A missing POI means")
+		MM:Print("   looted, undiscovered, filtered off, or a zone not loaded --")
+		MM:Print("   which is why it never marks anything complete.")
+	end
+
 	MM:Print("|cffffd84dAttempt tracking:|r what can mark a goal attempted here")
 	MM:Print("   boss kills by encounter name    working")
 	MM:Print("   paragon caches                  %d goal(s), watched via hasRewardPending",

@@ -98,8 +98,17 @@ end
 -- loads long before Assaults; this asks at call time, when both exist.
 local baseGetRecordLocation = MM.GetRecordLocation
 function MM.GetRecordLocation(rec)
-	if rec and rec.rotating and MM.Assaults and MM.Assaults.FindRotating then
-		local live = MM.Assaults.FindRotating(rec.rotating)
+	if rec and MM.Assaults then
+		-- A rotating event moves between zones; a treasure sits still and the
+		-- record often only knows which zone. Both are answered by the live
+		-- map POI, and both fall through to the stored zone when it cannot be
+		-- read -- a miss must never be worse than having asked nothing.
+		local live
+		if rec.rotating and MM.Assaults.FindRotating then
+			live = MM.Assaults.FindRotating(rec.rotating)
+		elseif rec.poi and MM.Assaults.FindPOI then
+			live = MM.Assaults.FindPOI(rec)
+		end
 		if live and live.x and live.y then
 			return { mapID = live.mapID, name = live.zone, x = live.x, y = live.y }
 		end

@@ -2154,6 +2154,43 @@ local function runLogic()
 			:format(goals)
 	end)
 
+	check("A treasure POI improves a location and never gates one", function()
+		-- The whole safety property of reading treasure POIs: absence is
+		-- ambiguous -- looted, undiscovered, filtered off, zone not loaded --
+		-- so a miss must fall back to what the record already said and must
+		-- never hide, block or complete a goal.
+		local A = MM.Assaults
+		if not (A and A.FindPOI) then return nil, "poi lookup unavailable" end
+		local gated, noZone = 0, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			if rec.poi then
+				gated = gated + 1
+				-- Without a zone mapID there is no map to scan, so the gate
+				-- would silently never fire.
+				if not (rec.zone and rec.zone.mapID) then noZone = noZone + 1 end
+				-- A location must survive the POI being unreadable.
+				local loc = MM.GetRecordLocation(rec)
+				if not loc then
+					return false, ("%s has a poi gate and no location at all when "
+						.. "the POI cannot be read"):format(rec.name)
+				end
+				-- And it must not have become a status gate by accident.
+				local status = MM.Availability.GetStatus({ rec = rec, spellID = rec.spellID })
+				if status == "ROTATION" or status == "LOCKED" then
+					return false, ("%s is gated %s by a treasure POI -- absence "
+						.. "must never block a goal"):format(rec.name, status)
+				end
+			end
+		end
+		if gated == 0 then return nil, "no treasure POI gates in the database" end
+		if noZone > 0 then
+			return false, ("%d poi gate(s) have no zone mapID, so nothing is ever "
+				.. "scanned for them"):format(noZone)
+		end
+		return true, ("%d treasures read their point from the map, and fall back "
+			.. "to their zone when it cannot be read"):format(gated)
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked

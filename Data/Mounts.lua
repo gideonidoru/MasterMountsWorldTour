@@ -18061,6 +18061,11 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Puzzle treasure: gather the scattered components/chimes and ring the vesper to receive the mount.",
+		poi = {
+			match = {
+				"Vesper of the Silver Wind",
+			},
+		},
 	},
 	{
 		name = "Phalynx of Courage",
@@ -19132,6 +19137,11 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Loot the egg; it matures into the mount after several real-time days.",
+		poi = {
+			match = {
+				"Blight-Touched Egg",
+			},
+		},
 	},
 	{
 		name = "Battle-Bound Warhound",
@@ -19304,6 +19314,11 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Find Dreamweaver's five stolen belongings around Ardenweald to unlock the cache.",
+		poi = {
+			match = {
+				"Cache of the Moon",
+			},
+		},
 	},
 	{
 		name = "Arboreal Gulper",
@@ -20966,6 +20981,11 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Gather six eggs from around the razorwing nest area over one or more days.",
+		poi = {
+			match = {
+				"Lost Razorwing Egg",
+			},
+		},
 	},
 	{
 		name = "Amber Shardhide",
@@ -21589,6 +21609,11 @@ MM.AddMounts({
 		attempts = "DAILY",
 		effort = 3,
 		notes = "The chest appears with the Mawsworn incursion event in the northern part of the zone.",
+		poi = {
+			match = {
+				"Mawsworn Supply Chest",
+			},
+		},
 	},
 	{
 		name = "Anointed Protostag",
@@ -28390,6 +28415,11 @@ MM.AddMounts({
 		},
 		dropRate = 3.0303,
 		effort = 3,
+		poi = {
+			match = {
+				"Wriggling Pinnacle Cache",
+			},
+		},
 	},
 	{
 		name = "Pearlescent Krolusk",
@@ -32133,6 +32163,11 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		poi = {
+			match = {
+				"Honored Warrior's Cache",
+			},
+		},
 	},
 	{
 		name = "Hexed Vilefeather Eagle",
@@ -32165,6 +32200,11 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		poi = {
+			match = {
+				"Abandoned Ritual Skull",
+			},
+		},
 	},
 	{
 		name = "Ruddy Sporeglider",
@@ -32190,6 +32230,11 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		poi = {
+			match = {
+				"Peculiar Cauldron",
+			},
+		},
 	},
 	{
 		name = "Untainted Grove Crawler",
@@ -32215,6 +32260,11 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		poi = {
+			match = {
+				"Sporespawned Cache",
+			},
+		},
 	},
 	{
 		name = "Insatiable Shredclaw",
@@ -32239,6 +32289,11 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Taught by the item Reins of the Insatiable Shredclaw.",
+		poi = {
+			match = {
+				"Final Clutch of Predaxas",
+			},
+		},
 	},
 	{
 		name = "Relinquished Scarlet Charger",
@@ -39607,6 +39662,11 @@ MM.AddMounts({
 		},
 		attempts = "NONE",
 		effort = 3,
+		poi = {
+			match = {
+				"Seething Cache",
+			},
+		},
 	},
 	{
 		name = "Cataloged Shalewing",
