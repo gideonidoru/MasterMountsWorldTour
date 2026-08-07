@@ -122,6 +122,13 @@ local function poiNames(mapID)
 				-- the answer has to carry where as well as whether.
 				out[#out + 1] = { name = text, source = "poi", poiID = poiID,
 					timeString = info.timeString, position = info.position,
+					-- WHERE THE REWARD LINE ACTUALLY IS. AreaPOIInfo carries no
+					-- reward field at all -- checked against the client's own
+					-- structure -- and the "Rewards available:" line a player
+					-- reads comes out of this widget set. Kept, not read: this
+					-- runs for every POI on seventeen maps, and only the one
+					-- that matches a gate is worth expanding.
+					widgetSet = info.tooltipWidgetSet,
 					mapID = mapID }
 			end
 		end
@@ -333,6 +340,12 @@ function A.FindRotating(gate)
 							x = e.position and e.position.x and (e.position.x * 100),
 							y = e.position and e.position.y and (e.position.y * 100),
 							name = e.name, timeString = e.timeString,
+							-- CARRIED, or the reward read below is dead code.
+							-- This table is rebuilt from the entry rather than
+							-- passed through, so anything the caller needs has
+							-- to be named here -- and the widget set is where
+							-- the reward tier lives.
+							widgetSet = e.widgetSet, poiID = e.poiID,
 						}
 					end
 				end
@@ -352,16 +365,62 @@ end
 -- and rotates, so a missing banner means it is running elsewhere, or the zone
 -- is not loaded, or the map is filtered -- none of which is "done". Absence
 -- already hid this very goal once by being read as an answer; it is not one.
+-- Every string a widget set will give up, without naming a single widget type.
+--
+-- A set is a list of {widgetID, widgetType}, and the text lives behind a
+-- different Get...VisualizationInfo call per type -- around thirty of them.
+-- Mapping type numbers to function names would be a table of guesses that
+-- rots the first time Blizzard adds a type. Asking every visualization
+-- function and keeping what answers costs a few dozen pcalls, happens only for
+-- a POI that already matched a gate, and cannot go stale.
+function A.WidgetText(setID)
+	local W = C_UIWidgetManager
+	if not (setID and type(W) == "table" and W.GetAllWidgetsBySetID) then return nil end
+	local ok, widgets = pcall(W.GetAllWidgetsBySetID, setID)
+	if not (ok and type(widgets) == "table") then return nil end
+	local parts = {}
+	for _, w in ipairs(widgets) do
+		local id = w and w.widgetID
+		if id then
+			for name, fn in pairs(W) do
+				if type(fn) == "function" and type(name) == "string"
+					and name:find("^Get") and name:find("VisualizationInfo$") then
+					local ok2, info = pcall(fn, id)
+					if ok2 and type(info) == "table" then
+						for _, v in pairs(info) do
+							-- Client strings, so through the safe read: a
+							-- secret one must degrade rather than throw.
+							local str = type(v) == "string" and MM.Util.ReadableString(v)
+							if str and str ~= "" then parts[#parts + 1] = str end
+						end
+					end
+				end
+			end
+		end
+	end
+	if #parts == 0 then return nil end
+	return table.concat(parts, " ")
+end
+
 function A.FirstRewardAvailable(gate)
 	if not (gate and A.scanned and gate.firstReward) then return nil end
 	-- FindRotating walks every map the gate declares, so this inherits the
 	-- rotation rather than guessing which zone to look in.
 	local live = A.FindRotating(gate)
 	if not (live and live.name) then return nil end
-	local hay = live.name:lower()
+	-- The banner's own text, PLUS whatever its tooltip widgets say. The reward
+	-- tier is only ever in the second of those.
+	local hay = live.name
+	local extra = live.widgetSet and A.WidgetText(live.widgetSet)
+	if extra then hay = hay .. " " .. extra end
+	hay = hay:lower()
 	for _, needle in ipairs(gate.firstReward) do
 		if needle and hay:find(needle:lower(), 1, true) then return true end
 	end
+	-- A banner with no readable tooltip at all is not evidence that the reward
+	-- was taken -- it is the same nothing as no banner. Only text we could
+	-- actually read may say "already spent".
+	if not extra then return nil end
 	return false
 end
 

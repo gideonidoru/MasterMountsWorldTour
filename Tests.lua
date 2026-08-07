@@ -4837,6 +4837,34 @@ local function runLogic()
 			.. "last stop lands at %.0f"):format(travel, whole, final)
 	end)
 
+	check("A reward tier is read from the tooltip, never invented", function()
+		-- The reward line a player sees is NOT in the POI's description --
+		-- checked against the client's own generated documentation, where
+		-- AreaPOIInfo has a tooltipWidgetSet and no reward field at all. So the
+		-- tier can only come from the widgets, and a gate that cannot read them
+		-- must say "cannot tell" rather than "already taken".
+		local A = MM.Assaults
+		if not (A and A.WidgetText) then return false, "WidgetText missing" end
+		-- A set nobody has must yield nothing, not an empty-string "answer".
+		if A.WidgetText(-1) ~= nil then
+			return false, "a widget set that does not exist returned text"
+		end
+		if A.WidgetText(nil) ~= nil then
+			return false, "no widget set at all returned text"
+		end
+		local reading, blind = 0, 0
+		for _, gate in pairs(A.rotatingGates or {}) do
+			if gate.firstReward then
+				local live = A.FindRotating and A.FindRotating(gate)
+				if live then
+					if live.widgetSet then reading = reading + 1 else blind = blind + 1 end
+				end
+			end
+		end
+		return true, ("no widgets, no verdict; %d live banner(s) carry a tooltip "
+			.. "set, %d do not"):format(reading, blind)
+	end)
+
 	check("A missing banner is never read as a completion", function()
 		-- The reward tier on a live Grand Hunt banner says whether the first
 		-- run of the week is spent, and that is a real answer. A MISSING banner

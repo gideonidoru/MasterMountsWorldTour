@@ -9,6 +9,16 @@
   taken while the router was resuming. The suite was right about what it saw;
   what it saw was a building site. It waits for the build now, up to three
   seconds, so a stuck one cannot swallow the report.
+- **The Grand Hunt reward tier is now actually read.** It is not in the POI's
+  description — the client's own generated documentation gives `AreaPOIInfo` a
+  `tooltipWidgetSet` and no reward field whatsoever, which is why a detector
+  reading `description` could never have worked. The tier comes from the tooltip
+  widgets, and those are read without naming a single widget type: the text sits
+  behind a different call per type, so every visualization function is asked and
+  whatever answers is kept. A table of type-to-function guesses would rot the
+  first time Blizzard adds a type.
+- A banner whose tooltip cannot be read now says "cannot tell" rather than
+  "already taken" — unreadable is the same nothing as absent.
 - **We were asking one of several POI getters.** A Grand Hunts banner sat on the
   Dragon Isles map with a timer and a reward line while `GetAreaPOIForMap` on
   that same map returned nothing in the same session. Every function the client
