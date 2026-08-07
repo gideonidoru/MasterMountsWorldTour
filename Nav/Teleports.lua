@@ -239,6 +239,14 @@ local MORE = {
 		requires = { class = "MAGE" } },
 	{ key = "mage_valdrakken", spell = 395277, place = "Valdrakken", name = "Teleport: Valdrakken",
 		requires = { class = "MAGE" } },
+	-- THE LIST STOPPED AT DRAGONFLIGHT. A mage's city teleports are the biggest
+	-- single travel advantage any class has, and the catalogue ended one
+	-- expansion back -- so a mage was routed the long way to everything in Khaz
+	-- Algar while holding a thirty-second answer.
+	--
+	-- Spell id read from the client's own SpellName table, not from memory.
+	{ key = "mage_dornogal", spell = 446540, place = "Dornogal", name = "Teleport: Dornogal",
+		requires = { class = "MAGE" } },
 }
 
 for _, o in ipairs(MORE) do

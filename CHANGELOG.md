@@ -2,6 +2,13 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **The mage teleport list stopped at Dragonflight.** `Teleport: Dornogal` was
+  missing, so a mage was routed the long way to everything in Khaz Algar while
+  holding a thirty-second answer. Its spell id comes from the client's own
+  SpellName table, not from memory. (A Midnight-era `Teleport: Silvermoon City`
+  also exists and is *not* added yet — there are two Silvermoon maps and picking
+  the wrong one would route people to the wrong city.)
+
 - **A weekly event finished on one character stopped being offered on all of
   them.** The completion was stored account-wide, and it is the one thing it
   cannot be: a Grand Hunt's first run each week is per character — which is the
