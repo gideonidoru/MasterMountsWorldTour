@@ -14,6 +14,12 @@
   like the answer until Amani Hunting Bear, a Dragonflight-era record whose
   vendor stands in Outland's Shattrath selling for Timewarped Badges.
 
+  Vendor locations carry the same pin, for a subtler reason: a record only uses
+  its own zone when that zone has coordinates, so a mount that names a city with
+  no point in it falls through to whoever sells it — and the vendor's entry
+  stated a zone and a point but no map. The pin on the record was right and
+  simply never consulted.
+
 - **A check for the one routing mistake the data can actually make.** Warlords
   rebuilt Draenor using names Outland already had, so Nagrand, Shadowmoon Valley
   and Shattrath City are each two maps on two continents, and the shipped id

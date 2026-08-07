@@ -44857,11 +44857,13 @@ MM.AddVendorLocations({
 	},
 	cupri = {
 		name = "Shattrath City",
+		mapID = 111,
 		x = 54.5,
 		y = 39,
 	},
 	["drake dealer hurlunk"] = {
 		name = "Shadowmoon Valley",
+		mapID = 104,
 		x = 67.3,
 		y = 88.5,
 	},
