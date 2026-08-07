@@ -9,6 +9,57 @@ local missingBox, planBox, summaryText, routeButton
 ------------------------------------------------------------
 -- Missing-list rows (left pane)
 ------------------------------------------------------------
+-- THE GLYPH HAS TO BEHAVE LIKE THE BUTTON IT REPLACED.
+--
+-- Dropping the child Button fixed the click and lost two things with it: a
+-- FontString has no OnEnter, so it cannot light up or raise a tooltip of its
+-- own. The Collection tab still does both, and one control that behaves two
+-- ways depending on which pane it is in is its own small bug.
+--
+-- The row knows when the cursor is on it, so it polls WHILE HOVERED and only
+-- then -- the script is attached on OnEnter and removed on OnLeave, so exactly
+-- one row in the addon is ever running it, and none are when the pointer is
+-- somewhere else. That is the same cost the old OnEnter had, spread over the
+-- moments it is actually needed.
+--
+-- Matching the Collection tab's numbers on purpose: 0.75 at rest, 1.0 under
+-- the pointer.
+local PLUS_REST, PLUS_HOT = 0.75, 1
+local PLUS_DIM = 0.35          -- a row the plan cannot key on
+
+local function plusCanPlan(entry) return entry and entry.spellID ~= nil end
+
+-- Returns true only when the state CHANGED, so the tooltip is rebuilt on the
+-- crossing rather than on every frame.
+local function setPlusHot(row, hot)
+	if row.mmPlusHot == hot then return false end
+	row.mmPlusHot = hot
+	local planable = plusCanPlan(row.entry)
+	if hot then
+		row.plus:SetTextColor(0.75, 1, 0.8)
+		row.plus:SetAlpha(planable and PLUS_HOT or PLUS_DIM)
+	else
+		row.plus:SetTextColor(0.45, 1, 0.5)
+		row.plus:SetAlpha(planable and PLUS_REST or PLUS_DIM)
+	end
+	return true
+end
+
+local function plusTooltip(row)
+	if row.mmPlusHot then
+		GameTooltip:SetOwner(row, "ANCHOR_TOP")
+		GameTooltip:SetText(plusCanPlan(row.entry) and "Add to farm plan"
+			or "Cannot be planned")
+		if not plusCanPlan(row.entry) then
+			GameTooltip:AddLine("The mount journal gives this one no spell id, "
+				.. "and the plan is keyed on one.", 0.8, 0.8, 0.8, true)
+		end
+		GameTooltip:Show()
+	else
+		UI.ShowMountTooltip(row, row.entry)
+	end
+end
+
 local function initMissingRow(row, entry)
 	if not row.built then
 		row.built = true
@@ -105,8 +156,20 @@ local function initMissingRow(row, entry)
 			end
 		end
 
-		row:SetScript("OnEnter", function(self) UI.ShowMountTooltip(self, self.entry) end)
-		row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+		row:SetScript("OnEnter", function(self)
+			setPlusHot(self, UI.CursorOver(self.plus))
+			plusTooltip(self)
+			-- Polling starts here and stops on OnLeave, so it runs on one row
+			-- at a time and on none when the pointer is elsewhere.
+			self:SetScript("OnUpdate", function(s)
+				if setPlusHot(s, UI.CursorOver(s.plus)) then plusTooltip(s) end
+			end)
+		end)
+		row:SetScript("OnLeave", function(self)
+			self:SetScript("OnUpdate", nil)
+			setPlusHot(self, false)
+			GameTooltip:Hide()
+		end)
 		row:SetScript("OnMouseDown", function(self, button)
 			-- Recorded so OnClick does not ALSO open the journal for the same
 			-- press, and recomputed every time so a stale flag cannot leak into
@@ -130,7 +193,12 @@ local function initMissingRow(row, entry)
 	-- refresh filters on exactly that -- so the glyph is always [+] and saying
 	-- so is simpler than asking. A row that cannot be planned at all is dimmed,
 	-- because a control that will refuse should not look like one that will not.
-	row.plus:SetAlpha(entry.spellID and 1 or 0.35)
+	--
+	-- Cleared rather than assumed: rows are recycled, and one that was under
+	-- the pointer when the list last rebuilt would otherwise keep its hover
+	-- colour while describing a different mount.
+	row.mmPlusHot = nil
+	setPlusHot(row, false)
 end
 
 ------------------------------------------------------------
