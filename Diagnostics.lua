@@ -1280,6 +1280,79 @@ MM:On("MM_FIXES_DEBUG", function()
 			.. "hardware)"):format(tostring(worst), worstMs, n)
 	end)
 
+	probe("Grand Hunt: everything the client says about the banner", function()
+		-- The reward tier is NOT in the description -- the client's AreaPOI
+		-- table gives every Grand Hunting Party row the same fixed line, and
+		-- carries the tier in a widget set instead. So the useful thing to
+		-- print is every field of a matching POI, once one is up, rather than
+		-- the one field that was assumed to hold the answer.
+		local A = MM.Assaults
+		if not (A and A.rotatingGates) then return false, "assaults not loaded" end
+		local shown = {}
+		for _, gate in pairs(A.rotatingGates) do
+			for _, mapID in ipairs(gate.maps or {}) do
+				for _, e in ipairs(A.active[mapID] or {}) do
+					local hay = (e.name or ""):lower()
+					for _, needle in ipairs(gate.match or {}) do
+						if needle and hay:find(needle:lower(), 1, true) and e.poiID then
+							local ok, info = pcall(C_AreaPoiInfo.GetAreaPOIInfo, mapID, e.poiID)
+							if ok and type(info) == "table" then
+								local keys = {}
+								for k, v in pairs(info) do
+									if type(v) ~= "table" then
+										keys[#keys + 1] = ("%s=%s"):format(k,
+											MM.Util.ReadableString(v) or tostring(v))
+									end
+								end
+								table.sort(keys)
+								shown[#shown + 1] = ("poi %d on map %d: %s")
+									:format(e.poiID, mapID, table.concat(keys, " "))
+							end
+							break
+						end
+					end
+				end
+			end
+		end
+		if #shown == 0 then
+			return true, "no matching banner up right now -- nothing to describe"
+		end
+		return true, table.concat(shown, " | ")
+	end)
+
+	probe("Grand Hunt: which maps were asked, and what came back", function()
+		-- The banner is not turning up and the useful question is no longer
+		-- "is it there" but "where did we look". Absence is only informative
+		-- once the search is visible.
+		local A = MM.Assaults
+		if not (A and A.rotatingGates) then return false, "assaults not loaded" end
+		local out = {}
+		for _, gate in pairs(A.rotatingGates) do
+			local seen = {}
+			for _, mapID in ipairs(gate.maps or {}) do seen[mapID] = true end
+			-- and whatever contains them
+			for _, mapID in ipairs(gate.maps or {}) do
+				local ok, info = pcall(C_Map.GetMapInfo, mapID)
+				if ok and info and info.parentMapID and info.parentMapID > 0 then
+					seen[info.parentMapID] = true
+				end
+			end
+			local ids = {}
+			for mapID in pairs(seen) do ids[#ids + 1] = mapID end
+			table.sort(ids)
+			for _, mapID in ipairs(ids) do
+				local n = #(A.active[mapID] or {})
+				local mi = C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+				out[#out + 1] = ("%s(%d)=%d"):format(
+					(mi and MM.Util.ReadableString(mi.name)) or "?", mapID, n)
+			end
+		end
+		if #out == 0 then return false, "no rotating gate declares a map" end
+		-- Never a failure. This reports the search, and a search that finds
+		-- nothing is a fact about this moment, not a defect.
+		return true, ("POIs seen per map: %s"):format(table.concat(out, ", "))
+	end)
+
 	probe("Grand Hunt: can the banner be read from here", function()
 		local A = MM.Assaults
 		if not (A and A.FirstRewardAvailable) then return false, "reader missing" end

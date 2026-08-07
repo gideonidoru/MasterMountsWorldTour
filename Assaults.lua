@@ -382,11 +382,40 @@ end
 -- `rotating` on a record is the whole of adding one.
 A.rotatingGates = {}
 
+-- The map a zone SITS IN, asked of the client rather than written down.
+--
+-- A Grand Hunt banner is not on any of the four zone maps -- a scan from
+-- inside the Dragon Isles returns Dreamsurge, the fishing holes, Maruukai and
+-- no hunt -- so the four maps a record names are not, on their own, where the
+-- thing being looked for lives. Event POIs plainly do come back remotely, so
+-- the gap is WHICH map is asked, not whether asking works.
+--
+-- The containing map is the obvious next place and it must not be a number
+-- typed in from memory: parentMapID comes from the client, so this keeps
+-- working when Blizzard renumbers something, and costs one POI call per map.
+local function parentOf(mapID)
+	if not (C_Map and C_Map.GetMapInfo) then return nil end
+	local ok, info = pcall(C_Map.GetMapInfo, mapID)
+	if not (ok and info and info.parentMapID and info.parentMapID > 0) then return nil end
+	return info.parentMapID, MM.Util.ReadableString(info.name)
+end
+
 local function collectRotating()
 	wipe(A.rotatingGates)
 	for _, rec in ipairs(MM.DBList or {}) do
 		if rec.rotating and rec.rotating.key then
 			A.rotatingGates[rec.rotating.key] = rec.rotating
+			-- Watch what contains the declared zones as well as the zones.
+			-- POI ONLY -- these do not join the quest scan, which is the
+			-- expensive half and is not what is missing here.
+			for _, mapID in ipairs(rec.rotating.maps or {}) do
+				local parent = parentOf(mapID)
+				if parent and not WATCHED[parent] then
+					local pi = C_Map.GetMapInfo and C_Map.GetMapInfo(parent)
+					WATCHED[parent] = (pi and MM.Util.ReadableString(pi.name))
+						or ("map " .. parent)
+				end
+			end
 		end
 	end
 	-- Every map a record wants watched, gathered from the records themselves.
