@@ -1320,6 +1320,32 @@ MM:On("MM_FIXES_DEBUG", function()
 		return true, table.concat(shown, " | ")
 	end)
 
+	probe("Which POI getters this client actually answers", function()
+		-- A banner with a timer and a reward line was on screen while
+		-- GetAreaPOIForMap on that map returned nothing. Naming the getter that
+		-- DID produce it is the difference between a fix and another theory.
+		local A = MM.Assaults
+		local api = C_AreaPoiInfo
+		local avail = {}
+		if type(api) == "table" then
+			for name, fn in pairs(api) do
+				if type(fn) == "function" and type(name) == "string"
+					and name:find("ForMap$") then
+					avail[#avail + 1] = name
+				end
+			end
+			table.sort(avail)
+		end
+		local used = {}
+		for name, n in pairs((A and A.poiSources) or {}) do
+			used[#used + 1] = ("%s=%d"):format(name, n)
+		end
+		table.sort(used)
+		return #avail > 0, ("client offers: %s | produced points: %s"):format(
+			#avail > 0 and table.concat(avail, ", ") or "none",
+			#used > 0 and table.concat(used, ", ") or "none yet")
+	end)
+
 	probe("Grand Hunt: which maps were asked, and what came back", function()
 		-- The banner is not turning up and the useful question is no longer
 		-- "is it there" but "where did we look". Absence is only informative

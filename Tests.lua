@@ -5231,8 +5231,25 @@ function T.PrepareAsync(onDone)
 		if onDone then onDone(results) end
 		return
 	end
-	local i = 1
+	local i, waited = 1, 0
 	local function slice()
+		-- NOT WHILE THE ROUTE IS BEING REBUILT.
+		--
+		-- Running the suite in slices means it no longer sees one frozen
+		-- snapshot: an asynchronous build mutates R.route BETWEEN slices, so
+		-- checks land on a route that is half-finished. That is what produced
+		-- "101 of 285 planned goals vanished from the route" and a dozen "no
+		-- route" degradations in a report taken while the router was resuming.
+		-- The suite was right about what it saw; what it saw was a building site.
+		--
+		-- Bounded, because a build that never finishes must not swallow the
+		-- report. Three seconds and it proceeds, and the check that trips will
+		-- at least be reporting on something real.
+		if waited < 60 and MM.Router and MM.Router.IsBuilding and MM.Router.IsBuilding() then
+			waited = waited + 1
+			C_Timer.After(0.05, slice)
+			return
+		end
 		local started = debugprofilestop()
 		while queue[i] do
 			runOne(queue[i])

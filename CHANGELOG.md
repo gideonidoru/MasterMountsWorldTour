@@ -2,6 +2,20 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **The self-test could run against a route that was still being built.**
+  Slicing it across frames means it no longer sees one frozen snapshot, and an
+  asynchronous build mutates the route between slices — which produced "101 of
+  285 planned goals vanished" and a dozen "no route" degradations in a report
+  taken while the router was resuming. The suite was right about what it saw;
+  what it saw was a building site. It waits for the build now, up to three
+  seconds, so a stuck one cannot swallow the report.
+- **We were asking one of several POI getters.** A Grand Hunts banner sat on the
+  Dragon Isles map with a timer and a reward line while `GetAreaPOIForMap` on
+  that same map returned nothing in the same session. Every function the client
+  exposes ending in `ForMap` is asked now, and the names are discovered rather
+  than guessed — writing down a hoped-for name would have been the same mistake
+  as inventing a quest id. The report says which getter produced what.
+
 - **One self-test check re-planned seven times and was killed on slower
   hardware.** Applying a preset announces the change, and announcing it
   re-plans; the preset round-trip applied four presets plus a defaults probe,

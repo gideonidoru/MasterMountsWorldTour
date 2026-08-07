@@ -58,11 +58,50 @@ local WATCHED = {
 ------------------------------------------------------------
 -- Reading what is live
 ------------------------------------------------------------
+-- EVERY WAY THIS CLIENT WILL HAND OUT POINTS OF INTEREST, not the one we knew.
+--
+-- A Grand Hunts banner sat on the Dragon Isles map, on screen, with a timer and
+-- a reward line, while GetAreaPOIForMap on that same map returned nothing at
+-- all in the same session. So that function is not where this kind of POI
+-- lives -- Blizzard has split retrieval into typed getters, and we were asking
+-- exactly one of them.
+--
+-- The names are DISCOVERED rather than listed. Writing out a guess at
+-- "GetEventsForMap" would be the same mistake as guessing a quest id: it might
+-- be right today and it is not knowledge. Anything the client exposes ending
+-- in ForMap is asked, and only what comes back as a list of numbers is used.
+A.poiSources = A.poiSources or {}
+
+local function poiIDs(mapID)
+	local api = C_AreaPoiInfo
+	if type(api) ~= "table" then return nil end
+	local seen, out = {}, {}
+	for name, fn in pairs(api) do
+		if type(fn) == "function" and type(name) == "string" and name:find("ForMap$") then
+			local ok, ids = pcall(fn, mapID)
+			if ok and type(ids) == "table" then
+				local got = 0
+				for _, id in ipairs(ids) do
+					if type(id) == "number" then
+						got = got + 1
+						if not seen[id] then seen[id] = true; out[#out + 1] = id end
+					end
+				end
+				-- Which getter actually produced anything, for the report.
+				if got > 0 then
+					A.poiSources[name] = (A.poiSources[name] or 0) + got
+				end
+			end
+		end
+	end
+	return out
+end
+
 local function poiNames(mapID)
 	local api = C_AreaPoiInfo
-	if not (api and api.GetAreaPOIForMap) then return end
-	local ok, ids = pcall(api.GetAreaPOIForMap, mapID)
-	if not (ok and type(ids) == "table") then return end
+	if not api then return end
+	local ids = poiIDs(mapID)
+	if not ids or #ids == 0 then return end
 	local out = {}
 	for _, poiID in ipairs(ids) do
 		local ok2, info = pcall(api.GetAreaPOIInfo, mapID, poiID)
