@@ -1223,6 +1223,52 @@ MM:On("MM_FIXES_DEBUG", function()
 		return true, ("%s driving, setting says %s, TomTom %s"):format(have, want, tt)
 	end)
 
+	probe("Reading the current goal leaves the anchor alone", function()
+		local R = MM.Router
+		if not (R and R.SetIndex) then return false, "R.SetIndex missing" end
+		if not (MM.cdb and MM.cdb.routeActive) then
+			return true, "no route running; the anchor is only movable while one is"
+		end
+		local before = MM.db.routeGoal
+		R:Current(); R:Current()
+		return MM.db.routeGoal == before,
+			MM.db.routeGoal == before
+				and ("two reads left the anchor on %s (was: a read moved it)")
+					:format(tostring(before))
+				or ("a read moved the anchor %s -> %s")
+					:format(tostring(before), tostring(MM.db.routeGoal))
+	end)
+
+	probe("The report breathes between sections", function()
+		local D2 = MM.Diagnostics
+		if not D2.BuildChunked then return false, "the report runs in one go again" end
+		local worst, ms = D2.SlowestSection()
+		if not worst then return true, "chunked builder present; nothing timed yet" end
+		return ms <= 400, ("slowest single section %s at %d ms (was: all 33 in one "
+			.. "run, which is what the watchdog measures)"):format(worst, ms)
+	end)
+
+	probe("Grand Hunt: can the banner be read from here", function()
+		local A = MM.Assaults
+		if not (A and A.FirstRewardAvailable) then return false, "reader missing" end
+		local lines, gates = {}, 0
+		for key, gate in pairs(A.rotatingGates or {}) do
+			gates = gates + 1
+			local v = A.FirstRewardAvailable(gate)
+			local done = A.WeeklyDone(key)
+			lines[#lines + 1] = ("%s: %s%s"):format(gate.label or key,
+				v == true and "banner up, first run still unspent"
+					or v == false and "banner up, first run already taken"
+					or "no banner visible from here -- no verdict, which is correct",
+				done and " (recorded done this week)" or "")
+		end
+		if gates == 0 then return false, "no rotating gates discovered" end
+		-- Never a failure: the honest answer to "is it done" is often "cannot
+		-- tell from this continent", and saying so is the behaviour being
+		-- validated rather than a fault.
+		return true, table.concat(lines, "; ")
+	end)
+
 	probe("Wowhead copy box resolves", function()
 		local dlg = StaticPopupDialogs and StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"]
 		if not dlg then return false, "dialog not registered" end
