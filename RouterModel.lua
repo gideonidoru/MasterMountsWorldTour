@@ -139,16 +139,15 @@ function RM.Sample(n)
 		if rec and not rec.stub and rec.obtainable ~= false and not entry.collected then
 			local risk, why = RM.RiskOf(rec)
 			if risk > 0 then
-				-- Can the router put this anywhere at all? Same question
-				-- makeStep asks, so the answer cannot disagree with it.
-				local mapID = U and U.GetRecordMapID and U.GetRecordMapID(rec)
-				if not mapID and rec.instance and rec.instance.name and U.ResolveMapForRecord then
-					mapID = U.ResolveMapForRecord(rec.instance.name, rec)
-				end
-				pool[#pool + 1] = {
-					entry = entry, rec = rec, risk = risk, why = why,
-					routable = mapID and true or false,
-				}
+				-- ROUTABILITY IS ASKED LATER, of the few that get that far.
+				--
+				-- This resolved a map for every risky record in the collection
+				-- -- roughly sixteen hundred lookups -- to fill a field that
+				-- only `take` below reads, and `take` stops as soon as it has
+				-- n candidates. Asking for two goals cost the same as asking
+				-- for two hundred, which is why shrinking the sample did not
+				-- make the model faster.
+				pool[#pool + 1] = { entry = entry, rec = rec, risk = risk, why = why }
 			end
 		end
 	end
@@ -171,10 +170,24 @@ function RM.Sample(n)
 	local categoryCap = math.max(2, math.floor(n / 4))
 	local out, perCategory, unplaceable = {}, {}, 0
 
+	-- Can the router put this anywhere at all? Same question makeStep asks, so
+	-- the answer cannot disagree with it. Resolved once, on demand.
+	local function routable(cand)
+		if cand.routable == nil then
+			local mapID = U and U.GetRecordMapID and U.GetRecordMapID(cand.rec)
+			if not mapID and cand.rec.instance and cand.rec.instance.name
+				and U.ResolveMapForRecord then
+				mapID = U.ResolveMapForRecord(cand.rec.instance.name, cand.rec)
+			end
+			cand.routable = mapID and true or false
+		end
+		return cand.routable
+	end
+
 	local function take(cand)
 		local cat = cand.rec.category or "?"
 		if (perCategory[cat] or 0) >= categoryCap then return false end
-		if not cand.routable then
+		if not routable(cand) then
 			if unplaceable >= unplaceableCap then return false end
 			unplaceable = unplaceable + 1
 		end
@@ -191,7 +204,10 @@ function RM.Sample(n)
 		for _, c in ipairs(out) do chosen[c] = true end
 		for _, cand in ipairs(pool) do
 			if #out >= n then break end
-			if not chosen[cand] and cand.routable then
+			-- Through the helper, not the raw field: it is nil until asked,
+			-- and reading it directly here would silently treat every
+			-- candidate the first pass never reached as unroutable.
+			if not chosen[cand] and routable(cand) then
 				out[#out + 1] = cand
 				chosen[cand] = true
 			end

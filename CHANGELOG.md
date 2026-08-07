@@ -9,6 +9,12 @@
   work is part of what it checks. It still runs the real `ApplyPreset` — testing
   a copy of it would test the copy — but is no longer allowed to tell the plan
   about settings that exist for one line.
+- **The router model resolved a map for every mount you do not own, to fill a
+  field it reads a dozen times.** Picking which goals to model asked "can the
+  router place this" of roughly sixteen hundred records up front, when the only
+  code that reads the answer stops as soon as it has enough candidates. Asking
+  for two goals cost the same as asking for two hundred. It is answered on
+  demand now, which makes `/mm routertest` itself markedly quicker.
 - **The router-model check modelled the whole sample to prove a swap.** What it
   protects is that the model puts your route back after borrowing the plan, and
   that path does not care how many goals were borrowed — but a full run measured
