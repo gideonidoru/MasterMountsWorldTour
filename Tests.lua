@@ -2226,6 +2226,52 @@ local function runLogic()
 			.. "to their zone when it cannot be read"):format(gated)
 	end)
 
+	check("A profession you lack only blocks what nobody can make for you", function()
+		-- All 22 profession records were held back identically, and they are
+		-- three situations: five need the profession TO RIDE, two are
+		-- Archaeology solves nobody can do for you, and fifteen are BoE or
+		-- ordinary crafting orders. Holding the fifteen back hid obtainable
+		-- mounts from the plan entirely.
+		--
+		-- The distinction lives in each source line and is set per record, so
+		-- the failure to catch is a record drifting into the wrong group -- or
+		-- the whole flag being ignored again.
+		local prof, tradeable, priced = 0, 0, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			if rec.obtainable then
+				local hasProf = false
+				for _, c in ipairs(rec.conditions or {}) do
+					if c.type == "PROFESSION" then hasProf = true break end
+				end
+				if hasProf then
+					prof = prof + 1
+					if rec.tradeable then
+						tradeable = tradeable + 1
+						-- A tradeable craft must still cost SOMETHING, or making
+						-- it available turns it into a free mount that outranks
+						-- real work. Reagents are the honest floor.
+						local hasCost = false
+						for _, c in ipairs(rec.conditions or {}) do
+							if c.type == "MATERIAL" or c.type == "ITEM" then hasCost = true end
+						end
+						if hasCost then priced = priced + 1 end
+					end
+				end
+			end
+		end
+		if prof == 0 then return nil, "no profession records in the database" end
+		if tradeable == 0 then
+			return false, ("all %d profession records are blocked -- the tradeable "
+				.. "flag is not reaching them"):format(prof)
+		end
+		if priced < tradeable then
+			return false, ("%d tradeable craft(s) carry no reagent or item cost, so "
+				.. "they would rank as free work"):format(tradeable - priced)
+		end
+		return true, ("%d profession records: %d somebody else can make, all with a "
+			.. "real cost; %d genuinely blocked"):format(prof, tradeable, prof - tradeable)
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked

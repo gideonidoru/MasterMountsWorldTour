@@ -231,9 +231,27 @@ function QG.HardGate(rec)
 			end
 		end
 		if cond.type == "PROFESSION" and cond.name then
-			local have = knownProfessions()
-			if not have[cond.name:lower()] then
-				return ("Requires %s"):format(cond.name)
+			-- A PROFESSION YOU LACK IS NOT ALWAYS A WALL.
+			--
+			-- All 22 profession records were held back identically, and they
+			-- are three different situations. Five need the profession TO RIDE
+			-- -- the flying carpets, the flying machines -- and two are
+			-- Archaeology solves nobody can do for you. Those are walls.
+			--
+			-- The other fifteen are not: the six panthers are BoE, the
+			-- Mechano-Hog and Mekgineer's Chopper sell on the auction house,
+			-- and the rest are ordinary crafting orders. Holding them back hid
+			-- fifteen obtainable mounts from the plan entirely.
+			--
+			-- `tradeable` marks the ones somebody else can make or sell you.
+			-- Set per record after reading each source line, not inferred: the
+			-- difference between "engineers only" and "BoE, purchasable" is in
+			-- the text and nowhere else.
+			if not rec.tradeable then
+				local have = knownProfessions()
+				if not have[cond.name:lower()] then
+					return ("Requires %s"):format(cond.name)
+				end
 			end
 		end
 	end

@@ -5862,6 +5862,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "The crafted item is BoE - anyone can buy and ride it; only crafting requires Engineering. Expensive vendor materials.",
+		tradeable = true,
 	},
 	{
 		name = "Mechano-Hog",
@@ -5923,6 +5924,7 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "The crafted item is BoE - anyone can buy and ride it; only crafting requires Engineering. Expensive vendor materials.",
+		tradeable = true,
 	},
 	{
 		name = "Flying Carpet",
@@ -7230,6 +7232,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "You TRANSFORM into a two-seater drake that can carry a passenger. The vial is BoE and expensive to craft (Truegold, Pyrium-Laced Crystalline Vials, Sands of Time); non-alchemists can simply buy it on the AH.",
 		noLocationReason = "Alchemy (Vial of the Sands) -- the recipe comes from Tol'vir archaeology, and dig sites move; nothing fixed to route to",
+		tradeable = true,
 	},
 	{
 		name = "Swift Forest Strider",
@@ -9321,6 +9324,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "Requires an Orb of Mystery (20,000g from vendor) plus gems and Living Steel.",
 		noLocationReason = "Crafted (Pandaria Jewelcrafting) and BoE -- made or bought, never collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Ruby Panther",
@@ -9362,6 +9366,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "Requires an Orb of Mystery plus gems and Living Steel.",
 		noLocationReason = "Crafted (Pandaria Jewelcrafting) and BoE -- made or bought, never collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Sapphire Panther",
@@ -9403,6 +9408,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "Requires an Orb of Mystery plus gems and Living Steel.",
 		noLocationReason = "Crafted (Pandaria Jewelcrafting) and BoE -- made or bought, never collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Sunstone Panther",
@@ -9444,6 +9450,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "Requires an Orb of Mystery plus gems and Living Steel.",
 		noLocationReason = "Crafted (Pandaria Jewelcrafting) and BoE -- made or bought, never collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Jeweled Onyx Panther",
@@ -9485,6 +9492,7 @@ MM.AddMounts({
 		effort = 4,
 		notes = "Consumes a Jade, Ruby, Sapphire and Sunstone Panther; the most expensive of the panther mounts.",
 		noLocationReason = "Crafted (Pandaria Jewelcrafting) and BoE -- made or bought, never collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Sky Golem",
@@ -9516,6 +9524,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "Roughly 30 days of Engineering cooldowns to craft. Lets you gather herbs without dismounting.",
 		noLocationReason = "Crafted (Engineering) -- made, not collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Crimson Cloud Serpent",
@@ -25004,6 +25013,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		},
 		effort = 2,
 		notes = "Can simply be bought from the Auction House without the profession.",
+		tradeable = true,
 	},
 	{
 		name = "Shale Ramolith",
@@ -27840,6 +27850,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Crafted mount; can be purchased from other players.",
+		tradeable = true,
 	},
 	{
 		name = "Tyrannotort",
@@ -34300,6 +34311,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Needs Midnight Leatherworking 90 and Renown 8 with the Ritual Sites to unlock Tier 5, which is where both the pattern and the Broken Lynx Leash come from. Craftable through a crafting order without the profession. One further reagent, Infused Scaleworm Hide x1, is named by the recipe but has no item under that name in the client table, so it is not counted below.",
+		tradeable = true,
 	},
 	{
 		name = "Nether-Swept Drake",
@@ -37485,6 +37497,7 @@ MM.AddMounts({
 		effort = 3,
 		notes = "The plans are the bottleneck at roughly a 2% drop from Tichondrius, on a raid lockout. Requires Legion Blacksmithing 100.",
 		noLocationReason = "Crafted (Legion Blacksmithing) -- made, not collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Maddened Chaosrunner",
@@ -44512,6 +44525,7 @@ MM.AddMounts({
 		effort = 4,
 		notes = "Item is the Elderhorn Riding Harness. Needs Legion Leatherworking specifically, not current-expansion skill.",
 		noLocationReason = "Crafted (Legion Leatherworking) -- made, not collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Dustmane Direwolf",
@@ -44543,6 +44557,7 @@ MM.AddMounts({
 		effort = 4,
 		notes = "Item is simply called Riding Harness. Distinct from the Smoky Direwolf (spell 171843), which is a garrison reward.",
 		noLocationReason = "Crafted (Draenor Leatherworking) -- made, not collected from a place",
+		tradeable = true,
 	},
 	{
 		name = "Deathbringer's Flayedwing",
