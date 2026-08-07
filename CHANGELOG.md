@@ -2,6 +2,18 @@
 
 ## 1.1.14 — unreleased
 
+- **The guard against unreadable client strings was itself throwing.** It
+  concatenated inside a pcall and then tested the result outside it, on the
+  belief that concatenation is the operation a secret value refuses. It is not —
+  a secret concatenates and yields another secret, and the comparison afterwards
+  is what throws. So the one place everything had been routed through became the
+  error site, which is worse than the scattered reads it replaced. Every
+  operation now happens inside the pcall, and what comes out is a plain string
+  or nothing.
+- **The self-test was modelling a bug the client does not have.** Its fixture
+  errored on concatenation, so it confirmed a shape that never occurs and
+  reported a pass while the real thing threw in a delve.
+
 - **Rare alerts threw on every nameplate, mouseover and target in a delve.** A
   unit's name is a secret value inside an instance on 12.0, and reading one
   as a string throws. Losing the name costs almost nothing — a watched rare is

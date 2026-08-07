@@ -2214,9 +2214,20 @@ local function runLogic()
 		-- rather than anywhere a client-supplied string is read. Patching each
 		-- site as it is reported is how the second one happened.
 		--
-		-- Drives the helper with something that behaves like a secret -- a
-		-- table whose concatenation errors -- because that is the operation
-		-- that actually fails on one.
+		-- THE FIRST FIXTURE HERE MODELLED THE WRONG FAILURE, and passed for it.
+		-- It used a value whose CONCATENATION errors, on the belief that this is
+		-- what a secret does. It is not: a secret concatenates and yields
+		-- another secret, and the COMPARISON afterwards throws. The helper was
+		-- testing its result outside the pcall, so the guard itself became the
+		-- error site -- and this check watched that happen and reported PASS,
+		-- because it was asking about a shape the client does not produce.
+		--
+		-- Plain Lua cannot reproduce the real one exactly: `s ~= ""` compares a
+		-- table against a string, and Lua answers that without ever consulting
+		-- __eq. So the second fixture models what it can -- a concatenation that
+		-- SUCCEEDS and yields something unusable -- and the helper is written so
+		-- every operation happens inside the pcall, which is the property that
+		-- actually matters and cannot be faked by a fixture.
 		local U = MM.Util
 		if not (U and U.ReadableString) then return nil, "helper unavailable" end
 		local secret = setmetatable({}, {
@@ -2232,6 +2243,15 @@ local function runLogic()
 		end
 		if (U.secretReads or 0) <= before then
 			return false, "the refusal was not counted, so nothing can report it"
+		end
+		-- Second shape: the concatenation works and what comes back is not a
+		-- string. The old helper happened to survive this one, but by luck --
+		-- and luck is what moving the tests inside the pcall removes.
+		local surviving = setmetatable({}, {
+			__concat = function() return setmetatable({}, {}) end,
+		})
+		if U.ReadableString(surviving) ~= nil then
+			return false, "a concatenation that yields a non-string was accepted"
 		end
 		if U.ReadableString("Alunira") ~= "Alunira" then
 			return false, "a readable string did not survive the helper"

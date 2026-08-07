@@ -550,9 +550,22 @@ end
 -- the ONE place that asks, so a site that reads a client-supplied name is
 -- either using it or has been missed visibly rather than quietly.
 --
--- Concatenation is the test because it is the operation that fails: `type()`
--- on a secret is not documented to be useful, and pcall around the actual
--- forbidden operation is the only check that cannot be wrong about it.
+-- CONCATENATION IS NOT THE OPERATION THAT FAILS, and believing it was is what
+-- produced the third report of this. The function used to concatenate inside a
+-- pcall and then test the result OUTSIDE it, reasoning that concatenation is
+-- what throws. It is not. A secret concatenates perfectly happily and hands
+-- back another secret; the comparison afterwards is what throws:
+--
+--   "attempt to compare local 's' (a secret string value)"
+--
+-- So the guard itself became the error site, and every caller carefully routed
+-- through it inherited the fault -- worse than the scattered reads it replaced,
+-- because now there was a single place to be wrong and everything used it.
+--
+-- EVERY operation on the value therefore happens INSIDE the pcall: the
+-- concatenation, the type test, and both comparisons. What comes back out is a
+-- plain string or nil, and nothing else ever touches the original. A value that
+-- cannot even be compared is, by definition, one we cannot use.
 --
 -- NOT LATCHED. Taint in WoW is per-execution-path, not a permanent property of
 -- the addon, so "we saw one secret" does not mean every later read fails. The
@@ -562,8 +575,18 @@ U.secretReads = 0
 
 function U.ReadableString(v)
 	if v == nil then return nil end
-	local ok, s = pcall(function() return v .. "" end)
-	if ok and type(s) == "string" and s ~= "" then return s end
-	U.secretReads = U.secretReads + 1
-	return nil
+	local ok, s = pcall(function()
+		local out = v .. ""
+		-- Both of these are forbidden operations on a secret, which is
+		-- exactly why they sit in here rather than below.
+		if type(out) ~= "string" then return nil end
+		if out == "" then return nil end
+		return out
+	end)
+	if not ok then
+		U.secretReads = U.secretReads + 1
+		return nil
+	end
+	-- Plain string or nil; whatever the client withheld threw above.
+	return s
 end
