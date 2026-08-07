@@ -1463,7 +1463,19 @@ local function runLogic()
 		local cap = R.PreferenceCap()
 		if not cap then return nil, "no cap set (orderCap 0 — the clock is unbound)" end
 		local rep = R.capReport
-		if not rep then return false, "the cap ran but reported nothing" end
+		-- NOTHING TO CAP IS NOT A BROKEN CAP.
+		--
+		-- capReport only exists once a route has been ordered, and an empty
+		-- plan never orders one. This called that a FAILURE and held the
+		-- release gate shut over a plan the player had simply cleared -- while
+		-- its own sibling two lines down passed vacuously on the same state,
+		-- reporting "0 -> 0 min, worst displacement -1".
+		if not rep then
+			if #(MM.cdb and MM.cdb.plan or {}) == 0 then
+				return nil, "plan is empty -- nothing to cap"
+			end
+			return false, "the cap ran but reported nothing"
+		end
 		if rep.worst > cap then
 			return false, ("a goal sits %d places from its preference rank, cap is %d")
 				:format(rep.worst, cap)
@@ -1478,6 +1490,16 @@ local function runLogic()
 		-- free, because "free" would mean the cap never binds.
 		local R = MM.Router
 		if not (R and R.RouteMinutes) then return false, "router missing" end
+		-- A VACUOUS PASS IS WORSE THAN A WARN.
+		--
+		-- On an empty plan this reported "cap 8 costs 0.0% more travel
+		-- (0 -> 0 min), worst displacement -1" and went green -- measuring
+		-- nothing and calling it evidence, in the same run where its sibling
+		-- failed the release gate over the identical state. Zero minutes
+		-- against zero minutes says nothing about whether the cap binds.
+		if #(MM.cdb and MM.cdb.plan or {}) == 0 then
+			return nil, "plan is empty -- no travel to trade against"
+		end
 		local saved = MM.db.weights
 		local function build(capValue)
 			local w = { schema = 2 }
@@ -1965,7 +1987,14 @@ local function runLogic()
 		-- Builds a real row and a real action button and asserts the ordering,
 		-- because that is the property that was implicit and therefore free to
 		-- change without anyone noticing.
-		if not UI.MakeRowAction then return nil, "row action helper unavailable" end
+		-- MM.UI, not UI. This file has no `UI` local, so the bare name was a
+		-- global nil and the check threw on its own first line -- a test that
+		-- fails for a reason unrelated to what it tests is worse than no test,
+		-- because it spends a release gate on itself.
+		local UI = MM.UI
+		if not (UI and UI.MakeRowAction) then
+			return nil, "row action helper unavailable"
+		end
 		local row = CreateFrame("Button", nil, UIParent)
 		row:SetSize(400, 46)
 		local b = UI.MakeRowAction(row)
