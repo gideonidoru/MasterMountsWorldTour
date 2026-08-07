@@ -152,7 +152,13 @@ end
 local function record(questID, title)
 	if not questID then return end
 	local mapID, via
-	title = title or (C_QuestLog.GetTitleForQuestID and C_QuestLog.GetTitleForQuestID(questID))
+	-- Quest titles are client strings and get :find() called on them further
+	-- down, so they go through the same guard as every other one. Not reported
+	-- yet; it is the same shape as the five that were, and waiting for the
+	-- report is the habit being broken here.
+	title = MM.Util.ReadableString(title)
+		or MM.Util.ReadableString(C_QuestLog.GetTitleForQuestID
+			and C_QuestLog.GetTitleForQuestID(questID))
 	local rewards, rewardsVia = callingRewards(questID)
 
 	-- Request the quest data whenever ANYTHING is still missing.
@@ -283,7 +289,7 @@ MM:RegisterGameEvent("QUEST_DATA_LOAD_RESULT", function(questID, success)
 	local changed = false
 
 	if not info.title and C_QuestLog.GetTitleForQuestID then
-		info.title = C_QuestLog.GetTitleForQuestID(questID)
+		info.title = MM.Util.ReadableString(C_QuestLog.GetTitleForQuestID(questID))
 		changed = changed or (info.title ~= nil)
 	end
 

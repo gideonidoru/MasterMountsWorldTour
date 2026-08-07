@@ -151,11 +151,19 @@ local function doScanCalendar()
 		local ev
 		ok, ev = pcall(C_Calendar.GetDayEvent, 0, today.monthDay, i)
 		-- collect EVERY title; keyword matching decides relevance later
-		if ok and ev and ev.title and ev.title ~= "" then
+		--
+		-- A 12.0 SECRET TITLE THROWS ON THE COMPARISON, not on a conversion:
+		-- `ev.title ~= ""` is enough, and reported as "attempt to compare
+		-- field 'title' (a secret string value)". It is then used as a TABLE
+		-- KEY below, which would fail again. Reading it through the helper
+		-- gives a real string or nothing, and an event we cannot name simply
+		-- does not join the keyword matching.
+		local title = ev and MM.Util.ReadableString(ev.title)
+		if ok and ev and title then
 			-- Record the type too. HOLIDAY covers Timewalking, Darkmoon Faire
 			-- and micro-holidays; a guild raid someone scheduled is also an
 			-- "event today" and must never be mistaken for one.
-			A.activeEvents[ev.title] = ev.calendarType or true
+			A.activeEvents[title] = ev.calendarType or true
 		end
 	end
 	scanTimewalkingWindow(today)

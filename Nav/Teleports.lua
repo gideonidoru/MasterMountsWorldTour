@@ -48,7 +48,7 @@ local OPTIONS = {
 		key = "hearth", item = 6948, name = "Hearthstone",
 		verb = "Use your Hearthstone",
 		dest = function()
-			local bind = GetBindLocation and GetBindLocation()
+			local bind = MM.Util.ReadableString(GetBindLocation and GetBindLocation())
 			if not bind or bind == "" then return nil end
 			-- Most players are bound to an INN, and an inn's name is a subzone,
 			-- not a map -- "Wayfarer's Rest" resolves to nothing. Falling back to
@@ -248,7 +248,7 @@ for _, o in ipairs(MORE) do
 		verb = o.spell and ("Cast " .. o.name) or ("Use your " .. o.name),
 		dest = function()
 			if o.bind then
-				local bind = GetBindLocation and GetBindLocation()
+				local bind = MM.Util.ReadableString(GetBindLocation and GetBindLocation())
 				if not bind or bind == "" then return nil, "no bind location" end
 				local learned = MM.db.hearthMaps and MM.db.hearthMaps[bind]
 				if learned then return learned, 50, 50, bind end
@@ -955,7 +955,7 @@ end)
 -- GetBindLocation() and the current map is the answer. Record it once and the
 -- hearthstone becomes routable from then on, for that bind point, forever.
 local function learnBind()
-	local bind = GetBindLocation and GetBindLocation()
+	local bind = MM.Util.ReadableString(GetBindLocation and GetBindLocation())
 	if not bind or bind == "" then return end
 	MM.db.hearthMaps = MM.db.hearthMaps or {}
 	if MM.db.hearthMaps[bind] then return end

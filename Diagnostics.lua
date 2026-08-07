@@ -464,7 +464,9 @@ MM:On("MM_GAPS_DEBUG", function()
 	-- map name and resolves directly -- while the self-test three sections
 	-- earlier reported the same hearthstone as working. Two parts of one report
 	-- contradicting each other is worse than either answer alone.
-	local bind = GetBindLocation and GetBindLocation()
+	-- Read safely: it is used as a table key and passed to ResolveMapByName,
+	-- which lowercases it. Both fail on a secret.
+	local bind = MM.Util.ReadableString(GetBindLocation and GetBindLocation())
 	if bind and bind ~= "" then
 		local learned = MM.db.hearthMaps and MM.db.hearthMaps[bind]
 		local byName = MM.Util.ResolveMapByName and MM.Util.ResolveMapByName(bind)

@@ -229,7 +229,14 @@ MM:On("MM_SCANNED", function() pending = nil end)
 
 function R.ObserveUnit(unit)
 	if not unit or not UnitExists(unit) then return end
-	local name = UnitName(unit)
+	-- UnitName IS SECRET INSIDE INSTANCES. Reported from a delve as three
+	-- distinct throws -- NAME_PLATE_UNIT_ADDED, UPDATE_MOUSEOVER_UNIT and
+	-- PLAYER_TARGET_CHANGED -- which are the three events that land here. The
+	-- vignette path was fixed and this one, four lines away, was not.
+	--
+	-- Losing the name costs only the backfill: the id below comes from the
+	-- GUID and is unaffected, so rare alerts still match on it.
+	local name = MM.Util.ReadableString(UnitName(unit))
 	local id = npcIDFromGUID(UnitGUID(unit))
 	if not (name and id) then return end
 	local store = db()

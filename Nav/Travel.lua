@@ -92,7 +92,7 @@ local function nearestNode(playerContinent, playerWorld)
 end
 
 local function hearthSuggestion(targetContinent)
-	local bindZone = GetBindLocation and GetBindLocation()
+	local bindZone = MM.Util.ReadableString(GetBindLocation and GetBindLocation())
 	if not bindZone or bindZone == "" then return nil end
 	local mapID = U.ResolveMapByName(bindZone)
 	if not mapID then return nil end
