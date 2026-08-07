@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **A check that simulates the route nobody can ask for.** Three zone names in
+  the database exist on two continents, because Warlords rebuilt Draenor with
+  the names Outland already had — Nagrand, Shadowmoon Valley and Shattrath City
+  are each two maps. The shipped id table picks the Outland copy for all three,
+  and every Draenor stable mount names one of those zones. The resolver is meant
+  to settle it from the record's expansion; nothing checked that it did. It is
+  checked now, for every record, through the same function the router and the
+  arrow use — and it has to be simulated, because confirming it by hand needs
+  the mount set as a goal and a mount you already own can never be one.
+
 - **The wrong-continent check audited four zones and reported the number as
   coverage.** Its whole purpose is catching a goal that attaches to an entry
   point an ocean away, and it probed Tazavesh, Ny'alotha, The Forbidden Reach

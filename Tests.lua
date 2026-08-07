@@ -1704,6 +1704,88 @@ local function runLogic()
 				worst and (" (e.g. " .. worst .. ")") or "")
 	end)
 
+	check("A zone that exists twice lands on its own expansion's continent", function()
+		-- REPORTED FROM PLAY: a route apparently heading for Outland when the
+		-- mount was somewhere else entirely.
+		--
+		-- Three zone names in this database exist on TWO continents, because
+		-- Warlords rebuilt Draenor using the names Outland already had:
+		-- Nagrand is map 107 and 550, Shadowmoon Valley 104 and 539, Shattrath
+		-- City 111 and 594. The shipped id table has to pick one, and it picked
+		-- the Outland copy for all three -- correctly labelled AMBIGUOUS in its
+		-- own comment. Every Draenor stable mount names one of those zones.
+		--
+		-- The resolver is supposed to take the record's expansion into account
+		-- and choose the right copy. That is the claim being tested, because
+		-- nothing tested it: the neighbouring check asks whether the chosen map
+		-- can be POSITIONED, which the wrong copy can be, perfectly.
+		--
+		-- SIMULATED, NOT ASKED FOR. Verifying this by eye needs a goal set to
+		-- the mount, and a mount already collected can never be a goal -- so
+		-- the one route most worth checking is the one a player cannot check.
+		-- This calls GetRecordMapID, which is the same function the router and
+		-- the arrow call, for every record that has a zone.
+		--
+		-- WHERE AN EXPANSION LIVES IS LEARNED, NOT DECLARED. A hand-written
+		-- expansion-to-continent table would be one more thing to be wrong, and
+		-- wrong in the same direction as the bug. Instead the unambiguous
+		-- records of each expansion say where that expansion sits -- Hellfire
+		-- Peninsula and Zangarmarsh put Burning Crusade on Outland, Gorgrond and
+		-- Talador put Warlords on Draenor -- and the ambiguous ones have to
+		-- agree with their own era. An expansion spanning two continents is
+		-- handled by construction: both get recorded.
+		local U2 = MM.Util
+		if not (U2 and U2.GetRecordMapID and U2.ResolveMapsByName and U2.GetWorldPos) then
+			return nil, "map helpers unavailable"
+		end
+		local eras, doubtful, memo = {}, {}, {}
+		for _, rec in pairs(MM.DBByName) do
+			local zn = rec.zone and rec.zone.name
+			if zn and rec.expansion then
+				-- One answer per zone-and-era; the same pair repeats across
+				-- dozens of records and each resolve walks the map index.
+				local key = zn .. "#" .. tostring(rec.expansion)
+				local m = memo[key]
+				if m == nil then
+					local mapID = U2.GetRecordMapID(rec)
+					local c = mapID and select(1, U2.GetWorldPos(mapID, 50, 50))
+					m = (c and { mapID = mapID, cont = c,
+						twin = #(U2.ResolveMapsByName(zn) or {}) > 1 }) or false
+					memo[key] = m
+				end
+				if m then
+					if m.twin then
+						doubtful[#doubtful + 1] =
+							{ name = rec.name, zone = zn, exp = rec.expansion,
+								cont = m.cont, mapID = m.mapID }
+					else
+						local band = eras[rec.expansion]
+						if not band then band = {} eras[rec.expansion] = band end
+						band[m.cont] = true
+					end
+				end
+			end
+		end
+		local checked, stray, example = 0, 0, nil
+		for _, d in ipairs(doubtful) do
+			local band = eras[d.exp]
+			if band and next(band) then
+				checked = checked + 1
+				if not band[d.cont] then
+					stray = stray + 1
+					example = example or ("%s -> %s, map %d"):format(d.name, d.zone, d.mapID)
+				end
+			end
+		end
+		if checked == 0 then return nil, "no twinned zone had an era to compare against" end
+		if stray > 0 then
+			return false, ("%d goal(s) land on a continent no other mount of "
+				.. "their expansion uses, e.g. %s"):format(stray, example)
+		end
+		return true, ("%d reference(s) to a twinned zone, every one on its own "
+			.. "expansion's continent"):format(checked)
+	end)
+
 	check("Source comparison scores real disagreement", function()
 		-- The audit is only useful if its score means something, so prove both
 		-- ends against text whose answer is known: identical acquisitions in
