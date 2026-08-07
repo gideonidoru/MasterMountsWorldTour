@@ -26227,7 +26227,7 @@ MM.AddMounts({
 		itemID = 223313,
 		expansion = 10,
 		category = "ACHIEVEMENT",
-		obtainable = true,
+		obtainable = false,
 		source = "Reward for the achievement You Xal Not Pass (Siren Isle)",
 		zone = {
 			name = "Siren Isle",
@@ -26241,6 +26241,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		notes = "Never implemented. The achievement You Xal Not Pass exists in the client's data but its criteria were never enabled, so the mount cannot be earned -- confirmed in game rather than inferred from the files, which say the opposite.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 	},
 	{

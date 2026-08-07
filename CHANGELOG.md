@@ -16,10 +16,14 @@
 - **Thirty soloability judgements recorded** — the whole open list bar one,
   each answered rather than inferred from the category or the expansion. The
   gap this client can see drops from 31 to 1.
-- The one held back is `Shadow of Doubt`, where the answer that came back was
-  "not implemented". That is a claim about whether the achievement can be
-  earned, not about whether one player can earn it, and filing it under
-  soloability would settle a question nobody asked.
+- **`Shadow of Doubt` is marked unobtainable — it was never implemented.** Its
+  spell, item, zone and achievement id all resolve, and the achievement id came
+  from the client's own index, so every automated check agreed it was real.
+  What no check can see is whether an achievement's criteria were ever switched
+  on. Confirmed in play, against what the files say. Not filed as `REMOVED`,
+  which would claim it was obtainable once and stopped being so — a different
+  statement about history, and untrue here.
+- With that settled, the soloability gap this client can see is **zero**.
 
 ## 1.1.11 — 2026-08-07
 
