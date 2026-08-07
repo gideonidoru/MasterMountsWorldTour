@@ -4778,6 +4778,41 @@ local function runLogic()
 			.. "last stop lands at %.0f"):format(travel, whole, final)
 	end)
 
+	check("A missing banner is never read as a completion", function()
+		-- The reward tier on a live Grand Hunt banner says whether the first
+		-- run of the week is spent, and that is a real answer. A MISSING banner
+		-- is not: the hunt rotates between four zones, so absence means it is
+		-- running elsewhere, or the zone is not loaded, or the map is filtered.
+		--
+		-- This exact confusion already hid this exact goal once, by treating a
+		-- lookup that failed as a lookup that answered. So the rule is asserted
+		-- rather than described: no banner must yield nil, never false.
+		local A = MM.Assaults
+		if not (A and A.FirstRewardAvailable) then
+			return false, "FirstRewardAvailable missing"
+		end
+		local nowhere = { key = "nowhere", label = "Nothing",
+			maps = { -1 }, match = { "nothing that exists" },
+			firstReward = { "a bag nobody has" } }
+		local verdict = A.FirstRewardAvailable(nowhere)
+		if verdict ~= nil then
+			return false, ("a gate with no banner anywhere returned %s — absence "
+				.. "is being read as an answer"):format(tostring(verdict))
+		end
+		-- and a gate that declares no reward needle must also refuse
+		local noNeedle = { key = "nowhere", maps = { -1 }, match = { "x" } }
+		if A.FirstRewardAvailable(noNeedle) ~= nil then
+			return false, "a gate with no reward needle still returned a verdict"
+		end
+		local gates, watched = 0, 0
+		for _, g in pairs(A.rotatingGates or {}) do
+			gates = gates + 1
+			if g.firstReward then watched = watched + 1 end
+		end
+		return true, ("no banner yields no verdict; %d rotating gate(s), %d read "
+			.. "their reward tier"):format(gates, watched)
+	end)
+
 	check("The report is assembled in pieces, not one long run", function()
 		-- The fix for "script ran too long" is structural, so the check is too:
 		-- a chunked builder that quietly stopped chunking would look identical

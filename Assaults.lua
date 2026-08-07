@@ -135,6 +135,20 @@ function A.Scan()
 		end
 	end
 	A.scanned = any
+	-- The banner answers a question the turn-in watcher can only answer live.
+	--
+	-- MARKS ONLY, NEVER UNMARKS. A recorded turn-in is direct evidence that the
+	-- player did the thing; this is an inference from a reward tier. Direct
+	-- evidence wins, so a downgraded bag can close a gate but a full one is not
+	-- allowed to reopen one -- the weekly store expires on its own at reset,
+	-- which is the honest way for it to come back.
+	for key, gate in pairs(A.rotatingGates) do
+		if not A.WeeklyDone(key) and A.FirstRewardAvailable(gate) == false then
+			A.MarkWeeklyDone(key)
+			MM:Print("%s: the first run this week is already spent — off the "
+				.. "plan until the weekly reset.", gate.label or key)
+		end
+	end
 	if MM.Availability and MM.Availability.InvalidateStatus then
 		MM.Availability.InvalidateStatus()
 	end
@@ -280,6 +294,29 @@ function A.FindRotating(gate)
 		end
 	end
 	return nil
+end
+
+-- Has the first completion of the week been spent?
+--
+--   true   the banner is up and still offering the first-run reward
+--   false  the banner is up and offering something lesser -- it has been taken
+--   nil    CANNOT TELL, and that is most of the time
+--
+-- The nil case is the whole discipline here. A hunt runs in ONE of four zones
+-- and rotates, so a missing banner means it is running elsewhere, or the zone
+-- is not loaded, or the map is filtered -- none of which is "done". Absence
+-- already hid this very goal once by being read as an answer; it is not one.
+function A.FirstRewardAvailable(gate)
+	if not (gate and A.scanned and gate.firstReward) then return nil end
+	-- FindRotating walks every map the gate declares, so this inherits the
+	-- rotation rather than guessing which zone to look in.
+	local live = A.FindRotating(gate)
+	if not (live and live.name) then return nil end
+	local hay = live.name:lower()
+	for _, needle in ipairs(gate.firstReward) do
+		if needle and hay:find(needle:lower(), 1, true) then return true end
+	end
+	return false
 end
 
 ------------------------------------------------------------

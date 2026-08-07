@@ -23844,6 +23844,9 @@ MM.AddMounts({
 \
 The zone below is only a fallback for when the client cannot be asked where the hunt is; the live map POI is preferred and carries its own coordinate.",
 		rotating = {
+			firstReward = {
+				"Epic Grand Hunt Spoils",
+			},
 			key = "grandhunt",
 			label = "The Grand Hunt",
 			maps = {

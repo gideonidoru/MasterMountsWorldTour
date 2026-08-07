@@ -30,7 +30,18 @@
   left pointing into a route that no longer existed. Clearing the plan and
   rebuilding therefore led with whatever had been current before. An unanchored
   rebuild starts from the top.
-- **A weekly event you finished while the addon was not watching now catches
+- **The Grand Hunt banner says whether your first run this week is spent.** Only
+  the first hunt each week pays the Epic bag, and only that bag holds the mount
+  — so a live banner still advertising it means the run is unspent, and one
+  naming a lesser bag means it has been taken. That is the client answering
+  about *this character*, with no quest id anyone had to guess. It marks a gate
+  done and never reopens one: a recorded turn-in is direct evidence, this is an
+  inference, and direct evidence wins.
+- A **missing** banner still means nothing at all. The hunt runs in one of four
+  zones and rotates, so absence means it is elsewhere, or the zone is not
+  loaded, or the map is filtered. That confusion hid this exact goal once
+  before, so it is now a check rather than a comment.
+- **A weekly event you finished while the addon was not watching also catches
   up.** Completion was only ever seen live on the turn-in, so finishing the
   Grand Hunt in another session left it at the top of the plan all week. The
   quest id is not invented — it is LEARNED from a turn-in that matched by
