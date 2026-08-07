@@ -2,6 +2,12 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **The Dalaran Hearthstone was missing.** It runs on its own cooldown, so it is
+  a second free trip rather than another flavour of the first one. Found by
+  walking every toy in the client through its spell — a toy's teleport lives in
+  the spell, not the item's flavour text, which is why reading item text alone
+  turned up almost nothing.
+
 - **One dungeon teleport had never been offered to anyone.** The Algeth'ar
   Academy teleport shipped as spell `393272`, which in the client's own table is
   `[DNT] Eclipse Lake - WQ 01 - Ping - 3` — an internal test entry. So

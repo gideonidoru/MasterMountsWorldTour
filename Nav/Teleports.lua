@@ -196,6 +196,16 @@ local MORE = {
 
 	-- A second hearthstone in all but name: same destination, own cooldown.
 	{ key = "naaru", item = 206195, bind = true, name = "Path of the Naaru" },
+	-- Dalaran Hearthstone: its own cooldown, not the hearthstone's, so it is a
+	-- SECOND free trip rather than a different flavour of the same one. Widely
+	-- held and it lands somewhere the route genuinely uses.
+	--
+	-- Found by walking every toy in the client through ItemXItemEffect to its
+	-- spell and reading that spell's description -- a toy's teleport is in the
+	-- spell, not in the item's flavour text, which is why looking at item text
+	-- alone found almost nothing.
+	{ key = "dalaran_hearth", item = 140192, place = "Dalaran",
+		name = "Dalaran Hearthstone" },
 
 	-- Class travel.
 	{ key = "deathgate", spell = 50977, place = "Acherus: The Ebon Hold",
