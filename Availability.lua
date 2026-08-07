@@ -566,17 +566,31 @@ function A.ComputeStatus(entry)
 		-- went 14 to 15 and the Grand Hunt, which had been the top
 		-- recommendation, vanished from the plan.
 		--
-		-- And the same report shows why it would have stayed vanished:
-		-- GetAreaPOIForMap on a zone you are not in returns permanent landmarks
-		-- -- Aylaag Camp, Maruukai -- and no event POIs at all. So the gate
-		-- would have reported ROTATION essentially forever.
-		--
 		-- A Grand Hunt is ALWAYS running somewhere. The only thing that makes
 		-- it unavailable is having already done it this week, which is checked
 		-- above. Finding the POI is a bonus that improves the WAYPOINT; failing
 		-- to find it must leave the goal exactly as it was.
+		--
+		-- (This once claimed that a zone you are not standing in returns only
+		-- permanent landmarks. That was concluded from a single scan showing no
+		-- hunt, which does not distinguish "cannot be read remotely" from "no
+		-- hunt was running" -- and the same scan returned Iskaara and Loamm
+		-- from another continent, so remote reads plainly work. Removed rather
+		-- than left as a fact nobody checked.)
 		local live = MM.Assaults.FindRotating and MM.Assaults.FindRotating(rec.rotating)
 		if live then
+			-- THE BANNER SAYS WHETHER IT IS WORTH THE TRIP, not merely where it
+			-- is. Only the first hunt each week pays the bag that holds the
+			-- mount, so a description still advertising it is the strongest
+			-- form of "yes, go now" this event can produce -- and it reads the
+			-- same from any continent.
+			local unspent = MM.Assaults.FirstRewardAvailable
+				and MM.Assaults.FirstRewardAvailable(rec.rotating)
+			if unspent == true then
+				return "AVAILABLE", ("%s is up in %s, and this week's first run "
+					.. "-- the one that pays the mount -- is still yours to take")
+					:format(rec.rotating.label or "It", live.zone or "a Dragonflight zone")
+			end
 			return "AVAILABLE", ("%s is up in %s"):format(
 				rec.rotating.label or "It", live.zone or "a Dragonflight zone")
 		end

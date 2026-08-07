@@ -2,16 +2,19 @@
 
 ## 1.1.13 — unreleased
 
-- **The Grand Hunt was only ever looked for as a map banner.** The quest scan
-  covered the three assault zones and nothing else, on a comment claiming the
-  rotating zones "need the POI list and nothing else" — an assumption written
-  as a fact. With the four Dragonflight maps outside that set, a Grand Hunt
-  that lives as a task quest could never have been seen, from any zone, on any
-  character. A gate's own maps are in the scan now: seven maps rather than
-  three, not seventeen, so the cost the narrow list was protecting stays
-  bounded.
-- The set is derived from the gates themselves, so declaring `rotating` on a
-  record still remains the whole of adding one.
+- **The Grand Hunt says whether it is worth the trip, not merely where it is.**
+  Only the first hunt each week pays the bag that carries the mount, and the
+  banner's own description names the bag on offer — so a description still
+  advertising the Epic one is the strongest "go now" this event can produce,
+  and it reads the same from any continent. The status line says so.
+- Whether the hunt is a task quest underneath turned out not to matter, and a
+  briefly-widened quest scan has been put back to three zones. Casting a wider
+  net on a theory costs every player the scan and answers a question the banner
+  had already answered.
+- Removed a comment asserting that a zone you are not standing in returns only
+  permanent landmarks. It was concluded from one scan that showed no hunt,
+  which does not distinguish "cannot be read remotely" from "none was running"
+  — and the same scan returned Iskaara and Loamm from another continent.
 
 ## 1.1.12 — 2026-08-07
 

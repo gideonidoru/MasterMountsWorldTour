@@ -40,9 +40,6 @@ A.scanned = false
 -- The three zones where an ASSAULT runs. Kept separate from WATCHED because
 -- WATCHED now also holds every map a treasure or a rotating event sits on, and
 -- only these three want their world quests read.
--- Maps worth the expensive quest scan. Seeded with the assault zones and
--- EXTENDED FROM THE GATES THEMSELVES at login, so a rotating event's zones are
--- asked about rather than assumed not to need it.
 local ASSAULT_MAPS = { [1543] = true, [1527] = true, [1530] = true }
 
 local WATCHED = {
@@ -121,21 +118,21 @@ function A.Scan()
 	local any = false
 	for mapID in pairs(WATCHED) do
 		local entries = poiNames(mapID)
-		-- QUESTS WHERE SOMETHING ROTATES, not only where assaults live.
+		-- QUESTS ONLY WHERE ASSAULTS LIVE.
 		--
 		-- questEntries calls RequestLoadQuestByID for every world quest on the
 		-- map, and this table grew from three maps to seventeen when treasures
 		-- and the Grand Hunt were added. Firing a burst of quest-load requests
 		-- across fourteen extra maps is the kind of cost that gets reported as
-		-- "this addon is heavy", so the scan is still narrow.
+		-- "this addon is heavy".
 		--
-		-- IT WAS TOO NARROW. It said the rotating zones "need the POI list and
-		-- nothing else", which was an assumption written as a fact -- and with
-		-- the Dragonflight maps outside this set, the Grand Hunt was only ever
-		-- looked for as a map banner. If it is a task quest, nothing here could
-		-- ever have seen it, and no amount of standing in the right zone would
-		-- have helped. A gate's own maps are asked about now: seven maps rather
-		-- than three, not seventeen.
+		-- THE ROTATING ZONES REALLY DO NOT NEED IT, and the reason is worth
+		-- stating because this was briefly widened on the theory that they
+		-- might. Whether a Grand Hunt is a task quest underneath is beside the
+		-- point: the banner's own description says which bag is on offer, the
+		-- Epic one is what carries the mount, and it is only on offer for a
+		-- player who has not taken it this week. That is the entire signal --
+		-- available, and worth going to -- and it comes off the POI list.
 		local quests = ASSAULT_MAPS[mapID] and questEntries(mapID) or nil
 		if entries or quests then
 			any = true
@@ -390,11 +387,6 @@ local function collectRotating()
 	for _, rec in ipairs(MM.DBList or {}) do
 		if rec.rotating and rec.rotating.key then
 			A.rotatingGates[rec.rotating.key] = rec.rotating
-			-- A rotating event can be a banner OR a task quest, and which one is
-			-- not ours to assume. Declaring the maps is enough to get both asked.
-			for _, mapID in ipairs(rec.rotating.maps or {}) do
-				ASSAULT_MAPS[mapID] = true
-			end
 		end
 	end
 	-- Every map a record wants watched, gathered from the records themselves.
