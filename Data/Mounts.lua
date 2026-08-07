@@ -20163,21 +20163,22 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from the Fallen Charger, a rare that rides along the roads of the Maw",
+		source = "Drops from the Fallen Charger, which spawns in the Maw and runs one of two routes before despawning at the end of it.",
 		npc = {
 			name = "Fallen Charger",
 			id = 179460,
 		},
 		zone = {
+			name = "The Maw",
 			mapID = 1543,
-			x = 16.4,
-			y = 49.6,
+			x = 16.27,
+			y = 49.49,
 		},
 		dropRate = 10.64,
 		attempts = "NONE",
 		timePerAttempt = 30,
 		effort = 4,
-		notes = "Famous 9.1 farm: the horse walks a route toward Perdition Hold and despawns if it arrives; drop rate is low (community estimate ~1%).",
+		notes = "NO daily lockout, unlike the seven Korthia rares it is usually listed beside -- it can be killed as often as you can catch it. Spawns at 16.3, 49.5 and follows one of two routes, so it has to be intercepted rather than waited for.",
 		dropObserved = {
 			count = 918,
 			outOf = 8628,
@@ -20422,7 +20423,7 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from Konthrogz the Obliterator in Korthia",
+		source = "Drops from Konthrogz the Obliterator in Korthia.",
 		npc = {
 			name = "Konthrogz the Obliterator",
 			id = 179472,
@@ -20435,6 +20436,7 @@ MM.AddMounts({
 		dropRate = 2,
 		attempts = "DAILY",
 		effort = 3,
+		notes = "Once per day per character. Konthrogz has several spawn points across Korthia -- watch for the star on the map rather than flying to one spot.",
 	},
 	{
 		name = "Garnet Razorwing",
@@ -20443,19 +20445,21 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from Reliwik the Defiant in Korthia",
+		source = "Drops from Reliwik the Defiant in Korthia.",
 		npc = {
 			name = "Reliwik the Defiant",
 			id = 180160,
 		},
 		zone = {
+			name = "Korthia",
 			mapID = 1961,
-			x = 55.4,
-			y = 67.4,
+			x = 56.27,
+			y = 66.13,
 		},
 		dropRate = 2.614,
 		attempts = "DAILY",
 		effort = 3,
+		notes = "Once per day per character.",
 		dropObserved = {
 			count = 475,
 			outOf = 18171,
@@ -20468,7 +20472,7 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from Malbog in Korthia",
+		source = "Drops from Malbog in Korthia.",
 		npc = {
 			name = "Malbog",
 			id = 179684,
@@ -20476,13 +20480,13 @@ MM.AddMounts({
 		zone = {
 			name = "Korthia",
 			mapID = 1961,
-			x = 44.4,
-			y = 29.4,
+			x = 60.64,
+			y = 22.93,
 		},
 		dropRate = 2,
 		attempts = "DAILY",
 		effort = 3,
-		notes = "Feeding Malbog daily (Crystal Fodder) builds toward friendly access; the mount drops when he is killed while hostile or earned via the feeding chain.",
+		notes = "Once per day per character. The event starts at 60.6, 22.9.",
 		dropObserved = {
 			count = 847,
 			outOf = 42344,
@@ -20511,18 +20515,27 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from Wild Worldcracker in Korthia",
+		source = "Drops from Wild Worldcracker in Korthia, from a Kyrian-only event.",
 		npc = {
 			name = "Wild Worldcracker",
 			id = 180032,
 		},
 		zone = {
+			name = "Korthia",
 			mapID = 1961,
-			x = 56.87,
-			y = 32.37,
+			x = 46.88,
+			y = 35,
+		},
+		conditions = {
+			{
+				name = "Covenant: Kyrian",
+				id = 1,
+				type = "COVENANT",
+			},
 		},
 		attempts = "DAILY",
 		effort = 3,
+		notes = "Once per day per character. The event that spawns Wild Worldcracker only runs for Kyrian.",
 	},
 	{
 		name = "Lord of the Corpseflies",
@@ -20531,7 +20544,7 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from Fleshwing in Korthia",
+		source = "Drops from Fleshwing in Korthia, from a Necrolord-only event.",
 		npc = {
 			name = "Fleshwing",
 			id = 180042,
@@ -20539,12 +20552,19 @@ MM.AddMounts({
 		zone = {
 			name = "Korthia",
 			mapID = 1961,
-			x = 59.4,
-			y = 42.4,
+			x = 59.87,
+			y = 43.49,
+		},
+		conditions = {
+			{
+				name = "Covenant: Necrolord",
+				id = 4,
+				type = "COVENANT",
+			},
 		},
 		attempts = "DAILY",
 		effort = 3,
-		notes = "Fleshwing is summoned at his platform with Shredded Wings.",
+		notes = "Once per day per character. Necrolord only.",
 	},
 	{
 		name = "Mastercraft Gravewing",
@@ -20553,7 +20573,7 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from Stygian Stonecrusher in Korthia",
+		source = "Stygian Stonecrusher in Korthia drops a Gravewing Crystal, which is turned in for the mount. Venthyr-only event.",
 		npc = {
 			name = "Stygian Stonecrusher",
 			id = 179985,
@@ -20561,11 +20581,19 @@ MM.AddMounts({
 		zone = {
 			name = "Korthia",
 			mapID = 1961,
-			x = 45.4,
-			y = 78.2,
+			x = 46.47,
+			y = 79.8,
+		},
+		conditions = {
+			{
+				name = "Covenant: Venthyr",
+				id = 2,
+				type = "COVENANT",
+			},
 		},
 		attempts = "DAILY",
 		effort = 3,
+		notes = "Once per day per character. Venthyr only. The kill drops the crystal; the crystal is what awards the mount.",
 	},
 	{
 		name = "Darkmaul",
@@ -20789,17 +20817,26 @@ MM.AddMounts({
 		expansion = 8,
 		category = "QUEST",
 		obtainable = true,
-		source = "Return the Escaped Wilderling found in Korthia",
+		source = "Summer Wilderling Harness drops from the Escaped Wilderling in Korthia, from a Night Fae-only event.",
 		npc = {
 			name = "Escaped Wilderling",
 			id = 180014,
 		},
 		zone = {
+			name = "Korthia",
 			mapID = 1961,
-			x = 33.2,
-			y = 39.4,
+			x = 35.73,
+			y = 32.22,
+		},
+		conditions = {
+			{
+				name = "Covenant: Night Fae",
+				id = 3,
+				type = "COVENANT",
+			},
 		},
 		effort = 2,
+		notes = "Once per day per character. Night Fae only.",
 	},
 	{
 		name = "Dusklight Razorwing",
