@@ -2691,6 +2691,7 @@ MM.AddMounts({
 		effort = 4,
 		access = "Blackwind Landing (Terokkar 64.5, 66.6) is flying-only. Start Threat from Above from Yuula in Shattrath, then grind Skyguard dailies to Exalted.",
 		notes = "Two separate unlocks. Threat from Above from Yuula on the Terrace of Light in Shattrath, then To Skettis! delivering the Explosives Package to Sky Sergeant Doryn, opens Fires Over Skettis. Separately, the Ogri'la chain (Ogre Heaven -> The Crystals -> Our Boy Wants To Be A Skyguard Ranger -> The Skyguard Outpost -> Bombing Run) opens the two highest-value dailies, Bomb Them Again! and Wrangle More Aether Rays!, which pay both Skyguard and Ogri'la reputation. Without Ogri'la you are grinding on the low-value Skettis dailies alone. Roughly 37 days of dailies to Exalted. Every daily is soloable - Terokk's Downfall is still flagged for five players but it is a one-off bonus and is not required for the mounts. Unlike Hurlunk, Grella does honour the Exalted discount, so these land at 160g.",
+		goldCost = 200,
 		solo = true,
 	},
 	{
@@ -2733,6 +2734,7 @@ MM.AddMounts({
 		effort = 4,
 		access = "Blackwind Landing (Terokkar 64.5, 66.6) is flying-only. Start Threat from Above from Yuula in Shattrath, then grind Skyguard dailies to Exalted.",
 		notes = "Two separate unlocks. Threat from Above from Yuula on the Terrace of Light in Shattrath, then To Skettis! delivering the Explosives Package to Sky Sergeant Doryn, opens Fires Over Skettis. Separately, the Ogri'la chain (Ogre Heaven -> The Crystals -> Our Boy Wants To Be A Skyguard Ranger -> The Skyguard Outpost -> Bombing Run) opens the two highest-value dailies, Bomb Them Again! and Wrangle More Aether Rays!, which pay both Skyguard and Ogri'la reputation. Without Ogri'la you are grinding on the low-value Skettis dailies alone. Roughly 37 days of dailies to Exalted. Every daily is soloable - Terokk's Downfall is still flagged for five players but it is a one-off bonus and is not required for the mounts. Unlike Hurlunk, Grella does honour the Exalted discount, so these land at 160g.",
+		goldCost = 200,
 		solo = true,
 	},
 	{
@@ -2775,6 +2777,7 @@ MM.AddMounts({
 		effort = 4,
 		access = "Blackwind Landing (Terokkar 64.5, 66.6) is flying-only. Start Threat from Above from Yuula in Shattrath, then grind Skyguard dailies to Exalted.",
 		notes = "Two separate unlocks. Threat from Above from Yuula on the Terrace of Light in Shattrath, then To Skettis! delivering the Explosives Package to Sky Sergeant Doryn, opens Fires Over Skettis. Separately, the Ogri'la chain (Ogre Heaven -> The Crystals -> Our Boy Wants To Be A Skyguard Ranger -> The Skyguard Outpost -> Bombing Run) opens the two highest-value dailies, Bomb Them Again! and Wrangle More Aether Rays!, which pay both Skyguard and Ogri'la reputation. Without Ogri'la you are grinding on the low-value Skettis dailies alone. Roughly 37 days of dailies to Exalted. Every daily is soloable - Terokk's Downfall is still flagged for five players but it is a one-off bonus and is not required for the mounts. Unlike Hurlunk, Grella does honour the Exalted discount, so these land at 160g.",
+		goldCost = 200,
 		solo = true,
 	},
 	{
@@ -2817,6 +2820,7 @@ MM.AddMounts({
 		effort = 4,
 		access = "Blackwind Landing (Terokkar 64.5, 66.6) is flying-only. Start Threat from Above from Yuula in Shattrath, then grind Skyguard dailies to Exalted.",
 		notes = "Two separate unlocks. Threat from Above from Yuula on the Terrace of Light in Shattrath, then To Skettis! delivering the Explosives Package to Sky Sergeant Doryn, opens Fires Over Skettis. Separately, the Ogri'la chain (Ogre Heaven -> The Crystals -> Our Boy Wants To Be A Skyguard Ranger -> The Skyguard Outpost -> Bombing Run) opens the two highest-value dailies, Bomb Them Again! and Wrangle More Aether Rays!, which pay both Skyguard and Ogri'la reputation. Without Ogri'la you are grinding on the low-value Skettis dailies alone. Roughly 37 days of dailies to Exalted. Every daily is soloable - Terokk's Downfall is still flagged for five players but it is a one-off bonus and is not required for the mounts. Unlike Hurlunk, Grella does honour the Exalted discount, so these land at 160g.",
+		goldCost = 200,
 		solo = true,
 	},
 	{
@@ -2859,6 +2863,7 @@ MM.AddMounts({
 		effort = 4,
 		access = "Blackwind Landing (Terokkar 64.5, 66.6) is flying-only. Start Threat from Above from Yuula in Shattrath, then grind Skyguard dailies to Exalted.",
 		notes = "Two separate unlocks. Threat from Above from Yuula on the Terrace of Light in Shattrath, then To Skettis! delivering the Explosives Package to Sky Sergeant Doryn, opens Fires Over Skettis. Separately, the Ogri'la chain (Ogre Heaven -> The Crystals -> Our Boy Wants To Be A Skyguard Ranger -> The Skyguard Outpost -> Bombing Run) opens the two highest-value dailies, Bomb Them Again! and Wrangle More Aether Rays!, which pay both Skyguard and Ogri'la reputation. Without Ogri'la you are grinding on the low-value Skettis dailies alone. Roughly 37 days of dailies to Exalted. Every daily is soloable - Terokk's Downfall is still flagged for five players but it is a one-off bonus and is not required for the mounts. Unlike Hurlunk, Grella does honour the Exalted discount, so these land at 160g.",
+		goldCost = 200,
 		solo = true,
 	},
 	{
@@ -2887,6 +2892,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Rep from Coilfang dungeons, quests, and Unidentified Plant Parts turn-ins.",
+		goldCost = 2000,
 	},
 	{
 		name = "Cobalt Riding Talbuk",
@@ -2922,6 +2928,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — grind Obsidian Warbeads for the reputation, then buy.",
 		notes = "Only the reputation matching your faction is required (Kurenai for Alliance, The Mag'har for Horde).",
+		goldCost = 70,
 		paths = {
 			{
 				faction = "Horde",
@@ -3027,6 +3034,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — grind Obsidian Warbeads for the reputation, then buy.",
 		notes = "Only the reputation matching your faction is required.",
+		goldCost = 70,
 		paths = {
 			{
 				faction = "Horde",
@@ -3085,6 +3093,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — grind Obsidian Warbeads for the reputation, then buy.",
 		notes = "Only the reputation matching your faction is required.",
+		goldCost = 70,
 		paths = {
 			{
 				faction = "Horde",
@@ -3144,6 +3153,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — grind Obsidian Warbeads for the reputation, then buy.",
 		notes = "Corrected: this is NOT a Halaa token mount. The shipped data had the White and Dark talbuks swapped. The White Riding Talbuk is a plain 70g purchase from your faction's Nagrand quartermaster at Exalted - no Halaa Battle Tokens, no Halaa Research Tokens, and it does not matter who controls Halaa. Reputation comes from Obsidian Warbead turn-ins and ordinary Nagrand questing, so the whole thing is soloable. The Halaa-gated pair is the Dark Riding Talbuk and Dark War Talbuk.",
+		goldCost = 70,
 		paths = {
 			{
 				faction = "Horde",
@@ -3202,6 +3212,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — reputation purchase only.",
 		notes = "Only the reputation matching your faction is required.",
+		goldCost = 100,
 		paths = {
 			{
 				faction = "Horde",
@@ -3307,6 +3318,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — reputation purchase only.",
 		notes = "Only the reputation matching your faction is required.",
+		goldCost = 100,
 		paths = {
 			{
 				faction = "Horde",
@@ -3365,6 +3377,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — reputation purchase only.",
 		notes = "Only the reputation matching your faction is required.",
+		goldCost = 100,
 		paths = {
 			{
 				faction = "Horde",
@@ -3424,6 +3437,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "No PvP and no Halaa control needed — reputation purchase only.",
 		notes = "Corrected: this is NOT a Halaa token mount. The shipped data had the White and Dark talbuks swapped. The White War Talbuk is a plain 100g purchase from your faction's Nagrand quartermaster at Exalted - no Halaa Battle Tokens, no Halaa Research Tokens, and it does not matter who controls Halaa. Reputation comes from Obsidian Warbead turn-ins and ordinary Nagrand questing, so the whole thing is soloable. The Halaa-gated pair is the Dark Riding Talbuk and Dark War Talbuk.",
+		goldCost = 100,
 		paths = {
 			{
 				faction = "Horde",
@@ -3694,6 +3708,7 @@ MM.AddMounts({
 			y = 55,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Ebon Gryphon",
@@ -3714,6 +3729,7 @@ MM.AddMounts({
 			y = 55,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Snowy Gryphon",
@@ -3734,6 +3750,7 @@ MM.AddMounts({
 			y = 55,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Swift Blue Gryphon",
@@ -3754,6 +3771,7 @@ MM.AddMounts({
 			y = 55,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Swift Red Gryphon",
@@ -3774,6 +3792,7 @@ MM.AddMounts({
 			y = 55,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Swift Green Gryphon",
@@ -3794,6 +3813,7 @@ MM.AddMounts({
 			y = 55,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Swift Purple Gryphon",
@@ -3814,6 +3834,7 @@ MM.AddMounts({
 			y = 55,
 		},
 		effort = 1,
+		goldCost = 50,
 	},
 	{
 		name = "Tawny Wind Rider",
@@ -4768,6 +4789,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Wear the Wyrmrest tabard in WotLK dungeons or run Wyrmrest dailies for rep.",
+		goldCost = 2000,
 	},
 	{
 		name = "Ice Mammoth",
@@ -4795,6 +4817,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Sons of Hodir rep comes from their daily quests and turn-ins (Relics of Ulduar, Everfrost Chips).",
+		goldCost = 1000,
 	},
 	{
 		name = "Grand Ice Mammoth",
@@ -4822,6 +4845,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Three-person mount. Sons of Hodir have no tabard; use dailies and Relics of Ulduar turn-ins.",
+		goldCost = 10000,
 	},
 	{
 		name = "Traveler's Tundra Mammoth",
@@ -6748,6 +6772,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Ramkahen reputation comes from Uldum quests, dailies, and the Tabard of Ramkahen in Cataclysm dungeons.",
+		goldCost = 100,
 	},
 	{
 		name = "Tan Riding Camel",
@@ -6778,6 +6803,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Same vendor and requirements as the Brown Riding Camel.",
+		goldCost = 100,
 	},
 	{
 		name = "Drake of the West Wind",
@@ -10557,6 +10583,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Not in Ashran. Build a level 2 Trading Post in your Alliance garrison, then buy from Maaria at Sha'tari Defense Exalted.",
 		notes = "Lunarfall Trading Post (level 2), Sha'tari Defense Exalted. The vendor moves as the garrison levels, so no coordinate is recorded.",
+		goldCost = 5000,
 		solo = true,
 	},
 	{
@@ -10599,11 +10626,18 @@ MM.AddMounts({
 				id = 116775,
 				type = "ITEM",
 			},
+			{
+				name = "Apexis Crystal",
+				amount = 5000,
+				id = 823,
+				type = "CURRENCY",
+			},
 		},
 		timePerAttempt = 25,
 		effort = 4,
 		access = "Horde only. Dazzerian in Warspear sells it, but the Vol'jin's Spear rep it needs only drops inside the Ashran epic BG (Group Finder).",
 		notes = "Sold by Dazzerian and Malukah Lightsong in outdoor Warspear, and by Dazzerian again at the Horde base inside the Ashran battleground. Exact Alliance mirror of Pale Thorngrazer. Same catch: outdoor Ashran has awarded zero Vol'jin's Spear reputation since 8.0.1, so the rep must come from the instanced Ashran epic battleground (enemy insignia turn-ins at 2,500 rep, artifact turn-ins at ~7 rep). Boosted during Warlords Timewalking weeks.",
+		goldCost = 5000,
 		solo = false,
 	},
 	{
@@ -10722,6 +10756,7 @@ MM.AddMounts({
 		effort = 2,
 		access = "Alliance only, Vindicator Nuurem inside the Stormshield Town Hall; needs Council of Exarchs Exalted from Draenor questing, not PvP.",
 		notes = "The rep is the ordinary Alliance Draenor levelling reputation (Shadowmoon Valley questing, bonus objectives, garrison missions), so this is a solo grind with no PvP involved. Buying this also teaches the Horde counterpart Swift Frostwolf, and vice versa - so you only ever need one of the pair.",
+		goldCost = 5000,
 		solo = true,
 	},
 	{
@@ -10794,6 +10829,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Not in Ashran. Build a level 2 Trading Post in your Horde garrison, then buy from Kil'rip at Laughing Skull Orcs Exalted.",
 		notes = "Frostwall Trading Post (level 2), Laughing Skull Orcs Exalted. The vendor moves as the garrison levels, so no coordinate is recorded.",
+		goldCost = 5000,
 		solo = true,
 	},
 	{
@@ -10836,11 +10872,18 @@ MM.AddMounts({
 				id = 116776,
 				type = "ITEM",
 			},
+			{
+				name = "Apexis Crystal",
+				amount = 5000,
+				id = 823,
+				type = "CURRENCY",
+			},
 		},
 		timePerAttempt = 25,
 		effort = 4,
 		access = "Alliance only, and in Stormshield - not Warspear. Its Wrynn's Vanguard rep now drops only inside the Ashran epic BG (Group Finder).",
 		notes = "Sold by Magister Langley / Holly McTilla in outdoor Stormshield and by Crafticus Mindbender / Tomas Riogain at the Alliance base inside the Ashran battleground. The purchase is Alliance-only but the mount is account-wide and rideable on Horde alts. The blocker is the rep, not the vendor: since 8.0.1 outdoor Ashran awards no Wrynn's Vanguard reputation at all, so you must queue the Ashran epic battleground and turn in looted enemy insignias (2,500 rep each) or battleground artifacts (~7 rep each). Reputation gains are noticeably boosted during a Warlords Timewalking week. Community reports since 9.1.5 say insignia drops are unreliable, which can stretch this to many BG runs.",
+		goldCost = 5000,
 		solo = false,
 	},
 	{
@@ -10871,6 +10914,7 @@ MM.AddMounts({
 		timePerAttempt = 30,
 		effort = 3,
 		notes = "Reputation comes almost entirely from turning in items looted from Nagrand mobs (relic fragments, artifacts) and killing pale orcs/ogres around the dig sites.",
+		goldCost = 5000,
 	},
 	{
 		name = "Mudback Riverbeast",
@@ -12764,6 +12808,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Finish Legion's Argus intro (The Hand of Fate) to board the Vindicaar, then buy from Toraan the Revered aboard the ship at ~68, 56.",
 		notes = "The vendor is on a moving ship, not in a zone: Toraan the Revered stands aboard the Vindicaar, which relocates between Krokuun, Eredath and the Antoran Wastes as the Argus campaign progresses. Getting there needs the Legion chain Uniting the Isles -> Armies of Legionfall -> Assault on Broken Shore -> The Hand of Fate -> The Vindicaar, and no account-wide skip for it was found. Argussian Reach reputation has no hard weekly cap but is limited by world-quest availability. The mounts are vendor-only - the Argussian Reach paragon cache does not contain them.",
+		goldCost = 10000,
 		solo = true,
 	},
 	{
@@ -12812,6 +12857,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Finish Legion's Argus intro (The Hand of Fate) to board the Vindicaar, then buy from Toraan the Revered aboard the ship at ~68, 56.",
 		notes = "The vendor is on a moving ship, not in a zone: Toraan the Revered stands aboard the Vindicaar, which relocates between Krokuun, Eredath and the Antoran Wastes as the Argus campaign progresses. Getting there needs the Legion chain Uniting the Isles -> Armies of Legionfall -> Assault on Broken Shore -> The Hand of Fate -> The Vindicaar, and no account-wide skip for it was found. Argussian Reach reputation has no hard weekly cap but is limited by world-quest availability. The mounts are vendor-only - the Argussian Reach paragon cache does not contain them.",
+		goldCost = 10000,
 		solo = true,
 	},
 	{
@@ -12860,6 +12906,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Finish Legion's Argus intro (The Hand of Fate) to board the Vindicaar, then buy from Toraan the Revered aboard the ship at ~68, 56.",
 		notes = "The vendor is on a moving ship, not in a zone: Toraan the Revered stands aboard the Vindicaar, which relocates between Krokuun, Eredath and the Antoran Wastes as the Argus campaign progresses. Getting there needs the Legion chain Uniting the Isles -> Armies of Legionfall -> Assault on Broken Shore -> The Hand of Fate -> The Vindicaar, and no account-wide skip for it was found. Argussian Reach reputation has no hard weekly cap but is limited by world-quest availability. The mounts are vendor-only - the Argussian Reach paragon cache does not contain them.",
+		goldCost = 10000,
 		solo = true,
 	},
 	{
@@ -12908,6 +12955,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Finish Legion's Argus intro (The Hand of Fate) to board the Vindicaar, then buy from Toraan the Revered aboard the ship at ~68, 56.",
 		notes = "The vendor is on a moving ship, not in a zone: Toraan the Revered stands aboard the Vindicaar, which relocates between Krokuun, Eredath and the Antoran Wastes as the Argus campaign progresses. Getting there needs the Legion chain Uniting the Isles -> Armies of Legionfall -> Assault on Broken Shore -> The Hand of Fate -> The Vindicaar, and no account-wide skip for it was found. Argussian Reach reputation has no hard weekly cap but is limited by world-quest availability. The mounts are vendor-only - the Argussian Reach paragon cache does not contain them.",
+		goldCost = 10000,
 		solo = true,
 	},
 	{
@@ -12956,6 +13004,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Finish Legion's Argus intro (The Hand of Fate) to board the Vindicaar, then buy from Toraan the Revered aboard the ship at ~68, 56.",
 		notes = "The vendor is on a moving ship, not in a zone: Toraan the Revered stands aboard the Vindicaar, which relocates between Krokuun, Eredath and the Antoran Wastes as the Argus campaign progresses. Getting there needs the Legion chain Uniting the Isles -> Armies of Legionfall -> Assault on Broken Shore -> The Hand of Fate -> The Vindicaar, and no account-wide skip for it was found. Argussian Reach reputation has no hard weekly cap but is limited by world-quest availability. The mounts are vendor-only - the Argussian Reach paragon cache does not contain them.",
+		goldCost = 10000,
 		solo = true,
 	},
 	{
@@ -13004,6 +13053,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Finish Legion's Argus intro (The Hand of Fate) to board the Vindicaar, then buy from Toraan the Revered aboard the ship at ~68, 56.",
 		notes = "The vendor is on a moving ship, not in a zone: Toraan the Revered stands aboard the Vindicaar, which relocates between Krokuun, Eredath and the Antoran Wastes as the Argus campaign progresses. Getting there needs the Legion chain Uniting the Isles -> Armies of Legionfall -> Assault on Broken Shore -> The Hand of Fate -> The Vindicaar, and no account-wide skip for it was found. Argussian Reach reputation has no hard weekly cap but is limited by world-quest availability. The mounts are vendor-only - the Argussian Reach paragon cache does not contain them.",
+		goldCost = 10000,
 		solo = true,
 	},
 	{
@@ -13013,7 +13063,7 @@ MM.AddMounts({
 		expansion = 6,
 		category = "REP",
 		obtainable = true,
-		source = "Sold by Vindicator Jaelaana on the Vindicaar at Army of the Light Exalted (500,000 gold)",
+		source = "Sold by Vindicator Jaelaana on the Vindicaar at Exalted with the Army of the Light. 625,000 gold, or 500,000 with the Exalted discount.",
 		npc = {
 			name = "Vindicator Jaelaana",
 			id = 127120,
@@ -13041,6 +13091,7 @@ MM.AddMounts({
 		attempts = "NONE",
 		effort = 4,
 		notes = "Large gold cost on top of the Exalted requirement.",
+		goldCost = 625000,
 	},
 	{
 		name = "Avenging Felcrusher",
@@ -18333,6 +18384,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 30000,
 	},
 	{
 		name = "Dauntless Duskrunner",
@@ -19014,6 +19066,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 30000,
 	},
 	{
 		name = "Colossal Slaughterclaw",
@@ -19863,6 +19916,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 30000,
 	},
 	{
 		name = "Amber Ardenmoth",
@@ -27317,6 +27371,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Renown is earned by defeating Liberation of Undermine bosses.",
+		goldCost = 500,
 	},
 	{
 		name = "Darkfuse Chompactor",
@@ -27342,6 +27397,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		goldCost = 500,
 	},
 	{
 		name = "Flarendo the Furious",
@@ -27367,6 +27423,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		goldCost = 777,
 	},
 	{
 		name = "Delver's Gob-Trotter",
@@ -35380,6 +35437,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of Thunder Bluff first, then pay 500g + 5 Champion's Seals to Doru Thunderhorn.",
 		notes = "Sold by Doru Thunderhorn in the Sunreaver Pavilion alongside the Thunder Bluff Kodo. Not a separate unlock - it shares the Champion of Thunder Bluff gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -35418,6 +35476,7 @@ MM.AddMounts({
 		effort = 3,
 		access = "Same tent as the city mount: be Champion of the Exodar first, then pay 500g + 5 Champion's Seals to Irisee.",
 		notes = "Sold by Irisee in the Silver Covenant Pavilion alongside the Exodar Elekk. Not a separate unlock - it shares the Champion of the Exodar gate, it is just the cheap-seal / expensive-gold slot on the same vendor. Some sources also claim a race or city-reputation requirement on these old models; that is unconfirmed, treat Champion status as the real gate.",
+		goldCost = 500,
 		solo = true,
 	},
 	{
@@ -37008,6 +37067,7 @@ MM.AddMounts({
 		effort = 1,
 		access = "Both factions. The Apexis Leggings Trader in your Ashran town sells it - no reputation needed, just 50,000g and 5,000 Apexis Crystals.",
 		notes = "Alliance buy from Dawn-Seeker Krek in Stormshield, Horde from Dawn-Seeker Alkset in Warspear. They are the Apexis Leggings Traders, so the mount sits at the bottom of a long list of leg armour. There is no reputation gate and no discount tier - the earlier note about a 5,000g Ashran-reputation price was wrong.",
+		goldCost = 50000,
 		solo = true,
 	},
 	{
@@ -37049,6 +37109,7 @@ MM.AddMounts({
 		effort = 2,
 		access = "Horde only, Beska Redtusk in Warspear Hold; needs Frostwolf Orcs Exalted from Draenor questing - not Vol'jin's Spear.",
 		notes = "Corrected: the requirement is Frostwolf Orcs Exalted (Horde Draenor levelling rep from Frostfire Ridge questing and bonus objectives), NOT Vol'jin's Spear, and the cost includes 5,000 Apexis Crystals on top of the gold. Buying this also teaches the Alliance counterpart Dusty Rockhide.",
+		goldCost = 5000,
 		solo = true,
 	},
 	{
@@ -44074,6 +44135,7 @@ MM.AddMounts({
 		},
 		effort = 5,
 		notes = "The Netherwing dailies are a long grind; all five drake colours come from the same vendor.",
+		goldCost = 200,
 	},
 	{
 		name = "Voyaging Wilderling",

@@ -1927,6 +1927,38 @@ local function runLogic()
 			:format(checked, withID)
 	end)
 
+	check("A subset is never reported as larger than its set", function()
+		-- The soloability line prints "N carry no flag; M of those name an
+		-- achievement id". M is a subset of N by construction, so M > N is not
+		-- a wrong number, it is a sentence that cannot be true -- and it has
+		-- now shipped twice, both times because the two loops drifted on one
+		-- clause of the predicate.
+		--
+		-- Asserting the RELATIONSHIP rather than sharing the code, for the same
+		-- reason the two unpriced lists are checked against each other: a
+		-- helper both sides call can be extracted wrongly, and then the test
+		-- agrees with the bug.
+		local unknown, classified = 0, 0
+		for _, rec in pairs(MM.DBByName or {}) do
+			if rec.category == "ACHIEVEMENT" and rec.obtainable and rec.solo == nil then
+				unknown = unknown + 1
+				local id = MM.Conditions.RecordAchievementID
+					and MM.Conditions.RecordAchievementID(rec)
+				if id and MM.Conditions.AchievementClass(id) then
+					classified = classified + 1
+				end
+			end
+		end
+		if unknown == 0 then return nil, "every achievement record carries a solo flag" end
+		if classified > unknown then
+			return false, ("%d of %d -- the subset is larger than the set it is "
+				.. "drawn from, so the two counts use different predicates")
+				:format(classified, unknown)
+		end
+		return true, ("%d unflagged, %d of them classified by the client")
+			:format(unknown, classified)
+	end)
+
 	check("One cost is charged once, whichever field holds its id", function()
 		-- The type+name check above cannot see this. ITEM and CURRENCY rows put
 		-- their id in `id`, MATERIAL rows put it in `itemID`, so the same three

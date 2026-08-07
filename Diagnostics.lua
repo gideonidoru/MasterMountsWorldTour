@@ -581,9 +581,16 @@ MM:On("MM_GAPS_DEBUG", function()
 		-- only those WITHOUT a solo flag, so it read "114 carry no flag; 135
 		-- name an achievement id" -- a subset larger than the set it is a
 		-- subset of. Both halves were true and the sentence was nonsense.
+		--
+		-- AND IT CAME BACK, because only half the predicate was copied across.
+		-- The loop above also requires `obtainable`; this one did not, so a
+		-- live report read "103 carry no flag; 105 of those name an
+		-- achievement id" -- the same impossible sentence, two short of the
+		-- last one. The two unobtainable records it picked up are the whole
+		-- difference. Both conditions, or neither.
 		local classified, pvpOrGuild = 0, 0
 		for _, rec in pairs(MM.DBByName) do
-			if rec.category == "ACHIEVEMENT" and rec.solo == nil then
+			if rec.category == "ACHIEVEMENT" and rec.obtainable and rec.solo == nil then
 				local id = MM.Conditions.RecordAchievementID
 					and MM.Conditions.RecordAchievementID(rec)
 				local class = id and MM.Conditions.AchievementClass(id)

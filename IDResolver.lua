@@ -184,6 +184,49 @@ local function npcIDFromGUID(guid)
 	return nil
 end
 
+-- WHAT THE BACKFILL CAN ACTUALLY REACH, indexed once instead of searched.
+--
+-- Both observers used to walk all 1,608 records looking for one whose npc is
+-- named but unidentified. Thirty-five records are in that state. The other
+-- 1,573 iterations could never match, and they ran on NAME_PLATE_UNIT_ADDED,
+-- UPDATE_MOUSEOVER_UNIT and VIGNETTE_MINIMAP_UPDATED -- which is to say, on
+-- every nameplate that appears, every mouseover, and every minimap tick with a
+-- rare on screen. Flying through a busy zone did tens of thousands of failed
+-- comparisons a second to fill in a field that has thirty-five slots.
+--
+-- The index is built on first use, holds only those thirty-five, and entries
+-- are removed as they are filled: once a name is known, it never costs anything
+-- again. Behaviour is identical -- same records filled from the same
+-- observations -- so this is purely the cost coming down.
+local pending
+local function pendingByName()
+	if pending then return pending end
+	pending = {}
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.npc and rec.npc.name and not rec.npc.id then
+			local key = rec.npc.name:lower()
+			pending[key] = pending[key] or {}
+			tinsert(pending[key], rec)
+		end
+	end
+	return pending
+end
+
+-- Records are dropped from the index as they are identified, so a name seen a
+-- second time costs one hash lookup and nothing else.
+local function backfillNpc(key, id)
+	local list = pendingByName()[key]
+	if not list then return end
+	for _, rec in ipairs(list) do
+		if rec.npc and not rec.npc.id then rec.npc.id = id end
+	end
+	pending[key] = nil
+end
+
+-- The database is rebuilt when the layered sources are reflattened in a dev
+-- session, and a stale index would then point at records nobody is using.
+MM:On("MM_SCANNED", function() pending = nil end)
+
 function R.ObserveUnit(unit)
 	if not unit or not UnitExists(unit) then return end
 	local name = UnitName(unit)
@@ -193,12 +236,7 @@ function R.ObserveUnit(unit)
 	local key = name:lower()
 	if store.npcs[key] ~= id then
 		store.npcs[key] = id
-		-- backfill any record naming this npc
-		for _, rec in ipairs(MM.DBList) do
-			if rec.npc and rec.npc.name and rec.npc.name:lower() == key and not rec.npc.id then
-				rec.npc.id = id
-			end
-		end
+		backfillNpc(key, id)
 	end
 end
 
@@ -213,14 +251,17 @@ function R.ObserveVignettes()
 		local okI, info = pcall(C_VignetteInfo.GetVignetteInfo, vguid)
 		if okI and info and info.name and info.objectGUID then
 			local id = npcIDFromGUID(info.objectGUID)
-			if id then
-				store.npcs[info.name:lower()] = id
-				for _, rec in ipairs(MM.DBList) do
-					if rec.npc and rec.npc.name and rec.npc.name:lower() == info.name:lower()
-						and not rec.npc.id then
-						rec.npc.id = id
-					end
-				end
+			-- THE SAME "have we already seen this" GUARD ObserveUnit HAS.
+			--
+			-- This one did not have it, and that is the difference between the
+			-- two handlers: a nameplate appears once, but the minimap reports
+			-- the same vignette on every update for as long as it is on screen.
+			-- So the record walk below ran repeatedly for rares already
+			-- identified minutes ago.
+			local key = info.name:lower()
+			if id and store.npcs[key] ~= id then
+				store.npcs[key] = id
+				backfillNpc(key, id)
 			end
 		end
 	end
