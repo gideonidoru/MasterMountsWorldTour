@@ -3639,9 +3639,17 @@ local function runLogic()
 		-- test could not tell them apart.
 		--
 		-- So it now fills one line in and checks the value actually lands.
-		-- Whichever gap this client actually has. Pinning it to dropRate meant
-		-- the half of the check that matters -- a real answer landing -- was
-		-- skipped on any client with no drop rates left to give.
+		-- THE FILL-IN HALF MUST NOT NEED A GAP TO EXIST.
+		--
+		-- It used to pick a name out of the export, which meant the half of the
+		-- check that actually matters -- does a real answer land -- was skipped
+		-- on any client with nothing left to contribute. Answering every open
+		-- question therefore turned the check off, which is precisely backwards:
+		-- a finished database is when you most want to know the importer still
+		-- works, because that is when nobody is exercising it by hand.
+		--
+		-- The import does not care whether a mount has a gap. Any record it can
+		-- name will do, so it takes one from the database itself.
 		local target, field, value, want
 		for name in text:gmatch("([^\n|]+)|%s*dropRate") do
 			target, field, value, want = strtrim(name), "dropRate", "dropRate = 3.5", 3.5
@@ -3654,9 +3662,17 @@ local function runLogic()
 			end
 		end
 		if not target then
+			for _, rec in ipairs(MM.DBList or {}) do
+				if rec.name and not rec.stub then
+					target, field, value, want = rec.name, "solo", "solo = false", false
+					break
+				end
+			end
+		end
+		if not target then
 			MM.db.contributions = saved
 			pcall(CO.Apply)
-			return nil, "nothing in the export to fill in and test with"
+			return nil, "no records at all to test the importer with"
 		end
 		MM.db.contributions = {}
 		local ok = CO.Import(("%s | %s"):format(target, value))
@@ -3670,7 +3686,7 @@ local function runLogic()
 				field, target, ok, tostring(stored))
 		end
 		return true, ("%d gaps exported; placeholders no-op without complaint, and "
-			.. "a filled %s line lands"):format(total, field)
+			.. "a filled %s line lands on %s"):format(total, field, target)
 	end)
 
 	check("Reagents are priced by how you get them", function()

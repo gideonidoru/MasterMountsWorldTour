@@ -24,6 +24,18 @@
   which would claim it was obtainable once and stopped being so — a different
   statement about history, and untrue here.
 - With that settled, the soloability gap this client can see is **zero**.
+- **A record can state why it is unobtainable, and that wins.** The generic
+  status line read "No longer obtainable", which asserts the thing *was*
+  obtainable once — true of retired TCG loot and past promotions, untrue of
+  anything that shipped in the files and was never switched on. The fallback is
+  now the neutral "Not obtainable", and `Shadow of Doubt` says "Never
+  implemented" in its own words.
+- **Answering every open question used to switch the importer check off.** It
+  picked a mount out of the export to fill in, so a client with nothing left to
+  contribute skipped the half that matters. That is backwards — a finished
+  database is when you most want to know the importer still works, because it
+  is when nobody is exercising it by hand. It takes a record from the database
+  now instead.
 
 ## 1.1.11 — 2026-08-07
 

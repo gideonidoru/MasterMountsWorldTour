@@ -414,10 +414,17 @@ function A.ComputeStatus(entry)
 	end
 
 	if rec.obtainable == false then
-		local why = rec.category == "TCG" and "Retired TCG loot"
+		-- A RECORD MAY STATE ITS OWN REASON, and when it does that wins.
+		-- The generic fallback used to read "No longer obtainable", which
+		-- asserts the thing was obtainable once -- true of retired TCG loot and
+		-- past promotions, and untrue of anything that shipped in the files but
+		-- was never switched on. Those are different facts and only one of them
+		-- belongs in a status line a player reads.
+		local why = rec.unobtainableReason
+			or rec.category == "TCG" and "Retired TCG loot"
 			or rec.category == "REMOVED" and "Removed from the game"
 			or rec.category == "PROMOTION" and "Past promotion"
-			or "No longer obtainable"
+			or "Not obtainable"
 		if rec.blackmarket then why = why .. " (watch the Black Market AH)" end
 		return "UNOBTAINABLE", why, nil
 	end
