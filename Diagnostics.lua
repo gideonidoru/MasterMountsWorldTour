@@ -319,12 +319,30 @@ function D.Generate(onReady)
 	pcall(function() MM.Callings.Request() end)
 	pcall(function() MM.Availability.EnsureCalendar() end)
 	pcall(function() MM.TradingPost.Refresh() end)
-	C_Timer.After(4, function()
+	-- THE SELF-TEST RUNS IN THE WAIT, NOT IN THE REPORT.
+	--
+	-- It is one section and it was 2,635 ms of the build on a fast machine --
+	-- a single uninterrupted run, which is exactly what the watchdog measures
+	-- and why chunking BETWEEN sections did not save the slower one.
+	--
+	-- There is already a four-second pause here for the asynchronous
+	-- subsystems to answer. Slicing the suite across that window costs the
+	-- report nothing it was not already spending, and the section that prints
+	-- it consumes the finished results instead of running them again.
+	local suiteDone, waited = false, false
+	local function go()
+		if not (suiteDone and waited) then return end
 		local ok, err = pcall(D.BuildChunked, onReady)
 		if not ok then
 			onReady("Report generation failed: " .. tostring(err))
 		end
-	end)
+	end
+	if MM.Tests and MM.Tests.PrepareAsync then
+		MM.Tests.PrepareAsync(function() suiteDone = true; go() end)
+	else
+		suiteDone = true
+	end
+	C_Timer.After(4, function() waited = true; go() end)
 end
 
 -- /mm report — same report, printed to chat, for anyone who prefers the console.
@@ -1244,8 +1262,9 @@ MM:On("MM_FIXES_DEBUG", function()
 		if not D2.BuildChunked then return false, "the report runs in one go again" end
 		local worst, ms = D2.SlowestSection()
 		if not worst then return true, "chunked builder present; nothing timed yet" end
-		return ms <= 400, ("slowest single section %s at %d ms (was: all 33 in one "
-			.. "run, which is what the watchdog measures)"):format(worst, ms)
+		return ms <= 400, ("slowest single section %s at %d ms (was: the self-test "
+			.. "alone at 2,635 ms in one run, which is what the watchdog measures)")
+			:format(worst, ms)
 	end)
 
 	probe("Grand Hunt: can the banner be read from here", function()

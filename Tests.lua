@@ -31,14 +31,40 @@ local function record(state, group, name, detail)
 	results[#results + 1] = { state = state, group = group, name = name, detail = detail }
 end
 
+-- COLLECT MODE, so the whole suite can be run a few checks at a time.
+--
+-- 193 checks in one execution is 2.6 seconds on a fast machine, and the
+-- client's watchdog measures a single uninterrupted run -- which is how
+-- `/mm report` died with "script ran too long" on slower hardware while
+-- looking healthy here. Chunking the report between SECTIONS did not help,
+-- because one section is the whole problem.
+--
+-- The checks themselves are unchanged and unaware. In collect mode `check`
+-- files the closure instead of calling it, so the three run* functions build a
+-- queue for the price of a few hundred table inserts and something else
+-- decides when each one actually runs.
+local queue, collecting = {}, false
+
+local function runOne(item)
+	local wasCurrent = current
+	current = item.group
+	local ran, ok, detail = pcall(item.fn)
+	if not ran then
+		record(FAIL, current, item.name, "threw: " .. tostring(ok))
+	else
+		record(ok == true and PASS or (ok == nil and WARN or FAIL),
+			current, item.name, detail)
+	end
+	current = wasCurrent
+end
+
 -- ok == true -> PASS, false -> FAIL, nil -> WARN (absent but survivable)
 local function check(name, fn)
-	local ran, ok, detail = pcall(fn)
-	if not ran then
-		record(FAIL, current, name, "threw: " .. tostring(ok))
+	if collecting then
+		queue[#queue + 1] = { name = name, fn = fn, group = current }
 		return
 	end
-	record(ok == true and PASS or (ok == nil and WARN or FAIL), current, name, detail)
+	runOne({ name = name, fn = fn, group = current })
 end
 
 ------------------------------------------------------------
@@ -5101,12 +5127,66 @@ end
 ------------------------------------------------------------
 -- Runner
 ------------------------------------------------------------
-function T.Run()
+-- Run every check a slice at a time, then hand the results over.
+--
+-- The budget is per FRAME, not per run: nothing here ever occupies the client
+-- for longer than one slice, however slow the machine or however many checks
+-- are added later. That is the property the watchdog actually cares about.
+local SLICE_MS = 25
+
+function T.PrepareAsync(onDone)
 	results = {}
-	local ok, err = pcall(function()
-		runAPI(); runData(); runLogic()
-	end)
-	if not ok then record(FAIL, "RUNNER", "self-test crashed", tostring(err)) end
+	wipe(queue)
+	collecting = true
+	local ok, err = pcall(function() runAPI(); runData(); runLogic() end)
+	collecting = false
+	if not ok then
+		record(FAIL, "RUNNER", "self-test crashed while collecting", tostring(err))
+		T.prepared = results
+		if onDone then onDone(results) end
+		return
+	end
+	local i = 1
+	local function slice()
+		local started = debugprofilestop()
+		while queue[i] do
+			runOne(queue[i])
+			i = i + 1
+			if debugprofilestop() - started > SLICE_MS then break end
+		end
+		if queue[i] then
+			C_Timer.After(0, slice)
+		else
+			-- Handed over rather than printed. Whoever asked for this decides
+			-- where the lines go, which is what lets the report collect them
+			-- without the suite knowing it is being reported on.
+			T.prepared = results
+			if onDone then onDone(results) end
+		end
+	end
+	slice()
+end
+
+function T.Run()
+	-- A prepared run is consumed rather than repeated. Without this the report
+	-- would pay for the whole suite twice: once in the background, once inside
+	-- the section that prints it.
+	--
+	-- ONLY INSIDE THE REPORT. `/mm test` must always be a fresh run: it is what
+	-- someone types to find out whether a change took, and answering it from a
+	-- set of results gathered minutes ago would be the exact opposite of what
+	-- was asked -- and impossible to notice, because the output looks the same.
+	local inReport = MM.Diagnostics and MM.Diagnostics.inReport
+	if T.prepared and inReport then
+		results = T.prepared
+		T.prepared = nil
+	else
+		results = {}
+		local ok, err = pcall(function()
+			runAPI(); runData(); runLogic()
+		end)
+		if not ok then record(FAIL, "RUNNER", "self-test crashed", tostring(err)) end
+	end
 
 	local counts = { PASS = 0, FAIL = 0, WARN = 0 }
 	local group

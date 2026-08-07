@@ -2,6 +2,21 @@
 
 ## 1.1.13 — unreleased
 
+- **The real cause of "script ran too long" was one section, not thirty-three.**
+  Chunking the report between sections shipped in 1.1.12 and did not fix it: the
+  self-test alone is 2,635 ms in a single uninterrupted run on a fast machine,
+  and the client's watchdog measures exactly that. The probe added in 1.1.12
+  named it, which is what it was for.
+- The 193 checks now run **a slice at a time**, capped per frame rather than per
+  run — so no single execution grows past that cap however slow the machine or
+  however many checks are added later. The checks themselves are unchanged and
+  unaware of it.
+- They also run **during the four-second pause the report already takes** to let
+  asynchronous subsystems answer, and the section that prints them consumes the
+  finished results instead of running everything a second time. `/mm test` still
+  always runs fresh — answering "did my change take" from results gathered
+  minutes ago would look identical and be worthless.
+
 - **The Grand Hunt says whether it is worth the trip, not merely where it is.**
   Only the first hunt each week pays the bag that carries the mount, and the
   banner's own description names the bag on offer — so a description still
