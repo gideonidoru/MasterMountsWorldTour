@@ -1953,6 +1953,56 @@ local function runLogic()
 		return true, ("%d positioned goals, none at the zone centre"):format(positioned)
 	end)
 
+	check("A row's action button is in front of its row", function()
+		-- [+] worked in Collection, [-] worked in the Planner's right pane, and
+		-- [+] in the Planner's LEFT pane did nothing. All three are the same
+		-- helper with the same anchor and the same handler -- audited line by
+		-- line -- so the handler was never the problem and the click was not
+		-- arriving. A child Button at its parent's frame level does not
+		-- reliably win the hit test; the two panes that worked were winning it
+		-- by creation order.
+		--
+		-- Builds a real row and a real action button and asserts the ordering,
+		-- because that is the property that was implicit and therefore free to
+		-- change without anyone noticing.
+		if not UI.MakeRowAction then return nil, "row action helper unavailable" end
+		local row = CreateFrame("Button", nil, UIParent)
+		row:SetSize(400, 46)
+		local b = UI.MakeRowAction(row)
+		local rl, bl = row:GetFrameLevel(), b:GetFrameLevel()
+		local clicks = b.GetAttribute and true
+		row:Hide()
+		if bl <= rl then
+			return false, ("the action button sits at level %d on a row at %d -- "
+				.. "the row can take the click"):format(bl, rl)
+		end
+		return true, ("action button at level %d over a row at %d%s")
+			:format(bl, rl, clicks and ", clicks registered explicitly" or "")
+	end)
+
+	check("Adding to the plan from any pane actually adds", function()
+		-- The failure looked like a dead button; it would look identical if
+		-- Add silently declined. Drives the same call the [+] handlers make,
+		-- with a spellID that is definitely not planned, and puts the plan back
+		-- exactly as it was.
+		local P = MM.Planner
+		if not (P and P.Add and P.Remove and P.InPlan) then return nil, "no planner" end
+		local probe = -424242            -- cannot collide with a real spell id
+		if P:InPlan(probe) then return nil, "probe id already planned" end
+		local before = #MM.cdb.plan
+		P:Add(probe)
+		local added = P:InPlan(probe) ~= nil
+		P:Remove(probe)
+		local restored = (#MM.cdb.plan == before) and not P:InPlan(probe)
+		if not added then
+			return false, "Planner:Add did not put the goal on the plan"
+		end
+		if not restored then
+			return false, "Planner:Remove did not undo the probe -- plan left dirty"
+		end
+		return true, ("add and remove round-trip on a %d-goal plan"):format(before)
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked

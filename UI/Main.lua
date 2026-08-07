@@ -131,15 +131,44 @@ end
 -- on its row, so the control is there when it is wanted and out of the way
 -- when it is not. The row already had OnEnter and OnLeave for the tooltip, so
 -- this rides on hover the row was tracking anyway.
+-- THE BUTTON HAS TO OUTRANK THE ROW IT SITS ON.
+--
+-- Reported from outside and then narrowed precisely: [+] works in the
+-- Collection tab, [-] works in the Planner's right pane, and [+] in the
+-- Planner's LEFT pane does nothing. Auditing the three call sites line by line
+-- found them identical -- same helper, same anchor, same GetParent().entry,
+-- same Add/Remove. So the difference was never in the handler, and the click
+-- was not arriving.
+--
+-- Both the row and this button are Buttons, and a child created at the SAME
+-- frame level as its parent does not reliably win the hit test: which one takes
+-- the click depends on creation order within the level, and the scroll views
+-- create and recycle their rows in an order nothing here controls. The two
+-- panes that worked were winning it by luck.
+--
+-- Two explicit statements instead of relying on that:
+--
+--   * a frame level ABOVE the row, so the button is unambiguously in front
+--   * RegisterForClicks matching the row's, so the button accepts the same
+--     buttons the row does rather than the bare default
+--
+-- Both are correct on their own terms whatever the hit test does, which is the
+-- point: this stops depending on an ordering nobody declared.
+-- Bright enough to find and to aim at without being the loudest thing on the
+-- row. The hover lift that used to justify a dimmer resting state never ran.
+local RESTING = 0.75
+
 function UI.MakeRowAction(row)
 	local b = CreateFrame("Button", nil, row)
 	b:SetSize(22, 22)
+	b:SetFrameLevel(row:GetFrameLevel() + 2)
+	b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	b.glyph = b:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
 	b.glyph:SetPoint("CENTER")
 	-- Quiet, not invisible. 0.22 got out of the way so thoroughly that the
 	-- control had to be hunted for; the point was to stop three hundred red
 	-- buttons shouting, not to hide the only thing on the row you can click.
-	b:SetAlpha(0.55)
+	b:SetAlpha(RESTING)
 	-- STILL + AND -, NOT A CROSS.
 	--
 	-- A cross was tried here before and deliberately replaced: [x] reads as
@@ -163,18 +192,22 @@ function UI.MakeRowAction(row)
 		GameTooltip:Show()
 	end)
 	b:SetScript("OnLeave", function(self)
-		self:SetAlpha(row.mmHover and 0.9 or 0.55)
+		self:SetAlpha(RESTING)
 		GameTooltip:Hide()
 	end)
-	-- Hooked, not replaced: the row's own tooltip handlers still run.
-	row:HookScript("OnEnter", function()
-		row.mmHover = true
-		b:SetAlpha(0.9)
-	end)
-	row:HookScript("OnLeave", function()
-		row.mmHover = false
-		b:SetAlpha(0.55)
-	end)
+	-- NO ROW HOOKS, FOR THE SAME REASON THE FRAME LEVEL IS NOW EXPLICIT.
+	--
+	-- This used to HookScript the row's OnEnter and OnLeave to bring the glyph
+	-- up while the pointer was anywhere on its row. Both initializers call
+	-- row:SetScript("OnEnter", ...) AFTER asking for this button -- and
+	-- SetScript replaces the whole chain, hooks included. So the hover lift has
+	-- never once run, in either pane, and the resting alpha was doing all the
+	-- work while the code implied otherwise.
+	--
+	-- Rather than reinstate a hook that only survives if two other functions
+	-- keep calling things in the right order, the control simply rests bright
+	-- enough to see and to hit. One less ordering dependency in a helper that
+	-- just lost a click to one.
 	return b
 end
 
