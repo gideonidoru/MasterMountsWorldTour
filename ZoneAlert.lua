@@ -136,9 +136,30 @@ local function build()
 
 	frame.rows = {}
 	for i = 1, MAX_ROWS do
-		local row = CreateFrame("Frame", nil, frame)
+		-- A BUTTON, because the rows were the one thing here worth clicking and
+		-- were the one thing that could not be. A plain Frame does not take
+		-- clicks, so every click landed on the window behind and opened the
+		-- whole collection -- the row under the cursor named the mount and the
+		-- player still had to type its name.
+		local row = CreateFrame("Button", nil, frame)
 		row:SetSize(280, 18)
 		row:SetPoint("TOPLEFT", 10, -HEADER_H - (i - 1) * ROW_H)
+		row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+
+		row.hl = row:CreateTexture(nil, "HIGHLIGHT")
+		row.hl:SetAllPoints()
+		row.hl:SetColorTexture(1, 1, 1, 0.08)
+
+		row:SetScript("OnClick", function(s, button)
+			if not s.entry then return end
+			-- Right-click goes straight to Wowhead, matching every other list
+			-- in the addon. Learning the gesture once should be enough.
+			if button == "RightButton" then
+				MM:ShowWowheadLink(s.entry)
+			else
+				MM:Fire("MM_SHOW_MOUNT", s.entry)
+			end
+		end)
 
 		row.icon = row:CreateTexture(nil, "ARTWORK")
 		row.icon:SetSize(15, 15)
@@ -181,12 +202,17 @@ function ZA.Show(list, zoneName)
 	for i = 1, MAX_ROWS do
 		local row, entry = frame.rows[i], list[i]
 		if entry then
+			row.entry = entry
 			row.icon:SetTexture(entry.icon or 134400)
 			row.name:SetText(entry.name)
 			row.chance:SetText(chanceText(entry.rec))
 			row.chance:SetTextColor(rarityColor(entry.rec.dropRate))
 			row:Show()
 		else
+			-- Cleared as well as hidden: rows are reused between zones, and a
+			-- stale entry on a hidden row is a click waiting to open the wrong
+			-- mount the next time the list is shorter than this one.
+			row.entry = nil
 			row:Hide()
 		end
 	end

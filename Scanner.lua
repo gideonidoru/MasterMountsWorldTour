@@ -192,16 +192,48 @@ local function onCombatLog()
 	MM.Attempts.Record(spellID)
 end
 
+-- 12.0 HANDS OUT SECRET VALUES, AND A SECRET IS NOT A STRING.
+--
+-- Reported from outside, next to a boss kill in the chat log:
+--   "nil failed: attempt to perform string conversion on a secret value
+--    (execution tainted by 'MasterMountsWorldTour')"
+--
+-- Midnight made several event payloads SECRET for a tainted addon, and
+-- `encounterName` is one of them. Comparing it is fine; `encounterName:lower()`
+-- is a string operation on a value the client will not let us read, and it
+-- throws. This fires on every boss kill, so it repeated for the whole session.
+--
+-- The combat-log path two blocks down was already turned off for 12.0 for a
+-- related reason. This is the same class of change arriving through a different
+-- door, and the lesson is that a payload which has always been a string is not
+-- guaranteed to still be one.
+--
+-- Degrade, do not throw. If the name cannot be read, attempts stop being
+-- counted automatically from boss names -- which is a feature quietly doing
+-- less, not an addon spraying errors. Said once, then silent.
+local secretNames = false
+local function readableName(name)
+	if secretNames or name == nil then return nil end
+	local ok, lowered = pcall(string.lower, name)
+	if ok and type(lowered) == "string" then return lowered end
+	secretNames = true
+	MM:Print("This client hides boss names from addons, so kills will not be "
+		.. "counted as attempts automatically. Everything else is unaffected.")
+	return nil
+end
+
 -- Encounter kills (instance bosses) matched by npc name, since encounter IDs
 -- aren't in the database.
 function onEncounterEnd(_, encounterName, _, _, success)
-	if success ~= 1 or not encounterName then return end
+	if success ~= 1 then return end
+	local wanted = readableName(encounterName)
+	if not wanted then return end
 	if not (MM.cdb and MM.cdb.plan) then return end
 	for _, item in ipairs(MM.cdb.plan) do
 		local entry = S.bySpell[item.spellID]
 		local rec = entry and entry.rec
 		if rec and rec.npc and rec.npc.name and not entry.collected
-			and rec.npc.name:lower() == encounterName:lower() then
+			and rec.npc.name:lower() == wanted then
 			MM.Attempts.Record(item.spellID)
 		end
 	end
@@ -236,10 +268,14 @@ MM:RegisterGameEvent("ENCOUNTER_END", onEncounterEnd)
 -- World/instance boss kills without the combat log (debounced vs ENCOUNTER_END).
 local lastKillAt = {}
 MM:RegisterGameEvent("BOSS_KILL", function(_, encounterName)
-	if not encounterName then return end
+	-- Keyed on the READABLE name, never the raw payload: a secret value used as
+	-- a table key is the same forbidden conversion one line earlier than the
+	-- comparison that reported it.
+	local key = readableName(encounterName)
+	if not key then return end
 	local now = GetTime()
-	if lastKillAt[encounterName] and now - lastKillAt[encounterName] < 5 then return end
-	lastKillAt[encounterName] = now
+	if lastKillAt[key] and now - lastKillAt[key] < 5 then return end
+	lastKillAt[key] = now
 	onEncounterEnd(nil, encounterName, nil, nil, 1)
 end)
 

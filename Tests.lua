@@ -1927,6 +1927,40 @@ local function runLogic()
 			:format(checked, withID)
 	end)
 
+	check("An item cost asks how many, not whether any", function()
+		-- Reported from outside: told to go and buy the Asset Advocator "even
+		-- though I didn't have the currency for it". evalItem asked
+		-- GetItemCount(id) > 0 and ignored the amount, so 1 of 25 Miscellaneous
+		-- Mechanica satisfied the requirement and the mount ranked as a pickup.
+		--
+		-- Sixty conditions in the database want more than one. Driven through
+		-- C.Evaluate rather than by reading the record, because the bug was in
+		-- the evaluator while the data was right the whole time.
+		local C = MM.Conditions
+		if not (C and C.Evaluate) then return nil, "conditions module unavailable" end
+		-- An item nobody owns: any real id works, since the assertion is about
+		-- the COMPARISON, not about this character's bags.
+		local probe = { type = "ITEM", id = 6948, name = "probe", amount = 999999 }
+		local met = C.Evaluate(probe)
+		if met ~= false then
+			return false, ("a 999,999 requirement evaluated as %s -- the amount "
+				.. "is being ignored"):format(tostring(met))
+		end
+		local one = { type = "ITEM", id = 6948, name = "probe", amount = 1 }
+		local metOne = C.Evaluate(one)
+		if metOne == nil then return nil, "item counts unreadable on this client" end
+		local counted = 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			for _, cond in ipairs(rec.conditions or {}) do
+				if cond.type == "ITEM" and (cond.amount or 0) > 1 then
+					counted = counted + 1
+				end
+			end
+		end
+		return true, ("%d item costs want more than one, and the amount decides")
+			:format(counted)
+	end)
+
 	check("A subset is never reported as larger than its set", function()
 		-- The soloability line prints "N carry no flag; M of those name an
 		-- achievement id". M is a subset of N by construction, so M > N is not

@@ -989,6 +989,25 @@ function nearestChain(steps, start)
 
 		local bestI, bestScore, bestTime, bestMethod
 		for i, s in ipairs(pool) do
+			-- AND INSIDE THE LOOP, WHICH IS WHERE THE TIME ACTUALLY GOES.
+			--
+			-- Reported from outside: "building a route fails with an error msg
+			-- about the script running too long", and the client freezing until
+			-- it did. The check above yields between STOPS; this loop runs one
+			-- graph search per CANDIDATE, so a single pass through it is
+			-- hundreds of searches with the frame held throughout. Yielding
+			-- once per stop cannot help when one stop is the expensive thing.
+			--
+			-- It is much worse for a new player, which is exactly who was
+			-- reporting it. Our own router model measures it: with no teleports
+			-- a leg takes fifteen hops where a well-equipped character takes
+			-- two. Same plan, an order of magnitude more search, and the
+			-- yielding was tuned against the cheap case.
+			--
+			-- Safe to yield mid-loop: a coroutine resumes exactly here with the
+			-- iterator, the accumulators and the pool all intact.
+			if R.ShouldYield and R.ShouldYield() then R.Yield() end
+
 			-- Numbers only: every candidate but one is discarded, and the
 			-- winner's directions are built once, after the choice.
 			local minutes, method = travelMinutes(state, s, false)
@@ -1407,11 +1426,18 @@ end
 -- hands the frame back whenever it has held it for longer than the budget, and
 -- a ticker resumes it. Every caller keeps calling R:Build() exactly as before.
 --
--- SMALL PLANS STAY SYNCHRONOUS. Below the threshold the coroutine is driven to
--- completion before Build returns, so nothing that reads R.route immediately --
--- the session fitter, the tests -- has its behaviour changed by this at all.
+-- A CALLER THAT NEEDS THE ANSWER NOW asks for it: Build takes `sync`, and the
+-- session fitter, the router model and the checks all pass it. Everything else
+-- is chunked, whatever the plan's size.
+--
+-- There was a CHUNK_FROM_STOPS threshold here, documented as "small plans stay
+-- synchronous". It was declared and never read -- `chunked` is set true
+-- unconditionally further down -- so for its whole life it described a rule the
+-- code did not have. Removed rather than implemented: a stop count is the wrong
+-- proxy anyway. What costs time is how hard each leg is to search, and a small
+-- plan on a character with no teleports is far more work than a large one on a
+-- character with eighteen.
 local CHUNK_MS = 24            -- frame budget before handing control back
-local CHUNK_FROM_STOPS = 40    -- below this, finish in one go
 local building                 -- the coroutine, while one is in flight
 
 -- Called from inside the chain: true when we have held the frame long enough.

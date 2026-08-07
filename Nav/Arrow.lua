@@ -109,9 +109,18 @@ local function build()
 	action.cooldown:SetAllPoints(action.icon)
 
 	action:SetScript("OnEnter", function(self)
-		if not self.mmItemID then return end
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		GameTooltip:SetItemByID(self.mmItemID)
+		-- Whichever kind of thing the button is offering. Asking SetItemByID
+		-- about a spell id draws some unrelated item, which is a quieter
+		-- failure than the error log but a worse one to read.
+		if self.mmItemID then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:SetItemByID(self.mmItemID)
+		elseif self.mmSpellID then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:SetSpellByID(self.mmSpellID)
+		else
+			return
+		end
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine("Click to use — Master Mounts", 0.4, 0.8, 1)
 		GameTooltip:Show()
@@ -177,16 +186,22 @@ end
 -- is remembered and applied on PLAYER_REGEN_ENABLED. The visible state still
 -- updates immediately -- the player sees the right thing, they simply cannot
 -- click it until combat ends, which is Blizzard's rule, not ours.
+-- NOT EVERY TELEPORT IS AN ITEM. Death Gate, Zen Pilgrimage, Astral Recall,
+-- every mage portal and all 76 dungeon teleports are SPELLS -- Teleports.lua
+-- has stored them as `spell` rather than `item` from the beginning, and its own
+-- cooldown helper branches on exactly that. This button only ever read `item`,
+-- so for a spell hop it was handed nil and offered nothing to click.
 local pendingAction
-local function applyAction(itemID, isToy)
+local function applyAction(itemID, isToy, spellID)
 	if not action then return end
 	if InCombatLockdown() then
-		pendingAction = { itemID = itemID, isToy = isToy }
+		pendingAction = { itemID = itemID, isToy = isToy, spellID = spellID }
 		return
 	end
 	pendingAction = nil
 	if itemID then
 		action:SetAttribute("type", isToy and "toy" or "item")
+		action:SetAttribute("spell", nil)
 		if isToy then
 			action:SetAttribute("toy", itemID)
 			action:SetAttribute("item", nil)
@@ -196,25 +211,73 @@ local function applyAction(itemID, isToy)
 				and C_Item.GetItemNameByID(itemID)) or ("item:" .. itemID))
 			action:SetAttribute("toy", nil)
 		end
+	elseif spellID then
+		-- Spell NAME for the same reason the item uses its name: the secure
+		-- handler resolves a name reliably across ranks and overrides.
+		action:SetAttribute("type", "spell")
+		action:SetAttribute("spell",
+			(C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(spellID))
+			or spellID)
+		action:SetAttribute("item", nil)
+		action:SetAttribute("toy", nil)
 	else
 		action:SetAttribute("type", nil)
 		action:SetAttribute("item", nil)
 		action:SetAttribute("toy", nil)
+		action:SetAttribute("spell", nil)
 	end
 end
 
 local actionRequested = false
 
-function Arrow:ShowAction(itemID, isToy)
+function Arrow:ShowAction(itemID, isToy, spellID)
 	if not action then return end
+
+	-- NOTHING TO OFFER IS NOT AN ERROR, IT IS THE ARROW.
+	--
+	-- Reported from outside as "1124x bad argument #1 to '?'". Update runs 20
+	-- times a second and this ran unguarded on every tick, so one spell-only
+	-- teleport produced a thousand identical errors a minute and buried the
+	-- addon's own output in the process -- the report called it "completely
+	-- unusable", and for that player it was.
+	--
+	-- The nil never reached the idempotence check below either: that returns
+	-- early only when the button is ALREADY SHOWN, and a button that has never
+	-- been shown fails it forever. So the error repeated rather than happening
+	-- once.
+	--
+	-- Fall back to the arrow. A hop with neither an item nor a spell is a
+	-- portal you walk to, and pointing at it is exactly right.
+	if not (itemID or spellID) then
+		Arrow:HideAction()
+		return
+	end
+
 	actionRequested = true
 	-- Idempotent: Update runs 20x a second and must not rewrite a secure
 	-- attribute, reset a cooldown swipe or restart the icon on every tick.
-	if action.mmItemID == itemID and action:IsShown() then return end
+	local key = itemID and ("i" .. itemID) or ("s" .. spellID)
+	if action.mmKey == key and action:IsShown() then return end
+	action.mmKey = key
 	action.mmItemID = itemID
-	action.icon:SetTexture(C_Item and C_Item.GetItemIconByID
-		and C_Item.GetItemIconByID(itemID) or 134400)
-	local start, duration = C_Container.GetItemCooldown(itemID)
+	action.mmSpellID = spellID
+
+	local icon
+	if itemID then
+		icon = C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(itemID)
+	else
+		icon = C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(spellID)
+	end
+	action.icon:SetTexture(icon or 134400)
+
+	-- Same branch Teleports.cooldownRemaining takes, for the same reason.
+	local start, duration
+	if itemID then
+		start, duration = C_Container.GetItemCooldown(itemID)
+	elseif C_Spell and C_Spell.GetSpellCooldown then
+		local info = C_Spell.GetSpellCooldown(spellID)
+		if info then start, duration = info.startTime, info.duration end
+	end
 	if start and duration and duration > 1.5 then
 		action.cooldown:SetCooldown(start, duration)
 	else
@@ -222,7 +285,8 @@ function Arrow:ShowAction(itemID, isToy)
 		-- duration blanks the swipe on all of them.
 		action.cooldown:SetCooldown(0, 0)
 	end
-	applyAction(itemID, isToy)
+
+	applyAction(itemID, isToy, spellID)
 	tex:Hide()
 	action:Show()
 end
@@ -237,7 +301,9 @@ end
 
 -- Apply anything deferred by combat.
 MM:RegisterGameEvent("PLAYER_REGEN_ENABLED", function()
-	if pendingAction then applyAction(pendingAction.itemID, pendingAction.isToy) end
+	if pendingAction then
+		applyAction(pendingAction.itemID, pendingAction.isToy, pendingAction.spellID)
+	end
 end)
 
 -- The card sizes to its content, in both directions.
@@ -369,7 +435,7 @@ local function updateBody()
 			aimAtWorld(hop.world, playerMapID, playerMapPos, playerWorld)
 			dist:SetText("")
 			showCard(MM.Teleports.Describe(hop))
-			Arrow:ShowAction(hop.option.item, hop.option.toy)
+			Arrow:ShowAction(hop.option.item, hop.option.toy, hop.option.spell)
 			return
 		end
 
@@ -421,7 +487,7 @@ local function updateBody()
 			aimAtWorld(hop.world, playerMapID, playerMapPos, playerWorld)
 			dist:SetText(("%d yds"):format(yards))
 			showCard(MM.Teleports.Describe(hop))
-			Arrow:ShowAction(hop.option.item, hop.option.toy)
+			Arrow:ShowAction(hop.option.item, hop.option.toy, hop.option.spell)
 			return
 		end
 	end

@@ -251,12 +251,41 @@ local function evalAchievement(cond)
 			completed and " (done)" or "")
 end
 
+-- HOW MANY, NOT WHETHER ANY.
+--
+-- Reported from outside: told to go and buy the Asset Advocator "even though I
+-- didn't have the currency for it". The record is fully modelled -- 25
+-- Miscellaneous Mechanica, plus two quests -- and this function threw the
+-- amount away and asked `> 0`. One of twenty-five read as satisfied, so
+-- EvaluateAll returned true and the mount ranked as "Requirements met -- just
+-- go buy it".
+--
+-- Sixty ITEM conditions in the database carry an amount above one. Every Alterac
+-- Valley mount wants 15 Marks of Honor; a single Mark answered for all fifteen.
+-- evalCurrency has compared against `amount` from the start -- this is the same
+-- question about a different kind of token, and it never got the same answer.
+--
+-- MATERIAL rows come here too now. They had no evaluator at all, so 105 reagent
+-- requirements returned "Unknown requirement" and printed that in the tooltip.
+-- They are items with a count, which is exactly what this function is for.
 local function evalItem(cond)
 	local label = cond.name or (cond.id and ("item #" .. cond.id)) or "item"
 	if cond.cost then label = label .. " (" .. cond.cost .. ")" end
-	if not cond.id then return nil, "Item: " .. label end
-	local have = C_Item.GetItemCount(cond.id, true) > 0
-	return have, ("Item: %s%s"):format(label, have and " (owned)" or "")
+	if not cond.id and not cond.itemID then return nil, "Item: " .. label end
+
+	local id = cond.id or cond.itemID
+	local need = cond.amount or cond.count or 1
+	-- Bank, reagent bank and the warband bank all count: the vendor cares that
+	-- you own them, and a stack sitting in the bank is a walk, not a grind.
+	local have = C_Item.GetItemCount(id, true, false, true, true) or 0
+
+	-- One is the "do you have the thing" case -- a key, a mask, a saddle -- and
+	-- it reads better as owned/not owned than as 1 / 1.
+	if need <= 1 then
+		return have > 0, ("Item: %s%s"):format(label, have > 0 and " (owned)" or "")
+	end
+	return have >= need, ("%s: %s / %s"):format(cond.name or "Item",
+		U.Comma(have), U.Comma(need))
 end
 
 -- Currencies referenced by name only (records omit IDs they weren't sure of)

@@ -172,6 +172,10 @@ function UI.BuildCollection(panel)
 		filters.search = self:GetText() or ""
 		UI.RefreshCollection()
 	end)
+	-- Kept so something else can drive it. The zone popup knows exactly which
+	-- mount was clicked and used to throw that away, opening the full list and
+	-- leaving the player to type a name they had just clicked on.
+	UI.collectionSearch = search
 
 	local expValues, expLabels = {}, {}
 	for i = 0, MM.MAX_EXPANSION do

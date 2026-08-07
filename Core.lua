@@ -91,6 +91,11 @@ function MM:RegisterGameEvent(event, fn)
 	tinsert(eventHandlers[event], fn)
 end
 
+-- One line per distinct (event, error). Session-scoped on purpose: a reload is
+-- how someone checks whether a fix took, and a persisted list would stay quiet
+-- and make it look like it had.
+local reportedErrors = {}
+
 eventFrame:SetScript("OnEvent", function(_, event, ...)
 	local list = eventHandlers[event]
 	if not list then return end
@@ -105,10 +110,29 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
 			-- error. The command looked like it did nothing, which is the
 			-- hardest kind of failure to report and the easiest to fix.
 			--
-			-- One line, naming which command broke. Errors here are rare; a
-			-- silent one costs far more than a noisy one.
-			MM:Print("|cffff5555%s failed:|r %s", tostring(message),
-				tostring(err):gsub("^.*[\\/]", ""):sub(1, 160))
+			-- IT NAMED NOTHING, AND IT NEVER STOPPED.
+			--
+			-- `message` is not a variable in this function -- the parameters
+			-- are (_, event, ...) -- so it was a global nil and every line read
+			-- "nil failed:". Reported from outside as exactly that, repeated
+			-- down the chat frame, which is the least useful form this line
+			-- could take: it says something broke and refuses to say what.
+			--
+			-- And a game event repeats. One handler throwing on a combat event
+			-- printed once per event for the rest of the session, so the addon
+			-- buried its own output. Errors here ARE rare -- that was the
+			-- assumption behind printing every one -- but "rare" is a property
+			-- of the bug, not of the event, and the event fires regardless.
+			--
+			-- Now: named, and once per distinct problem. The full error still
+			-- goes to the error handler every time, so nothing is hidden from
+			-- anyone actually looking.
+			local key = tostring(event) .. "\0" .. tostring(err)
+			if not reportedErrors[key] then
+				reportedErrors[key] = true
+				MM:Print("|cffff5555%s failed:|r %s", tostring(event),
+					tostring(err):gsub("^.*[\\/]", ""):sub(1, 160))
+			end
 			geterrorhandler()(err)
 		end
 	end
@@ -459,6 +483,25 @@ end)
 -- Wowhead link popup (addons cannot open browsers; best possible
 -- is a select-all editbox the player copies from)
 ------------------------------------------------------------
+-- THE FIELD IS `EditBox` NOW, NOT `editBox`.
+--
+-- Reported from outside as a hard error the moment anyone clicked a row to get
+-- a Wowhead link: "attempt to index field 'editBox' (a nil value)". Blizzard's
+-- StaticPopup rewrite (Blizzard_StaticPopup_Game/GameDialog) renamed the
+-- member, and the lowercase name has been nil since. The error dump proves it
+-- -- the frame it printed lists `EditBox=StaticPopup1EditBox` and no `editBox`.
+--
+-- All four spellings are accepted rather than just the new one. This is a
+-- cosmetic dialog on a popup Blizzard has already renamed once; hard-coding
+-- whichever name is current today buys another silent break on the next pass,
+-- and the global lookup is the one that has worked since Wrath.
+local function popupEditBox(self)
+	if not self then return nil end
+	return self.EditBox or self.editBox
+		or (self.GetEditBox and self:GetEditBox())
+		or _G[(self.GetName and self:GetName() or "") .. "EditBox"]
+end
+
 StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"] = {
 	text = "Wowhead page for %s\n(Ctrl+C to copy, then paste in your browser)",
 	button1 = CLOSE or "Close",
@@ -468,9 +511,17 @@ StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"] = {
 	whileDead = true,
 	hideOnEscape = true,
 	OnShow = function(self, data)
-		self.editBox:SetText(data or "")
-		self.editBox:HighlightText()
-		self.editBox:SetFocus()
+		local box = popupEditBox(self)
+		-- No box is a dialog with nothing to copy from, which is worth saying
+		-- once. It is NOT worth throwing over: the popup is already on screen
+		-- and an error here leaves it there, unusable and unexplained.
+		if not box then
+			MM:Print("Could not open the copy box — the link is: %s", tostring(data))
+			return
+		end
+		box:SetText(data or "")
+		box:HighlightText()
+		box:SetFocus()
 	end,
 	EditBoxOnTextChanged = function(self, data)
 		if self:GetText() ~= data then
@@ -478,7 +529,11 @@ StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"] = {
 			self:HighlightText()
 		end
 	end,
-	EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
+	-- StaticPopup_Hide names the dialog rather than assuming the edit box is a
+	-- direct child of it. Under the new GameDialog frames it is not.
+	EditBoxOnEscapePressed = function()
+		StaticPopup_Hide("MASTERMOUNTS_WOWHEAD")
+	end,
 	preferredIndex = 3,
 }
 

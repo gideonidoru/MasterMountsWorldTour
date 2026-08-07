@@ -746,6 +746,31 @@ MM:On("MM_ROUTE_STOPPED", function()
 end)
 
 MM:On("MM_TOGGLE_MAIN", function(tabIndex) UI:Toggle(tabIndex) end)
+
+-- Open on ONE mount, not on the list that contains it.
+--
+-- Reported from outside: "clicking on the notification or on one of the mounts
+-- just brings me to the big list of all the mounts, would be super nice if the
+-- addon would open directly on the mount in question, otherwise it is just one
+-- more type-in-name-to-search."
+--
+-- Exactly right, and the popup already knew which mount it was -- the click
+-- handler discarded it and fired the generic open. The search box is the
+-- narrowing mechanism the tab already has, so this drives that rather than
+-- inventing a second kind of selection that would then need its own clearing,
+-- its own refresh and its own bugs.
+MM:On("MM_SHOW_MOUNT", function(entry)
+	UI:Toggle(2)                       -- the Collection tab
+	if not (entry and entry.name) then return end
+	local box = UI.collectionSearch
+	if not box then return end
+	box:SetText(entry.name)
+	-- SearchBoxTemplate draws its own placeholder and clear button off the
+	-- text, and neither updates from SetText alone.
+	if box.Instructions then box.Instructions:Hide() end
+	if box.clearButton then box.clearButton:Show() end
+	UI.RefreshCollection()
+end)
 MM:On("MM_SCANNED", function() if frame and frame:IsShown() then UI:Refresh() end end)
 MM:On("MM_PLAN_CHANGED", function() if frame and frame:IsShown() then UI:Refresh() end end)
 MM:On("MM_TRADINGPOST", function() if frame and frame:IsShown() then UI:Refresh() end end)
