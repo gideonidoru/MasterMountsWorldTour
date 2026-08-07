@@ -328,7 +328,7 @@ end)
 function A.FindRotating(gate)
 	if not (gate and A.scanned) then return nil end
 	local list = needles(gate)
-	for _, mapID in ipairs(gate.maps or {}) do
+	for _, mapID in ipairs(A.gateMaps[gate.key] or gate.maps or {}) do
 		for _, e in ipairs(A.active[mapID] or {}) do
 			local hay = e.name and e.name:lower()
 			if hay then
@@ -479,6 +479,8 @@ end
 -- database once is the direction that actually works, and it means declaring
 -- `rotating` on a record is the whole of adding one.
 A.rotatingGates = {}
+-- Per gate: every map worth SEARCHING, which includes the one the zones sit in.
+A.gateMaps = {}
 
 -- The map a zone SITS IN, asked of the client rather than written down.
 --
@@ -503,6 +505,27 @@ local function collectRotating()
 	for _, rec in ipairs(MM.DBList or {}) do
 		if rec.rotating and rec.rotating.key then
 			A.rotatingGates[rec.rotating.key] = rec.rotating
+			-- WHERE TO LOOK, which is not the same as where the event runs.
+			--
+			-- A record names the four zones a Grand Hunt rotates between, and
+			-- that is correct -- but the banner announcing it sits on the map
+			-- ABOVE them. The scan already covers that map; the search did not,
+			-- so the POI was found, listed in the report, and then not seen by
+			-- the only code that wanted it.
+			--
+			-- Declared maps plus whatever contains them, kept beside the gate
+			-- rather than written into the shipped record.
+			local look = {}
+			for _, mapID in ipairs(rec.rotating.maps or {}) do
+				look[#look + 1] = mapID
+				local parent = parentOf(mapID)
+				if parent then
+					local dupe = false
+					for _, m in ipairs(look) do if m == parent then dupe = true break end end
+					if not dupe then look[#look + 1] = parent end
+				end
+			end
+			A.gateMaps[rec.rotating.key] = look
 			-- Watch what contains the declared zones as well as the zones.
 			-- POI ONLY -- these do not join the quest scan, which is the
 			-- expensive half and is not what is missing here.

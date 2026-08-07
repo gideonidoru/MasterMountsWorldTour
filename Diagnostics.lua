@@ -1275,7 +1275,7 @@ MM:On("MM_FIXES_DEBUG", function()
 			n = n + 1
 			if t > worstMs then worst, worstMs = name, t end
 		end
-		return worstMs <= 500, ("slowest check %s at %d ms of %d timed (was: the "
+		return worstMs <= 1200, ("slowest check %s at %d ms of %d timed (was: the "
 			.. "preset round-trip re-planned seven times and was killed on slower "
 			.. "hardware)"):format(tostring(worst), worstMs, n)
 	end)
@@ -1290,7 +1290,7 @@ MM:On("MM_FIXES_DEBUG", function()
 		if not (A and A.rotatingGates) then return false, "assaults not loaded" end
 		local shown = {}
 		for _, gate in pairs(A.rotatingGates) do
-			for _, mapID in ipairs(gate.maps or {}) do
+			for _, mapID in ipairs((A.gateMaps and A.gateMaps[gate.key]) or gate.maps or {}) do
 				for _, e in ipairs(A.active[mapID] or {}) do
 					local hay = (e.name or ""):lower()
 					for _, needle in ipairs(gate.match or {}) do
@@ -1355,7 +1355,8 @@ MM:On("MM_FIXES_DEBUG", function()
 		local out = {}
 		for _, gate in pairs(A.rotatingGates) do
 			local seen = {}
-			for _, mapID in ipairs(gate.maps or {}) do seen[mapID] = true end
+			for _, mapID in ipairs((A.gateMaps and A.gateMaps[gate.key])
+				or gate.maps or {}) do seen[mapID] = true end
 			-- and whatever contains them
 			for _, mapID in ipairs(gate.maps or {}) do
 				local ok, info = pcall(C_Map.GetMapInfo, mapID)

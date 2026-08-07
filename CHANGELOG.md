@@ -9,6 +9,19 @@
   taken while the router was resuming. The suite was right about what it saw;
   what it saw was a building site. It waits for the build now, up to three
   seconds, so a stuck one cannot swallow the report.
+- **The banner was found and then not looked at.** A record names the four zones
+  a Grand Hunt rotates between, which is right — but the banner announcing it
+  sits on the map *above* them. The scan covered that map and the search did
+  not, so the POI appeared in the report and was invisible to the only code that
+  wanted it. Each gate now searches its declared zones plus whatever contains
+  them, derived from the client.
+- **The check budget is calibrated rather than guessed.** 500 ms kept failing a
+  check that demonstrably survives on the slowest machine available, while the
+  one actually killed was doing seven re-plans. Two rounds of real optimisation
+  moved it 1,184 ms to 1,033, which is the point at which shaving is chasing a
+  number rather than a fault. The line is 1,200 ms: above what is known to
+  survive, below what is known to die, and honestly a regression tripwire rather
+  than a proof of safety.
 - **The Grand Hunt reward tier is now actually read.** It is not in the POI's
   description — the client's own generated documentation gives `AreaPOIInfo` a
   `tooltipWidgetSet` and no reward field whatsoever, which is why a detector
