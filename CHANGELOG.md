@@ -1,5 +1,74 @@
 # Changelog
 
+## 1.1.5 — unreleased
+
+**Data**
+
+Every requirement in the database now carries an id the client can resolve —
+condition ids 351 → 0, reputation ids 151 → 252. Named only, a requirement is a
+string: the client cannot be asked whether it is met, so the planner falls back
+to an assumption for the whole mount. Sourced from the client's own DB2 tables
+rather than from a guide, read with a real CSV parser — an earlier pass split on
+commas by hand, and the name column contains quoted commas, so it matched
+nothing and looked exactly like "the data is not there".
+
+- **Crafting reagents for 50 of 57 crafted mounts**, including every Protoform
+  Synthesis mount — the set `Crafting.lua` named as unpriceable without a player
+  opening a profession window for each recipe in turn. Three joins: the spell
+  that creates the teaching item, that spell's reagents, and their names. A
+  harvested recipe still wins where they disagree, because this is what the
+  RECIPE costs and the profession window knows what it costs YOU.
+- **Prices**: 68 unpriced purchases → 0. Gold prices cross-checked against two
+  independent sources; 27 of 29 matched exactly, and where they differed the
+  client's own table won.
+- **Locations**: 16 unexplained → 0. The rest carry a written reason.
+- **All four remaining puzzle chains** now carry their steps.
+- Covenant requirements are answerable at last. 53 conditions read
+  `{ type = "QUEST", name = "Covenant: Night Fae" }` — no quest of that name
+  exists, so no lookup was ever going to find one, and they were filed as a
+  platform limit. `C_Covenants` answers it outright.
+
+**Corrections**
+
+- **57 mounts were charged their cost twice.** Fifteen listed one token as both
+  an ITEM and a CURRENCY condition; forty-two named one reputation under two
+  spellings. A record with two requirements looks entirely normal, which is why
+  they lasted.
+- **Eleven mounts nobody can obtain were being planned, costed and routed.**
+  A mount that cannot be obtained is not a long grind — it is not a goal.
+- **Promoting a faction variant discarded every id the data layers applied**,
+  on one faction only: correct on the client you test with, broken on the one
+  you do not, identical in the data file.
+- The Dapple Gray sent players to the wrong city, the Vorquins claimed to be
+  Blood Elf heritage mounts when they are the Dracthyr racials, the Deathtusk
+  Felboar was catalogued as a rare drop and is a vendor mount, and two records
+  named mounts that do not exist.
+
+**Rare alerts**
+
+- The alert can now be heard through a muted client. The Master channel escapes
+  the SFX slider and nothing else, so the master volume, the global sound switch
+  and the play-while-alt-tabbed setting are lifted for the length of the clip and
+  handed straight back — with the originals written to disk first, so a crash
+  mid-alert restores them at the next login rather than leaving the game
+  permanently loud.
+- A murloc, and it leads the list.
+
+**Chat**
+
+- Three lines that talked without saying anything are gone. A line earns its
+  place if you asked for it, if something happened you would want to know and
+  cannot see, or if something failed where silence and success look identical.
+
+**Contributions**
+
+- `/mm contribute import` has never applied anything. The export writes the
+  display name and the import looked it up in a table keyed by the lowercased
+  one, so every line resolved to "unknown mount". The round-trip test passed the
+  whole time, because an unrecognised name is a no-op exactly like an untouched
+  placeholder.
+
+
 ## 1.1.0 — unreleased
 
 **Titan Panel**
