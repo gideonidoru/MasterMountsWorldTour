@@ -477,8 +477,54 @@ MM:RegisterGameEvent("ADDON_LOADED", function(name)
 	MM:Fire("MM_DB_READY")
 end)
 
+-- IS A SECOND COPY OF THIS ADDON LOADED?
+--
+-- An old folder left beside the current one loads as a separate addon, and
+-- every symptom that produces looks like a bug in this one:
+--
+--   the celebration prints twice, because two copies handle NEW_MOUNT_ADDED
+--   two plan windows appear, in two different styles, because both draw one
+--   the plan appears to rewrite itself, because two planners are chartinng
+--
+-- It cost a bug report and a screenshot to work out, and none of it was
+-- visible from inside: an addon cannot see another addon's frames, but it CAN
+-- read the addon list. So it does.
+--
+-- Matched on the folder name AND on the TOC title, because a renamed folder is
+-- exactly the case that produces this and the title usually survives a rename.
+function MM.ConflictingCopies()
+	local out = {}
+	local api = C_AddOns
+	if not (api and api.GetNumAddOns and api.GetAddOnInfo) then return out end
+	local ok, n = pcall(api.GetNumAddOns)
+	if not (ok and n) then return out end
+	for i = 1, n do
+		local okI, name, title = pcall(api.GetAddOnInfo, i)
+		if okI and name and name ~= ADDON_NAME then
+			local folder = name:lower()
+			local label = (title or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):lower()
+			if folder:find("mastermount", 1, true) or label:find("master mounts", 1, true) then
+				local okL, loaded = pcall(api.IsAddOnLoaded, i)
+				if okL and loaded then out[#out + 1] = name end
+			end
+		end
+	end
+	return out
+end
+
 MM:RegisterGameEvent("PLAYER_LOGIN", function()
 	MM.playerFaction = UnitFactionGroup("player") -- "Alliance" / "Horde"
+	-- Said BEFORE anything else this addon prints, because it changes what
+	-- every later line means. PrintIfNew rather than Print: the folder name is
+	-- in the message, so a different conflict speaks and the same one stays
+	-- quiet until it is dealt with.
+	local dupes = MM.ConflictingCopies()
+	if #dupes > 0 then
+		MM:PrintIfNew("conflict", "|cffff5555Another copy of Master Mounts is "
+			.. "loaded|r (%s). Two copies double every message, draw two of "
+			.. "every window and chart two plans. Delete the old AddOns folder.",
+			table.concat(dupes, ", "))
+	end
 	-- pick the right side of every faction-split record before anything reads
 	-- vendors, coordinates or requirements from the database
 	if MM.ResolveFactionVariants then

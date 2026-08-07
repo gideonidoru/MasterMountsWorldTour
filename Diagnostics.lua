@@ -142,6 +142,20 @@ local function environment()
 		if loaded then deps[#deps + 1] = addon end
 	end
 	add("Integrations", #deps > 0 and table.concat(deps, ", ") or "none loaded")
+
+	-- FIRST QUESTION ABOUT ANY BUG REPORT, PART TWO.
+	--
+	-- A second copy of this addon loaded beside the current one produces
+	-- symptoms that all read as bugs in this one -- doubled messages, two of
+	-- every window, a plan that seems to rewrite itself. It cost a report and
+	-- a screenshot to identify, and it invalidates everything below, so it
+	-- belongs in the header rather than three hundred lines down.
+	local dupes = MM.ConflictingCopies and MM.ConflictingCopies() or {}
+	if #dupes > 0 then
+		add("!! CONFLICT", ("another Master Mounts is loaded: %s -- every "
+			.. "symptom below may be two addons, not one"):format(
+			table.concat(dupes, ", ")))
+	end
 	add("Theme", (MM.db and MM.db.theme) or "default")
 	return out
 end

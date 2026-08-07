@@ -2067,6 +2067,23 @@ local function runLogic()
 			.. "(%d refusals this session)"):format(U.secretReads or 0)
 	end)
 
+	check("Only one copy of this addon is loaded", function()
+		-- Reported as three separate bugs at once -- the celebration printing
+		-- twice, two plan windows in two different styles, and a plan that
+		-- appeared to rewrite itself. All one cause: an old folder left beside
+		-- the current one, loading as a second addon.
+		--
+		-- An addon cannot see another addon's frames, but it can read the
+		-- addon list, so this is knowable rather than guessable.
+		if not MM.ConflictingCopies then return nil, "detector unavailable" end
+		local dupes = MM.ConflictingCopies()
+		if #dupes > 0 then
+			return false, ("another Master Mounts is loaded (%s) -- delete the "
+				.. "old AddOns folder"):format(table.concat(dupes, ", "))
+		end
+		return true, "one copy loaded"
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked
