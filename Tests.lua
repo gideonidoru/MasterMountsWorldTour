@@ -1844,8 +1844,11 @@ local function runLogic()
 		-- this check, which builds the report, which runs the self-test... I
 		-- nearly shipped a fix for a freeze that caused an infinite one. The
 		-- guard is the same flag the release gate uses, for the same reason.
-		if D.inReport then
-			return nil, "skipped inside the report itself — it would recurse"
+		-- Both phases, not just the build. Timing the report means BUILDING one,
+		-- and a build runs this suite -- so this must stand down whenever the
+		-- suite is being run on a report's behalf, whichever half it is in.
+		if D.inReport or (MM.Tests and MM.Tests.preparing) then
+			return nil, "skipped while a report is being made — it would recurse"
 		end
 		local t0 = debugprofilestop()
 		local ok, err = pcall(D.Build)
@@ -5137,11 +5140,21 @@ local SLICE_MS = 25
 function T.PrepareAsync(onDone)
 	results = {}
 	wipe(queue)
+	-- THE RECURSION GUARD HAS TO COVER THIS PHASE TOO.
+	--
+	-- One check builds the whole report to time it, and skips itself when the
+	-- report is already building. Running the suite HERE is not "inside the
+	-- report" by that flag's reckoning -- so the check built a report, which
+	-- ran the suite, which appended a second copy of every result into this
+	-- same table. The report came back with 297 checks instead of 193 and no
+	-- failure to point at, because nothing had actually failed.
+	T.preparing = true
 	collecting = true
 	local ok, err = pcall(function() runAPI(); runData(); runLogic() end)
 	collecting = false
 	if not ok then
 		record(FAIL, "RUNNER", "self-test crashed while collecting", tostring(err))
+		T.preparing = false
 		T.prepared = results
 		if onDone then onDone(results) end
 		return
@@ -5160,6 +5173,7 @@ function T.PrepareAsync(onDone)
 			-- Handed over rather than printed. Whoever asked for this decides
 			-- where the lines go, which is what lets the report collect them
 			-- without the suite knowing it is being reported on.
+			T.preparing = false
 			T.prepared = results
 			if onDone then onDone(results) end
 		end
@@ -5209,6 +5223,23 @@ function T.Run()
 	end
 	MM:Print("%d passed, |cffffd84d%d degraded|r, |cffff4d4d%d failed|r  (of %d)",
 		counts.PASS, counts.WARN, counts.FAIL, #results)
+	-- A SUITE THAT RAN TWICE LOOKS LIKE A BIGGER SUITE.
+	--
+	-- When the freeze check recursed, every result was recorded a second time
+	-- and the report read "282 passed of 297" -- more checks than exist, no
+	-- failures, and nothing anywhere saying something had gone wrong. Counting
+	-- is the cheapest possible guard against it and it costs one pass.
+	local seen, dupes, example = {}, 0, nil
+	for _, r in ipairs(results) do
+		local k = (r.group or "") .. "\0" .. r.name
+		if seen[k] then dupes = dupes + 1; example = example or r.name end
+		seen[k] = true
+	end
+	if dupes > 0 then
+		MM:Print("|cffff4d4d%d result(s) recorded twice (e.g. %s) — the suite ran "
+			.. "more than once and these totals are not what they appear|r",
+			dupes, tostring(example))
+	end
 	if counts.FAIL == 0 and counts.WARN == 0 then
 		MM:Print("|cff40d860Everything this client can do, it is doing.|r")
 	elseif counts.FAIL == 0 then

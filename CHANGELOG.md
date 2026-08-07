@@ -11,6 +11,14 @@
   run — so no single execution grows past that cap however slow the machine or
   however many checks are added later. The checks themselves are unchanged and
   unaware of it.
+- **The recursion guard now covers both halves.** One check times the report by
+  building one, and stood down only while a report was already building —
+  which the new prepare phase is not, by that flag's reckoning. So it built a
+  report, which ran the suite, which appended a second copy of every result.
+  The report came back reading "282 passed of 297": more checks than exist, no
+  failures, and nothing anywhere saying something was wrong.
+- The summary now counts duplicate results and says so loudly. A suite that ran
+  twice otherwise just looks like a bigger suite that passed.
 - They also run **during the four-second pause the report already takes** to let
   asynchronous subsystems answer, and the section that prints them consumes the
   finished results instead of running everything a second time. `/mm test` still
