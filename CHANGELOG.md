@@ -15,6 +15,12 @@
   not, so the POI appeared in the report and was invisible to the only code that
   wanted it. Each gate now searches its declared zones plus whatever contains
   them, derived from the client.
+- **Two checks opened by rebuilding a route they already had.** `BuildSync` does
+  the whole job in one call — about 1.3 seconds on an 82-stop plan, against the
+  35 ms the chunked build reports — and both of the suite's slowest checks
+  started with one purely to have a route in hand, when the suite had already
+  built one. Anything testing build *behaviour* still builds; this only stops
+  fetching what is already there.
 - **The check budget is calibrated rather than guessed.** 500 ms kept failing a
   check that demonstrably survives on the slowest machine available, while the
   one actually killed was doing seven re-plans. Two rounds of real optimisation

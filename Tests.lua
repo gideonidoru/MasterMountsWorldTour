@@ -68,6 +68,22 @@ local function runOne(item)
 	current = wasCurrent
 end
 
+-- A route to work with, without paying for one that already exists.
+--
+-- BuildSync does the whole job in one call -- roughly 1.3 seconds on an 82-stop
+-- plan, against 35 ms for the chunked build that reports itself. Several checks
+-- opened by forcing one purely to have a route in hand, and by then the suite
+-- had already built one. That single redundant call was most of the cost of the
+-- two slowest checks in the suite.
+--
+-- Anything testing BUILD BEHAVIOUR still builds; this only skips fetching what
+-- is already there.
+local function routeInHand(R, least)
+	if #(R.route or {}) >= (least or 3) then return #R.route end
+	R:BuildSync()
+	return #(R.route or {})
+end
+
 -- ok == true -> PASS, false -> FAIL, nil -> WARN (absent but survivable)
 local function check(name, fn)
 	if collecting then
@@ -1191,8 +1207,7 @@ local function runLogic()
 		-- into the planner.
 		local R = MM.Router
 		if not (R and R.Build) then return nil, "no router" end
-		R:BuildSync()
-		local real = #(R.route or {})
+		local real = routeInHand(R, 3)
 		if real < 3 then return nil, "route too short to test" end
 		-- Replace the route WITHOUT touching the signature, exactly as the
 		-- harness used to, and ask for a build.
@@ -1217,8 +1232,7 @@ local function runLogic()
 		if not (R and R.Build and MM.RouterModel and MM.RouterModel.Run) then
 			return nil, "router model not available"
 		end
-		R:BuildSync()
-		local before = #(R.route or {})
+		local before = routeInHand(R, 2)
 		if before < 2 then return nil, "no route to protect" end
 		-- A SMALL SAMPLE EXERCISES THE SAME SWAP.
 		--
