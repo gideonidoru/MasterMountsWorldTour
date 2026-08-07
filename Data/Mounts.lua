@@ -31939,7 +31939,7 @@ MM.AddMounts({
 		expansion = 11,
 		category = "RARE",
 		obtainable = true,
-		source = "Drops from Aln'sharan in Harandar during the Legend of Aln'sharan storyline.",
+		source = "Finish Kuri's questline in Harandar, gather 500 Mysterious Skyshards, and interact with Aln'sharan in flight.",
 		npc = {
 			name = "Aln'sharan",
 			id = 242086,
@@ -31947,8 +31947,31 @@ MM.AddMounts({
 		zone = {
 			name = "Harandar",
 			mapID = 2413,
-			x = 50,
-			y = 50,
+			x = 67.8,
+			y = 27.4,
+		},
+		acquire = {
+			hours = 5,
+			steps = {
+				{
+					text = "Kuri at 67.8 / 27.4: take Tales of the Sky and Ugh, Chores!, and finish the chain through The Legend of Aln'sharan. Until that is done the shards do not drop at all -- it also hands you the first 5",
+				},
+				{
+					text = "Gather 500 Mysterious Skyshards from mobs around Harandar. A low rate, so either a few hours of farming or a long slow accumulation",
+				},
+				{
+					text = "Back to Kuri at 66.2 / 25.4 and use the extra action button to throw the shards into the water. NOTHING ACKNOWLEDGES THIS -- no text, no reaction. It still worked",
+				},
+				{
+					text = "Find Aln'sharan flying over north-west Harandar. He moves, so there is no coordinate; the cursor turns into a gear when you can interact",
+				},
+				{
+					text = "He DAMAGES you at close range. Dismount in mid-air and right-click him quickly -- he cannot be interacted with while you are mounted, and steady flying helps you hold position",
+				},
+				{
+					text = "USE SLOW FALL IMMEDIATELY or the fall kills you. Any class ability, a glider, a parachute, Skyguard's drape -- anything",
+				},
+			},
 		},
 		conditions = {
 			{
@@ -31967,8 +31990,9 @@ MM.AddMounts({
 				effort = 4,
 			},
 		},
+		dropRate = 100,
 		effort = 3,
-		notes = "Tied to the Legend of Aln'sharan side story in Harandar.",
+		notes = "Bring an empty bag slot. Learning it also awards the Herald of the Goddess feat of strength.",
 	},
 	{
 		name = "Ancestral War Bear",
@@ -32822,7 +32846,7 @@ MM.AddMounts({
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from Degentrius in Magisters' Terrace on Mythic or Mythic+ difficulty.",
+		source = "From the Challenger's Cache at the end of a timed Mythic+ run of Magisters' Terrace.",
 		npc = {
 			name = "Degentrius",
 			id = 231865,
@@ -32852,8 +32876,9 @@ MM.AddMounts({
 				effort = 4,
 			},
 		},
+		dropRate = 2.02,
 		effort = 4,
-		notes = "Low-chance drop; Mythic 0 lockout is daily, Mythic+ runs are unlimited.",
+		notes = "2.02% observed -- 126 in 6,226 caches. It comes from the CACHE, so the key has to be timed; killing Degentrius on Mythic difficulty outside a key does not pay.",
 		paths = {
 			{
 				zone = {
@@ -32880,7 +32905,7 @@ MM.AddMounts({
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from the Restless Heart in Windrunner Spire on Mythic or Mythic+ difficulty.",
+		source = "From the Challenger's Cache at the end of a timed Mythic+ run of Windrunner Spire.",
 		npc = {
 			name = "Restless Heart",
 			id = 231636,
@@ -32907,8 +32932,9 @@ MM.AddMounts({
 				effort = 4,
 			},
 		},
+		dropRate = 2.01,
 		effort = 4,
-		notes = "Low-chance drop; Mythic 0 lockout is daily, Mythic+ runs are unlimited.",
+		notes = "2.01% observed -- 192 in 9,528 caches, and within a hundredth of a point of the Lucent Hawkstrider's rate from a different dungeon, which suggests a designed 2%. It comes from the CACHE, so the key has to be timed.",
 		paths = {
 			{
 				zone = {
@@ -33094,6 +33120,7 @@ MM.AddMounts({
 		attempts = "WEEKLY",
 		effort = 5,
 		notes = "Void-touched phoenix; awarded to roughly 3 players per Mythic kill while Midnight is current, dropping to ~1% after the expansion ends.",
+		rateReason = "current-tier Mythic raid drop; source confirmed, no observed rate published yet",
 		solo = false,
 	},
 	{
@@ -33135,7 +33162,7 @@ MM.AddMounts({
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Combine 4 Delicious Sporesnacks, earned one per week per account from Rotmire in the Sporefall raid (any difficulty).",
+		source = "Combine 4 Delicious Sporesnacks, one per Rotmire kill in Sporefall.",
 		npc = {
 			name = "Rotmire",
 			id = 254176,
@@ -33150,6 +33177,12 @@ MM.AddMounts({
 			name = "Sporefall",
 			difficulty = "Any",
 			lockout = "WEEKLY",
+		},
+		acquire = {
+			name = "Delicious Sporesnack",
+			count = 4,
+			note = "one a week, account-wide, so four weeks at best",
+			perWeek = 1,
 		},
 		conditions = {
 			{
@@ -33169,10 +33202,11 @@ MM.AddMounts({
 				effort = 3,
 			},
 		},
+		dropRate = 100,
 		attempts = "WEEKLY",
 		timePerAttempt = 20,
 		effort = 3,
-		notes = "Single-boss raid in southeastern Harandar (12.0.7). Guaranteed snack each week — minimum 4 weeks, no RNG; snacks are warbound.",
+		notes = "FOUR WEEKS MINIMUM. The Rotmire kill is weekly and ACCOUNT-WIDE, so running it on an alt does not add one. Any difficulty counts, so the cheapest clear is the right one.",
 		solo = false,
 	},
 	{

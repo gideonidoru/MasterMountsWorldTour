@@ -115,8 +115,15 @@ local GAPS = {
 		-- rateReason says what was established and why the number is still
 		-- missing, and it is honoured HERE AND IN THE DIAGNOSTIC -- the last
 		-- two of these drifted because only one list read the field.
+		-- UNRELEASED CONTENT HAS NO OBSERVED RATE BECAUSE NOBODY HAS KILLED IT.
+		-- The audit already excludes these from its own gap list -- "22 are
+		-- unreleased patch content, no journal entry exists yet" -- and this
+		-- one did not, so three 12.1 mounts were being asked about. Both
+		-- answers came back as "12.1", which is the patch, and a reader in a
+		-- hurry has a 12.1% drop rate.
 		test = function(rec)
 			return rec.obtainable and not rec.dropRate and not rec.rateReason
+				and not rec.unreleased
 				and (rec.category == "DROP" or rec.category == "RARE"
 					or rec.category == "ZONEDROP")
 		end,

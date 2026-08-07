@@ -488,7 +488,7 @@ MM:On("MM_GAPS_DEBUG", function()
 			-- spawn -- and only the percentage is missing. Honoured here as
 			-- well as in the contribution export, because every previous field
 			-- of this kind ended up read by exactly one of the two.
-			if not rec.dropRate and not rec.rateReason then
+			if not rec.dropRate and not rec.rateReason and not rec.unreleased then
 				unrated[#unrated + 1] = rec.name
 			end
 		end
