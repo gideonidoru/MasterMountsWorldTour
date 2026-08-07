@@ -31114,6 +31114,7 @@ MM.AddMounts({
 		effort = 5,
 		notes = "Purple somnowl recolor of Anu'relos, Flame's Guidance. Only mounts one character can actually use count toward the 600.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
+		solo = true,
 	},
 	{
 		name = "Cerulean Hawkstrider",
@@ -32469,6 +32470,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		solo = true,
 	},
 	{
 		name = "Crimson Dragonhawk",
@@ -32500,6 +32502,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		solo = true,
 	},
 	{
 		name = "Vivacious Chloroceros",
@@ -32531,6 +32534,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		solo = true,
 	},
 	{
 		name = "Lab-Grown Stormray",
@@ -32560,6 +32564,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		solo = true,
 	},
 	{
 		name = "Ivory Grimlynx",
@@ -32591,6 +32596,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		solo = true,
 	},
 	{
 		name = "Umbral Dragonhawk",
@@ -32622,6 +32628,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		solo = true,
 	},
 	{
 		name = "Voidmancer's Starcarver",
@@ -32663,6 +32670,7 @@ MM.AddMounts({
 				label = "Buy from Kifaan for 15 Voidlight Marl",
 			},
 		},
+		solo = true,
 	},
 	{
 		name = "Netherforged Nullframe",
@@ -32706,6 +32714,7 @@ MM.AddMounts({
 				label = "Buy from Kifaan for 15 Voidlight Marl",
 			},
 		},
+		solo = true,
 	},
 	{
 		name = "Tortured Gorger",
@@ -32743,6 +32752,7 @@ MM.AddMounts({
 				label = "Buy from Kifaan for 15 Voidlight Marl",
 			},
 		},
+		solo = true,
 	},
 	{
 		name = "Arcanovoid Construct",
@@ -32774,6 +32784,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		solo = true,
 	},
 	{
 		name = "Giganto Manis",
@@ -32805,6 +32816,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		solo = true,
 	},
 	{
 		name = "Elven Arcane Guardian",
@@ -32984,6 +32996,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		solo = true,
 	},
 	{
 		name = "Lucent Hawkstrider",
@@ -34100,6 +34113,7 @@ MM.AddMounts({
 				label = "Buy from Sergeant Vornin for 6,000 Voidlight Marl",
 			},
 		},
+		solo = true,
 	},
 	{
 		name = "Void-Corrupted Hex Eagle",
@@ -34439,6 +34453,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		effort = 3,
 		notes = "Exploration achievement — no lockout, just legwork.",
+		solo = true,
 		unreleased = true,
 	},
 	{
@@ -34535,6 +34550,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		timePerAttempt = 20,
 		effort = 5,
 		notes = "250 patrols is a long repeatable grind — expect weeks, not days.",
+		solo = true,
 		unreleased = true,
 	},
 	{
@@ -34569,6 +34585,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		effort = 5,
 		notes = "Meta achievement — depends on everything else on the isle.",
+		solo = true,
 		unreleased = true,
 	},
 	{
@@ -34955,6 +34972,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		effort = 4,
 		notes = "Solo kill — the required tier was still unconfirmed in the guide.",
+		solo = true,
 		unreleased = true,
 	},
 	{

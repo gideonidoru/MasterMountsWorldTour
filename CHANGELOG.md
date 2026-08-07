@@ -13,8 +13,13 @@
   no-op, and a rejected line is also a no-op — two different reasons for the
   same silence. It now asserts the import raised **no complaints**, and fills a
   line in whichever gap this client actually has rather than only drop rates.
-- **Twelve soloability judgements recorded**, each one answered rather than
-  inferred from the category or the expansion.
+- **Thirty soloability judgements recorded** — the whole open list bar one,
+  each answered rather than inferred from the category or the expansion. The
+  gap this client can see drops from 31 to 1.
+- The one held back is `Shadow of Doubt`, where the answer that came back was
+  "not implemented". That is a claim about whether the achievement can be
+  earned, not about whether one player can earn it, and filing it under
+  soloability would settle a question nobody asked.
 
 ## 1.1.11 — 2026-08-07
 
