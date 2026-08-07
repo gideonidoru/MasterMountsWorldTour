@@ -2,22 +2,20 @@
 
 ## Unreleased
 
-- **A check that simulates the route nobody can ask for.** Three zone names in
-  the database exist on two continents, because Warlords rebuilt Draenor with
-  the names Outland already had — Nagrand, Shadowmoon Valley and Shattrath City
-  are each two maps. The shipped id table picks the Outland copy for all three,
-  and every Draenor stable mount names one of those zones. The resolver is meant
-  to settle it from the record's expansion; nothing checked that it did. It is
-  checked now, for every record, through the same function the router and the
-  arrow use — and it has to be simulated, because confirming it by hand needs
-  the mount set as a goal and a mount you already own can never be one.
+- **A check for the one routing mistake the data can actually make.** Warlords
+  rebuilt Draenor using names Outland already had, so Nagrand, Shadowmoon Valley
+  and Shattrath City are each two maps on two continents, and the shipped id
+  table picks the Outland copy for all three. Every Draenor stable mount names
+  one of those zones. It is simulated rather than observed, because confirming
+  it by hand needs the mount set as a goal and a mount you already own can never
+  be one — so the routes most worth checking are the ones a player cannot check.
 
-  Its first version cried wolf on 295 correct answers, for two reasons worth
-  stating: a name with several maps is not a name with several continents —
-  Azsuna is several maps and all of them are on the Broken Isles — and a
-  continent is not GetWorldPos's first return, which is the coordinate space a
-  position was measured in, so instanced siblings of one zone looked like
-  different continents purely for being instanced.
+  It is deliberately narrow, after two broader versions were wrong. One treated
+  any name with several maps as risky and failed on Azsuna, which is several
+  maps all on the Broken Isles. The other required a goal to sit on a continent
+  its expansion uses elsewhere, and failed on a PvP mount sold in Stormwind —
+  an expansion does not confine its mounts to its own continent. Vendors sit in
+  capitals and holidays sit in old zones, and neither is a fault.
 
 - **The wrong-continent check audited four zones and reported the number as
   coverage.** Its whole purpose is catching a goal that attaches to an entry
