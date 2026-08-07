@@ -276,12 +276,27 @@ end
 
 -- Things that cannot be scored because the platform does not expose them.
 -- Reported by name so nobody mistakes them for work nobody got round to.
+-- What genuinely cannot be identified, as opposed to what is filed under a
+-- different key.
+--
+-- This counted `not cond.itemID` and reported 207 item conditions as beyond
+-- anyone's reach. NOT ONE item condition uses `itemID` -- 199 of them carry
+-- `id`, which is the field the cost path reads (Schema: `cond.id or
+-- cond.itemID or cond.currencyID`). So the report was claiming 199 unfixable
+-- platform limits that are not limits at all, and burying the eight real ones
+-- inside them where nobody would look for something actionable.
+--
+-- Understating our own data is still misstating it, and the eight are the
+-- whole point of printing the line.
 function S.Unreachable()
 	local items, quests = 0, 0
 	for _, rec in pairs(MM.DBByName) do
 		for _, cond in ipairs(rec.conditions or {}) do
-			if cond.type == "ITEM" and not cond.itemID then items = items + 1
-			elseif cond.type == "QUEST" and not cond.id then quests = quests + 1 end
+			if cond.type == "ITEM" and not (cond.itemID or cond.id) then
+				items = items + 1
+			elseif cond.type == "QUEST" and not cond.id then
+				quests = quests + 1
+			end
 		end
 	end
 	return items, quests

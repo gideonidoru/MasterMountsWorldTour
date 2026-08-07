@@ -736,6 +736,11 @@ local function buildMain()
 	return frame
 end
 
+-- Readable so the self-test can ASSERT where a fresh window lands rather than
+-- state it. Both constants live here, next to the code that acts on them.
+UI.DEFAULT_TAB = DEFAULT_TAB
+UI.PLANNER_TAB = 2
+
 function UI:SelectTab(i)
 	buildMain()
 	frame.selectedTab = i

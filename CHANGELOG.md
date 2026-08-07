@@ -30,6 +30,18 @@
   anything that shipped in the files and was never switched on. The fallback is
   now the neutral "Not obtainable", and `Shadow of Doubt` says "Never
   implemented" in its own words.
+- **The report claimed 199 unfixable gaps that were not gaps.** The scorecard's
+  "outside the denominator" note counted item conditions with no `itemID` — and
+  not one item condition uses that field. 199 carry `id`, which is what the cost
+  path reads. So it advertised 207 platform limits where there are 8, and buried
+  the eight real ones inside them. Understating our own data is still misstating
+  it, and the eight were the whole point of printing the line.
+- **Three self-tests could only ever pass.** One narrated where a fresh window
+  lands without looking; one stated a rule in its own comment — never prefer an
+  unpositionable map when a same-named sibling works — and then counted instead
+  of checking it; one asserted the plan anchor had held while standing exactly
+  where it was charted, which cannot be told from a live read. The first two
+  now assert. The third says it cannot tell, which is the honest answer.
 - **Answering every open question used to switch the importer check off.** It
   picked a mount out of the export to fill in, so a client with nothing left to
   contribute skipped the half that matters. That is backwards — a finished

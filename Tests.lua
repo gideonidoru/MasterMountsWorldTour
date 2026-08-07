@@ -1579,6 +1579,7 @@ local function runLogic()
 			return nil, "map helpers unavailable"
 		end
 		local checked, unpositionable, worst = 0, 0, nil
+		local preferredBadly, badExample = 0, nil
 		for _, rec in pairs(MM.DBByName) do
 			local zone = rec.zone and rec.zone.name
 			if zone and rec.obtainable then
@@ -1589,13 +1590,36 @@ local function runLogic()
 					if not world then
 						unpositionable = unpositionable + 1
 						worst = worst or ("%s -> map %d"):format(zone, mapID)
+						-- Was a same-named sibling positionable? If so we chose
+						-- the worse of two, which is the actual defect.
+						if U2.ResolveMapsByName then
+							for _, sib in ipairs(U2.ResolveMapsByName(zone) or {}) do
+								if sib ~= mapID then
+									local _, sw = U2.GetWorldPos(sib, 50, 50)
+									if sw then
+										preferredBadly = preferredBadly + 1
+										badExample = badExample or ("%s picked map %d, but sibling %d can be positioned")
+											:format(zone, mapID, sib)
+										break
+									end
+								end
+							end
+						end
 					end
 				end
 			end
 		end
+		if preferredBadly > 0 then
+			return false, ("%d zone(s) chose an unpositionable map over a "
+				.. "positionable sibling — e.g. %s"):format(preferredBadly, badExample)
+		end
 		if checked == 0 then return nil, "no zones resolved yet" end
-		-- Not a failure: some zones genuinely have no positionable map on this
-		-- client. What matters is that we never PREFER one when a sibling works.
+		-- THE RULE WAS STATED AND NOT TESTED.
+		--
+		-- "We never PREFER an unpositionable map when a sibling works" was
+		-- written in this comment and then never checked -- the body counted
+		-- and returned true whatever it counted, so the exact regression it
+		-- exists to catch would have passed. It is asked now.
 		return true, ("%d resolved zones, %d have no world position%s")
 			:format(checked, unpositionable,
 				worst and (" (e.g. " .. worst .. ")") or "")
@@ -2496,10 +2520,21 @@ local function runLogic()
 		local a = P.Anchor()
 		if not a then return nil, "no plan has been charted yet" end
 		local here = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
-		return true, ("charted from %s (map %s)%s"):format(
-			tostring(a.name), tostring(a.mapID),
-			(here and here ~= a.mapID)
-				and " -- you have moved since, and the plan has not" or "")
+		-- A STORED ANCHOR AND A LIVE READ LOOK IDENTICAL UNTIL YOU MOVE.
+		--
+		-- This returned true either way, so standing where you charted -- the
+		-- normal case -- made it assert a property it had no evidence for. It
+		-- degrades there now and only claims the anchor held once the player
+		-- has actually walked away from it.
+		if not here then return nil, "cannot read where you are standing" end
+		if here == a.mapID then
+			return nil, ("standing where the plan was charted (%s) — a stored "
+				.. "anchor and a live read cannot be told apart from here")
+				:format(tostring(a.name))
+		end
+		return true, ("charted from %s (map %s) — you are in map %s now and the "
+			.. "anchor has not followed"):format(
+			tostring(a.name), tostring(a.mapID), tostring(here))
 	end)
 
 	check("Travel in the ease score is measured, not a continent flag", function()
@@ -4080,7 +4115,17 @@ local function runLogic()
 		-- answers "what should I do next", which is why the addon exists.
 		local UI = MM.UI or MM.MainUI
 		if not (UI and UI.SelectTab) then return nil, "main window not built yet" end
-		return true, "a fresh window lands on the Planner tab"
+		-- IT USED TO SAY THIS RATHER THAN CHECK IT. The body confirmed SelectTab
+		-- existed and then asserted where a fresh window lands, which it never
+		-- looked at -- so moving the default would not have failed anything.
+		local want = UI.DEFAULT_TAB
+		if not want then return nil, "the default tab is not readable from here" end
+		if want ~= UI.PLANNER_TAB then
+			return false, ("a fresh window opens on tab %s, and the Planner is "
+				.. "tab %s"):format(tostring(want), tostring(UI.PLANNER_TAB))
+		end
+		return true, ("a fresh window lands on tab %d, which is the Planner")
+			:format(want)
 	end)
 
 	check("Odds and effort are neutral at their defaults", function()
