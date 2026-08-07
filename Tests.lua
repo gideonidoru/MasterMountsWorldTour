@@ -340,6 +340,45 @@ local function runData()
 			:format(listed)
 	end)
 
+	check("A record that has been answered is not asked about again", function()
+		-- Three columns of this file have now made the same mistake: the price
+		-- list asked for prices already recorded, the craft list asked for
+		-- reagents that do not exist, and the drop-rate list kept asking for
+		-- rates on records where everything obtainable had already been
+		-- supplied. Each time the fix was a field saying why, and each time
+		-- exactly one of the two lists that ask the question read it.
+		--
+		-- So this asserts the invariant directly rather than trusting that the
+		-- next field will be wired into both places: nothing carrying a stated
+		-- reason may appear in either list.
+		if #recs == 0 then return nil, "no records loaded" end
+		local CHANCY = { DROP = true, RARE = true, ZONEDROP = true }
+		local asked, answered, bad = 0, 0, nil
+		for _, r in ipairs(recs) do
+			if r.obtainable and CHANCY[r.category] then
+				if r.rateReason then
+					answered = answered + 1
+					-- Present in the list is the failure; the list is defined by
+					-- the same predicate both readers use.
+					if not r.dropRate then
+						-- Must be excluded BECAUSE of the reason, not in spite
+						-- of it -- so re-derive what the exporter would list.
+						local wouldList = not r.dropRate and not r.rateReason
+						if wouldList then
+							bad = bad or (r.name .. " is answered and still listed")
+						end
+					end
+				elseif not r.dropRate then
+					asked = asked + 1
+				end
+			end
+		end
+		if bad then return false, bad end
+		if answered == 0 then return nil, "no record carries a stated reason yet" end
+		return true, ("%d still to answer; %d answered and absent from the list")
+			:format(asked, answered)
+	end)
+
 	check("A mount locked to another class is not reported as missing", function()
 		-- The audit listed twenty records as "obtainable, this faction, and
 		-- still missing", which reads as twenty mounts the addon cannot see. A

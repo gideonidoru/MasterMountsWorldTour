@@ -20536,6 +20536,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		effort = 3,
 		notes = "Once per day per character. The event that spawns Wild Worldcracker only runs for Kyrian.",
+		rateReason = "daily lockout and a covenant lock, both recorded; no published drop rate",
 	},
 	{
 		name = "Lord of the Corpseflies",
@@ -20565,6 +20566,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		effort = 3,
 		notes = "Once per day per character. Necrolord only.",
+		rateReason = "daily lockout and a covenant lock, both recorded; no published drop rate",
 	},
 	{
 		name = "Mastercraft Gravewing",
@@ -20594,6 +20596,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		effort = 3,
 		notes = "Once per day per character. Venthyr only. The kill drops the crystal; the crystal is what awards the mount.",
+		rateReason = "daily lockout and a covenant lock, both recorded; no published drop rate",
 	},
 	{
 		name = "Darkmaul",

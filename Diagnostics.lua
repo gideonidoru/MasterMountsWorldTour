@@ -484,7 +484,13 @@ MM:On("MM_GAPS_DEBUG", function()
 			and (rec.category == "DROP" or rec.category == "RARE"
 			or rec.category == "ZONEDROP") then
 			chancy = chancy + 1
-			if not rec.dropRate then unrated[#unrated + 1] = rec.name end
+			-- rateReason means the acquisition IS modelled -- lockout, gate,
+			-- spawn -- and only the percentage is missing. Honoured here as
+			-- well as in the contribution export, because every previous field
+			-- of this kind ended up read by exactly one of the two.
+			if not rec.dropRate and not rec.rateReason then
+				unrated[#unrated + 1] = rec.name
+			end
 		end
 	end
 	if #unrated > 0 then

@@ -103,8 +103,20 @@ local GAPS = {
 		-- the report said 37 in one section and 36 in another and both were
 		-- right about their own question. A zone drop is a drop with a rate,
 		-- and a player standing there can supply it like any other.
+		-- ASKED AND ANSWERED IS NOT THE SAME AS UNANSWERED.
+		--
+		-- Some records have had everything supplied that anyone can supply --
+		-- the lockout, the gate, the exact spawn -- and simply have no
+		-- published rate. Listing them again asks a player to go and look up
+		-- something they have already told us twice does not exist, which is
+		-- the third time this file has made that mistake in a different
+		-- column.
+		--
+		-- rateReason says what was established and why the number is still
+		-- missing, and it is honoured HERE AND IN THE DIAGNOSTIC -- the last
+		-- two of these drifted because only one list read the field.
 		test = function(rec)
-			return rec.obtainable and not rec.dropRate
+			return rec.obtainable and not rec.dropRate and not rec.rateReason
 				and (rec.category == "DROP" or rec.category == "RARE"
 					or rec.category == "ZONEDROP")
 		end,
