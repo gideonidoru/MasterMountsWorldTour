@@ -1220,14 +1220,28 @@ local function runLogic()
 		R:BuildSync()
 		local before = #(R.route or {})
 		if before < 2 then return nil, "no route to protect" end
-		local ok = pcall(MM.RouterModel.Run)
+		-- A SMALL SAMPLE EXERCISES THE SAME SWAP.
+		--
+		-- What is being protected here is that the model puts the player's
+		-- route back after borrowing the plan. That path does not care how many
+		-- goals it borrowed -- but a full run models every profile against every
+		-- sampled goal, which measured 1,184 ms in one uninterrupted call, and a
+		-- single call is exactly what the client's watchdog kills. Two goals go
+		-- through the identical swap, restore and signature handling.
+		local ok, run = pcall(MM.RouterModel.Run, 2)
 		if not ok then return nil, "model did not run" end
+		if type(run) ~= "table" or not run.sample or #run.sample == 0 then
+			-- It returned without borrowing anything, so nothing was restored
+			-- and there is nothing to conclude. Saying so beats a green tick.
+			return nil, "the model found nothing worth sampling, so no swap happened"
+		end
 		local after = #(R.route or {})
 		if after < before then
 			return false, ("the model kept the route: %d stops -> %d")
 				:format(before, after)
 		end
-		return true, ("%d stops before the model, %d after"):format(before, after)
+		return true, ("%d stops before the model, %d after (%d goals sampled)")
+			:format(before, after, #run.sample)
 	end)
 
 	check("What you are standing on is not reordered away", function()

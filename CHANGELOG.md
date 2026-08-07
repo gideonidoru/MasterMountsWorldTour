@@ -9,6 +9,13 @@
   work is part of what it checks. It still runs the real `ApplyPreset` — testing
   a copy of it would test the copy — but is no longer allowed to tell the plan
   about settings that exist for one line.
+- **The router-model check modelled the whole sample to prove a swap.** What it
+  protects is that the model puts your route back after borrowing the plan, and
+  that path does not care how many goals were borrowed — but a full run measured
+  1,184 ms in one call, which is precisely what the watchdog kills. Two goals go
+  through the identical swap and restore. It also refuses to pass when the model
+  finds nothing to sample, because then no swap happened and there is nothing to
+  conclude.
 - **Every check is timed now, and a line is held under the slowest.** A check
   that outlasts the client blames whichever line the axe fell on, which is never
   the one that matters — this one blamed the event dispatcher. Slicing the suite
