@@ -2032,6 +2032,41 @@ local function runLogic()
 		return true, ("add and remove round-trip on a %d-goal plan"):format(before)
 	end)
 
+	check("A client string we cannot read degrades, it does not throw", function()
+		-- 12.0 secret values. Reported twice: once as every boss kill throwing,
+		-- then AGAIN from delve combat, because the first fix lived in Scanner
+		-- rather than anywhere a client-supplied string is read. Patching each
+		-- site as it is reported is how the second one happened.
+		--
+		-- Drives the helper with something that behaves like a secret -- a
+		-- table whose concatenation errors -- because that is the operation
+		-- that actually fails on one.
+		local U = MM.Util
+		if not (U and U.ReadableString) then return nil, "helper unavailable" end
+		local secret = setmetatable({}, {
+			__concat = function() error("attempt to perform string conversion "
+				.. "on a secret value", 0) end,
+			__tostring = function() error("secret", 0) end,
+		})
+		local before = U.secretReads or 0
+		local got = U.ReadableString(secret)
+		if got ~= nil then
+			return false, ("a value that cannot be concatenated returned %q")
+				:format(tostring(got))
+		end
+		if (U.secretReads or 0) <= before then
+			return false, "the refusal was not counted, so nothing can report it"
+		end
+		if U.ReadableString("Alunira") ~= "Alunira" then
+			return false, "a readable string did not survive the helper"
+		end
+		if U.ReadableString(nil) ~= nil then
+			return false, "nil should stay nil rather than becoming a string"
+		end
+		return true, ("secret refused and counted, plain strings pass through "
+			.. "(%d refusals this session)"):format(U.secretReads or 0)
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked

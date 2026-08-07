@@ -213,16 +213,24 @@ end
 -- less, not an addon spraying errors. Said once, then silent.
 -- Exposed so the report can state which side of the 12.0 change this client is
 -- on, rather than leaving "attempts stopped counting" to be discovered.
+-- THIS WAS THE FIRST OF THESE, AND IT WAS PATCHED ALONE.
+--
+-- A second report arrived from delve combat, where the VIGNETTE name throws in
+-- exactly the same way -- because the fix lived here rather than anywhere a
+-- client-supplied string is read. It now delegates to Util.ReadableString,
+-- which is the one place that asks, so the next payload Blizzard makes secret
+-- is one call site away from handled rather than one report away.
 local secretNames = false
 function S.BossNamesReadable() return not secretNames end
 
 local function readableName(name)
-	if secretNames or name == nil then return nil end
-	local ok, lowered = pcall(string.lower, name)
-	if ok and type(lowered) == "string" then return lowered end
-	secretNames = true
-	MM:Print("This client hides boss names from addons, so kills will not be "
-		.. "counted as attempts automatically. Everything else is unaffected.")
+	local s = MM.Util.ReadableString(name)
+	if s then return s:lower() end
+	if name ~= nil and not secretNames then
+		secretNames = true
+		MM:Print("This client hides boss names from addons, so kills will not be "
+			.. "counted as attempts automatically. Everything else is unaffected.")
+	end
 	return nil
 end
 

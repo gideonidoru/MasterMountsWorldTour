@@ -529,3 +529,41 @@ function U.Comma(n)
 	until done == 0
 	return s
 end
+
+------------------------------------------------------------
+-- Reading a string the client may refuse to hand over
+------------------------------------------------------------
+-- 12.0 (Midnight) introduced SECRET VALUES. A payload that has always been a
+-- string -- an encounter name, a vignette name, a POI name -- arrives as one
+-- of these for an addon the client considers tainted, and any string operation
+-- on it throws:
+--
+--   "attempt to perform string conversion on a secret value
+--    (execution tainted by 'MasterMountsWorldTour')"
+--
+-- Reported twice from outside, and the second time from delve combat, which is
+-- a different code path from the first: encounterName was fixed in Scanner and
+-- the vignette name was not. Vignettes fire on VIGNETTE_MINIMAP_UPDATED, so
+-- inside a delve that is a throw several times a second, forever.
+--
+-- Patching each site as it is reported is how the second one happened. This is
+-- the ONE place that asks, so a site that reads a client-supplied name is
+-- either using it or has been missed visibly rather than quietly.
+--
+-- Concatenation is the test because it is the operation that fails: `type()`
+-- on a secret is not documented to be useful, and pcall around the actual
+-- forbidden operation is the only check that cannot be wrong about it.
+--
+-- NOT LATCHED. Taint in WoW is per-execution-path, not a permanent property of
+-- the addon, so "we saw one secret" does not mean every later read fails. The
+-- pcall is cheap and bounded -- a dozen vignettes per fire -- and being right
+-- matters more here than saving it.
+U.secretReads = 0
+
+function U.ReadableString(v)
+	if v == nil then return nil end
+	local ok, s = pcall(function() return v .. "" end)
+	if ok and type(s) == "string" and s ~= "" then return s end
+	U.secretReads = U.secretReads + 1
+	return nil
+end

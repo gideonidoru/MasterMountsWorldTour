@@ -249,7 +249,12 @@ function R.ObserveVignettes()
 	local store = db()
 	for _, vguid in ipairs(guids) do
 		local okI, info = pcall(C_VignetteInfo.GetVignetteInfo, vguid)
-		if okI and info and info.name and info.objectGUID then
+		-- The NAME may be a 12.0 secret value. Reading it through the shared
+		-- helper turns "throws several times a second inside a delve" into
+		-- "this vignette teaches us nothing", which is the correct outcome:
+		-- the id below is what we actually wanted, and it still arrives.
+		local vname = info and MM.Util.ReadableString(info.name)
+		if okI and info and vname and info.objectGUID then
 			local id = npcIDFromGUID(info.objectGUID)
 			-- THE SAME "have we already seen this" GUARD ObserveUnit HAS.
 			--
@@ -258,7 +263,7 @@ function R.ObserveVignettes()
 			-- the same vignette on every update for as long as it is on screen.
 			-- So the record walk below ran repeatedly for rares already
 			-- identified minutes ago.
-			local key = info.name:lower()
+			local key = vname:lower()
 			if id and store.npcs[key] ~= id then
 				store.npcs[key] = id
 				backfillNpc(key, id)

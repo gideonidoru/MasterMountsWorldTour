@@ -57,9 +57,12 @@ local function poiNames(mapID)
 		if ok2 and info then
 			-- description carries the assault's flavour line on some banners and
 			-- the name on others, so both are worth matching against
-			local text = info.name
-			if info.description and info.description ~= "" then
-				text = (text and (text .. " " .. info.description)) or info.description
+			-- Both of these are client-supplied strings and both are
+			-- concatenated below, so both go through the safe read.
+			local text = MM.Util.ReadableString(info.name)
+			local desc = MM.Util.ReadableString(info.description)
+			if desc then
+				text = (text and (text .. " " .. desc)) or desc
 			end
 			if text and text ~= "" then
 				out[#out + 1] = { name = text, source = "poi", poiID = poiID,

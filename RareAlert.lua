@@ -717,17 +717,22 @@ local function scanVignettes()
 	for _, guid in ipairs(guids) do
 		if not RA.seen[guid] then
 			local okInfo, info = pcall(C_VignetteInfo.GetVignetteInfo, guid)
-			if okInfo and info and info.name then
+			-- A 12.0 secret name would throw on the lookup and again on the
+			-- alert text. The objectGUID is the reliable match anyway -- it
+			-- carries the creature id, which is why it is passed first -- but
+			-- an alert with no name to show is not worth raising.
+			local vname = info and MM.Util.ReadableString(info.name)
+			if okInfo and info and vname then
 				-- objectGUID carries the creature id, so this matches exactly
 				-- even on a client whose language we don't speak
-				local hit = lookup(info.objectGUID, info.name)
+				local hit = lookup(info.objectGUID, vname)
 				if hit then
 					RA.seen[guid] = GetTime()
 					local pos
 					local okPos, p = pcall(C_VignetteInfo.GetVignettePosition,
 						guid, C_Map.GetBestMapForUnit("player"))
 					if okPos then pos = p end
-					RA.Alert(info.name, hit, pos)
+					RA.Alert(vname, hit, pos)
 				else
 					RA.seen[guid] = GetTime() -- remember misses too, don't re-check
 				end
