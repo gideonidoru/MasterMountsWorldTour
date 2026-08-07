@@ -1,5 +1,55 @@
 # Changelog
 
+## 1.1.10 — 2026-08-07
+
+Attempt tracking, which turned out not to work at all on Midnight, and three
+things the route was pointing at wrongly.
+
+**Farming you do now registers**
+
+- **Rares count again.** The combat-log path is Blizzard-only on 12.0, and the
+  replacement written at the time — a per-record tracking quest — was never
+  populated: **not one record in the database carried one**, so both pollers
+  built around it had never fired. Killing a rare had recorded nothing for
+  months, and `Attempts: 0 recorded` read as "you haven't farmed anything" when
+  it meant "nothing here can be counted". `GetLootSourceInfo` replaces it: it
+  hands back the GUID behind each loot slot, and a creature GUID carries the
+  same creature id the tracker was already keyed on. **123 of 207** drop and
+  rare goals can be matched this way; the other 84 are world drops with no
+  single creature behind them.
+- **Paragon caches register and advance.** Fifteen goals recorded nothing.
+  `hasRewardPending` flips `true → false` when you open the cache, and that edge
+  *is* the completion — consumed, bar reset, nothing more to do there today. The
+  router's advance rule also fired only on a `DAILY`/`WEEKLY` lockout, and
+  paragon records carry no such field, so even a recorded attempt would have
+  left the route sitting still.
+- **`/mm gaps` now prints what can and cannot mark a goal attempted** on your
+  client, with the counts — rather than leaving it to be discovered by someone
+  wondering why their farming never registers. The 21 chest goals still record
+  nothing, and that is stated rather than hidden.
+
+**The route points at the right place**
+
+- **The Grand Hunt moves.** It runs in one of the four Dragonflight zones and
+  rotates; the record named Ohn'ahran Plains with a fixed coordinate, which is
+  right about a quarter of the time. The live map POI carries both the zone and
+  the point. Completing one now takes it off the plan until the weekly reset —
+  learned from the turn-in and the client's own reset timer, with **no quest id
+  written down**.
+- **Twelve treasures point at the actual chest** rather than a zone centre.
+  Absence proves nothing here — a missing POI can mean looted, undiscovered,
+  filtered off, or a zone not loaded — so this only ever improves a location and
+  never gates, hides or completes a goal. Nine of the twenty-one are
+  deliberately left alone, each with its reason recorded.
+
+**Two copies of the addon**
+
+- **An old folder left beside the current one now says so**, in chat at login,
+  in the report header, and as a self-test check. It presents as three separate
+  bugs — the celebration printing twice, two plan windows in two different
+  styles, and a plan that appears to rewrite itself — and every one of them
+  looks like a defect in this addon.
+
 ## 1.1.9 — 2026-08-07
 
 Everything here came from one player testing 1.1.8 inside instances, and it is
