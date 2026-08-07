@@ -24662,19 +24662,44 @@ MM.AddMounts({
 		expansion = 10,
 		category = "RARE",
 		obtainable = true,
-		source = "Defeat Tka'ktath in Azj-Kahet, loot the Vial of Tka'ktath's Blood, and complete the follow-up questline",
+		source = "Kill Tka'ktath in Azj-Kahet for the Vial of Tka'ktath's Blood, then complete the six-quest chain that ends with Consolation Flies.",
 		npc = {
 			name = "Tka'ktath",
 			id = 216046,
 		},
 		zone = {
+			name = "Azj-Kahet",
 			mapID = 2255,
-			x = 65.8,
-			y = 70.4,
+			x = 62,
+			y = 66,
 		},
+		acquire = {
+			hours = 10,
+			steps = {
+				{
+					text = "Kill Tka'ktath near the City of Threads for the Vial -- a high drop chance, but a long respawn and a daily lockout per character. The zone announces him: 'The shadow of a hungering beast moves over the city'",
+				},
+				{
+					text = "Hand the Vial in at the City of Threads",
+				},
+				{
+					text = "Those Are Chitin Words: 1,500 Nerubian Chitin, from most spider and nerubian mobs. Ara-Kara with followers works, as do the Faithful of Zirix on the Isle of Dorn",
+				},
+				{
+					text = "Venom? More Like Get 'Em: 1,000 Nerubian Venom, from fewer of them -- the Faithful of Zirix again",
+				},
+				{
+					text = "A Small Ocean's Worth of Blood: 500 Nerubian Blood. THE WALL -- only Skyrazors and Ascended Nerubians drop it, and The Burrows in the City of Threads is the one decent spot",
+				},
+				{
+					text = "A short roleplay quest, then Consolation Flies awards the mount",
+				},
+			},
+		},
+		dropRate = 100,
 		attempts = "NONE",
 		effort = 3,
-		notes = "Rare spawn plus a short questline; the vial starts the chain that rewards the mount.",
+		notes = "Rough solo and much faster in a farm group. The Faithful of Zirix double-dip with Crackling Shards if you need those too.",
 	},
 	{
 		name = "Dauntless Imperial Lynx",
@@ -25233,17 +25258,40 @@ MM.AddMounts({
 		expansion = 10,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from Void Speaker Eirich in The Stonevault on Mythic/Mythic+ difficulty",
+		source = "Void Speaker Eirich drops a Malfunctioning Mechsuit on Mythic, which starts a five-quest chain for three dungeon trinkets.",
 		zone = {
 			name = "The Ringing Deeps",
 			mapID = 2214,
-			x = 42.7,
-			y = 8.6,
+			x = 47,
+			y = 32.4,
 		},
 		instance = {
 			name = "The Stonevault",
 			difficulty = "Mythic",
 			lockout = "DAILY",
+		},
+		acquire = {
+			hours = 6,
+			steps = {
+				{
+					text = "Malfunctioning Mechsuit from Void Speaker Eirich, The Stonevault on Mythic -- a Mythic+ 2 counts, so spam low keys",
+				},
+				{
+					text = "A Mech in Need: take it to Speaker Jurlax in Gundargaz, 47.0 / 32.4",
+				},
+				{
+					text = "Overclocked Gear-a-Rang Launcher from Speaker Dorlita, second boss of The Stonevault",
+				},
+				{
+					text = "Synergistic Brewterializer from Goldie Baronbottom in Cinderbrew Meadery. AN INTELLECT TRINKET -- only an Intellect class can loot it. Bring one",
+				},
+				{
+					text = "Burin of the Candle King from The Candle King in Darkflame Cleft",
+				},
+				{
+					text = "Back to Jurlax for the mount",
+				},
+			},
 		},
 		conditions = {
 			{
@@ -25252,7 +25300,9 @@ MM.AddMounts({
 				type = "ITEM",
 			},
 		},
+		dropRate = 100,
 		effort = 4,
+		notes = "THE CHAIN IS WARBAND-WIDE, so each trinket can be looted by whichever character is able to -- which is the answer to the Intellect trinket. No professions needed, and the trinket's level and quality do not matter; it only has to be in a bag. About six hours of farming.",
 		solo = false,
 	},
 	{
@@ -27167,9 +27217,10 @@ MM.AddMounts({
 			difficulty = "Mythic",
 			lockout = "WEEKLY",
 		},
+		dropRate = 13.2,
 		attempts = "WEEKLY",
 		effort = 5,
-		notes = "Guaranteed drops per Mythic kill while the raid was the current tier; low chance afterwards.",
+		notes = "13.2% observed -- 20 drops in 152 recorded kills, so treat it as roughly one in eight rather than a precise figure. Mythic Gallywix only, once a week.",
 		solo = false,
 	},
 	{
@@ -27741,7 +27792,7 @@ MM.AddMounts({
 		expansion = 10,
 		category = "DROP",
 		obtainable = true,
-		source = "Loot from the Horrific Vision of Orgrimmar Revisited",
+		source = "Summon the Void-Scarred rare inside the Horrific Vision of Orgrimmar by bringing it the Wolf Tack and the Wolf Saddle.",
 		npc = {
 			name = "Void-Scarred Wolf",
 			id = 238836,
@@ -27752,8 +27803,30 @@ MM.AddMounts({
 			x = 34.4,
 			y = 68.3,
 		},
+		acquire = {
+			hours = 1,
+			steps = {
+				{
+					text = "Enter with one mask -- Dark Imagination is the usual pick",
+				},
+				{
+					text = "Wolf Tack from the Valley of Wisdom, first",
+				},
+				{
+					text = "Start Garona in the Valley of Strength and clear buildings quickly, WITHOUT engaging the area boss",
+				},
+				{
+					text = "Wolf Saddle from inside the Auction House in the Valley of Honor, between the crates on the right as you enter",
+				},
+				{
+					text = "Back to the Drag, into the Leatherworking hut, and interact with the rug to summon the rare",
+				},
+			},
+		},
 		attempts = "WEEKLY",
 		effort = 3,
+		notes = "The area bosses are not part of this and cost time you do not need to spend. Both wolves are reached on the same run, from two different rares.",
+		rateReason = "summoned by a known method rather than dropped; no published rate for the kill itself",
 	},
 	{
 		name = "Void-Scarred Windrider",
@@ -27762,7 +27835,7 @@ MM.AddMounts({
 		expansion = 10,
 		category = "DROP",
 		obtainable = true,
-		source = "Loot from the Horrific Vision of Orgrimmar Revisited",
+		source = "Summon the Void-Scarred rare inside the Horrific Vision of Orgrimmar by bringing it the Wolf Tack and the Wolf Saddle.",
 		npc = {
 			id = 238145,
 		},
@@ -27772,23 +27845,64 @@ MM.AddMounts({
 			x = 34.4,
 			y = 68.3,
 		},
+		acquire = {
+			hours = 1,
+			steps = {
+				{
+					text = "Enter with one mask -- Dark Imagination is the usual pick",
+				},
+				{
+					text = "Wolf Tack from the Valley of Wisdom, first",
+				},
+				{
+					text = "Start Garona in the Valley of Strength and clear buildings quickly, WITHOUT engaging the area boss",
+				},
+				{
+					text = "Wolf Saddle from inside the Auction House in the Valley of Honor, between the crates on the right as you enter",
+				},
+				{
+					text = "Back to the Drag, into the Leatherworking hut, and interact with the rug to summon the rare",
+				},
+			},
+		},
 		attempts = "WEEKLY",
 		effort = 3,
+		notes = "The area bosses are not part of this and cost time you do not need to spend. Both wolves are reached on the same run, from two different rares.",
+		rateReason = "summoned by a known method rather than dropped; no published rate for the kill itself",
 	},
 	{
 		name = "Nesting Swarmite",
 		expansion = 10,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from Horrific Visions Revisited content",
+		source = "Click the trash pile in the Cathedral in the Vision of Stormwind until the Nesting Swarmite rare spawns, then kill it.",
 		zone = {
 			name = "Dornogal",
 			mapID = 2339,
 			x = 34.4,
 			y = 68.3,
 		},
+		acquire = {
+			hours = 3,
+			steps = {
+				{
+					text = "Enter the Vision of Stormwind and go straight to the Cathedral at 55.8 / 49.2",
+				},
+				{
+					text = "Click the trash pile. It sometimes spawns the rare",
+				},
+				{
+					text = "If it does not, leave the scenario and repeat -- the run only needs that one room, which is what makes resetting viable",
+				},
+				{
+					text = "Kill the Nesting Swarmite and loot it",
+				},
+			},
+		},
 		attempts = "WEEKLY",
 		effort = 3,
+		notes = "Roughly nine resets and twenty-odd piles in the one detailed report. That report also suspects a mask increases the chance -- it came after several maskless runs and dropped on the second run with one -- which is a hunch on a small sample rather than a measurement. Whether this is still obtainable at all is uncertain.",
+		rateReason = "spawns from a trash pile rather than dropping; about nine resets in one report, no published rate",
 	},
 	{
 		name = "Void-Scarred Lynx",
@@ -28233,11 +28347,18 @@ MM.AddMounts({
 		expansion = 10,
 		category = "DROP",
 		obtainable = true,
-		source = "Chance from Devoured Energy-Pods during Devourer Swarm events in K'aresh",
+		source = "Combine 20 Devoured Energy-Pods, earned from the four Devourer Attack rares in K'aresh -- one each per warband per week.",
 		zone = {
+			name = "K'aresh",
 			mapID = 2371,
-			x = 71.4,
-			y = 27.6,
+			x = 71.79,
+			y = 28.22,
+		},
+		acquire = {
+			name = "Devoured Energy-Pod",
+			count = 20,
+			note = "four a week per WARBAND, so five weeks at the absolute best",
+			perWeek = 4,
 		},
 		conditions = {
 			{
@@ -28246,7 +28367,9 @@ MM.AddMounts({
 				type = "ITEM",
 			},
 		},
+		dropRate = 100,
 		effort = 3,
+		notes = "FIVE WEEKS MINIMUM -- four pods a week per warband, twenty needed, and a rare already killed this week pays nothing however often you repeat it. The four sites rotate one at a time: The Oasis, Eco-dome Primus, The Atrium, Tazavesh. The next attack starts 15-30 minutes after the previous rare dies, so a site left unfinished stalls the rotation. Heavily shard-dependent -- stay in the zone, or use group finder. Turn the quest starters in to Ve'nari at The Oasis, which also feeds the Ecological Succession weekly.",
 		poolRares = {
 			"Korgoth the Hungerer",
 			"Miasmawrath",
@@ -28257,23 +28380,23 @@ MM.AddMounts({
 		spawns = {
 			{
 				mapID = 2371,
-				x = 71.4,
-				y = 27.6,
+				x = 71.79,
+				y = 28.22,
 			},
 			{
 				mapID = 2371,
-				x = 50.6,
-				y = 54.1,
+				x = 50.61,
+				y = 53.98,
 			},
 			{
 				mapID = 2371,
-				x = 49.5,
-				y = 64.2,
+				x = 49.47,
+				y = 64.17,
 			},
 			{
 				mapID = 2472,
-				x = 27.5,
-				y = 72.3,
+				x = 28.61,
+				y = 74.25,
 			},
 		},
 	},
@@ -28523,9 +28646,10 @@ MM.AddMounts({
 			difficulty = "Mythic",
 			lockout = "WEEKLY",
 		},
+		dropRate = 17.2,
 		attempts = "WEEKLY",
 		effort = 5,
-		notes = "Guaranteed drops per Mythic kill while Manaforge Omega is the current tier; low chance afterwards.",
+		notes = "17.2% observed -- 15 drops in 87 recorded kills, which is a thin sample; roughly one in six. Mythic Dimensius only, once a week.",
 		solo = false,
 	},
 	{
