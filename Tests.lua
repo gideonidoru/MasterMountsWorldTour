@@ -2084,6 +2084,41 @@ local function runLogic()
 		return true, "one copy loaded"
 	end)
 
+	check("A live-location lookup never hides a goal when it fails", function()
+		-- THE SAME MISTAKE, TWICE, IN ONE SESSION. Treasures were built so that
+		-- a missing POI only ever costs a waypoint. The rotating gate one file
+		-- away returned ROTATION instead, which HIDES the goal -- and the live
+		-- report caught it: the held-back count went 14 to 15 and the Grand
+		-- Hunt, which had been the top recommendation, left the plan.
+		--
+		-- The same report also shows it would have stayed gone:
+		-- GetAreaPOIForMap on a zone you are not standing in returns permanent
+		-- landmarks and no event POIs at all.
+		--
+		-- So the rule, asserted rather than remembered: a lookup that exists to
+		-- IMPROVE a location may never decide availability.
+		local checked, bad = 0, nil
+		for _, rec in ipairs(MM.DBList or {}) do
+			if rec.obtainable and (rec.rotating or rec.poi) then
+				checked = checked + 1
+				local status = MM.Availability.GetStatus({ rec = rec, spellID = rec.spellID })
+				-- LOCKED is legitimate: a rotating event really can be done for
+				-- the week. ROTATION from a failed POI read is not.
+				if status == "ROTATION" then
+					bad = bad or rec.name
+				end
+			end
+		end
+		if checked == 0 then return nil, "no live-location records in the database" end
+		if bad then
+			return false, ("%s is held back as ROTATION by a location lookup -- "
+				.. "failing to find a POI must cost a waypoint, not a goal")
+				:format(bad)
+		end
+		return true, ("%d records take their location from the map; none of them "
+			.. "is gated by it"):format(checked)
+	end)
+
 	check("A rotating event is found where it is, not where it usually is", function()
 		-- Reported from play: the Grand Hunt led the plan, sent the player to a
 		-- fixed Ohn'ahran Plains coordinate, and then never registered as done.

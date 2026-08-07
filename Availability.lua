@@ -551,17 +551,30 @@ function A.ComputeStatus(entry)
 			return "LOCKED", ("%s is done for this week"):format(
 				rec.rotating.label or "This event")
 		end
-		if not MM.Assaults.scanned then
-			return "UNKNOWN", ("Only while %s is up -- where it is running is "
-				.. "not readable yet"):format(rec.rotating.label or "the event")
-		end
+		-- NOT FINDING IT IS NOT PROOF IT IS NOT RUNNING.
+		--
+		-- I was careful about this for treasures and then made exactly the
+		-- mistake for rotating events one file away: a missing POI returned
+		-- ROTATION, which HIDES the goal. The live report caught it -- the count
+		-- went 14 to 15 and the Grand Hunt, which had been the top
+		-- recommendation, vanished from the plan.
+		--
+		-- And the same report shows why it would have stayed vanished:
+		-- GetAreaPOIForMap on a zone you are not in returns permanent landmarks
+		-- -- Aylaag Camp, Maruukai -- and no event POIs at all. So the gate
+		-- would have reported ROTATION essentially forever.
+		--
+		-- A Grand Hunt is ALWAYS running somewhere. The only thing that makes
+		-- it unavailable is having already done it this week, which is checked
+		-- above. Finding the POI is a bonus that improves the WAYPOINT; failing
+		-- to find it must leave the goal exactly as it was.
 		local live = MM.Assaults.FindRotating and MM.Assaults.FindRotating(rec.rotating)
-		if not live then
-			return "ROTATION", ("%s is not up in any zone we can see right now")
-				:format(rec.rotating.label or "This event")
+		if live then
+			return "AVAILABLE", ("%s is up in %s"):format(
+				rec.rotating.label or "It", live.zone or "a Dragonflight zone")
 		end
-		return "AVAILABLE", ("%s is up in %s"):format(
-			rec.rotating.label or "It", live.zone or "a Dragonflight zone")
+		return "AVAILABLE", ("%s rotates between zones -- heading to the last "
+			.. "known one"):format(rec.rotating.label or "This event")
 	end
 
 	if rec.assault then

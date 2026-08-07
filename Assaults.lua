@@ -350,11 +350,20 @@ local function collectRotating()
 	-- to cover those maps too, and hardcoding a second list would go stale the
 	-- first time a record moved.
 	for _, rec in ipairs(MM.DBList or {}) do
+		-- Ask the CLIENT for the name rather than printing "map 1970". Several
+		-- records store a mapID with no name, and the report listed four of
+		-- them as bare numbers -- which is the diagnostic being less readable
+		-- than the thing it describes.
+		local function label(mapID, fallback)
+			if fallback then return fallback end
+			local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+			return (info and MM.Util.ReadableString(info.name)) or ("map " .. mapID)
+		end
 		if rec.poi and rec.zone and rec.zone.mapID and not WATCHED[rec.zone.mapID] then
-			WATCHED[rec.zone.mapID] = rec.zone.name or ("map " .. rec.zone.mapID)
+			WATCHED[rec.zone.mapID] = label(rec.zone.mapID, rec.zone.name)
 		end
 		for _, mapID in ipairs((rec.rotating and rec.rotating.maps) or {}) do
-			if not WATCHED[mapID] then WATCHED[mapID] = "map " .. mapID end
+			if not WATCHED[mapID] then WATCHED[mapID] = label(mapID) end
 		end
 	end
 end
