@@ -1267,6 +1267,19 @@ MM:On("MM_FIXES_DEBUG", function()
 			:format(worst, ms)
 	end)
 
+	probe("No single self-test check is over budget", function()
+		local ms = MM.Tests and MM.Tests.checkMs
+		if not (ms and next(ms)) then return true, "nothing timed yet" end
+		local worst, worstMs, n = nil, 0, 0
+		for name, t in pairs(ms) do
+			n = n + 1
+			if t > worstMs then worst, worstMs = name, t end
+		end
+		return worstMs <= 500, ("slowest check %s at %d ms of %d timed (was: the "
+			.. "preset round-trip re-planned seven times and was killed on slower "
+			.. "hardware)"):format(tostring(worst), worstMs, n)
+	end)
+
 	probe("Grand Hunt: can the banner be read from here", function()
 		local A = MM.Assaults
 		if not (A and A.FirstRewardAvailable) then return false, "reader missing" end

@@ -2,6 +2,19 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **One self-test check re-planned seven times and was killed on slower
+  hardware.** Applying a preset announces the change, and announcing it
+  re-plans; the preset round-trip applied four presets plus a defaults probe,
+  so it re-planned seven times for states nobody would ever see. None of that
+  work is part of what it checks. It still runs the real `ApplyPreset` — testing
+  a copy of it would test the copy — but is no longer allowed to tell the plan
+  about settings that exist for one line.
+- **Every check is timed now, and a line is held under the slowest.** A check
+  that outlasts the client blames whichever line the axe fell on, which is never
+  the one that matters — this one blamed the event dispatcher. Slicing the suite
+  cannot help, because a slice may only stop *between* checks. So the check
+  names itself instead.
+
 - **The real cause of "script ran too long" was one section, not thirty-three.**
   Chunking the report between sections shipped in 1.1.12 and did not fix it: the
   self-test alone is 2,635 ms in a single uninterrupted run on a fast machine,

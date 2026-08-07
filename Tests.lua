@@ -45,10 +45,20 @@ end
 -- decides when each one actually runs.
 local queue, collecting = {}, false
 
+-- HOW LONG EACH CHECK TOOK, kept.
+--
+-- Timing the report by SECTION found that one section was the whole problem.
+-- The same question one level down went unanswered: a check that runs too long
+-- on slower hardware throws, and the throw names whatever line the axe fell on
+-- rather than the check. So the check names itself now.
+T.checkMs = T.checkMs or {}
+
 local function runOne(item)
 	local wasCurrent = current
 	current = item.group
+	local at = debugprofilestop and debugprofilestop()
 	local ran, ok, detail = pcall(item.fn)
+	if at then T.checkMs[item.name] = debugprofilestop() - at end
 	if not ran then
 		record(FAIL, current, item.name, "threw: " .. tostring(ok))
 	else
@@ -4509,29 +4519,35 @@ local function runLogic()
 		local W = MM.Weights
 		if not W.PRESETS or #W.PRESETS == 0 then return false, "no presets defined" end
 		local saved = MM.db.weights
-		local bad
-		for _, preset in ipairs(W.PRESETS) do
-			W.ApplyPreset(preset.key)
-			local current = W.CurrentPreset()
-			if not (current and current.key == preset.key) then
-				bad = preset.name .. " does not match itself once applied"
-				break
+		local bad, onDefaults
+		-- SEVEN RE-PLANS FOR STATES NOBODY SEES. Applying a preset announces
+		-- the change, and announcing it re-plans; four presets plus the
+		-- defaults probe did that seven times inside one check and threw
+		-- "script ran too long" on slower hardware. The real ApplyPreset still
+		-- runs -- testing a copy of it would test the copy -- it simply is not
+		-- allowed to tell the plan about states that exist for one line.
+		if not W.Silent then return false, "W.Silent missing" end
+		W.Silent(function()
+			for _, preset in ipairs(W.PRESETS) do
+				W.ApplyPreset(preset.key)
+				local current = W.CurrentPreset()
+				if not (current and current.key == preset.key) then
+					bad = preset.name .. " does not match itself once applied"
+					return
+				end
+				if not (preset.blurb and preset.expect) then
+					bad = preset.name .. " has no description of what it should do"
+					return
+				end
 			end
-			if not (preset.blurb and preset.expect) then
-				bad = preset.name .. " has no description of what it should do"
-				break
-			end
-		end
+			-- Balanced must BE the defaults, not an approximation of them.
+			MM.db.weights = nil
+			onDefaults = W.CurrentPreset()
+		end)
 		MM.db.weights = saved
-		MM:Fire("MM_WEIGHTS_CHANGED")
+		-- Once, now that the settings are back where the player left them.
+		W.Changed()
 		if bad then return false, bad end
-
-		-- Balanced must BE the defaults, not an approximation of them.
-		MM.db.weights = nil
-		MM:Fire("MM_WEIGHTS_CHANGED")
-		local onDefaults = W.CurrentPreset()
-		MM.db.weights = saved
-		MM:Fire("MM_WEIGHTS_CHANGED")
 		if not (onDefaults and onDefaults.key == "balanced") then
 			return false, "the shipped defaults are not the Balanced preset"
 		end
@@ -4840,6 +4856,28 @@ local function runLogic()
 		end
 		return true, ("no banner yields no verdict; %d rotating gate(s), %d read "
 			.. "their reward tier"):format(gates, watched)
+	end)
+
+	check("No single check runs long enough to be killed", function()
+		-- A check that outlasts the client's patience throws "script ran too
+		-- long" at whatever line it happened to be on, which is never the line
+		-- that matters -- the last one blamed the event dispatcher while the
+		-- real cost was seven re-plans it did not need. Slicing the suite
+		-- cannot help: a slice is only allowed to stop BETWEEN checks.
+		local ms = MM.Tests and MM.Tests.checkMs
+		if not (ms and next(ms)) then return nil, "nothing timed yet this session" end
+		local worst, worstMs, n = nil, 0, 0
+		for name, t in pairs(ms) do
+			n = n + 1
+			if t > worstMs then worst, worstMs = name, t end
+		end
+		if worstMs > 500 then
+			return false, ("%s takes %d ms in one uninterrupted run — on slower "
+				.. "hardware that is where the watchdog fires")
+				:format(tostring(worst), worstMs)
+		end
+		return true, ("%d checks timed; slowest is %s at %d ms")
+			:format(n, tostring(worst), worstMs)
 	end)
 
 	check("The report is assembled in pieces, not one long run", function()

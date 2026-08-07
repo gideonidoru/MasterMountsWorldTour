@@ -437,7 +437,27 @@ end
 
 -- Ranking is memoized in several places; anything cached on the old weights is
 -- now wrong, so invalidate before telling the UI to redraw.
+-- Try several settings, tell the world once.
+--
+-- W.Changed fires MM_PLAN_CHANGED, which re-plans. Anything that applies more
+-- than one setting in a row therefore re-plans more than once, for states
+-- nobody will ever see -- the preset round-trip check applies four and threw
+-- "script ran too long" on slower hardware doing it. The work was never
+-- needed: what it was checking is that the weights table reads back as the
+-- preset that wrote it, and no part of that asks the plan anything.
+--
+-- The caller announces the settled state itself, once, at the end.
+local silent = false
+function W.Silent(fn)
+	local was = silent
+	silent = true
+	local ok, err = pcall(fn)
+	silent = was
+	if not ok then error(err, 0) end
+end
+
 function W.Changed()
+	if silent then return end
 	if MM.Availability and MM.Availability.InvalidateStatus then
 		MM.Availability.InvalidateStatus()
 	end
