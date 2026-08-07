@@ -55,18 +55,38 @@ local function initMissingRow(row, entry)
 
 		row.add = UI.MakeRowAction(row)
 		row.add:SetPoint("RIGHT", -6, 0)
-		row.add:SetScript("OnClick", function(self)
-			local e = self:GetParent().entry
+		-- One function, reachable from the button AND from the row, so it does
+		-- not matter which of the two the game hands the click to.
+		row.mmToggle = function(self)
+			local e = self.entry
+			-- A SILENT DECLINE LOOKS EXACTLY LIKE A DEAD BUTTON. Planner:Add
+			-- opens `if not spellID ... then return end`, and a journal entry
+			-- can genuinely have none -- Scanner guards for it. Such a row can
+			-- never leave this pane either: InPlan(nil) is falsy, so the
+			-- refresh filter keeps it and the glyph stays [+]. Say so.
+			if not (e and e.spellID) then
+				MM:Print("Cannot plan %s -- the mount journal gives it no spell "
+					.. "id, and the plan is keyed on one.",
+					(e and e.name) or "this mount")
+				return
+			end
 			if MM.Planner:InPlan(e.spellID) then
 				MM.Planner:Remove(e.spellID)
 			else
 				MM.Planner:Add(e.spellID)
 			end
-		end)
+		end
+		row.add:SetScript("OnClick", function(self) row.mmToggle(self:GetParent()) end)
 
 		row:SetScript("OnEnter", function(self) UI.ShowMountTooltip(self, self.entry) end)
 		row:SetScript("OnLeave", function() GameTooltip:Hide() end)
-		row:SetScript("OnClick", function(self, mouse) UI.RowClick(self.entry, mouse) end)
+		row:SetScript("OnClick", function(self, mouse)
+			-- Forward a click that landed on the action button. The anchor fix
+			-- below should mean this never fires; it costs one rect test and
+			-- removes the dependence on which frame won the hit test.
+			if UI.CursorOver(self.add) then return self.mmToggle(self) end
+			UI.RowClick(self.entry, mouse)
+		end)
 	end
 
 	row.entry = entry
@@ -133,9 +153,14 @@ local function initPlanRow(row, data)
 		row.remove:SetPoint("RIGHT", -6, 0)
 		row.remove:mmSet(true)
 		row.remove.mmTooltip = "Remove from plan"
-		row.remove:SetScript("OnClick", function(self)
-			MM.Planner:Remove(self:GetParent().entry.spellID)
-		end)
+		-- Same shape as the left pane. This one works today, which is exactly
+		-- why it should not be left resting on which frame won a hit test.
+		row.mmToggle = function(self)
+			local e = self.entry
+			if not (e and e.spellID) then return end
+			MM.Planner:Remove(e.spellID)
+		end
+		row.remove:SetScript("OnClick", function(self) row.mmToggle(self:GetParent()) end)
 
 		-- NO UP/DOWN ARROWS.
 		--
@@ -150,7 +175,10 @@ local function initPlanRow(row, data)
 
 		row:SetScript("OnEnter", function(self) UI.ShowMountTooltip(self, self.entry) end)
 		row:SetScript("OnLeave", function() GameTooltip:Hide() end)
-		row:SetScript("OnClick", function(self, mouse) UI.RowClick(self.entry, mouse) end)
+		row:SetScript("OnClick", function(self, mouse)
+			if UI.CursorOver(self.remove) then return self.mmToggle(self) end
+			UI.RowClick(self.entry, mouse)
+		end)
 	end
 
 	row.entry = entry
@@ -406,13 +434,32 @@ function UI.BuildPlanner(panel)
 	panel.missingEmpty:SetTextColor(0.55, 0.55, 0.6)
 	panel.missingEmpty:Hide()
 
+	-- TWO OPPOSITE CORNERS, LIKE EVERY OTHER LIST IN THE ADDON.
+	--
+	-- This is why [+] worked in the Collection tab and in the plan pane and did
+	-- nothing here. Both of those anchor TOPLEFT and BOTTOMRIGHT. This one
+	-- anchored TOPLEFT and BOTTOMLEFT -- both on the SAME edge -- and took its
+	-- horizontal extent from SetWidth instead.
+	--
+	-- A WowScrollBoxList lays its element frames out against the width it
+	-- derives from its own anchors. With two left-edge anchors there is no
+	-- anchored width to derive, so the rows are sized against something other
+	-- than the 430 the box was told to be. The row still DRAWS correctly --
+	-- its contents are anchored to the row, so they follow it wherever it is --
+	-- but the action button hangs off the row's RIGHT edge, which is now
+	-- somewhere other than where the glyph appears, and the click lands where
+	-- the button is not.
+	--
+	-- Four passes over the handlers found nothing because the handlers were
+	-- never wrong. The geometry was, in the one pane that described itself
+	-- differently from the two that work.
+	--
+	-- Same rectangle, stated the same way as its neighbours: left 4, right 434,
+	-- top -66, bottom 6. Full height on this side -- only the plan column gives
+	-- up space for the action strip below it.
 	missingBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
 	missingBox:SetPoint("TOPLEFT", 4, -66)
-	-- Full height. Only the plan column gives up space for the action strip
-	-- below it; reserving the same gap on this side bought nothing and left a
-	-- band of empty window under the missing list.
-	missingBox:SetPoint("BOTTOMLEFT", 4, 6)
-	missingBox:SetWidth(430)
+	missingBox:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 434, 6)
 
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	missingBar:SetPoint("TOPLEFT", missingBox, "TOPRIGHT", 4, 0)

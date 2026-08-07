@@ -158,6 +158,34 @@ end
 -- row. The hover lift that used to justify a dimmer resting state never ran.
 local RESTING = 0.75
 
+-- Is the cursor inside this frame, right now?
+--
+-- Asked because the [+] in the planner's left pane does not receive its click
+-- and four passes over the source have not said why. Raising the button's frame
+-- level did not fix it, so that diagnosis was wrong.
+--
+-- This stops trying to win the hit test and stops depending on the answer: the
+-- ROW gets the click either way, and if the cursor was over the action button
+-- the row forwards it. Whichever frame the game decides to give the click to,
+-- the same thing happens.
+--
+-- Coordinates are compared in the FRAME's own effective scale -- GetLeft and
+-- friends report in that space, while GetCursorPosition reports in the screen's
+-- -- and mixing the two is the usual way this idiom goes quietly wrong at any
+-- UI scale but 1.
+function UI.CursorOver(f)
+    if not (f and f.IsShown and f:IsShown() and f.GetLeft) then return false end
+    local ok, l, r, t, b = pcall(function()
+        return f:GetLeft(), f:GetRight(), f:GetTop(), f:GetBottom()
+    end)
+    if not (ok and l and r and t and b) then return false end
+    local scale = f:GetEffectiveScale()
+    if not scale or scale == 0 then return false end
+    local x, y = GetCursorPosition()
+    x, y = x / scale, y / scale
+    return x >= l and x <= r and y >= b and y <= t
+end
+
 function UI.MakeRowAction(row)
 	local b = CreateFrame("Button", nil, row)
 	b:SetSize(22, 22)
