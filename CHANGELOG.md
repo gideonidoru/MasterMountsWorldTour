@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.13 — unreleased
+## 1.1.12 — 2026-08-07
 
 - **The real cause of "script ran too long" was one section, not thirty-three.**
   Chunking the report between sections shipped in 1.1.12 and did not fix it: the
@@ -24,7 +24,6 @@
   finished results instead of running everything a second time. `/mm test` still
   always runs fresh — answering "did my change take" from results gathered
   minutes ago would look identical and be worthless.
-
 - **The Grand Hunt says whether it is worth the trip, not merely where it is.**
   Only the first hunt each week pays the bag that carries the mount, and the
   banner's own description names the bag on offer — so a description still
@@ -39,7 +38,6 @@
   which does not distinguish "cannot be read remotely" from "none was running"
   — and the same scan returned Iskaara and Loamm from another continent.
 
-## 1.1.12 — 2026-08-07
 
 - **`/mm report` died with "script ran too long" on slower hardware.** All 33
   sections ran in one uninterrupted execution, and the client's watchdog
