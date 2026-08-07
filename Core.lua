@@ -95,6 +95,10 @@ end
 -- how someone checks whether a fix took, and a persisted list would stay quiet
 -- and make it look like it had.
 local reportedErrors = {}
+-- Counted as well as deduped, so the report can say "no handler has thrown this
+-- session" and mean it. Silence is otherwise indistinguishable from the dedupe
+-- working, which is exactly the thing being validated.
+MM.handlerErrors = {}
 
 eventFrame:SetScript("OnEvent", function(_, event, ...)
 	local list = eventHandlers[event]
@@ -130,6 +134,10 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
 			local key = tostring(event) .. "\0" .. tostring(err)
 			if not reportedErrors[key] then
 				reportedErrors[key] = true
+				tinsert(MM.handlerErrors, {
+					event = tostring(event),
+					err = tostring(err):gsub("^.*[\\/]", ""):sub(1, 120),
+				})
 				MM:Print("|cffff5555%s failed:|r %s", tostring(event),
 					tostring(err):gsub("^.*[\\/]", ""):sub(1, 160))
 			end
@@ -711,6 +719,8 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		end
 	elseif input == "flightpoints" then
 		MM:Fire("MM_FLIGHTPOINTS_DEBUG")
+	elseif input == "fixes" then
+		MM:Fire("MM_FIXES_DEBUG")
 	elseif input == "score" then
 		MM:Fire("MM_SCORE_DEBUG")
 	elseif input == "known" then
@@ -777,6 +787,7 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Print("Commands: /mm show | plan | monitor | compact | route | easiest")
 		MM:Print("          |cff40d860/mm check|r — run every diagnostic and report")
 		MM:Print("          |cff40d860/mm report|r — full copyable log (also Options > Diagnostics)")
+		MM:Print("          |cff40d860/mm fixes|r — is everything this build claims to fix still fixed?")
 		MM:Print("          /mm audit | events | callings | post | travel | bags | gates | assaults | weights | routeinfo | layers | whynot | matrix | zone | zone show | welcome | onboarding | crafting | known | release | score | sources")
 		MM:Print("          /mm contribute [import|clear] — fill the data gaps")
 		MM:Print("          /mm session [20|45|90|180|stop] — a plan that fits the time you have")

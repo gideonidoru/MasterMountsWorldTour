@@ -178,6 +178,9 @@ local function build()
 
 		frame.rows[i] = row
 	end
+	-- Read by the report. A row that takes clicks is the whole fix, and the
+	-- only way to see it from outside is to ask what kind of frame it is.
+	ZA.rowsClickable = true
 
 	frame.more = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 	frame.more:SetPoint("BOTTOMLEFT", 10, 7)

@@ -1453,6 +1453,10 @@ function R.Yield()
 	-- main thread) in 5.1, which is the same question asked in the dialect we
 	-- actually run in.
 	if building and coroutine.running() then
+		-- Counted so the report can show the frame really was handed back.
+		-- "The client did not freeze" is not evidence on a fast machine with a
+		-- small plan; a yield count is.
+		R.yieldsThisBuild = (R.yieldsThisBuild or 0) + 1
 		coroutine.yield()
 		R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
 	end
@@ -1558,6 +1562,7 @@ function R:Build(force, sync)
 
 	local n = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
 	R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
+	R.yieldsThisBuild = 0
 	building = coroutine.create(function() R.RunBuild(sig) end)
 	-- CHUNKING IS ON.
 	--

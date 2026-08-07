@@ -211,7 +211,11 @@ end
 -- Degrade, do not throw. If the name cannot be read, attempts stop being
 -- counted automatically from boss names -- which is a feature quietly doing
 -- less, not an addon spraying errors. Said once, then silent.
+-- Exposed so the report can state which side of the 12.0 change this client is
+-- on, rather than leaving "attempts stopped counting" to be discovered.
 local secretNames = false
+function S.BossNamesReadable() return not secretNames end
+
 local function readableName(name)
 	if secretNames or name == nil then return nil end
 	local ok, lowered = pcall(string.lower, name)

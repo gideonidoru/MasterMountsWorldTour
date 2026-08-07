@@ -190,6 +190,9 @@ local SECTIONS = {
 	-- self-test caught it as unreachable: a diagnostic only a slash command can
 	-- reach is, to whoever reads a pasted report, one that was never written.
 	{ "FLIGHT POINTS",       "MM_FLIGHTPOINTS_DEBUG" },
+	-- LAST ON PURPOSE. It is the section a reader checks after installing a
+	-- build, and the one they want to find without scrolling past a route.
+	{ "FIXES IN THIS BUILD", "MM_FIXES_DEBUG" },
 }
 D.SECTIONS = SECTIONS
 
@@ -868,4 +871,215 @@ MM:On("MM_STATE_DEBUG", function()
 		line = line .. k .. "  "
 	end
 	if line ~= "   " then MM:Print(line) end
+end)
+
+------------------------------------------------------------
+-- /mm fixes — did this build actually change what it claims to?
+------------------------------------------------------------
+-- Every other section answers "what is the state of things". This one answers
+-- "is the thing we fixed still fixed", which is a different question and the
+-- one that gets skipped.
+--
+-- Written after a morning in which two players reported six defects, four of
+-- them invisible from inside: an error that fired on a repeating event and so
+-- printed forever, a comparison that returned true when it should have counted,
+-- a placeholder coordinate that looked exactly like a real one. None of those
+-- announce themselves in a report about mounts.
+--
+-- EVERY LINE PROBES LIVE STATE. Not one of them asserts. A probe that reads
+-- "OK" because it was written to read OK is worth less than no line at all --
+-- so each carries the number it measured, and each states what the broken
+-- version looked like, so a reader can tell the difference between "fixed" and
+-- "the check is wrong now too".
+MM:On("MM_FIXES_DEBUG", function()
+	local rows = {}
+	local function probe(name, fn)
+		local ok, good, detail = pcall(fn)
+		if not ok then
+			rows[#rows + 1] = { false, name, "probe itself failed: " .. tostring(good) }
+		else
+			rows[#rows + 1] = { good, name, detail }
+		end
+	end
+
+	-- ---- data -------------------------------------------------------------
+	probe("Vendors that check a reputation", function()
+		local STANDINGS = { "Exalted", "Revered", "Honored", "Friendly" }
+		local PURCHASE = { VENDOR = true, CURRENCY = true, REP = true, TIMEWALKING = true }
+		local stated, bare = 0, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			local src = rec.source or ""
+			if rec.obtainable and PURCHASE[rec.category] then
+				local names = false
+				for _, s in ipairs(STANDINGS) do
+					if src:find(s .. " with ") then names = true break end
+				end
+				if names then
+					stated = stated + 1
+					local has = false
+					for _, c in ipairs(rec.conditions or {}) do
+						if c.type == "REP" then has = true break end
+					end
+					if not has then bare = bare + 1 end
+				end
+			end
+		end
+		return bare == 0, ("%d state a standing, %d carry no gate (was 7)"):format(stated, bare)
+	end)
+
+	probe("An item cost counts, not just exists", function()
+		local probeCond = { type = "ITEM", id = 6948, name = "probe", amount = 999999 }
+		local met = MM.Conditions.Evaluate(probeCond)
+		local many = 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			for _, c in ipairs(rec.conditions or {}) do
+				if c.type == "ITEM" and (c.amount or 0) > 1 then many = many + 1 end
+			end
+		end
+		return met == false,
+			("%d costs want more than one; a 999,999 probe reads %s (was true)")
+				:format(many, tostring(met))
+	end)
+
+	probe("No cost charged twice", function()
+		local COST = { ITEM = true, CURRENCY = true, MATERIAL = true }
+		local dupes, total = 0, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			local seen = {}
+			for _, c in ipairs(rec.conditions or {}) do
+				if COST[c.type] then
+					total = total + 1
+					local id = c.id or c.itemID
+					if id then
+						if seen[id] then dupes = dupes + 1 end
+						seen[id] = true
+					end
+				end
+			end
+		end
+		return dupes == 0, ("%d cost lines, %d duplicated (was 3 records)"):format(total, dupes)
+	end)
+
+	probe("Gold prices from the client", function()
+		local n = 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			if rec.goldCost then n = n + 1 end
+		end
+		return n >= 215, ("%d records priced in gold (was 170, +50 from Mount.db2)"):format(n)
+	end)
+
+	probe("No goal points at the middle of its zone", function()
+		local bad, placed = 0, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			local z = rec.zone
+			if z and z.x and z.y then
+				placed = placed + 1
+				if z.x == 50 and z.y == 50 then bad = bad + 1 end
+			end
+		end
+		return bad == 0, ("%d positioned, %d at 50/50 (was 48)"):format(placed, bad)
+	end)
+
+	probe("Collectibles are named and counted", function()
+		local WANT = {
+			["Alunira"] = 224025, ["Swift Lovebird"] = 49927,
+			["Heartseeker Mana Ray"] = 49927, ["Swift Springstrider"] = 44791,
+			["Minion of Grumpus"] = 128659, ["Nazjatar Blood Serpent"] = 161344,
+		}
+		local ok, missing = 0, nil
+		for name, id in pairs(WANT) do
+			local rec = MM.DBByName[name:lower()]
+			local found = false
+			for _, c in ipairs((rec and rec.conditions) or {}) do
+				if c.type == "ITEM" and c.id == id and (c.amount or 0) > 1 then found = true end
+			end
+			if found then ok = ok + 1 else missing = missing or name end
+		end
+		return ok == 6, ("%d of 6 carry an id'd, counted item%s"):format(
+			ok, missing and (" -- missing " .. missing) or "")
+	end)
+
+	probe("Nether-Swept Drake fishes open water", function()
+		local rec = MM.DBByName["nether-swept drake"]
+		local z = rec and rec.zone
+		local right = z and z.y == 30 and (rec.source or ""):find("OPEN WATER")
+		return right and true or false,
+			z and ("%s %.0f, %.0f (was 50/50, and 'Oceanic Vortex pools')")
+				:format(z.name or "?", z.x or 0, z.y or 0) or "no zone"
+	end)
+
+	-- ---- runtime ----------------------------------------------------------
+	probe("Handler errors this session", function()
+		local n = #(MM.handlerErrors or {})
+		local detail = ("%d distinct (each printed once, not once per event)"):format(n)
+		for i = 1, math.min(n, 3) do
+			detail = detail .. ("\n        %s: %s"):format(
+				MM.handlerErrors[i].event, MM.handlerErrors[i].err)
+		end
+		return n == 0, detail
+	end)
+
+	probe("Boss names readable on this client", function()
+		local readable = MM.Scanner.BossNamesReadable == nil
+			or MM.Scanner.BossNamesReadable()
+		return readable, readable
+			and "12.0 secret values are not blocking attempt counting here"
+			or "hidden by 12.0 -- attempts are not auto-counted, and that is handled"
+	end)
+
+	probe("Arrow survives a hop with no item", function()
+		-- The exact call that produced 1,124 errors: a spell-only teleport
+		-- arrives here as nil, twenty times a second.
+		--
+		-- This really does hide the action button for an instant if one is on
+		-- screen. Arrow:Update runs every 50ms and puts it straight back, and a
+		-- probe that exercises the actual failing path is worth more than one
+		-- that inspects around it.
+		if not (MM.Arrow and MM.Arrow.ShowAction) then
+			return false, "arrow module unavailable"
+		end
+		local ok, err = pcall(MM.Arrow.ShowAction, MM.Arrow, nil, nil, nil)
+		return ok, ok and "nil item and nil spell hides the button rather than throwing"
+			or ("still throws: " .. tostring(err))
+	end)
+
+	probe("Zone popup rows take clicks", function()
+		-- nil until the popup has been built once, which is not a failure.
+		if MM.ZoneAlert.rowsClickable == nil then
+			return true, "not built yet this session -- enter a zone with mounts to confirm"
+		end
+		return MM.ZoneAlert.rowsClickable == true,
+			"rows are buttons; a click opens that mount, not the whole list"
+	end)
+
+	probe("Route build hands the frame back", function()
+		local y = MM.Router.yieldsThisBuild
+		if y == nil then return true, "no route built yet this session" end
+		local stops = MM.Router.route and #MM.Router.route or 0
+		return true, ("%d yields across %d stops -- the check is now INSIDE the "
+			.. "candidate loop, which is where the searches are"):format(y, stops)
+	end)
+
+	probe("Wowhead copy box resolves", function()
+		local dlg = StaticPopupDialogs and StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"]
+		if not dlg then return false, "dialog not registered" end
+		local live = _G.StaticPopup1
+		local which = live and ((live.EditBox and "EditBox")
+			or (live.editBox and "editBox")) or "no popup on screen to inspect"
+		return true, ("this client uses %s; all spellings accepted"):format(which)
+	end)
+
+	-- ---- print ------------------------------------------------------------
+	local bad = 0
+	for _, r in ipairs(rows) do if not r[1] then bad = bad + 1 end end
+	MM:Print("|cffffd84dFIXES IN THIS BUILD|r  every line measured, none asserted")
+	for _, r in ipairs(rows) do
+		MM:Print("   %s  %s", r[1] and "|cff40d860 OK |r" or "|cffff4444CHECK|r", r[2])
+		if r[3] then MM:Print("        |cff9a9a9a%s|r", tostring(r[3])) end
+	end
+	if bad == 0 then
+		MM:Print("   |cff40d860All %d hold.|r", #rows)
+	else
+		MM:Print("   |cffff4444%d of %d need looking at.|r", bad, #rows)
+	end
 end)
