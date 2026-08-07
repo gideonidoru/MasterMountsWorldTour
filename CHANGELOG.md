@@ -11,6 +11,18 @@
   run — so no single execution grows past that cap however slow the machine or
   however many checks are added later. The checks themselves are unchanged and
   unaware of it.
+- **The suite can no longer run inside itself, by any route.** Slicing it out
+  of the report meant running it with no report "in progress" — and one check
+  fires every diagnostic section to prove none is silent, while one of those
+  sections re-runs the suite when no run has finished. A nested run never
+  finishes before it asks again, so it asked forever. Every layer sat inside a
+  pcall, so the client hung with an empty log and nothing to point at.
+- That had been guarded twice already with flags naming a *context* — "not
+  while a report builds", then "not while one is prepared" — and both times a
+  new context appeared that the flag did not describe. It now asks the property
+  that actually matters: is a run already in progress. The flag is cleared even
+  if the run throws, because one that latched would hand back stale counts
+  forever and look exactly like a healthy suite.
 - **The recursion guard now covers both halves.** One check times the report by
   building one, and stood down only while a report was already building —
   which the new prepare phase is not, by that flag's reckoning. So it built a

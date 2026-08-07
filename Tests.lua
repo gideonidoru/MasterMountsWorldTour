@@ -5149,12 +5149,32 @@ function T.PrepareAsync(onDone)
 	-- same table. The report came back with 297 checks instead of 193 and no
 	-- failure to point at, because nothing had actually failed.
 	T.preparing = true
+	-- AND SAY SO WITH THE FLAG EVERYTHING ELSE ALREADY WATCHES.
+	--
+	-- Running the suite here IS running it on the report's behalf, and a dozen
+	-- places decide what to do by asking D.inReport. Leaving it false while
+	-- doing exactly that work made the RELEASE READINESS section -- which
+	-- re-runs the whole suite when no report is building and no run has
+	-- finished -- fire from inside the suite. PrepareAsync never sets lastRun
+	-- until it completes, so the nested run saw nothing finished either, and
+	-- did it again. The client hung with nothing in the log, because nothing
+	-- had thrown.
+	--
+	-- Guarding that ONE site would have left every other reader of this flag
+	-- wrong in the same way, including ones not written yet. Setting the flag
+	-- is the honest statement and it fixes all of them at once.
+	local wasInReport = MM.Diagnostics and MM.Diagnostics.inReport
+	if MM.Diagnostics then MM.Diagnostics.inReport = true end
+	local function release()
+		T.preparing = false
+		if MM.Diagnostics then MM.Diagnostics.inReport = wasInReport end
+	end
 	collecting = true
 	local ok, err = pcall(function() runAPI(); runData(); runLogic() end)
 	collecting = false
 	if not ok then
 		record(FAIL, "RUNNER", "self-test crashed while collecting", tostring(err))
-		T.preparing = false
+		release()
 		T.prepared = results
 		if onDone then onDone(results) end
 		return
@@ -5173,7 +5193,7 @@ function T.PrepareAsync(onDone)
 			-- Handed over rather than printed. Whoever asked for this decides
 			-- where the lines go, which is what lets the report collect them
 			-- without the suite knowing it is being reported on.
-			T.preparing = false
+			release()
 			T.prepared = results
 			if onDone then onDone(results) end
 		end
@@ -5182,6 +5202,38 @@ function T.PrepareAsync(onDone)
 end
 
 function T.Run()
+	-- THE SUITE MAY NOT RUN INSIDE ITSELF. Ever, by any route.
+	--
+	-- One check fires every diagnostic section to prove none of them is
+	-- silent. One of those sections re-runs the suite when no run has finished
+	-- and no report is building. A nested run never finishes before it asks
+	-- again, so it asks forever -- and every layer of it is inside a pcall, so
+	-- the client hangs with an empty log and nothing to point at.
+	--
+	-- This has been guarded twice with a flag naming a CONTEXT -- "not while a
+	-- report builds", then "not while one is being prepared" -- and both times
+	-- a new context appeared that the flag did not describe. The property that
+	-- actually matters is not where we are, it is that a run is in progress,
+	-- so that is what is asked.
+	if T.running then
+		return T.lastCounts or { PASS = 0, FAIL = 0, WARN = 0 }
+	end
+	-- CLEARED EVEN IF THE RUN THROWS. A flag that latches on an error would
+	-- leave every later run silently handing back stale counts -- a self-test
+	-- that reports yesterday's answer forever and looks exactly like a healthy
+	-- one, which is the failure this whole guard exists to avoid repeating.
+	T.running = true
+	local ok, counts = pcall(T.RunOnce)
+	T.running = false
+	if not ok then
+		MM:Print("|cffff4d4dThe self-test itself threw:|r %s", tostring(counts))
+		return T.lastCounts or { PASS = 0, FAIL = 0, WARN = 0 }
+	end
+	T.lastCounts = counts
+	return counts
+end
+
+function T.RunOnce()
 	-- A prepared run is consumed rather than repeated. Without this the report
 	-- would pay for the whole suite twice: once in the background, once inside
 	-- the section that prints it.
