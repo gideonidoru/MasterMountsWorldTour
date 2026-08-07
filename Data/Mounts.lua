@@ -33984,12 +33984,26 @@ MM.AddMounts({
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from the Broken Throne Ritual Site event (added 12.0.5).",
+		source = "Place the Misplaced Ritual Candle on the Ritual Circle inside the Broken Throne ritual site in Zul'Aman.",
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
 			x = 50,
 			y = 50,
+		},
+		acquire = {
+			hours = 1,
+			steps = {
+				{
+					text = "Enter Broken Throne at TIER 2 or higher -- tier 1 does not offer any of this",
+				},
+				{
+					text = "Collect the Misplaced Ritual Candle at 51.5 / 47.8 on the ritual-site map",
+				},
+				{
+					text = "Place it on the Ritual Circle at 50.6 / 47.3. That is the whole thing -- the mount is yours",
+				},
+			},
 		},
 		altSources = {
 			{
@@ -34002,20 +34016,44 @@ MM.AddMounts({
 				effort = 3,
 			},
 		},
+		dropRate = 100,
 		effort = 3,
-		notes = "Taught by the item Void-Corrupted Eagle Talon.",
+		notes = "Same visit as the Witherbark Warbear Mother, so do both together. Coordinates are on the ritual-site map (#2585), which is a child of Zul'Aman and confusingly shares its name -- they will send you to the wrong place if read against the outdoor zone. Riding this mount into the tornado at 49.6 / 77.9 reaches a nest holding the Void-Scarred Eaglet, which is a pet rather than a mount.",
 	},
 	{
 		name = "Witherbark Warbear Mother",
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from the Broken Throne Ritual Site event (added 12.0.5).",
+		source = "Adopt Chubs inside the Broken Throne ritual site in Zul'Aman, use him to draw out the Angry Amani Warbear, and feed it.",
 		zone = {
 			name = "Zul'Aman",
 			mapID = 2437,
 			x = 50,
 			y = 50,
+		},
+		acquire = {
+			hours = 1,
+			steps = {
+				{
+					text = "Bring 6 Practically Pork. NONE of it can be obtained inside the site -- the bears outside drop it, so buy or farm it first",
+				},
+				{
+					text = "Enter Broken Throne at TIER 2 or higher",
+				},
+				{
+					text = "Find the Lost Bear Cub at 55.8 / 49.6 -- he is STEALTHED beside a tree on the middle platform, so drop down from above",
+				},
+				{
+					text = "Feed him one Practically Pork to get Chubs",
+				},
+				{
+					text = "Go to the meat piles at about 55.8 / 38.8 and summon Chubs. Walk around until the Angry Amani Warbear spawns -- it can take a while",
+				},
+				{
+					text = "Kill it. It turns friendly. Feed it the remaining 5 Practically Pork and the Witherbark Warbear Harness appears in your bags",
+				},
+			},
 		},
 		altSources = {
 			{
@@ -34027,19 +34065,32 @@ MM.AddMounts({
 				effort = 3,
 			},
 		},
+		dropRate = 100,
 		effort = 3,
+		notes = "Same visit and the same six pork as the Void-Corrupted Hex Eagle. Coordinates are on the ritual-site map (#2585), a child of Zul'Aman that shares its name.",
 	},
 	{
 		name = "Void-Touched Snapdragon",
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from the Daggerspine Point Ritual Site event (added 12.0.5).",
+		source = "Gather kelp inside the Daggerspine Point ritual site in Eversong Woods -- two per run, then reset.",
 		zone = {
 			name = "Eversong Woods",
 			mapID = 2395,
 			x = 50,
 			y = 50,
+		},
+		acquire = {
+			hours = 3,
+			steps = {
+				{
+					text = "Enter Daggerspine Point and sweep the eight possible kelp spots: 46/45, 61/77, 47/72, 66/74, 41/73, 38/64, 53/55, 50/55 on the ritual-site map",
+				},
+				{
+					text = "Only TWO spawn per run. Once you have both, leave and re-enter rather than searching the rest",
+				},
+			},
 		},
 		altSources = {
 			{
@@ -34053,6 +34104,8 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		notes = "Coordinates are on the ritual-site map (#2594), a child of Eversong Woods that shares its name -- reading them against the outdoor zone sends you somewhere else entirely. Two kelp per run is the cap, so resetting early is faster than a full sweep.",
+		rateReason = "kelp gathered inside a resettable ritual site, two per run; the number required is not published",
 	},
 	{
 		name = "Void-Touched Hawkstrider",
