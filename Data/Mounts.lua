@@ -23795,7 +23795,7 @@ MM.AddMounts({
 		expansion = 9,
 		category = "ZONEDROP",
 		obtainable = true,
-		source = "Grand Hunt Spoils from the first Centaur Hunt each week in the Ohn'ahran Plains",
+		source = "Grand Hunt Spoils from the first Grand Hunt each week. The hunt rotates between the four Dragonflight zones -- the route points at wherever it is running now.",
 		zone = {
 			name = "Ohn'ahran Plains",
 			mapID = 2023,
@@ -23806,7 +23806,22 @@ MM.AddMounts({
 		attempts = "WEEKLY",
 		timePerAttempt = 12,
 		effort = 2,
-		notes = "The Grand Hunt is open-world content with no reputation requirement.",
+		notes = "The Grand Hunt is open-world content with no reputation requirement. Only the FIRST hunt each week awards Grand Hunt Spoils, so the goal comes off the plan once you have turned one in and returns at the weekly reset.\
+\
+The zone below is only a fallback for when the client cannot be asked where the hunt is; the live map POI is preferred and carries its own coordinate.",
+		rotating = {
+			key = "grandhunt",
+			label = "The Grand Hunt",
+			maps = {
+				2022,
+				2023,
+				2024,
+				2025,
+			},
+			match = {
+				"Grand Hunt",
+			},
+		},
 	},
 	{
 		name = "Divine Kiss of Ohn'ahra",

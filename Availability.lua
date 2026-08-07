@@ -544,6 +544,26 @@ function A.ComputeStatus(entry)
 	-- Rotating zone assault. Same reasoning as the Calling gate: the chest that
 	-- drops this mount only exists while its assault is running, so recommending
 	-- it on any other week sends the player somewhere nothing can happen.
+	-- A rotating world event: always running somewhere, done once a week.
+	if rec.rotating then
+		local key = rec.rotating.key
+		if MM.Assaults.WeeklyDone and MM.Assaults.WeeklyDone(key) then
+			return "LOCKED", ("%s is done for this week"):format(
+				rec.rotating.label or "This event")
+		end
+		if not MM.Assaults.scanned then
+			return "UNKNOWN", ("Only while %s is up -- where it is running is "
+				.. "not readable yet"):format(rec.rotating.label or "the event")
+		end
+		local live = MM.Assaults.FindRotating and MM.Assaults.FindRotating(rec.rotating)
+		if not live then
+			return "ROTATION", ("%s is not up in any zone we can see right now")
+				:format(rec.rotating.label or "This event")
+		end
+		return "AVAILABLE", ("%s is up in %s"):format(
+			rec.rotating.label or "It", live.zone or "a Dragonflight zone")
+	end
+
 	if rec.assault then
 		local state, detail = MM.Assaults.Evaluate(rec.assault)
 		if state then return state, detail, nil end

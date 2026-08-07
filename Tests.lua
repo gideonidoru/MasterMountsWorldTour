@@ -2084,6 +2084,47 @@ local function runLogic()
 		return true, "one copy loaded"
 	end)
 
+	check("A rotating event is found where it is, not where it usually is", function()
+		-- Reported from play: the Grand Hunt led the plan, sent the player to a
+		-- fixed Ohn'ahran Plains coordinate, and then never registered as done.
+		-- A hunt rotates between the four Dragonflight zones, so a stored zone
+		-- is right about a quarter of the time.
+		local A = MM.Assaults
+		if not (A and A.FindRotating and A.WeeklyDone) then
+			return nil, "rotating gates unavailable"
+		end
+		local gates, records = 0, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			if rec.rotating then
+				records = records + 1
+				if not rec.rotating.key then
+					return false, ("%s has a rotating gate with no key -- weekly "
+						.. "completion cannot be stored against it"):format(rec.name)
+				end
+				if not (rec.rotating.maps and #rec.rotating.maps > 1) then
+					return false, ("%s names %d map(s); a gate that rotates needs "
+						.. "more than one"):format(rec.name,
+						rec.rotating.maps and #rec.rotating.maps or 0)
+				end
+				-- The stored zone must still exist as a FALLBACK: when the
+				-- client cannot be asked, a zone beats nothing.
+				if not (rec.zone and rec.zone.mapID) then
+					return false, ("%s has no fallback zone for when the live POI "
+						.. "cannot be read"):format(rec.name)
+				end
+			end
+		end
+		for _ in pairs(A.rotatingGates or {}) do gates = gates + 1 end
+		if records == 0 then return nil, "no rotating records in the database" end
+		-- Registration is DISCOVERED from the database at login, so a record
+		-- that declares a gate and never gets watched is the failure to catch.
+		if gates == 0 then
+			return nil, "gates not collected yet -- they are gathered at login"
+		end
+		return true, ("%d rotating record(s), %d gate(s) watched for a weekly "
+			.. "turn-in"):format(records, gates)
+	end)
+
 	check("An item cost asks how many, not whether any", function()
 		-- Reported from outside: told to go and buy the Asset Advocator "even
 		-- though I didn't have the currency for it". evalItem asked

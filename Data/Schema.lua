@@ -87,6 +87,26 @@ function MM.GetRecordLocation(rec)
 	return zone
 end
 
+-- WHERE A ROTATING EVENT IS RIGHT NOW BEATS WHERE IT USUALLY IS.
+--
+-- Checked BEFORE the stored zone, because the stored zone is a placeholder for
+-- an event that moves: a Grand Hunt sat at a fixed Ohn'ahran Plains coordinate
+-- and was right about a quarter of the time. The live POI carries both the
+-- zone and the point, so when it is readable it wins outright.
+--
+-- Wrapped rather than merged into GetRecordLocation's body because Schema
+-- loads long before Assaults; this asks at call time, when both exist.
+local baseGetRecordLocation = MM.GetRecordLocation
+function MM.GetRecordLocation(rec)
+	if rec and rec.rotating and MM.Assaults and MM.Assaults.FindRotating then
+		local live = MM.Assaults.FindRotating(rec.rotating)
+		if live and live.x and live.y then
+			return { mapID = live.mapID, name = live.zone, x = live.x, y = live.y }
+		end
+	end
+	return baseGetRecordLocation(rec)
+end
+
 -- Identity of a requirement, so two override files describing the SAME
 -- requirement update each other instead of stacking duplicates.
 local function conditionKey(cond)

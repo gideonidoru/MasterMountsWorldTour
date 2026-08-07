@@ -41,6 +41,13 @@ local WATCHED = {
 	[1543] = "The Maw",
 	[1527] = "Uldum",
 	[1530] = "Vale of Eternal Blossoms",
+	-- The four Dragonflight zones, for the Grand Hunt. It rotates between
+	-- them, so a record cannot name one and be right for more than a few
+	-- hours -- which is exactly what sent someone to the wrong waypoint.
+	[2022] = "The Waking Shores",
+	[2023] = "Ohn'ahran Plains",
+	[2024] = "The Azure Span",
+	[2025] = "Thaldraszus",
 }
 
 ------------------------------------------------------------
@@ -65,8 +72,13 @@ local function poiNames(mapID)
 				text = (text and (text .. " " .. desc)) or desc
 			end
 			if text and text ~= "" then
+				-- The POSITION, kept. A gate that only answers "is it running"
+				-- is enough for an assault, which owns its whole zone. A Grand
+				-- Hunt MOVES BETWEEN ZONES and sits at a point inside one, so
+				-- the answer has to carry where as well as whether.
 				out[#out + 1] = { name = text, source = "poi", poiID = poiID,
-					timeString = info.timeString }
+					timeString = info.timeString, position = info.position,
+					mapID = mapID }
 			end
 		end
 	end
@@ -216,4 +228,129 @@ MM:On("MM_ASSAULTS_DEBUG", function()
 		end
 	end
 	MM:Print("Records gated on an assault report ROTATION until their name appears above.")
+end)
+
+------------------------------------------------------------
+-- Rotating world events: the Grand Hunt
+------------------------------------------------------------
+-- An assault gate answers "is this running in THAT zone". A Grand Hunt is the
+-- other shape: it is always running SOMEWHERE, and the question is which of
+-- four zones and whereabouts inside it.
+--
+-- Reported from play: the route sent someone to a fixed Ohn'ahran Plains
+-- coordinate, because that is what the record said. It is right roughly a
+-- quarter of the time.
+--
+-- Nothing here is a guess about zones or quest ids. The hunt announces itself
+-- as an area POI in whichever zone it is in, and the POI carries its own
+-- position -- the same scan the assault gates already run, now keeping the
+-- coordinate it was throwing away.
+function A.FindRotating(gate)
+	if not (gate and A.scanned) then return nil end
+	local list = needles(gate)
+	for _, mapID in ipairs(gate.maps or {}) do
+		for _, e in ipairs(A.active[mapID] or {}) do
+			local hay = e.name and e.name:lower()
+			if hay then
+				for _, needle in ipairs(list) do
+					if needle and hay:find(needle:lower(), 1, true) then
+						return {
+							mapID = e.mapID or mapID,
+							zone = WATCHED[e.mapID or mapID],
+							x = e.position and e.position.x and (e.position.x * 100),
+							y = e.position and e.position.y and (e.position.y * 100),
+							name = e.name, timeString = e.timeString,
+						}
+					end
+				end
+			end
+		end
+	end
+	return nil
+end
+
+------------------------------------------------------------
+-- "Have I done this one this week?"
+------------------------------------------------------------
+-- NO QUEST ID IS INVENTED HERE, and none is needed.
+--
+-- The obvious approach is to look up the hunt's weekly quest and ask
+-- IsQuestFlaggedCompleted. That means writing down a number nobody has
+-- verified, which is the one thing this database does not do.
+--
+-- What the client will tell us without being asked: a quest was turned in, and
+-- how long until the weekly reset. If a turn-in happens while a rotating gate
+-- is live and the quest's title matches the gate, the player did the thing --
+-- and `now + secondsUntilWeeklyReset` is exactly when that stops being true.
+-- Stored per gate, self-healing, and wrong for at most one reset if the match
+-- is ever a false positive.
+local function weeklyStore()
+	MM.db.weeklyDone = MM.db.weeklyDone or {}
+	return MM.db.weeklyDone
+end
+
+function A.WeeklyDone(key)
+	if not key then return false end
+	local until_ = weeklyStore()[key]
+	if not until_ then return false end
+	local now = (time and time()) or 0
+	if now >= until_ then
+		weeklyStore()[key] = nil   -- reset has passed; forget it
+		return false
+	end
+	return true, until_
+end
+
+function A.MarkWeeklyDone(key)
+	if not key then return end
+	local now = (time and time()) or 0
+	local left = C_DateAndTime and C_DateAndTime.GetSecondsUntilWeeklyReset
+		and C_DateAndTime.GetSecondsUntilWeeklyReset() or nil
+	-- Without a reset time there is nothing honest to store: a completion with
+	-- no expiry would hide the goal forever.
+	if not left or left <= 0 then return end
+	weeklyStore()[key] = now + left
+	if MM.Availability and MM.Availability.InvalidateStatus then
+		MM.Availability.InvalidateStatus()
+	end
+	MM:Fire("MM_PLAN_CHANGED")
+end
+
+-- Gates that want a weekly turn-in watched.
+--
+-- DISCOVERED, NOT REGISTERED. The data layer cannot call into a module: every
+-- data file loads before every module, so a RegisterRotating() call at file
+-- scope would be a nil index at best and a silent no-op at worst. Walking the
+-- database once is the direction that actually works, and it means declaring
+-- `rotating` on a record is the whole of adding one.
+A.rotatingGates = {}
+
+local function collectRotating()
+	wipe(A.rotatingGates)
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.rotating and rec.rotating.key then
+			A.rotatingGates[rec.rotating.key] = rec.rotating
+		end
+	end
+end
+MM:On("MM_LOGIN", collectRotating)
+
+MM:RegisterGameEvent("QUEST_TURNED_IN", function(questID)
+	if not next(A.rotatingGates) then return end
+	local title = MM.Util.ReadableString(C_QuestLog.GetTitleForQuestID
+		and C_QuestLog.GetTitleForQuestID(questID))
+	if not title then return end
+	local hay = title:lower()
+	for key, gate in pairs(A.rotatingGates) do
+		if not A.WeeklyDone(key) then
+			for _, needle in ipairs(needles(gate)) do
+				if needle and hay:find(needle:lower(), 1, true) then
+					A.MarkWeeklyDone(key)
+					MM:Print("%s done for the week — it comes off the plan until "
+						.. "the weekly reset.", gate.label or key)
+					return
+				end
+			end
+		end
+	end
 end)
