@@ -2,6 +2,13 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **Three more travel items**, with their requirements read from the client
+  rather than remembered: the **Wormhole Centrifuge** (Draenor Engineering), the
+  **Wormhole Generator: Quel'Thalas** (Midnight Engineering) and the **Personal
+  Key to the Arcantina** (no profession at all). The method was validated against
+  the three already shipped before being trusted — it reproduces Northrend at
+  rank 40 and the Zandalar generator needing *Kul Tiran* Engineering, which is
+  the one nobody would guess.
 - **The Dalaran Hearthstone was missing.** It runs on its own cooldown, so it is
   a second free trip rather than another flavour of the first one. Found by
   walking every toy in the client through its spell — a toy's teleport lives in

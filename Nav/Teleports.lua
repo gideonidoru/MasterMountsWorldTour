@@ -161,6 +161,22 @@ local MORE = {
 		name = "Wyrmhole Generator: Dragon Isles", requires = { skillLine = "Dragon Isles Engineering", level = 1 } },
 	{ key = "wh_khazalgar", item = 221966, place = "Khaz Algar",
 		name = "Wormhole Generator: Khaz Algar", requires = { skillLine = "Khaz Algar Engineering", level = 1 } },
+	-- TWO GAPS, AND THE REQUIREMENTS ARE READ RATHER THAN REMEMBERED.
+	--
+	-- The comment above says every line was taken off a live tooltip, and that
+	-- standard is kept: these come from the client's own item table, which
+	-- carries the required skill line and rank directly. The method was checked
+	-- against the three already here before being trusted -- it reproduces
+	-- Northrend at rank 40 and, more to the point, the Zandalar generator
+	-- needing KUL TIRAN Engineering, which is the one nobody would guess.
+	--
+	-- Destinations come from each spell's own description, not from the item's
+	-- name: the Centrifuge says "travel around Draenor" and the Quel'Thalas
+	-- generator says "a random Midnight location", which is Quel'Thalas.
+	{ key = "wh_draenor", item = 112059, place = "Draenor",
+		name = "Wormhole Centrifuge", requires = { skillLine = "Draenor Engineering", level = 1 } },
+	{ key = "wh_quelthalas", item = 248485, place = "Quel'Thalas",
+		name = "Wormhole Generator: Quel'Thalas", requires = { skillLine = "Midnight Engineering", level = 1 } },
 
 	-- Engineering transporters: fixed destinations, and the only fast way into
 	-- a couple of otherwise awkward corners. These are the expensive ones --
@@ -206,6 +222,10 @@ local MORE = {
 	-- alone found almost nothing.
 	{ key = "dalaran_hearth", item = 140192, place = "Dalaran",
 		name = "Dalaran Hearthstone" },
+	-- No profession, no faction: the client's item table gives it no required
+	-- skill at all, and its spell says plainly where it goes.
+	{ key = "arcantina_key", item = 253629, place = "Arcantina",
+		name = "Personal Key to the Arcantina" },
 
 	-- Class travel.
 	{ key = "deathgate", spell = 50977, place = "Acherus: The Ebon Hold",
