@@ -1131,6 +1131,26 @@ MM:On("MM_FIXES_DEBUG", function()
 			.. "candidate loop, which is where the searches are"):format(y, stops)
 	end)
 
+	probe("The waypoint arrow is ours unless asked otherwise", function()
+		if not MM.Nav or not MM.Nav.Refresh then
+			return false, "Nav.Refresh missing -- toggling the setting mid-route "
+				.. "would do nothing until the next step"
+		end
+		local want = MM.db.useTomTom and "tomtom" or "builtin"
+		local have = MM.Nav.Provider and MM.Nav.Provider() or "?"
+		local tt = _G.TomTom and "installed" or "not installed"
+		if have == "none" then
+			return true, ("setting says %s, TomTom %s; nothing being navigated "
+				.. "to right now"):format(want, tt)
+		end
+		-- A cross-continent leg is OURS on purpose even with TomTom asked for,
+		-- so that disagreement is correct and must not read as a failure.
+		if have ~= want and not (want == "tomtom" and have == "builtin") then
+			return false, ("setting says %s but %s is driving"):format(want, have)
+		end
+		return true, ("%s driving, setting says %s, TomTom %s"):format(have, want, tt)
+	end)
+
 	probe("Wowhead copy box resolves", function()
 		local dlg = StaticPopupDialogs and StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"]
 		if not dlg then return false, "dialog not registered" end

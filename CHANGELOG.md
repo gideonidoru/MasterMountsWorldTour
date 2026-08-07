@@ -2,6 +2,28 @@
 
 ## 1.1.11 — unreleased
 
+- **The built-in arrow is now the default, and TomTom is opt-in.** TomTom has a
+  single crazy arrow and a great many addons write to it — whichever wrote last
+  owns the screen. A route could be steered off mid-leg by something with
+  nothing to do with mounts, and from the player's side that just looked like
+  Master Mounts pointing at the wrong place. The built-in arrow answers to
+  nothing else, so it is what ships on.
+- **Existing installs are moved once**, and it is recorded, so anyone who ticks
+  the box straight back is never un-ticked again on a later login. Settings are
+  normally left alone; this one is moved because `on` was never a choice anyone
+  made — it was the old default, and it misbehaves.
+- **Switching it now takes effect on the step you are on, in both directions.**
+  Nothing re-ran the dispatch when the setting changed, so flipping it mid-route
+  did nothing visible until the next step: turning TomTom off left its waypoint
+  standing and never brought the built-in arrow back, and turning it on left the
+  built-in arrow up while TomTom got nothing. The current step is remembered now
+  — at the moment the setting flips, the code that knows where you are heading
+  is not the code doing the flipping.
+- A check reports which arrow is actually driving rather than which one the
+  setting asked for. The two differ on purpose for cross-continent legs, which
+  always use the built-in arrow because TomTom's one arrow cannot express a
+  multi-step route.
+
 - **Fifteen crafted mounts stop being hidden by a profession nobody needs.** All
   22 records with a `PROFESSION` condition were held back identically, and they
   are three situations. Five need the profession *to ride* — the flying carpets,

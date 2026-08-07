@@ -88,6 +88,11 @@ local function buildPanel()
 			MM.db[key] = self:GetChecked() and true or false
 			if key == "mapPins" or key == "mapPinsShowCollected" then
 				if MM.MapPins then MM.MapPins.Refresh() end
+			elseif key == "useTomTom" then
+				-- Hand the leg being travelled to the other provider NOW.
+				-- Without this the box only takes effect at the next step,
+				-- which mid-route reads as the setting doing nothing.
+				if MM.Nav and MM.Nav.Refresh then MM.Nav.Refresh() end
 			end
 		end)
 		return place(c, 26, indent)
@@ -147,8 +152,12 @@ local function buildPanel()
 		.. "comes back in the next zone. /mm zone show summons it any time.", 16)
 	check("Show mount locations on the world map", "mapPins")
 	check("Include mounts I already own on the map", "mapPinsShowCollected", nil, 16)
-	check("Use TomTom for waypoints when installed", "useTomTom",
-		"Unchecked (or no TomTom): Master Mounts uses its own arrow.")
+	check("Hand waypoints to TomTom instead of the built-in arrow", "useTomTom",
+		"Off by default. TomTom has a single arrow that any addon can write "
+		.. "to, so whichever wrote last owns it — which can steer you off "
+		.. "route mid-leg and look like Master Mounts pointing at the wrong "
+		.. "place. The built-in arrow answers to nothing else. Switching this "
+		.. "takes effect immediately, either way, on the step you are on.")
 
 	-- Arrow size.
 	--

@@ -334,7 +334,13 @@ local accountDefaults = {
 	celebration = true,       -- big splash when a hunted mount drops
 	celebrationShot = true,   -- take a screenshot during the splash
 	celebrateAll = false,     -- celebrate every new mount, not only planned ones
-	useTomTom = true,         -- hand waypoints to TomTom when it is installed
+	-- OFF. TomTom has one crazy arrow and plenty of addons write to it, so a
+	-- route could be steered off mid-leg by something unrelated to mounts and
+	-- look, from the outside, like Master Mounts pointing at the wrong place.
+	-- Our own arrow answers to nobody else. Tick the box to hand waypoints over
+	-- anyway -- the handover works live, in both directions.
+	useTomTom = false,
+	tomTomDefaultReset = nil, -- stamped once when the default above flipped
 	autoMonitor = true,       -- open the monitor HUD when a route starts
 	theme = nil,             -- nil = auto (ElvUI if installed, else blizzard)
 	-- First-run onboarding. Stores the SCHEMA it was completed against, not a
@@ -450,6 +456,24 @@ MM:RegisterGameEvent("ADDON_LOADED", function(name)
 	MM.db = MasterMountsDB
 	MM.cdb = MasterMountsCharDB
 	accountPlanDefaults(MM.db)
+
+	-- THE TOMTOM DEFAULT FLIPPED, SO EXISTING INSTALLS GET MOVED ONCE.
+	--
+	-- Leaving saved settings alone is normally the right instinct, and it is
+	-- wrong here: `useTomTom = true` was OUR choice, not the player's, and the
+	-- reason it changed is that it actively misbehaves -- other addons take
+	-- TomTom's single arrow and the route silently points somewhere else. A
+	-- default nobody chose, which produces a bug, is worth moving.
+	--
+	-- ONCE, and recorded, so a player who ticks the box straight back is never
+	-- un-ticked again on a later login. There is no way to tell an inherited
+	-- `true` from a deliberate one -- that distinction was never stored -- so
+	-- this is announced in the changelog and the checkbox is left in plain
+	-- sight rather than pretending the change was invisible.
+	if not MM.db.tomTomDefaultReset then
+		MM.db.tomTomDefaultReset = time()
+		MM.db.useTomTom = false
+	end
 
 	-- MIGRATE ONCE, THEN SHARE.
 	--
