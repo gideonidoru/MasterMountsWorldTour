@@ -192,6 +192,7 @@ local SECTIONS = {
 	{ "FLIGHT POINTS",       "MM_FLIGHTPOINTS_DEBUG" },
 	-- LAST ON PURPOSE. It is the section a reader checks after installing a
 	-- build, and the one they want to find without scrolling past a route.
+	{ "PLANNER LEFT PANE",  "MM_ROWPROBE_DEBUG" },
 	{ "FIXES IN THIS BUILD", "MM_FIXES_DEBUG" },
 }
 D.SECTIONS = SECTIONS
@@ -1086,5 +1087,48 @@ MM:On("MM_FIXES_DEBUG", function()
 		MM:Print("   |cff40d860All %d hold.|r", #rows)
 	else
 		MM:Print("   |cffff4444%d of %d need looking at.|r", bad, #rows)
+	end
+end)
+
+------------------------------------------------------------
+-- /mm rowprobe — the left pane's [+], measured
+------------------------------------------------------------
+-- Reading the code three times did not explain why this one button does
+-- nothing while two identical ones work. This prints what the frames actually
+-- are, so the next step comes from a number rather than another reading.
+MM:On("MM_ROWPROBE_DEBUG", function()
+	MM:Print("|cffffd84dPLANNER LEFT PANE|r  measured, not inferred")
+	local info, why = MM.UI and MM.UI.InspectMissingPane and MM.UI.InspectMissingPane()
+	if not info then
+		MM:Print("   %s", why or "open the Planner tab once, then run this again")
+		return
+	end
+	MM:Print("   scroll box: width %s, level %s, %d row(s) drawn",
+		tostring(info.boxWidth), tostring(info.boxLevel), info.visibleRows or 0)
+	if (info.visibleRows or 0) == 0 then
+		MM:Print("   Nothing is drawn here, so there is no [+] to press --")
+		MM:Print("   every missing mount is already on your plan.")
+		return
+	end
+	for i, r in ipairs(info.rows) do
+		MM:Print("   %d. %s", i, tostring(r.name))
+		if r.btnMissing then
+			MM:Print("        NO ACTION BUTTON ON THIS ROW")
+		else
+			MM:Print("        row level %s / button level %s%s",
+				tostring(r.rowLevel), tostring(r.btnLevel),
+				(r.btnLevel and r.rowLevel and r.btnLevel <= r.rowLevel)
+					and "   <-- the row can take the click" or "")
+			MM:Print("        button %sx%s, shown %s, mouse %s, alpha %s%%, OnClick %s",
+				tostring(r.btnW), tostring(r.btnH), tostring(r.btnShown),
+				tostring(r.btnMouse), tostring(r.btnAlpha), tostring(r.hasClick))
+			MM:Print("        row width %s, button inset left %s right %s%s",
+				tostring(r.rowWidth), tostring(r.insetLeft), tostring(r.insetRight),
+				(r.insetLeft and r.rowWidth and r.insetLeft > r.rowWidth)
+					and "   <-- anchored off the row" or "")
+		end
+		MM:Print("        spellID %s, already planned %s, a click would add: %s%s",
+			tostring(r.spellID), tostring(r.inPlan), tostring(r.addWouldWork),
+			r.spellID == nil and "   <-- no spellID, so Add has nothing to key on" or "")
 	end
 end)

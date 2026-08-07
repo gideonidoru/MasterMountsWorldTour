@@ -176,19 +176,31 @@ function UI.MakeRowAction(row)
 	-- mount off the plan, and the row stays. The pair stays [+] and [-] so one
 	-- gesture means one thing in both panes. What was wrong was never the
 	-- glyph, it was the red button around it.
+	-- THE LABEL SAYS WHAT THIS ONE BUTTON DOES.
+	--
+	-- It read "Add / remove from farm plan" on every row in both panes, which
+	-- is a description of the CONTROL rather than of the click in front of you:
+	-- in the left pane it only ever adds, in the right pane it only ever
+	-- removes. Reported from outside as exactly that.
+	--
+	-- mmTooltip already existed and was already being set on the plan pane's
+	-- button -- and nothing ever read it. Now the glyph and the label are set
+	-- together, so they cannot drift, and an explicit mmTooltip still wins.
 	b.mmSet = function(self, inPlan)
 		if inPlan then
 			self.glyph:SetText("-")
 			self.glyph:SetTextColor(1, 0.45, 0.4)
+			self.mmLabel = "Remove from plan"
 		else
 			self.glyph:SetText("+")
 			self.glyph:SetTextColor(0.45, 1, 0.5)
+			self.mmLabel = "Add to farm plan"
 		end
 	end
 	b:SetScript("OnEnter", function(self)
 		self:SetAlpha(1)
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
-		GameTooltip:SetText("Add / remove from farm plan")
+		GameTooltip:SetText(self.mmTooltip or self.mmLabel or "Add to farm plan")
 		GameTooltip:Show()
 	end)
 	b:SetScript("OnLeave", function(self)

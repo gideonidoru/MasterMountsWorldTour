@@ -886,3 +886,71 @@ end
 
 MM:On("MM_ROUTE_STARTED", function() if routeButton then routeButton:SetRouteState(true) end end)
 MM:On("MM_ROUTE_STOPPED", function() if routeButton then routeButton:SetRouteState(false) end end)
+
+------------------------------------------------------------
+-- What is actually on screen in the left pane
+------------------------------------------------------------
+-- Written because [+] in this pane does nothing and three rounds of reading the
+-- code did not explain it. The three call sites are identical -- same helper,
+-- same anchor, same handler, same Add -- and the refresh path is correct, so
+-- reasoning about the source has run out of road.
+--
+-- Nothing here is a fix or a theory. It reports what the live frames ARE:
+-- levels, geometry, whether the scripts exist, and what the click would do if
+-- it arrived. If the button is behind the row, the numbers say so. If the entry
+-- has no spellID, Add cannot key a plan entry on it and the numbers say that
+-- instead. Either way the next answer comes from a measurement.
+function UI.InspectMissingPane()
+	if not missingBox then return nil, "planner has not been built this session" end
+	local out = { rows = {} }
+
+	out.boxWidth = missingBox.GetWidth and math.floor(missingBox:GetWidth() or 0)
+	out.boxLevel = missingBox.GetFrameLevel and missingBox:GetFrameLevel()
+
+	local frames = {}
+	if missingBox.GetFrames then
+		local ok, f = pcall(missingBox.GetFrames, missingBox)
+		if ok and type(f) == "table" then frames = f end
+	end
+	out.visibleRows = #frames
+
+	for i = 1, math.min(#frames, 3) do
+		local row = frames[i]
+		local b = row and row.add
+		local e = row and row.entry
+		local r = {}
+		r.name = e and e.name or "?"
+		r.spellID = e and e.spellID or nil
+		r.rowLevel = row.GetFrameLevel and row:GetFrameLevel()
+		r.rowWidth = row.GetWidth and math.floor(row:GetWidth() or 0)
+		r.rowMouse = row.IsMouseEnabled and row:IsMouseEnabled()
+		if b then
+			r.btnLevel = b.GetFrameLevel and b:GetFrameLevel()
+			r.btnShown = b.IsShown and b:IsShown()
+			r.btnMouse = b.IsMouseEnabled and b:IsMouseEnabled()
+			r.btnAlpha = b.GetAlpha and math.floor((b:GetAlpha() or 0) * 100)
+			r.btnW = b.GetWidth and math.floor(b:GetWidth() or 0)
+			r.btnH = b.GetHeight and math.floor(b:GetHeight() or 0)
+			r.hasClick = b.GetScript and b:GetScript("OnClick") ~= nil
+			-- Where the button sits INSIDE its row. A negative left or a right
+			-- edge past the row's width means it is anchored off the row.
+			local okL, bl = pcall(b.GetLeft, b)
+			local okR, br = pcall(b.GetRight, b)
+			local okRL, rl = pcall(row.GetLeft, row)
+			local okRR, rr = pcall(row.GetRight, row)
+			if okL and okR and okRL and okRR and bl and br and rl and rr then
+				r.insetLeft = math.floor(bl - rl)
+				r.insetRight = math.floor(rr - br)
+			end
+		else
+			r.btnMissing = true
+		end
+		-- What the click would DO, evaluated the same way the handler does.
+		if e then
+			r.inPlan = MM.Planner:InPlan(e.spellID) ~= nil
+			r.addWouldWork = (e.spellID ~= nil) and not r.inPlan
+		end
+		out.rows[i] = r
+	end
+	return out
+end

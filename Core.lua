@@ -721,6 +721,8 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Fire("MM_FLIGHTPOINTS_DEBUG")
 	elseif input == "fixes" then
 		MM:Fire("MM_FIXES_DEBUG")
+	elseif input == "rowprobe" then
+		MM:Fire("MM_ROWPROBE_DEBUG")
 	elseif input == "score" then
 		MM:Fire("MM_SCORE_DEBUG")
 	elseif input == "known" then
