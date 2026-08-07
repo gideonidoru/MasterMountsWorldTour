@@ -1706,72 +1706,100 @@ local function runLogic()
 
 	check("A zone that exists twice lands on its own expansion's continent", function()
 		-- REPORTED FROM PLAY: a route apparently heading for Outland when the
-		-- mount was somewhere else entirely.
+		-- mount was somewhere else.
 		--
-		-- Three zone names in this database exist on TWO continents, because
-		-- Warlords rebuilt Draenor using the names Outland already had:
-		-- Nagrand is map 107 and 550, Shadowmoon Valley 104 and 539, Shattrath
-		-- City 111 and 594. The shipped id table has to pick one, and it picked
-		-- the Outland copy for all three -- correctly labelled AMBIGUOUS in its
-		-- own comment. Every Draenor stable mount names one of those zones.
+		-- Warlords rebuilt Draenor using names Outland already had, so Nagrand
+		-- is map 107 AND 550, Shadowmoon Valley 104 AND 539, Shattrath City 111
+		-- AND 594. The shipped id table picks the Outland copy for all three and
+		-- says AMBIGUOUS in its own comment; every Draenor stable mount names
+		-- one of those zones. Quel'Thalas did the same to Eversong Woods and
+		-- Silvermoon City. The resolver settles it from the record's expansion,
+		-- and that claim is what is tested here, because nothing tested it: the
+		-- neighbouring check asks whether the chosen map can be POSITIONED, and
+		-- the wrong copy positions perfectly.
 		--
-		-- The resolver is supposed to take the record's expansion into account
-		-- and choose the right copy. That is the claim being tested, because
-		-- nothing tested it: the neighbouring check asks whether the chosen map
-		-- can be POSITIONED, which the wrong copy can be, perfectly.
+		-- SIMULATED, NOT ASKED FOR. Confirming this by hand needs the mount set
+		-- as a goal, and a mount already collected can never be a goal -- so the
+		-- routes most worth checking are the ones a player cannot check. This
+		-- calls GetRecordMapID, the same function the router and arrow call.
 		--
-		-- SIMULATED, NOT ASKED FOR. Verifying this by eye needs a goal set to
-		-- the mount, and a mount already collected can never be a goal -- so
-		-- the one route most worth checking is the one a player cannot check.
-		-- This calls GetRecordMapID, which is the same function the router and
-		-- the arrow call, for every record that has a zone.
+		-- TWO THINGS THIS GOT WRONG FIRST TIME, both of which made it cry wolf
+		-- on 295 correct answers:
 		--
-		-- WHERE AN EXPANSION LIVES IS LEARNED, NOT DECLARED. A hand-written
-		-- expansion-to-continent table would be one more thing to be wrong, and
-		-- wrong in the same direction as the bug. Instead the unambiguous
-		-- records of each expansion say where that expansion sits -- Hellfire
-		-- Peninsula and Zangarmarsh put Burning Crusade on Outland, Gorgrond and
-		-- Talador put Warlords on Draenor -- and the ambiguous ones have to
-		-- agree with their own era. An expansion spanning two continents is
-		-- handled by construction: both get recorded.
+		-- A name with several maps is not a name with several CONTINENTS.
+		-- Azsuna is more than one map and all of them are on the Broken Isles;
+		-- there is nothing there to get wrong. Only a name whose maps span two
+		-- real continents can send anyone to the wrong one.
+		--
+		-- And a continent is not GetWorldPos's first return. That is the
+		-- coordinate space a position was measured in, and an instance has its
+		-- own -- so sibling maps of one zone looked like different continents
+		-- purely for being instanced. GetContinentMapID walks the parent chain
+		-- to the actual continent, which is the thing being asserted about.
 		local U2 = MM.Util
-		if not (U2 and U2.GetRecordMapID and U2.ResolveMapsByName and U2.GetWorldPos) then
+		if not (U2 and U2.GetRecordMapID and U2.ResolveMapsByName
+			and U2.GetContinentMapID) then
 			return nil, "map helpers unavailable"
 		end
-		local eras, doubtful, memo = {}, {}, {}
+		local CONTINENT = (Enum and Enum.UIMapType and Enum.UIMapType.Continent) or 2
+		local realCache = {}
+		-- The continent a map sits on, and only if it really is a continent. A
+		-- parent chain that runs out early returns the map it stopped on, which
+		-- is not evidence of anything and must not be counted as a second one.
+		local function realContinent(mapID)
+			if not mapID then return nil end
+			local hit = realCache[mapID]
+			if hit ~= nil then return hit or nil end
+			local c = U2.GetContinentMapID(mapID)
+			local ok, info = pcall(C_Map.GetMapInfo, c)
+			local out = (ok and info and info.mapType == CONTINENT) and c or false
+			realCache[mapID] = out
+			return out or nil
+		end
+		local eras, risky, memo = {}, {}, {}
 		for _, rec in pairs(MM.DBByName) do
 			local zn = rec.zone and rec.zone.name
 			if zn and rec.expansion then
-				-- One answer per zone-and-era; the same pair repeats across
-				-- dozens of records and each resolve walks the map index.
+				-- One answer per zone-and-era; the pair repeats across dozens of
+				-- records and each resolve walks the map index.
 				local key = zn .. "#" .. tostring(rec.expansion)
 				local m = memo[key]
 				if m == nil then
 					local mapID = U2.GetRecordMapID(rec)
-					local c = mapID and select(1, U2.GetWorldPos(mapID, 50, 50))
-					m = (c and { mapID = mapID, cont = c,
-						twin = #(U2.ResolveMapsByName(zn) or {}) > 1 }) or false
+					local cont = mapID and realContinent(mapID)
+					if cont then
+						local seen, spread = {}, 0
+						for _, sib in ipairs(U2.ResolveMapsByName(zn) or {}) do
+							local sc = realContinent(sib)
+							if sc and not seen[sc] then seen[sc] = true spread = spread + 1 end
+						end
+						m = { mapID = mapID, cont = cont, twin = spread > 1 }
+					else
+						m = false
+					end
 					memo[key] = m
 				end
 				if m then
 					if m.twin then
-						doubtful[#doubtful + 1] =
-							{ name = rec.name, zone = zn, exp = rec.expansion,
-								cont = m.cont, mapID = m.mapID }
+						risky[#risky + 1] = { name = rec.name, zone = zn,
+							exp = rec.expansion, cont = m.cont, mapID = m.mapID }
 					else
 						local band = eras[rec.expansion]
-						if not band then band = {} eras[rec.expansion] = band end
-						band[m.cont] = true
+						if not band then band = { conts = {}, n = 0 } eras[rec.expansion] = band end
+						band.conts[m.cont] = true
+						band.n = band.n + 1
 					end
 				end
 			end
 		end
 		local checked, stray, example = 0, 0, nil
-		for _, d in ipairs(doubtful) do
+		for _, d in ipairs(risky) do
 			local band = eras[d.exp]
-			if band and next(band) then
+			-- A band standing on one or two records is a coincidence with a
+			-- sample size, not evidence of where an expansion lives.
+			if band and band.n >= 3 then
 				checked = checked + 1
-				if not band[d.cont] then
+				if not band.conts[d.cont] then
 					stray = stray + 1
 					example = example or ("%s -> %s, map %d"):format(d.name, d.zone, d.mapID)
 				end
@@ -1782,8 +1810,8 @@ local function runLogic()
 			return false, ("%d goal(s) land on a continent no other mount of "
 				.. "their expansion uses, e.g. %s"):format(stray, example)
 		end
-		return true, ("%d reference(s) to a twinned zone, every one on its own "
-			.. "expansion's continent"):format(checked)
+		return true, ("%d reference(s) to a zone that exists on two continents, "
+			.. "every one on its own expansion's"):format(checked)
 	end)
 
 	check("Source comparison scores real disagreement", function()

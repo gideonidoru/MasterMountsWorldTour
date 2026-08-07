@@ -12,6 +12,13 @@
   arrow use — and it has to be simulated, because confirming it by hand needs
   the mount set as a goal and a mount you already own can never be one.
 
+  Its first version cried wolf on 295 correct answers, for two reasons worth
+  stating: a name with several maps is not a name with several continents —
+  Azsuna is several maps and all of them are on the Broken Isles — and a
+  continent is not GetWorldPos's first return, which is the coordinate space a
+  position was measured in, so instanced siblings of one zone looked like
+  different continents purely for being instanced.
+
 - **The wrong-continent check audited four zones and reported the number as
   coverage.** Its whole purpose is catching a goal that attaches to an entry
   point an ocean away, and it probed Tazavesh, Ny'alotha, The Forbidden Reach
