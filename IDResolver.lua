@@ -286,7 +286,10 @@ function R.ObserveGossip()
 end
 
 function R.ObserveVendor()
-	local name, id = UnitName("npc"), npcIDFromGUID(UnitGUID("npc"))
+	-- Through the same guard as ObserveUnit above: a vendor is a unit, and its
+	-- name is as secret as any other inside an instance.
+	local name, id = MM.Util.ReadableString(UnitName("npc")),
+		npcIDFromGUID(UnitGUID("npc"))
 	if not (name and id) then return end
 	local store = db()
 	store.vendors[name:lower()] = {

@@ -754,14 +754,28 @@ end
 ------------------------------------------------------------
 local function checkUnit(unit)
 	if not unit or not UnitExists(unit) then return end
-	local name = UnitName(unit)
-	if not name then return end
+	-- A UNIT'S NAME IS SECRET IN AN INSTANCE, AND THIS IS THE THIRD PLACE.
+	--
+	-- Reported from a delve as three throws at once -- NAME_PLATE_UNIT_ADDED,
+	-- UPDATE_MOUSEOVER_UNIT and PLAYER_TARGET_CHANGED -- because all three land
+	-- here. The vignette path was fixed first, then ObserveUnit; this one was
+	-- left because nothing pointed at it, which is the whole trouble with
+	-- fixing these one report at a time.
+	--
+	-- LOSING THE NAME COSTS ALMOST NOTHING. lookup() tries the GUID's npc id
+	-- first and only falls back to the name, so a watched rare is still matched
+	-- while its name is unreadable -- and the alert can say what it is from the
+	-- record we matched, rather than from a string the client will not hand
+	-- over.
+	local name = MM.Util.ReadableString(UnitName(unit))
 	local hit = lookup(UnitGUID(unit), name)
 	if not hit then return end
 	local classification = UnitClassification(unit)
 	if classification == "rare" or classification == "rareelite"
 		or classification == "elite" or classification == "worldboss" then
-		RA.Alert(name, hit, C_Map.GetPlayerMapPosition(C_Map.GetBestMapForUnit("player") or 0, "player"))
+		-- The matched record names it when the client will not.
+		RA.Alert(name or hit.name or "A watched rare", hit,
+			C_Map.GetPlayerMapPosition(C_Map.GetBestMapForUnit("player") or 0, "player"))
 	end
 end
 

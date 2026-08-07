@@ -2,6 +2,18 @@
 
 ## 1.1.14 — unreleased
 
+- **Rare alerts threw on every nameplate, mouseover and target in a delve.** A
+  unit's name is a secret value inside an instance on 12.0, and reading one
+  as a string throws. Losing the name costs almost nothing — a watched rare is
+  matched on the npc id from its GUID first, and the alert can name it from the
+  record it matched rather than from a string the client will not hand over.
+  The vendor-name read had the same hole and is closed too.
+- **The build now refuses to ship an unguarded unit-name read.** This mistake
+  shipped three times: a boss name, then a vignette name, then three unit events
+  at once — each in a different file, each a few lines from something already
+  guarded, and each costing a live report because nothing pointed at the next
+  one. The player's own name is excluded, because that is never withheld.
+
 - **The arrow's action button was blocked in combat.** It is a secure button,
   and Blizzard protects the frame — not just its attributes — so `Show` and
   `Hide` are refused in combat exactly as `SetAttribute` is. The attribute
