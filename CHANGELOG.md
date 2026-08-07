@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.11 — unreleased
+## 1.1.11 — 2026-08-07
 
 - **The built-in arrow is now the default, and TomTom is opt-in.** TomTom has a
   single crazy arrow and a great many addons write to it — whichever wrote last
