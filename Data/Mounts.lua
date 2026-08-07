@@ -17898,18 +17898,43 @@ MM.AddMounts({
 		expansion = 8,
 		category = "RARE",
 		obtainable = true,
-		source = "Leap onto Sundancer's back from the cliffs of southern Bastion",
+		source = "Glide onto Sundancer as she patrols Bastion, soothe her, then bring her to 10% in the fight that follows. Guaranteed.",
 		npc = {
 			name = "Sundancer",
 			id = 170439,
 		},
 		zone = {
+			name = "Bastion",
 			mapID = 1533,
 			x = 60,
 			y = 93.4,
 		},
+		acquire = {
+			hours = 2,
+			steps = {
+				{
+					text = "Get a Skystrider Glider -- auction house, or craft it: Kyrian, Path of Ascension level 3, beat Kalisthene at Wisdom for the blueprint, then Dactylis makes it",
+				},
+				{
+					text = "Find Sundancer on patrol in southern Bastion",
+				},
+				{
+					text = "Interact with the Ancient Memorial for Sunrider's Blessing -- thirty minutes, and everything below has to fit inside it",
+				},
+				{
+					text = "Fly ABOVE her, dismount, and use the Glider to land on her. She cannot be mounted from a flying mount",
+				},
+				{
+					text = "Spam Soothe until the button disappears. She then carries you to the Memorial and drops you",
+				},
+				{
+					text = "Talk to her to start the fight, and bring her to 10%. The fight stops there and the mount goes to your bags",
+				},
+			},
+		},
+		dropRate = 100,
 		effort = 2,
-		notes = "Not a kill: use the updrafts/high ground to land on the flying horse mid-air and ride it to completion.",
+		notes = "The Glider is not optional and flying does not replace it. She despawns if left, so reach her promptly. Soloable at range with a pet class; dispel her buffs if you can.",
 		poolRares = {
 			"Sundancer",
 		},
@@ -23723,20 +23748,28 @@ MM.AddMounts({
 		expansion = 9,
 		category = "RARE",
 		obtainable = true,
-		source = "Zenet Egg, dropped by a rare Zenet bird in Ohn'ahran Plains; egg hatches after several days",
+		source = "Kill Zenet Avis in Ohn'ahran Plains for a Zenet Egg -- guaranteed -- which hatches into the mount seven days later.",
 		npc = {
 			name = "Zenet Avis",
 			id = 193209,
 		},
 		zone = {
+			name = "Ohn'ahran Plains",
 			mapID = 2023,
-			x = 31.5,
-			y = 64,
+			x = 31.51,
+			y = 64.01,
 		},
+		acquire = {
+			name = "Zenet Egg",
+			incubate = 7,
+			item = 198824,
+			note = "the egg becomes the mount after 7 days in your bags",
+		},
+		dropRate = 100,
 		attempts = "NONE",
 		timePerAttempt = 10,
 		effort = 2,
-		notes = "Loot the egg from the rare spawn, then wait out the hatching timer in your bags.",
+		notes = "Avis flies a wide circle high above the hill and is easy to miss; fly close to pull him down. Respawns every 2-8 hours. The egg drops every time -- the seven-day hatch is the whole wait.",
 	},
 	{
 		name = "Temperamental Skyclaw",
@@ -39106,9 +39139,10 @@ MM.AddMounts({
 				min = 0,
 			},
 		},
+		dropRate = 100,
 		attempts = "NONE",
 		effort = 3,
-		notes = "NOT a single drop -- an accumulation. The Froststone Vault Primal Storm runs on a cycle of a few hours and has NO daily lockout, so the same character can loot the final boss every time it comes round. The binding constraint is how often the event is up, not how often you may loot it. The 0-5 range is stated; the distribution inside it is not published, so the plan assumes the midpoint and says so.",
+		notes = "No daily lockout -- the Froststone Vault Primal Storm runs every couple of hours and every clear of the final boss counts, so the whole thing can be done in a day if you catch the events. Nought to five slime a kill, so roughly twenty clears.",
 	},
 	{
 		name = "Slumbering Worldsnail",
@@ -39716,14 +39750,25 @@ MM.AddMounts({
 		expansion = 9,
 		category = "DROP",
 		obtainable = true,
-		source = "Combine 20 Charred Elemental Remains from Dreamsurge Waking Dream bosses.",
+		source = "Close Dreamsurge portals for Charred Elemental Remains -- one to three each -- and combine twenty.",
 		zone = {
 			name = "Valdrakken",
 			mapID = 2112,
 			x = 50,
 			y = 50,
 		},
+		acquire = {
+			name = "Charred Elemental Remains",
+			count = 20,
+			note = "one to three per portal closed, so about ten portals",
+			perAttempt = {
+				max = 3,
+				min = 1,
+			},
+		},
+		dropRate = 100,
 		effort = 3,
+		notes = "Check the map every half hour for portals; some of the smaller ones never appear on it, so callouts are worth watching for. The mobs are easy and closing the portal is what pays. THE DROP STOPS at twenty or once you have the mount -- if you seem stuck a few short, the rest are in your bank or mailbox. Dreamsurge moves between zones each cycle.",
 	},
 	{
 		name = "Delugen",
