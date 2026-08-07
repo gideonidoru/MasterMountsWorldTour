@@ -2,6 +2,22 @@
 
 ## 1.1.12 — unreleased
 
+- **`/mm report` died with "script ran too long" on slower hardware.** All 33
+  sections ran in one uninterrupted execution, and the client's watchdog
+  measures a single run rather than total work — so the fix is to stop doing it
+  all at once, not to do less of it. Sections are independent, so the report
+  breathes between them now and assembles over a few frames. An extra moment to
+  build is invisible; tripping the watchdog produced nothing at all, which is
+  the worst possible time for a diagnostic to fail.
+- **One broken section no longer hides the other thirty-two.** A section that
+  threw took the whole report with it and returned an error string instead —
+  losing exactly the context needed to work out why. Each is wrapped, and a
+  failed one says so in place.
+- The freeze check was measuring the total, which stopped being the number that
+  matters the moment this was chunked. It holds a line under the slowest
+  *single* section now, and a second check catches a builder that quietly stops
+  chunking.
+
 - **The arrow and the plan could point at different mounts.** Reported from
   play: the guide led with Island Expeditions while the arrow said queue for
   Timewalking. Reading where you were heading also WROTE the resume anchor, so

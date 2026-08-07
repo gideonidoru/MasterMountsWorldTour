@@ -1825,6 +1825,21 @@ local function runLogic()
 		local ok, err = pcall(D.Build)
 		local ms = debugprofilestop() - t0
 		if not ok then return false, "the report errored: " .. tostring(err) end
+
+		-- TOTAL TIME STOPPED BEING THE NUMBER THAT MATTERS.
+		--
+		-- `/mm report` died with "script ran too long" on a slower machine while
+		-- this check was green here, because the client's watchdog measures ONE
+		-- uninterrupted run and this measured the sum. The report breathes
+		-- between sections now, so what can still trip it is a single section
+		-- that is too big on its own -- and that is what to hold a line under.
+		-- The total stays below as a floor against catastrophe.
+		local worst, worstMs = D.SlowestSection and D.SlowestSection()
+		if worst and worstMs and worstMs > 400 then
+			return false, ("one section runs %d ms without yielding (%s) — the "
+				.. "watchdog measures a single run, not the total")
+				:format(worstMs, worst)
+		end
 		local BUDGET = 2000
 		if ms > BUDGET then
 			return false, ("the report took %.0f ms — over the %d ms budget. "
@@ -4761,6 +4776,28 @@ local function runLogic()
 		end
 		return true, ("%.0f min travelling and visiting inside %.0f min of work; "
 			.. "last stop lands at %.0f"):format(travel, whole, final)
+	end)
+
+	check("The report is assembled in pieces, not one long run", function()
+		-- The fix for "script ran too long" is structural, so the check is too:
+		-- a chunked builder that quietly stopped chunking would look identical
+		-- from the outside until somebody on slower hardware lost the report.
+		local D = MM.Diagnostics
+		if not (D and D.BuildChunked) then
+			return false, "BuildChunked missing — the report runs in one go again"
+		end
+		if D.inReport then return nil, "skipped inside the report itself" end
+		local seen = D.sectionMs and next(D.sectionMs)
+		if not seen then
+			return nil, "no chunked report built yet this session"
+		end
+		local n, worst, worstMs = 0, nil, 0
+		for name, t in pairs(D.sectionMs) do
+			n = n + 1
+			if t > worstMs then worst, worstMs = name, t end
+		end
+		return true, ("%d sections timed individually; slowest is %s at %d ms")
+			:format(n, tostring(worst), worstMs)
 	end)
 
 	check("The arrow and the plan cannot disagree about where you are going", function()

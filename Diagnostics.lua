@@ -211,6 +211,36 @@ local SECTIONS = {
 }
 D.SECTIONS = SECTIONS
 
+-- One section, rendered. Shared so the chunked path and the timed one cannot
+-- drift into measuring different things.
+--
+-- WRAPPED. A section that throws used to take the whole report with it -- the
+-- outer pcall caught it and returned an error string INSTEAD of the report, so
+-- one broken diagnostic hid the other thirty-two, which are exactly what you
+-- need to work out why it broke.
+local function renderSection(add, section)
+	add("")
+	add("----- " .. section[1] .. " -----")
+	local body, err
+	local ok = pcall(function()
+		body = D.Capture(function()
+			if type(section[2]) == "function" then section[2]()
+			else MM:Fire(section[2]) end
+		end)
+	end)
+	if not ok then err = "this section threw; the rest of the report is intact" end
+	body = body or {}
+	if err then add("  |cffff4444" .. err .. "|r") end
+	if #body == 0 and not err then add("(no output)") end
+	for _, l in ipairs(body) do add("  " .. l) end
+end
+
+local function header(add)
+	add("===== MASTER MOUNTS DIAGNOSTIC REPORT =====")
+	add("")
+	for _, l in ipairs(environment()) do add(l) end
+end
+
 local function build()
 	-- Sections can be run standalone or as part of the full report. Anything
 	-- expensive that the report ALREADY does elsewhere must not be repeated
@@ -218,22 +248,8 @@ local function build()
 	D.inReport = true
 	local out = {}
 	local function add(s) out[#out + 1] = s or "" end
-
-	add("===== MASTER MOUNTS DIAGNOSTIC REPORT =====")
-	add("")
-	for _, l in ipairs(environment()) do add(l) end
-
-	for _, section in ipairs(SECTIONS) do
-		add("")
-		add("----- " .. section[1] .. " -----")
-		local body = D.Capture(function()
-			if type(section[2]) == "function" then section[2]()
-			else MM:Fire(section[2]) end
-		end)
-		if #body == 0 then add("(no output)") end
-		for _, l in ipairs(body) do add("  " .. l) end
-	end
-
+	header(add)
+	for _, section in ipairs(SECTIONS) do renderSection(add, section) end
 	add("")
 	add("===== END OF REPORT =====")
 	D.inReport = false
@@ -241,6 +257,60 @@ local function build()
 end
 -- Exposed so a self-test can TIME the real report rather than a model of it.
 D.Build = build
+
+-- THIRTY-THREE SECTIONS IN ONE EXECUTION IS A SCRIPT-TOO-LONG WAITING TO
+-- HAPPEN, and on a slower machine it happened: `/mm report` died with the
+-- client's own watchdog rather than producing anything.
+--
+-- The watchdog measures ONE uninterrupted run, not total work, so the fix is
+-- to stop doing it all at once rather than to do less of it. Sections are
+-- independent -- each captures its own output and shares nothing but the
+-- inReport flag -- so the boundary between them is a free place to breathe.
+--
+-- The budget is deliberately well under a frame. A report that takes an extra
+-- second to assemble is invisible; one that trips the watchdog produces
+-- nothing at all, and the whole point of it is to be readable when things are
+-- going wrong.
+local FRAME_BUDGET_MS = 12
+
+function D.BuildChunked(onDone)
+	D.inReport = true
+	local out, i = {}, 1
+	local function add(s) out[#out + 1] = s or "" end
+	header(add)
+	D.sectionMs = {}
+	local function step()
+		local started = debugprofilestop()
+		repeat
+			local section = SECTIONS[i]
+			if not section then break end
+			local at = debugprofilestop()
+			renderSection(add, section)
+			D.sectionMs[section[1]] = debugprofilestop() - at
+			i = i + 1
+		until debugprofilestop() - started > FRAME_BUDGET_MS
+		if SECTIONS[i] then
+			C_Timer.After(0, step)
+		else
+			add("")
+			add("===== END OF REPORT =====")
+			D.inReport = false
+			onDone(table.concat(out, "\n"))
+		end
+	end
+	step()
+end
+
+-- The slowest SINGLE section, which is what decides whether the watchdog fires
+-- now that the report breathes between them. Total time stopped being the
+-- number that matters the moment this was chunked.
+function D.SlowestSection()
+	local worst, ms = nil, 0
+	for name, t in pairs(D.sectionMs or {}) do
+		if t > ms then worst, ms = name, t end
+	end
+	return worst, ms
+end
 
 -- Async subsystems must be warmed before anything reads them, or the report
 -- records "not synced" for things that simply had not answered yet. Same reason
@@ -250,8 +320,10 @@ function D.Generate(onReady)
 	pcall(function() MM.Availability.EnsureCalendar() end)
 	pcall(function() MM.TradingPost.Refresh() end)
 	C_Timer.After(4, function()
-		local ok, text = pcall(build)
-		onReady(ok and text or ("Report generation failed: " .. tostring(text)))
+		local ok, err = pcall(D.BuildChunked, onReady)
+		if not ok then
+			onReady("Report generation failed: " .. tostring(err))
+		end
 	end)
 end
 
