@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.13 — unreleased
+
+- **The Grand Hunt was only ever looked for as a map banner.** The quest scan
+  covered the three assault zones and nothing else, on a comment claiming the
+  rotating zones "need the POI list and nothing else" — an assumption written
+  as a fact. With the four Dragonflight maps outside that set, a Grand Hunt
+  that lives as a task quest could never have been seen, from any zone, on any
+  character. A gate's own maps are in the scan now: seven maps rather than
+  three, not seventeen, so the cost the narrow list was protecting stays
+  bounded.
+- The set is derived from the gates themselves, so declaring `rotating` on a
+  record still remains the whole of adding one.
+
 ## 1.1.12 — 2026-08-07
 
 - **`/mm report` died with "script ran too long" on slower hardware.** All 33

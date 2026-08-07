@@ -1248,6 +1248,26 @@ MM:On("MM_FIXES_DEBUG", function()
 			.. "run, which is what the watchdog measures)"):format(worst, ms)
 	end)
 
+	probe("Rotating zones are asked about as quests, not only banners", function()
+		local A = MM.Assaults
+		if not (A and A.rotatingGates) then return false, "assaults not loaded" end
+		local want, asked = 0, 0
+		for _, gate in pairs(A.rotatingGates) do
+			for _, mapID in ipairs(gate.maps or {}) do
+				want = want + 1
+				for _, e in ipairs(A.active[mapID] or {}) do
+					if e.source == "quest" then asked = asked + 1 break end
+				end
+			end
+		end
+		if want == 0 then return false, "no rotating gate declares a map" end
+		-- Not a failure when a zone has no world quests up: the point is that
+		-- the question is now ASKED there, which it was not before.
+		return true, ("%d rotating zone(s) in the quest scan, %d returning quests "
+			.. "right now (was: banner only, so a task quest was invisible)")
+			:format(want, asked)
+	end)
+
 	probe("Grand Hunt: can the banner be read from here", function()
 		local A = MM.Assaults
 		if not (A and A.FirstRewardAvailable) then return false, "reader missing" end
