@@ -310,21 +310,41 @@ end)
 ------------------------------------------------------------
 -- Defer the report out of the secure execution path: printing DURING the
 -- forbidden event spreads our taint into the chat frame's secure buffers.
+-- ONCE PER DISTINCT CALL, AND COUNTED.
+--
+-- Reported from a delve: MasterMountsArrowAction:Hide() blocked, repeated until
+-- it filled the chat frame. Both faults are worth separating. The block itself
+-- was a real bug, fixed in Arrow.lua. Printing it every single time was this
+-- line's own -- a blocked call happens inside combat, combat is where an addon
+-- is busiest, and "rare" describes the bug rather than the number of chances it
+-- gets to fire. The handler-error reporter above learned this already; this one
+-- was written before it and never revisited.
+--
+-- Kept as a list as well as printed, so a self-test can assert nobody's client
+-- refused us anything, rather than the evidence living only in a chat frame the
+-- player has to notice and paste.
+MM.blockedCalls = {}
+local reportedBlocks = {}
+local function noteProtected(kind, colour, addonName, func)
+	if not (addonName and addonName:find("MasterMounts")) then return end
+	local captured = tostring(func)
+	local key = kind .. "\0" .. captured
+	if reportedBlocks[key] then return end
+	reportedBlocks[key] = true
+	tinsert(MM.blockedCalls, { kind = kind, func = captured })
+	-- Deferred out of the secure execution path: printing DURING the forbidden
+	-- event spreads our taint into the chat frame's secure buffers.
+	C_Timer.After(0.5, function()
+		MM:Print("|cff%s%s call captured:|r %s — please report this exact text!",
+			colour, kind, captured)
+	end)
+end
+
 MM:RegisterGameEvent("ADDON_ACTION_FORBIDDEN", function(addonName, func)
-	if addonName and addonName:find("MasterMounts") then
-		local captured = tostring(func)
-		C_Timer.After(0.5, function()
-			MM:Print("|cffff4444FORBIDDEN call captured:|r %s — please report this exact text!", captured)
-		end)
-	end
+	noteProtected("FORBIDDEN", "ff4444", addonName, func)
 end)
 MM:RegisterGameEvent("ADDON_ACTION_BLOCKED", function(addonName, func)
-	if addonName and addonName:find("MasterMounts") then
-		local captured = tostring(func)
-		C_Timer.After(0.5, function()
-			MM:Print("|cffff9a3cBlocked call captured:|r %s — please report this exact text!", captured)
-		end)
-	end
+	noteProtected("Blocked", "ff9a3c", addonName, func)
 end)
 
 ------------------------------------------------------------

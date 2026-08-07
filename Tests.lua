@@ -3312,6 +3312,29 @@ local function runLogic()
 			.. "which may still cost a visit)"):format(checkedModelled, checkedBare)
 	end)
 
+	check("Nothing we do is refused as a protected action", function()
+		-- Reported from a delve: the arrow's action button is a secure frame,
+		-- and Show and Hide on one are refused in combat exactly as SetAttribute
+		-- is. The attribute writes were guarded from the start; the visibility
+		-- was not. A delve is wall-to-wall combat and the arrow re-evaluates on
+		-- every step of the route, so the one missing guard filled a chat frame.
+		--
+		-- ASKED OF THE SESSION, NOT OF A FIXTURE. Whether a call is refused
+		-- depends on combat, on what else is tainted, and on the client's own
+		-- rules -- none of which a test can stage honestly. What it can do is
+		-- read what the client actually refused while somebody played, which is
+		-- the only evidence that ever mattered, and stop it living solely in a
+		-- chat frame the player has to happen to notice.
+		local list = MM.blockedCalls
+		if not list then return nil, "the protected-call capture is not loaded" end
+		if #list > 0 then
+			local first = list[1]
+			return false, ("%d protected call(s) refused this session, first: %s %s")
+				:format(#list, first.kind, first.func)
+		end
+		return true, "no forbidden or blocked call this session"
+	end)
+
 	check("A command that breaks says so", function()
 		-- /mm routertest 300 printed "Modelling the router..." and then nothing.
 		-- No window, no output, no error. MM:Fire pcalls every handler and sent

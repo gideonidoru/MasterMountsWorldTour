@@ -13,6 +13,24 @@ local ARROW_TEXTURE = MM.MEDIA .. "arrow.tga"
 
 local frame, tex, label, dist, pill, pillPrimary, pillSecondary, action
 
+-- SHOWING AND HIDING A SECURE BUTTON IS A PROTECTED ACT TOO.
+--
+-- Reported from a delve: MasterMountsArrowAction:Hide() blocked, over and over
+-- until it filled the chat frame. The attribute writes on this button were
+-- guarded against combat from the beginning and its VISIBILITY was not, which
+-- reads as an oversight because it was one. Blizzard protects the frame, not
+-- merely its attributes, so Show and Hide are refused in combat exactly as
+-- SetAttribute is.
+--
+-- It surfaced in a delve for a reason worth keeping in mind: a delve is
+-- wall-to-wall combat, and the arrow re-evaluates on every step of the route.
+-- Anywhere else there is a lull for the deferred state to drain in, so a single
+-- missing guard looked like nothing at all.
+--
+-- Forward-declared because the frame is built above and the helper reads best
+-- beside the deferral it belongs to, further down.
+local setActionShown
+
 -- Card metrics. Declared HERE, above every use.
 --
 -- These are read inside build(), which runs far earlier in the file than the
@@ -126,7 +144,9 @@ local function build()
 		GameTooltip:Show()
 	end)
 	action:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	action:Hide()
+	-- Through the same guard: the HUD is built the first time it is needed, and
+	-- that can perfectly well be mid-fight.
+	setActionShown(false)
 
 	label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	label:SetPoint("TOP", tex, "BOTTOM", 0, -2)
@@ -191,6 +211,19 @@ end
 -- has stored them as `spell` rather than `item` from the beginning, and its own
 -- cooldown helper branches on exactly that. This button only ever read `item`,
 -- so for a spell hop it was handed nil and offered nothing to click.
+-- Deferred visibility, alongside the deferred attributes. nil means nothing is
+-- waiting; true and false are a Show and a Hide that combat refused.
+local pendingShown
+function setActionShown(want)
+	if not action then return end
+	if InCombatLockdown() then
+		pendingShown = want
+		return
+	end
+	pendingShown = nil
+	if want then action:Show() else action:Hide() end
+end
+
 local pendingAction
 local function applyAction(itemID, isToy, spellID)
 	if not action then return end
@@ -288,19 +321,25 @@ function Arrow:ShowAction(itemID, isToy, spellID)
 
 	applyAction(itemID, isToy, spellID)
 	tex:Hide()
-	action:Show()
+	setActionShown(true)
 end
 
 function Arrow:HideAction()
-	if not (action and action:IsShown()) then return end
+	-- A SHOW THAT COMBAT DEFERRED STILL HAS TO BE CANCELLABLE.
+	--
+	-- Reading IsShown alone, this returned early whenever a Show was sitting in
+	-- the queue rather than on screen -- and combat then ended and put up an
+	-- action button for a hop that had already been cancelled.
+	if not (action and (action:IsShown() or pendingShown)) then return end
 	action.mmItemID = nil
-	action:Hide()
+	setActionShown(false)
 	tex:Show()
 	applyAction(nil)
 end
 
 -- Apply anything deferred by combat.
 MM:RegisterGameEvent("PLAYER_REGEN_ENABLED", function()
+	if pendingShown ~= nil then setActionShown(pendingShown) end
 	if pendingAction then
 		applyAction(pendingAction.itemID, pendingAction.isToy, pendingAction.spellID)
 	end

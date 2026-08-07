@@ -2,6 +2,21 @@
 
 ## 1.1.14 — unreleased
 
+- **The arrow's action button was blocked in combat.** It is a secure button,
+  and Blizzard protects the frame — not just its attributes — so `Show` and
+  `Hide` are refused in combat exactly as `SetAttribute` is. The attribute
+  writes were guarded from the start and the visibility was not. It surfaced in
+  a delve because a delve is wall-to-wall combat and the arrow re-evaluates on
+  every step of the route; anywhere else there is a lull for the deferred state
+  to drain in. Visibility now defers and is applied when combat ends, and a
+  deferred show can still be cancelled.
+- **A refused call is reported once, not once per attempt.** The block was a
+  real bug, but printing it every single time it happened was a second one — a
+  protected call is refused inside combat, which is when an addon is busiest, so
+  one missing guard filled a chat frame. Refusals are also kept and counted now,
+  so the self-test can state that nobody's client refused us anything instead of
+  the evidence living only in chat.
+
 - **A Burning Crusade mount routed to Draenor.** Warlords rebuilt Draenor using
   names Outland already had: Nagrand is map 107 and 550, Shadowmoon Valley 104
   and 539, Shattrath City 111 and 594. Dark War Talbuk is bought with Halaa
