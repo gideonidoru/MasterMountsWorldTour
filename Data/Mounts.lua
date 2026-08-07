@@ -6785,14 +6785,13 @@ MM.AddMounts({
 		expansion = 3,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold by the Baradin's Wardens / Hellscream's Reach quartermaster on Tol Barad Peninsula for 200 Tol Barad Commendations",
+		source = "Sold by the Baradin's Wardens or Hellscream's Reach quartermaster on Tol Barad Peninsula for 200 Tol Barad Commendations, at Exalted.",
 		npc = {
 			id = 52349,
 		},
 		zone = {
-			mapID = 84,
-			x = 25.96,
-			y = 29.32,
+			name = "Tol Barad Peninsula",
+			mapID = 245,
 		},
 		conditions = {
 			{
@@ -6801,9 +6800,17 @@ MM.AddMounts({
 				id = 391,
 				type = "CURRENCY",
 			},
+			{
+				factionIDAlliance = 1177,
+				factionIDHorde = 1178,
+				factionNameAlliance = "Baradin's Wardens",
+				factionNameHorde = "Hellscream's Reach",
+				standingName = "Exalted",
+				type = "REP",
+			},
 		},
 		effort = 3,
-		notes = "Commendations come from Tol Barad dailies and winning the Tol Barad battle. Expect a couple of weeks of dailies.",
+		notes = "Commendations come from Tol Barad dailies and from winning the battle, which is also how the reputation is earned -- but Exalted outlasts the 200 commendations, so the standing is the real gate. Expect a few weeks of dailies.",
 	},
 	{
 		name = "Spectral Steed",
@@ -6812,25 +6819,31 @@ MM.AddMounts({
 		category = "CURRENCY",
 		obtainable = true,
 		faction = "Alliance",
-		source = "Sold by the Baradin's Wardens quartermaster on Tol Barad Peninsula for 200 Tol Barad Commendations",
+		source = "Sold by Quartermaster Brazie in Baradin Base Camp, Tol Barad Peninsula, for 165 Tol Barad Commendations, at Exalted with Baradin's Wardens.",
+		vendor = "Quartermaster Brazie",
 		npc = {
 			id = 52349,
 		},
 		zone = {
-			mapID = 84,
-			x = 25.96,
-			y = 29.32,
+			name = "Tol Barad Peninsula",
+			mapID = 245,
 		},
 		conditions = {
 			{
 				name = "Tol Barad Commendation",
-				amount = 200,
+				amount = 165,
 				id = 391,
 				type = "CURRENCY",
 			},
+			{
+				factionID = 1177,
+				factionName = "Baradin's Wardens",
+				standingName = "Exalted",
+				type = "REP",
+			},
 		},
 		effort = 3,
-		notes = "Translucent ghostly horse. Alliance counterpart of the Spectral Wolf.",
+		notes = "Translucent ghostly horse, the Alliance counterpart of the Spectral Wolf. Cheaper than the Drake of the West Wind from the same vendor.",
 	},
 	{
 		name = "Spectral Wolf",
@@ -6839,25 +6852,31 @@ MM.AddMounts({
 		category = "CURRENCY",
 		obtainable = true,
 		faction = "Horde",
-		source = "Sold by the Hellscream's Reach quartermaster on Tol Barad Peninsula for 200 Tol Barad Commendations",
+		source = "Sold by Pogg in Hellscream's Grasp, Tol Barad Peninsula, for 165 Tol Barad Commendations, at Exalted with Hellscream's Reach.",
+		vendor = "Pogg",
 		npc = {
 			id = 52349,
 		},
 		zone = {
-			mapID = 84,
-			x = 25.96,
-			y = 29.32,
+			name = "Tol Barad Peninsula",
+			mapID = 245,
 		},
 		conditions = {
 			{
 				name = "Tol Barad Commendation",
-				amount = 200,
+				amount = 165,
 				id = 391,
 				type = "CURRENCY",
 			},
+			{
+				factionID = 1178,
+				factionName = "Hellscream's Reach",
+				standingName = "Exalted",
+				type = "REP",
+			},
 		},
 		effort = 3,
-		notes = "Translucent ghostly wolf. Horde counterpart of the Spectral Steed.",
+		notes = "Translucent ghostly wolf, the Horde counterpart of the Spectral Steed. Cheaper than the Drake of the West Wind from the same vendor.",
 	},
 	{
 		name = "Golden King",
@@ -10405,7 +10424,8 @@ MM.AddMounts({
 		expansion = 5,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold in Fang'rila, Tanaan Jungle, for 5,000 Blackfang Claws",
+		source = "Sold by Z'tenga the Walker at Fang'rila, Tanaan Jungle, for 5,000 Blackfang Claws, at Exalted with The Saberstalkers.",
+		vendor = "Z'tenga the Walker",
 		zone = {
 			mapID = 534,
 			x = 55.2,
@@ -10419,10 +10439,16 @@ MM.AddMounts({
 				id = 124099,
 				type = "ITEM",
 			},
+			{
+				factionID = 1850,
+				factionName = "The Saberstalkers",
+				standingName = "Exalted",
+				type = "REP",
+			},
 		},
 		timePerAttempt = 30,
 		effort = 4,
-		notes = "Blackfang Claws drop from the saberon of Fang'rila (Saberstalkers reputation area). Farming 5,000 claws takes several sessions; kill-loop routes and the Blademaster event speed it up.",
+		notes = "Blackfang Claws drop from the saberon of Fang'rila, which is also the Saberstalkers grind. Five thousand claws takes several sessions; kill-loop routes and the Blademaster event speed it up. Exalted, not the Honored the Wild Goretusk asks for.",
 	},
 	{
 		name = "Wild Goretusk",
@@ -10430,7 +10456,8 @@ MM.AddMounts({
 		expansion = 5,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold in Fang'rila, Tanaan Jungle, for Apexis Crystals",
+		source = "Sold by Z'tenga the Walker at Fang'rila, Tanaan Jungle, for 1,000 Blackfang Claws, at Honored with The Saberstalkers.",
+		vendor = "Z'tenga the Walker",
 		zone = {
 			mapID = 534,
 			x = 55.2,
@@ -10438,15 +10465,21 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
-				name = "Apexis Crystal",
-				amount = 10000,
-				id = 823,
-				type = "CURRENCY",
+				factionID = 1850,
+				factionName = "The Saberstalkers",
+				standingName = "Honored",
+				type = "REP",
+			},
+			{
+				name = "Blackfang Claw",
+				amount = 1000,
+				id = 124099,
+				type = "ITEM",
 			},
 		},
-		timePerAttempt = 15,
-		effort = 2,
-		notes = "Apexis Crystals rain from WoD daily zone objectives, Tanaan rares and treasures; trivial to accumulate at max level.",
+		timePerAttempt = 30,
+		effort = 4,
+		notes = "Blackfang Claws drop from the saberon around Fang'rila, and killing them is also how the Saberstalkers reputation is earned -- so the Honored requirement arrives on its own while the claws pile up. Same vendor and same camp as the Bristling Hellboar.",
 	},
 	{
 		name = "Corrupted Dreadwing",
@@ -10454,7 +10487,8 @@ MM.AddMounts({
 		expansion = 5,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold by the Apexis vendor in Tanaan Jungle for 150,000 Apexis Crystals",
+		source = "Sold by Dawn-Seeker Krisek in Tanaan Jungle for 150,000 Apexis Crystals, at Friendly with the Order of the Awakened.",
+		vendor = "Dawn-Seeker Krisek",
 		zone = {
 			mapID = 534,
 			x = 57.8,
@@ -10467,10 +10501,16 @@ MM.AddMounts({
 				id = 823,
 				type = "CURRENCY",
 			},
+			{
+				factionID = 1849,
+				factionName = "Order of the Awakened",
+				standingName = "Friendly",
+				type = "REP",
+			},
 		},
 		timePerAttempt = 30,
 		effort = 3,
-		notes = "The big Apexis sink of patch 6.2. Tanaan rares, treasures and daily objectives are the fastest Apexis sources today.",
+		notes = "The big Apexis sink of patch 6.2. Friendly is a low bar and arrives from the first few Tanaan dailies -- the 150,000 crystals are the real cost. Tanaan rares, treasures and daily objectives are the fastest source today.",
 	},
 	{
 		name = "Armored Irontusk",
@@ -32744,13 +32784,6 @@ MM.AddMounts({
 				id = 3392,
 				type = "CURRENCY",
 			},
-			{
-				name = "Remnants of Anguish",
-				amount = 2000,
-				how = "Prey hunts (Midnight Season 1), Preyseeker's Journey Rank 5; sold by Construct V'anore in Silvermoon City",
-				id = 3392,
-				type = "CURRENCY",
-			},
 		},
 		altSources = {
 			{
@@ -32769,7 +32802,7 @@ MM.AddMounts({
 		expansion = 11,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold by Construct V'anore in Silvermoon City for 2,000 Remnant of Anguish; requires Preyseeker's Journey Rank 10.",
+		source = "Sold by Construct E'nui in Astalor's Sanctum, Silvermoon City, for 2,550 Remnants of Anguish at Preyseeker's Journey rank 10.",
 		npc = {
 			name = "Construct V'anore",
 			id = 252956,
@@ -32783,15 +32816,8 @@ MM.AddMounts({
 		conditions = {
 			{
 				name = "Remnant of Anguish",
-				amount = 2000,
-				how = "Complete Prey hunts and Preyseeker's Journey activities to earn Remnant of Anguish.",
-				id = 3392,
-				type = "CURRENCY",
-			},
-			{
-				name = "Remnants of Anguish",
-				amount = 2000,
-				how = "Prey hunts (Midnight Season 1), Preyseeker's Journey Rank 10; sold by Construct V'anore in Silvermoon City",
+				amount = 2550,
+				how = "Prey hunts and Preyseeker's Journey activities in Midnight; rank 10 unlocks the purchase.",
 				id = 3392,
 				type = "CURRENCY",
 			},
@@ -33450,12 +33476,6 @@ MM.AddMounts({
 			y = 50.8,
 		},
 		conditions = {
-			{
-				factionID = 2704,
-				factionName = "The Hara'ti",
-				standingName = "Renown 17",
-				type = "REP",
-			},
 			{
 				name = "Voidlight Marl",
 				amount = 6000,
@@ -37037,20 +37057,29 @@ MM.AddMounts({
 		expansion = 5,
 		category = "VENDOR",
 		obtainable = true,
-		source = "Sold for 5,000g at Exalted with the Arakkoa Outcasts.",
+		source = "Sold in Stormshield or Warspear for 5,000 gold plus 5,000 Apexis Crystals, at Exalted with the Arakkoa Outcasts.",
 		zone = {
 			name = "Ashran",
+			mapID = 588,
 			x = 50,
 			y = 45,
 		},
 		conditions = {
 			{
+				name = "Apexis Crystal",
 				amount = 5000,
 				id = 823,
 				type = "CURRENCY",
 			},
+			{
+				factionID = 1515,
+				factionName = "Arakkoa Outcasts",
+				standingName = "Exalted",
+				type = "REP",
+			},
 		},
 		effort = 3,
+		notes = "Two costs, not one: 5,000 gold and 5,000 Apexis Crystals together. Shadow-Sage Brakoss sells it in Stormshield, Ravenspeaker Skeega in Warspear -- same reputation either way.",
 		goldCost = 5000,
 	},
 	{
@@ -44110,36 +44139,27 @@ MM.AddMounts({
 		source = "Assembled with Jumpjet Fusion",
 		conditions = {
 			{
-				amount = 1,
-				id = 209055,
-				type = "ITEM",
-			},
-			{
-				amount = 1,
-				id = 209781,
-				type = "ITEM",
-			},
-			{
-				amount = 1,
-				id = 208984,
-				type = "ITEM",
-			},
-			{
 				name = "First Booster Part",
 				itemID = 208984,
+				amount = 1,
 				count = 1,
+				id = 208984,
 				type = "MATERIAL",
 			},
 			{
 				name = "Second Booster Part",
 				itemID = 209781,
+				amount = 1,
 				count = 1,
+				id = 209781,
 				type = "MATERIAL",
 			},
 			{
 				name = "Third Booster Part",
 				itemID = 209055,
+				amount = 1,
 				count = 1,
+				id = 209055,
 				type = "MATERIAL",
 			},
 		},

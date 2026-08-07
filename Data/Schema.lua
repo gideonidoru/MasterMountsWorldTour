@@ -431,6 +431,97 @@ function MM.CollapseDuplicateReps()
 	return merged
 end
 
+-- The same purchase, charged twice, because it was written down twice.
+--
+-- conditionKey identifies a requirement by `id`, and a cost can carry its id in
+-- THREE different fields: ITEM and CURRENCY rows use `id`, MATERIAL rows use
+-- `itemID`. So a reagent list and a cost list describing the same three items
+-- key apart and both survive -- Mimiron's Jumpjets required all three of its
+-- booster parts twice over, once nameless and once named, and the planner
+-- charged six items for a three-item build.
+--
+-- Names do not save it either. "Remnant of Anguish" and "Remnants of Anguish"
+-- are one currency with one id, and an id supplied AFTER the fact -- by
+-- SetConditionID, long after the merge that would have folded them -- re-keys
+-- a condition onto one that already exists with nothing left to notice.
+--
+-- Conservative on purpose, exactly like the reputation collapse above: two
+-- rows are only folded together when they agree on the amount. Where they
+-- disagree, one of them is wrong and picking a winner here would bury that.
+-- They are returned instead, so the caller can say so.
+function MM.CollapseDuplicateCosts()
+	local COST = { ITEM = true, CURRENCY = true, MATERIAL = true }
+	local merged, conflicts = 0, {}
+	for _, rec in ipairs(MM.DBList) do
+		local conds = rec.conditions
+		if conds then
+			local groups, order = {}, {}
+			for _, cond in ipairs(conds) do
+				if COST[cond.type] then
+					-- An id in whichever field it landed in; failing that, the
+					-- exact name. Deliberately NOT a fuzzy name match -- folding
+					-- "Remnant" into "Remnants" by trimming a plural would also
+					-- fold genuinely different reagents, and the id already
+					-- catches the case that motivated this.
+					local id = cond.id or cond.itemID or cond.currencyID
+					local key = id and ("#" .. tostring(id))
+						or (cond.name and cond.name:lower())
+					if key then
+						if not groups[key] then
+							groups[key] = {}
+							order[#order + 1] = key
+						end
+						tinsert(groups[key], cond)
+					end
+				end
+			end
+
+			local drop = {}
+			for _, key in ipairs(order) do
+				local group = groups[key]
+				if #group > 1 then
+					local function amountOf(c) return c.amount or c.count end
+					local same = true
+					for i = 2, #group do
+						if amountOf(group[i]) ~= amountOf(group[1]) then same = false break end
+					end
+					if same then
+						-- Keep the row that can be read aloud. A cost with no
+						-- name prints as a bare id in the tooltip, and where
+						-- one of a pair has a name it is always the better
+						-- description of the same requirement.
+						local survivor = group[1]
+						for _, c in ipairs(group) do
+							if c.name then survivor = c break end
+						end
+						for _, c in ipairs(group) do
+							if c ~= survivor then
+								for k, v in pairs(c) do
+									if survivor[k] == nil and k ~= "type" then survivor[k] = v end
+								end
+								drop[c] = true
+								merged = merged + 1
+							end
+						end
+					else
+						local amounts = {}
+						for _, c in ipairs(group) do
+							tinsert(amounts, tostring(amountOf(c)))
+						end
+						tinsert(conflicts, ("%s / %s: %s"):format(
+							rec.name, key, table.concat(amounts, " vs ")))
+					end
+				end
+			end
+
+			for i = #conds, 1, -1 do
+				if drop[conds[i]] then tremove(conds, i) end
+			end
+		end
+	end
+	return merged, conflicts
+end
+
 -- Reputation requirements written with the wrong field names.
 --
 -- The database settled on factionID / factionName / standingName, and a few

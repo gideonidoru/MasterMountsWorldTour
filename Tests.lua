@@ -1927,6 +1927,92 @@ local function runLogic()
 			:format(checked, withID)
 	end)
 
+	check("One cost is charged once, whichever field holds its id", function()
+		-- The type+name check above cannot see this. ITEM and CURRENCY rows put
+		-- their id in `id`, MATERIAL rows put it in `itemID`, so the same three
+		-- booster parts appeared as three costs and three reagents and were
+		-- charged twice over -- with different names, so no name test would
+		-- have noticed either.
+		--
+		-- CollapseDuplicateCosts folds these at the end of the data build. This
+		-- asserts the build actually ran it, which is the part that rots: the
+		-- collapse used to be called from a file in the MIDDLE of the stack and
+		-- nineteen layers landed after it.
+		local COST = { ITEM = true, CURRENCY = true, MATERIAL = true }
+		local dupes, firstBad, costs = 0, nil, 0
+		for _, rec in ipairs(MM.DBList or {}) do
+			local seen = {}
+			for _, c in ipairs(rec.conditions or {}) do
+				if COST[c.type] then
+					costs = costs + 1
+					local id = c.id or c.itemID or c.currencyID
+					if id then
+						if seen[id] then
+							dupes = dupes + 1
+							firstBad = firstBad or (rec.name .. " / " .. tostring(id))
+						end
+						seen[id] = true
+					end
+				end
+			end
+		end
+		if dupes > 0 then
+			return false, ("%d cost(s) counted twice, e.g. %s -- id and itemID key "
+				.. "apart, so the same purchase survives as two conditions")
+				:format(dupes, tostring(firstBad))
+		end
+		return true, ("%d cost conditions, none charged twice"):format(costs)
+	end)
+
+	check("A vendor that checks a reputation carries the condition", function()
+		-- Reported from outside: "it told me to go collect Wild Goretusk but I
+		-- don't have the rep needed." Nothing was broken in the evaluation --
+		-- the record simply had no reputation condition, so allMet came back
+		-- true and it ranked as a pickup.
+		--
+		-- A purchase whose source text names a standing and whose conditions
+		-- name none is the exact shape of that bug, and it is cheap to spot:
+		-- the words only appear in a source line because a vendor is checking
+		-- for them. Six records were in this state, all of them routable.
+		local STANDINGS = { "Exalted", "Revered", "Honored", "Friendly" }
+		local PURCHASE = { VENDOR = true, CURRENCY = true, REP = true,
+			TIMEWALKING = true }
+		local bad, checked, firstBad = 0, 0, nil
+		for _, rec in ipairs(MM.DBList or {}) do
+			local src = rec.source or ""
+			if rec.obtainable and PURCHASE[rec.category] then
+				local names
+				for _, s in ipairs(STANDINGS) do
+					-- "with <Faction>" is what a gate reads like. "Exalted
+					-- reputations" in a note about an achievement is not one,
+					-- and matching the bare word flagged a dozen of those.
+					if src:find(s .. " with ") then names = s break end
+				end
+				if names then
+					checked = checked + 1
+					local modelled = false
+					for _, c in ipairs(rec.conditions or {}) do
+						if c.type == "REP" then modelled = true break end
+					end
+					if not modelled then
+						bad = bad + 1
+						firstBad = firstBad or rec.name
+					end
+				end
+			end
+		end
+		if checked == 0 then
+			return nil, "no purchase record states a standing in its source text"
+		end
+		if bad > 0 then
+			return false, ("%d purchase(s) name a reputation in prose and carry no "
+				.. "REP condition, e.g. %s -- the planner will rank it as a pickup")
+				:format(bad, tostring(firstBad))
+		end
+		return true, ("%d purchases state a standing; every one models it")
+			:format(checked)
+	end)
+
 	check("A lockout retires its goal and moves nothing else", function()
 		-- The plan is a chart, and it holds still while you follow it. Taking a
 		-- lockout drops that ONE goal; the others keep the places they already
