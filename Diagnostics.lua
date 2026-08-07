@@ -1072,7 +1072,12 @@ MM:On("MM_FIXES_DEBUG", function()
 	-- ---- print ------------------------------------------------------------
 	local bad = 0
 	for _, r in ipairs(rows) do if not r[1] then bad = bad + 1 end end
-	MM:Print("|cffffd84dFIXES IN THIS BUILD|r  every line measured, none asserted")
+	-- The "(was N)" figures are what 1.1.5 SHIPPED -- the version players are
+	-- actually running -- rather than an internal high-water mark. That is what
+	-- makes them worth printing: someone comparing a report against a bug they
+	-- filed is comparing against 1.1.5.
+	MM:Print("|cffffd84dFIXES IN THIS BUILD|r  %s, measured live; (was N) is what 1.1.5 shipped",
+		MM.VERSION or "?")
 	for _, r in ipairs(rows) do
 		MM:Print("   %s  %s", r[1] and "|cff40d860 OK |r" or "|cffff4444CHECK|r", r[2])
 		if r[3] then MM:Print("        |cff9a9a9a%s|r", tostring(r[3])) end

@@ -760,7 +760,12 @@ MM:On("MM_TOGGLE_MAIN", function(tabIndex) UI:Toggle(tabIndex) end)
 -- inventing a second kind of selection that would then need its own clearing,
 -- its own refresh and its own bugs.
 MM:On("MM_SHOW_MOUNT", function(entry)
-	UI:Toggle(2)                       -- the Collection tab
+	-- TAB 1 IS COLLECTION. Tab 2 is the Planner, and this opened 2 with a
+	-- comment claiming it was Collection -- so clicking a mount in the zone
+	-- popup opened the PLANNER and then filtered a search box on a tab that was
+	-- not on screen. The one line in this file that says which is which is
+	-- DEFAULT_TAB at the top; both places now agree with it.
+	UI:Toggle(1)                       -- 1 = Collection, 2 = Planner
 	if not (entry and entry.name) then return end
 	local box = UI.collectionSearch
 	if not box then return end

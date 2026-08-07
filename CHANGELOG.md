@@ -1,6 +1,99 @@
 # Changelog
 
-## 1.1.5 — unreleased
+## 1.1.8 — unreleased
+
+The first release with players on it. Everything below came from two of them
+and from re-grading against the client's own data, and almost all of it is the
+same shape: something that was wrong in a way the addon could not see.
+
+**Six defects reported from outside, five of which repeated forever**
+
+- **1,124 errors from one nil.** Death Gate, Zen Pilgrimage, Astral Recall,
+  every mage portal and all 76 dungeon teleports are stored as `spell`, not
+  `item`. The arrow's action button read `item` only and called
+  `GetItemIconByID(nil)` twenty times a second. It offers the **spell** now —
+  which is what a player wanted to click — and falls back to the arrow when a
+  hop is neither. The nil never even reached the idempotence guard: that
+  returns early only when the button is already shown, and a button that never
+  shows fails it forever.
+- **Every boss kill threw.** 12.0 makes `encounterName` a *secret value*.
+  Comparing it is allowed; `encounterName:lower()` is not. Attempt counting now
+  degrades, says so once, and keys its debounce on a readable name.
+- **`nil failed:` named nothing** because `message` was not a variable in that
+  function. It names the event now, and prints once per distinct problem
+  instead of once per occurrence — a game event repeats, so one throwing
+  handler used to bury the addon's own output for the session.
+- **Every Wowhead link click was a hard error.** Blizzard's StaticPopup rewrite
+  renamed `editBox` to `EditBox`. All four spellings accepted.
+- **Route builds hit "script ran too long".** The yield sat *outside* the loop
+  that costs the time — it handed the frame back between stops, while a single
+  stop runs one graph search per candidate. Much worse for a new player: our
+  own router model measures a character with no teleports taking fifteen hops
+  where a geared one takes two, and the yielding was tuned against the cheap
+  case.
+- **The zone popup opened the whole collection.** Its rows were plain frames,
+  so clicks fell through — the row under the cursor named the mount and the
+  player still had to type its name. They are buttons now: left-click opens
+  that mount, right-click goes to Wowhead.
+
+**"It told me to go collect a mount I can't buy"**
+
+- **Seven vendors checked a reputation and never said so.** The evaluator was
+  never the bug — `Wild Goretusk` simply had no reputation condition, so its
+  only requirement was a currency any max-level character has piles of and it
+  ranked as "just go buy it". Found by reading `Mount.db2`'s `SourceText_lang`,
+  which is the mount journal's own blurb and carries vendor, zone, faction *and
+  standing*, and cost. We had been reading the name out of that file and
+  discarding the rest of the line.
+- **An item cost asked whether you had any, not how many.** `evalItem` compared
+  `> 0` and threw the amount away, so 1 of 25 Miscellaneous Mechanica satisfied
+  the Asset Advocator. Sixty conditions want more than one — every Alterac
+  Valley mount needs 15 Marks of Honor, and a single Mark answered for all
+  fifteen. `MATERIAL` rows had no evaluator at all and printed "Unknown
+  requirement" 105 times.
+
+**Data that was wrong in ways a counter read as fine**
+
+- **Fifty gold prices added.** "Prices: 0 missing" was true and misleading: the
+  gap only inspects VENDOR, CURRENCY and TIMEWALKING, and most gold-priced
+  mounts are filed under REP. The counter hit zero while fifty mounts had no
+  cost at all. Base prices, from the client — `Cenarion War Hippogryph` prints
+  "1600 (2000 base)" on the mount pages against the client's 2000, and the
+  `Lightforged Warframe` confirms it backwards.
+- **Forty-eight goals pointed at the exact middle of their zone.** 50/50 is
+  what a coordinate looks like when nobody knew, and it is *worse* than having
+  none: a zone-only record is handled honestly everywhere, while a placeholder
+  passes every check that asks whether an x exists rather than whether it means
+  anything. Stripped at the end of the data build, with the zone kept.
+- **The Nether-Swept Drake was in the wrong water.** We said Oceanic Vortex
+  pools; a field report puts it in open water at Slayer's Rise, and carries a
+  checkable tell — open water there grants fishing skill and the vortex pools
+  do not.
+- **Five collectibles named and counted** — Crackling Shard, Love Token,
+  Noblegarden Chocolate, Merry Supplies, Abyssal Fragment. A prose quantity is
+  a fact the addon cannot act on: no "27 / 270", no cost in the estimate.
+- **`Alunira` disagreed with itself**: source and notes both said guaranteed,
+  `dropRate` said 10 — which is the shard count.
+- **Duplicated costs collapsed structurally.** `MATERIAL` keeps its id in
+  `itemID` while `ITEM` and `CURRENCY` use `id`, so `Mimiron's Jumpjets`
+  required all three booster parts twice. Normalisation now runs *last*; it had
+  been called from the middle of the layer stack with nineteen layers landing
+  after it.
+
+**Performance**
+
+- The vignette observer walked all 1,608 records on every minimap tick, to fill
+  a field with thirty-five possible slots, and had no already-seen guard.
+  Indexed once, entries removed as filled.
+
+**New**
+
+- **`/mm fixes`**, and a `FIXES IN THIS BUILD` section at the end of the
+  report. Twelve probes, every one measuring live state and carrying what the
+  broken version looked like. Four of the six reported defects were invisible
+  from inside the report; this is the section that would have caught them.
+
+## 1.1.5 — released
 
 **Data**
 
