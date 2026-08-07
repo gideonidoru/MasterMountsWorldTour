@@ -439,9 +439,22 @@ end
 -- and `now + secondsUntilWeeklyReset` is exactly when that stops being true.
 -- Stored per gate, self-healing, and wrong for at most one reset if the match
 -- is ever a false positive.
+-- PER CHARACTER, because the lockout is.
+--
+-- This lived on the account, and that is the one thing it cannot be: a Grand
+-- Hunt's first run each week is per character, which is the entire premise of
+-- reading the banner -- the reward tier it shows is what THIS character would
+-- get. Marking it done on one character therefore told every other character
+-- the hunt was spent, hiding work they had not done. Exactly the failure the
+-- gate exists to prevent, pointed the wrong way.
+--
+-- The old account-wide table is left where it is rather than migrated. It
+-- cannot be split back into per-character truth -- one entry, six characters,
+-- no way to know which one earned it -- and inventing an answer for five of
+-- them is worse than letting a stale week expire on its own.
 local function weeklyStore()
-	MM.db.weeklyDone = MM.db.weeklyDone or {}
-	return MM.db.weeklyDone
+	MM.cdb.weeklyDone = MM.cdb.weeklyDone or {}
+	return MM.cdb.weeklyDone
 end
 
 function A.WeeklyDone(key)

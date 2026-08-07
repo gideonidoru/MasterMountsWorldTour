@@ -2,6 +2,20 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **A weekly event finished on one character stopped being offered on all of
+  them.** The completion was stored account-wide, and it is the one thing it
+  cannot be: a Grand Hunt's first run each week is per character — which is the
+  entire premise of reading the banner, since the tier it shows is what *this*
+  character would get. It lives on the character now. The old account-wide entry
+  is left to expire rather than migrated: one entry across six characters cannot
+  be split back into truth, and inventing an answer for five of them is worse
+  than a stale week timing out.
+- Two checks force a full synchronous build to verify build behaviour, and a
+  synchronous build is about three seconds on a 90-stop plan against the 37 ms
+  the chunked one reports. They are exempt from the per-check budget, and
+  **named and measured in the report** rather than quietly skipped — an
+  exemption nobody can see is how a real regression hides.
+
 - **The self-test could run against a route that was still being built.**
   Slicing it across frames means it no longer sees one frozen snapshot, and an
   asynchronous build mutates the route between slices — which produced "101 of

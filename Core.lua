@@ -410,6 +410,8 @@ local charDefaults = {
 	routeIndex = 1,
 	routeActive = false,
 	attempts = {},            -- [spellID] = recorded attempt count
+	-- A weekly event's first run is per character, so its completion is too.
+	weeklyDone = {},          -- [gate key] = when it stops being true
 }
 
 -- THE PLAN BELONGS TO THE ACCOUNT, NOT THE CHARACTER.

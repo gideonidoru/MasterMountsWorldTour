@@ -1275,7 +1275,9 @@ MM:On("MM_FIXES_DEBUG", function()
 			n = n + 1
 			if t > worstMs then worst, worstMs = name, t end
 		end
-		return worstMs <= 1200, ("slowest check %s at %d ms of %d timed (was: the "
+		return worstMs <= 1200, ("slowest check %s at %d ms of %d timed; two that "
+			.. "force a synchronous build are exempt and named in the self-test "
+			.. "(was: the "
 			.. "preset round-trip re-planned seven times and was killed on slower "
 			.. "hardware)"):format(tostring(worst), worstMs, n)
 	end)
