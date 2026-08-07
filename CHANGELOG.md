@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- **The wrong-continent check audited four zones and reported the number as
+  coverage.** Its whole purpose is catching a goal that attaches to an entry
+  point an ocean away, and it probed Tazavesh, Ny'alotha, The Forbidden Reach
+  and Sanctum of Domination — by name, and nothing else. It now walks every
+  cross-zone attachment made this session, the route's own included. The zones
+  worth probing are the ones nobody thinks to list: the fallback it guards only
+  runs where a zone has no nodes of its own.
+- **That audit measured against the wrong map for some nodes.** It converted a
+  node's coordinates using its zone's canonical map, while the router uses the
+  node's own — and a link whose far end sits in a sub-map is still filed under
+  the parent zone. It could invent an offender, or miss one, by itself.
+
 ## 1.1.13 — 2026-08-07
 
 - **A teleport name that disagreed with the client** — `Path of Proven Worth`

@@ -3026,7 +3026,6 @@ local function runLogic()
 		if not (J and J.AttachAudit) then return nil, "travel layer not loaded" end
 		local probes = { "Tazavesh, the Veiled Market", "Ny'alotha, the Waking City",
 			"The Forbidden Reach", "Sanctum of Domination" }
-		local checked, offending, example = 0, 0, nil
 		for _, zone in ipairs(probes) do
 			-- The audit reads what attaching actually chose, so something has to
 			-- have attached first. Without this the check reports "nothing to
@@ -3034,22 +3033,23 @@ local function runLogic()
 			local mapID = MM.Util and MM.Util.ResolveMapByName
 				and MM.Util.ResolveMapByName(zone)
 			if J.Plan then J.Plan(zone, 50, 50, "Orgrimmar", 50, 50, nil, mapID) end
-			local same, other = J.AttachAudit(zone, 50, 50, mapID)
-			if same then
-				checked = checked + 1
-				if (other or 0) > 0 then
-					offending = offending + other
-					example = example or zone
-				end
-			end
 		end
-		if checked == 0 then return nil, "no probe zone could be audited yet" end
+		-- THE PROBES ONLY GUARANTEE THERE IS SOMETHING TO READ.
+		--
+		-- What gets audited is every cross-zone attachment made this session,
+		-- the player's own route included. Naming four zones tested those four
+		-- and quietly reported the number as if it were coverage; a zone nobody
+		-- thought to name is exactly where this goes wrong, because the fallback
+		-- only runs where a zone has no nodes of its own.
+		if not J.AttachAuditAll then return nil, "travel layer predates this audit" end
+		local audited, offending, worst = J.AttachAuditAll()
+		if audited == 0 then return nil, "nothing has attached across zones yet" end
 		if offending > 0 then
-			return false, ("%d attachment(s) sit on another continent, e.g. %s")
-				:format(offending, example)
+			return false, ("%d attachment(s) sit on another continent, worst: %s")
+				:format(offending, worst or "?")
 		end
-		return true, ("%d zones audited, every entry point on the right continent")
-			:format(checked)
+		return true, ("%d cross-zone attachment(s) audited, every entry point on "
+			.. "the right continent"):format(audited)
 	end)
 
 	check("A plan is torn down after it is made", function()

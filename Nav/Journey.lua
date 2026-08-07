@@ -826,10 +826,63 @@ end
 -- Exposed so a check can assert the invariant that broke: an entry point on
 -- another continent is not an entry point, however small the arithmetic
 -- between two continent-relative coordinates happens to come out.
+-- One cached attachment, scored: how many of its entry points share the
+-- continent it was measured from, and how many do not.
+--
+-- MEASURE AGAINST THE MAP THE ROUTER USED. nodeWorld converts with
+-- `n.mapID or mapFor(n.zone)`, and a transit node's own map is not always its
+-- zone's canonical one -- a link whose far end sits in a sub-map is still filed
+-- under the parent zone's name, because that is what the link states. Reading
+-- mapFor alone converted those coordinates against the wrong rectangle, so this
+-- could invent an offender, or miss a real one, entirely on its own doing.
+local function scoreAttachment(cached)
+	local U = MM.Util
+	local hereC = cached.originContinent
+	if not hereC then return nil, cached.why or "no origin continent recorded" end
+	local same, other = 0, 0
+	for _, p in ipairs(cached) do
+		local n = graph[p.name]
+		local mz = n and (n.mapID or (n.zone and mapFor(n.zone)))
+		local c = mz and select(1, U.GetWorldPos(mz, n.x or 50, n.y or 50))
+		if c == hereC then same = same + 1 else other = other + 1 end
+	end
+	return same, other
+end
+
+-- EVERY attachment the route actually made, rather than a few chosen zones.
+--
+-- The check that owns this invariant named four zones. Four cannot speak for
+-- two hundred, and the ones worth probing are exactly the ones nobody thinks to
+-- list: a zone whose continent holds almost no nodes, where "nearest" has least
+-- to choose from and the most room to be wrong. Deepholm is one -- its
+-- continent carries five nodes and not one flight point, because the client has
+-- no flight master there at all and the way in is a portal.
+--
+-- Walking the cache costs nothing and covers whatever the player's own route
+-- touched, which is the only set that ever mattered.
+function J.AttachAuditAll()
+	build()
+	local zones, offending, worst, worstN = 0, 0, nil, 0
+	for key, cached in pairs(nearZoneCache) do
+		if type(cached) == "table" then
+			local same, other = scoreAttachment(cached)
+			if same then
+				zones = zones + 1
+				if other > 0 then
+					offending = offending + other
+					if other > worstN then
+						worstN, worst = other, (key:gsub("#[^#]*$", ""))
+					end
+				end
+			end
+		end
+	end
+	return zones, offending, worst
+end
+
 function J.AttachAudit(zone, x, y, mapID)
 	build()
 	if not zone then return nil end
-	local U = MM.Util
 	local zl = zone:lower()
 	local own = byZone[zl]
 	if own and #own > 0 then return #own, 0, "own zone" end
@@ -844,15 +897,8 @@ function J.AttachAudit(zone, x, y, mapID)
 	-- reported 16 attachments on "another continent" that were entirely its own
 	-- doing -- a false alarm on working code, which costs as much trust as a
 	-- missed fault. Read the value that was used; never reconstruct it.
-	local hereC = cached.originContinent
-	if not hereC then return 0, 0, cached.why or "no origin continent recorded" end
-	local same, other = 0, 0
-	for _, p in ipairs(cached) do
-		local n = graph[p.name]
-		local mz = n and n.zone and mapFor(n.zone)
-		local c = mz and select(1, U.GetWorldPos(mz, n.x or 50, n.y or 50))
-		if c == hereC then same = same + 1 else other = other + 1 end
-	end
+	local same, other, why = scoreAttachment(cached)
+	if not same then return 0, 0, why end
 	-- A ZERO STILL HAS TO EXPLAIN ITSELF. The reason was recorded and then only
 	-- returned when the origin continent was missing -- so the one case left
 	-- standing, "nothing anywhere shares its continent", printed as a bare 0 and
