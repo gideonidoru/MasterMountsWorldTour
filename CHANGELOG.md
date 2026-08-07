@@ -26,6 +26,13 @@
   teleport cannot — that distinction is how charges get spent), so they all
   counted. It now asks the real question, and asks it both ways: a teleport that
   lands you there directly, and a journey whose first leg spends a charge.
+- **The route header and its stops were quoting two different clocks.** "1d 0h
+  on the route" counts travel plus a single visit to each stop; the per-stop
+  "1d 3h in" counts against the whole job, grinding included. Both were right
+  and neither said so, so stop 8 appeared to land three hours after a route the
+  header said took a day. They now name their clocks — "travelling and visiting"
+  against "to finish everything" — and a check asserts the first can never
+  exceed the second, and that no stop lands past the end of the plan.
 - A check reports which arrow is actually driving rather than which one the
   setting asked for. The two differ on purpose for cross-continent legs, which
   always use the built-in arrow because TomTom's one arrow cannot express a

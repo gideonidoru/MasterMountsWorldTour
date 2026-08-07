@@ -4656,6 +4656,30 @@ local function runLogic()
 		return true, ("%.1f min via %s instead of a long flight"):format(viaPort, target.name)
 	end)
 
+	check("The route's two clocks agree about which is bigger", function()
+		-- The route reports travel-and-visits alongside the whole job, and the
+		-- per-stop figures count against the SECOND. Nothing enforced the
+		-- relationship, so a stop could report a time past the end of the
+		-- route and both numbers still be individually correct.
+		local R = MM.Router
+		local t = R.totals
+		if not t or (t.stops or 0) == 0 then return nil, "no route built yet" end
+		local travel, whole = t.routeMinutes or 0, t.minutes or 0
+		if travel > whole + 0.01 then
+			return false, ("travelling and visiting (%.0f min) exceeds the whole "
+				.. "job (%.0f min)"):format(travel, whole)
+		end
+		local last = R.route[#R.route]
+		local final = last and last.cumulativeMinutes
+		if not final then return nil, "stops carry no cumulative time" end
+		if final > whole + 0.01 then
+			return false, ("the last stop lands at %.0f min on a plan totalling "
+				.. "%.0f"):format(final, whole)
+		end
+		return true, ("%.0f min travelling and visiting inside %.0f min of work; "
+			.. "last stop lands at %.0f"):format(travel, whole, final)
+	end)
+
 	check("A teleport count counts teleports, not stops", function()
 		-- The failure this exists to catch is a count that silently equals the
 		-- route length, which reads like a measurement and is really just

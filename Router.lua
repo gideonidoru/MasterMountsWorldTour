@@ -2633,7 +2633,12 @@ function R.SummaryText()
 	else
 		mountText = "no drops to roll"
 	end
-	return ("%d stop%s · %s on the route · %s to finish everything · %s"):format(
+	-- TWO DIFFERENT CLOCKS, and they have to say which is which. The first is
+	-- travel plus a single visit to each stop; the second adds the grinding.
+	-- Labelled "on the route" the first one read as the total, so a stop
+	-- reporting "1d 3h in" -- which counts against the SECOND clock -- looked
+	-- like it landed after the route had already ended.
+	return ("%d stop%s · %s travelling and visiting · %s to finish everything · %s"):format(
 		t.stops, t.stops == 1 and "" or "s",
 		U.FormatSeconds((t.routeMinutes or t.minutes) * 60),
 		U.FormatSeconds(t.minutes * 60), mountText)
@@ -2789,7 +2794,8 @@ MM:On("MM_ROUTE_DEBUG", function()
 	end
 	for i = 1, math.min(8, #R.route) do
 		local stop = R.route[i]
-		MM:Print("   %d. %s |cff9a9a9a(%s, ~%.0f%% mount, %s in)|r", i,
+		-- Against "to finish everything", never against the travel figure.
+		MM:Print("   %d. %s |cff9a9a9a(%s, ~%.0f%% mount, %s into the plan)|r", i,
 			stop.label or "?",
 			stop.opportunistic and "detour" or "planned",
 			math.min(99, (stop.mounts or 0) * 100),
