@@ -19,6 +19,13 @@
   built-in arrow up while TomTom got nothing. The current step is remembered now
   — at the moment the setting flips, the code that knows where you are heading
   is not the code doing the flipping.
+- **The teleport count was reporting the route length.** "81 legs of this route
+  use a teleport" on an 81-stop route was not a coincidence — the check asked
+  whether a stop had a travel method at all, and every routed stop has one.
+  Multi-leg journeys are tagged as taxi rides (a taxi can be ridden again, a
+  teleport cannot — that distinction is how charges get spent), so they all
+  counted. It now asks the real question, and asks it both ways: a teleport that
+  lands you there directly, and a journey whose first leg spends a charge.
 - A check reports which arrow is actually driving rather than which one the
   setting asked for. The two differ on purpose for cross-continent legs, which
   always use the built-in arrow because TomTom's one arrow cannot express a

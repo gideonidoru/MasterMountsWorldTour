@@ -4656,6 +4656,35 @@ local function runLogic()
 		return true, ("%.1f min via %s instead of a long flight"):format(viaPort, target.name)
 	end)
 
+	check("A teleport count counts teleports, not stops", function()
+		-- The failure this exists to catch is a count that silently equals the
+		-- route length, which reads like a measurement and is really just
+		-- `#route` wearing a different label. So the assertion is about the
+		-- journeys DISAGREEING with the stop count when they should.
+		local R = MM.Router
+		if not R.ArrivesByTeleport then return false, "ArrivesByTeleport missing" end
+		if #R.route == 0 then return nil, "no route built yet to count" end
+		local tele, journeysWithoutOne = 0, 0
+		for _, stop in ipairs(R.route) do
+			if R.ArrivesByTeleport(stop) then
+				tele = tele + 1
+			elseif stop.arriveBy then
+				-- a real travel method that spends no charge: the case the
+				-- old existence test could not see
+				journeysWithoutOne = journeysWithoutOne + 1
+			end
+		end
+		if tele > #R.route then
+			return false, ("%d teleports across %d stops"):format(tele, #R.route)
+		end
+		if tele == #R.route and journeysWithoutOne == 0 and #R.route > 5 then
+			return false, ("every one of %d stops claims a teleport -- the count "
+				.. "is tracking the route length"):format(#R.route)
+		end
+		return true, ("%d of %d stops open with a teleport; %d travel without "
+			.. "spending one"):format(tele, #R.route, journeysWithoutOne)
+	end)
+
 	check("Whole-plan time never gets worse", function()
 		-- The block reorder accepts only improvements, but "only improvements"
 		-- is a claim about code that has to be checked against the objective it

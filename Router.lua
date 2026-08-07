@@ -559,6 +559,33 @@ local function travelMinutes(state, step, wantLegs)
 	return best, method
 end
 
+-- Does getting to this stop actually spend a teleport?
+--
+-- `stop.arriveBy` is NOT a teleport flag -- it is whatever method won, and for
+-- most stops that is a multi-leg journey. Every journey is tagged `taxi = true`
+-- (a taxi can be ridden again; a teleport cannot, which is the distinction the
+-- router spends its charges on), so testing `arriveBy` for existence counted
+-- every routed stop and reported the stop count back as a teleport count.
+--
+-- Two ways a stop genuinely opens with one, and BOTH have to be asked:
+--   a bare landing  -- the teleport goes straight there, no journey needed
+--   a journey whose first leg is a teleport -- "teleport:Hearthstone Valdrakken,
+--   then portal to Orgrimmar, then fly" is the common shape, and it plainly
+--   uses a charge even though the method that won is the journey
+function R.ArrivesByTeleport(stop)
+	local m = stop and stop.arriveBy
+	if not m then return false end
+	-- A landing is not a taxi, which is exactly how the route decides to mark
+	-- the charge spent -- so it is the same question, asked once more here.
+	if not m.taxi then return true end
+	for _, leg in ipairs(m.legs or {}) do
+		if type(leg.mode) == "string" and leg.mode:find("^teleport:") then
+			return true
+		end
+	end
+	return false
+end
+
 -- Walk a chain and total it up, spending teleports as it goes. This is THE
 -- objective function: one number for a whole plan, in minutes.
 function R.RouteMinutes(chain, start)
@@ -2736,9 +2763,11 @@ MM:On("MM_ROUTE_DEBUG", function()
 			l.waitMinutes > 0.1 and (" (%.0f min cooldown)"):format(l.waitMinutes) or "")
 	end
 	local hops = 0
-	for _, stop in ipairs(R.route) do if stop.arriveBy then hops = hops + 1 end end
-	MM:Print("  %d leg%s of this route use a teleport rather than flying.",
-		hops, hops == 1 and "" or "s")
+	for _, stop in ipairs(R.route) do
+		if R.ArrivesByTeleport(stop) then hops = hops + 1 end
+	end
+	MM:Print("  %d of %d stop%s on this route open with a teleport.",
+		hops, #R.route, #R.route == 1 and "" or "s")
 	local woven, batched = 0, 0
 	for _, stop in ipairs(R.route) do
 		if stop.opportunistic then woven = woven + 1 end
