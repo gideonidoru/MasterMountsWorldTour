@@ -3471,6 +3471,38 @@ local function runLogic()
 				J.bridgeWhy and (" -- " .. J.bridgeWhy) or "")
 	end)
 
+	check("Every dungeon teleport id is a teleport", function()
+		-- One shipped id was not. 393272 rode in from a third-party export as
+		-- the Algeth'ar Academy teleport and is an internal test spell in the
+		-- client's own table, so IsPlayerSpell was false for everyone and that
+		-- teleport had never been offered. Nothing errored; the route was just
+		-- quietly longer.
+		--
+		-- The client cannot be asked "is this a teleport", but it can be asked
+		-- whether a spell EXISTS and what it is called -- and a name that does
+		-- not begin with the family's prefix is the shape that failure took.
+		local list = MM.DungeonTeleports
+		if not (list and #list > 0) then return false, "no dungeon teleports loaded" end
+		local named, unknown, odd = 0, 0, nil
+		for _, t in ipairs(list) do
+			local nm = C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(t.spell)
+			nm = nm and MM.Util.ReadableString(nm)
+			if not nm then
+				unknown = unknown + 1
+			else
+				named = named + 1
+				-- The data's own name and the client's should agree.
+				if nm ~= t.name and not odd then
+					odd = ("%d is %q here and %q in the client"):format(t.spell, t.name, nm)
+				end
+			end
+		end
+		if odd then return false, odd end
+		if named == 0 then return nil, "the client named none of them yet" end
+		return true, ("%d of %d ids name themselves exactly as shipped; %d not "
+			.. "cached yet"):format(named, #list, unknown)
+	end)
+
 	check("A teleport you have not earned is never offered", function()
 		-- 76 dungeon teleports joined the option list, and almost nobody has
 		-- most of them. If ownership were assumed rather than asked, every route

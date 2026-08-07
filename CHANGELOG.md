@@ -2,6 +2,24 @@
 
 ## 1.1.12 — 2026-08-07
 
+- **One dungeon teleport had never been offered to anyone.** The Algeth'ar
+  Academy teleport shipped as spell `393272`, which in the client's own table is
+  `[DNT] Eclipse Lake - WQ 01 - Ping - 3` — an internal test entry. So
+  `IsPlayerSpell` was false for every player alive, nothing errored, nothing was
+  missing from any list, and the route was simply longer than it needed to be. A
+  wrong spell id fails silently and forever.
+- **Six more dungeon teleports added**, read from the client rather than a
+  third-party export that was eleven behind: Karazhan, Maisara Caverns, Den of
+  Nalorakk, Murder Row, Temple of Sethraliss and Kings' Rest. Four others are
+  deliberately left out — the travel network has no node for where they land, and
+  a teleport aimed at a guess would win a route on a distance nobody measured.
+- **Midnight and The War Within mage teleports**, both missing: `Teleport:
+  Dornogal` and `Teleport: Silvermoon City`. Five client spells are called some
+  variant of "Teleport: Silvermoon"; only one is a mage's, settled by asking
+  which sit on the mage skill line rather than by taking the newest id.
+- A check now asserts every dungeon teleport id names itself exactly as shipped,
+  which is the shape that failure took.
+
 - **The mage teleport list stopped at Dragonflight.** `Teleport: Dornogal` was
   missing, so a mage was routed the long way to everything in Khaz Algar while
   holding a thirty-second answer. Its spell id comes from the client's own

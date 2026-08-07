@@ -477,6 +477,11 @@ MM:RegisterGameEvent("ADDON_LOADED", function(name)
 		MM.db.useTomTom = false
 	end
 
+	-- A weekly completion moved to the character it belongs to, so the account
+	-- copy is dead data nothing reads. Dropped rather than left to sit in saved
+	-- variables forever looking like state.
+	MM.db.weeklyDone = nil
+
 	-- MIGRATE ONCE, THEN SHARE.
 	--
 	-- The first character to log in after the upgrade donates its plan; every

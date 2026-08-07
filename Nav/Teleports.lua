@@ -247,6 +247,19 @@ local MORE = {
 	-- Spell id read from the client's own SpellName table, not from memory.
 	{ key = "mage_dornogal", spell = 446540, place = "Dornogal", name = "Teleport: Dornogal",
 		requires = { class = "MAGE" } },
+	-- MIDNIGHT'S SILVERMOON IS NOT THE OLD ONE, and both are live at once.
+	--
+	-- Five spells in the client are called some variant of "Teleport:
+	-- Silvermoon". Four of them are not a mage's: SkillLineAbility puts only
+	-- 1259190 and its portal on skill line 904, which is how this was settled
+	-- rather than by picking the newest id and hoping.
+	--
+	-- The destination is the Midnight city -- map 2393, the node the transit
+	-- links already call "Silvermoon City M" -- and NOT the Burning Crusade
+	-- Silvermoon above, which keeps its own teleport because it is still a
+	-- different place you can still need to reach.
+	{ key = "mage_smc_midnight", spell = 1259190, place = "Silvermoon City M",
+		name = "Teleport: Silvermoon City", requires = { class = "MAGE" } },
 }
 
 for _, o in ipairs(MORE) do
