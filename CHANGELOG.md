@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.1.11 — unreleased
+
+- **Fifteen crafted mounts stop being hidden by a profession nobody needs.** All
+  22 records with a `PROFESSION` condition were held back identically, and they
+  are three situations. Five need the profession *to ride* — the flying carpets,
+  the flying machines. Two are Archaeology solves nobody can do for you. The
+  other fifteen are BoE or ordinary crafting orders: the six panthers, the
+  `Mechano-Hog` and `Mekgineer's Chopper` that sell on the auction house, the
+  `Sandstone Drake`. Holding those back was the opposite of what the gate is for
+  — it exists to stop the router sending you where nothing can happen, and
+  something can happen here.
+- Marked **per record after reading each source line**, never inferred from the
+  profession: *"engineers only"* and *"BoE, purchasable"* are the same shape of
+  condition and opposite answers.
+- **No commission is invented.** A crafting order costs reagents plus a tip. All
+  fifteen carry real reagent data harvested from the client; the tip is not
+  knowable, so nothing is written down for it. A check asserts every tradeable
+  craft still carries a cost, because making one available without one would
+  turn it into free work that outranks the real kind.
+
 ## 1.1.10 — 2026-08-07
 
 Attempt tracking, which turned out not to work at all on Midnight, and three
