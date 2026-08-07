@@ -1,6 +1,36 @@
 # Changelog
 
-## 1.1.8 — unreleased
+## 1.1.9 — 2026-08-07
+
+Everything here came from one player testing 1.1.8 inside instances, and it is
+the tail of the same 12.0 change: **secret values**.
+
+- **`UnitName` is secret inside instances.** Reported as three distinct throws
+  at once — `NAME_PLATE_UNIT_ADDED`, `UPDATE_MOUSEOVER_UNIT` and
+  `PLAYER_TARGET_CHANGED` — which are the three events that reach
+  `IDResolver.ObserveUnit`. 1.1.8 guarded the vignette observer and left this
+  one four lines above it untouched: the third time that miss was made by
+  fixing the site that was reported rather than the class.
+- **A calendar title throws on a COMPARISON, not a conversion.**
+  `ev.title ~= ""` is enough, reported as *"attempt to compare field 'title' (a
+  secret string value)"*. It was then used as a table key, which would have
+  failed again a line later.
+- **The sweep, rather than a fifth report.** Every remaining read of a
+  client-supplied string now goes through the same guard — quest titles in
+  `Callings`, which have `:find()` called on them, and all five
+  `GetBindLocation` reads across `Teleports`, `Travel` and `Diagnostics`, where
+  the value is both a table key and an argument to a function that lowercases
+  it. Neither had been reported.
+
+Losing these costs almost nothing: the npc id comes from the GUID and is
+unaffected, so rare alerts still match, and an event that cannot be named
+simply joins no keyword matching.
+
+`FIXES IN THIS BUILD` is what found the last three. It reported
+`CHECK  Handler errors this session — 3 distinct` and named the events, which
+named the sites.
+
+## 1.1.8 — released
 
 The first release with players on it. Everything below came from two of them
 and from re-grading against the client's own data, and almost all of it is the
@@ -93,6 +123,56 @@ same shape: something that was wrong in a way the addon could not see.
   broken version looked like. Four of the six reported defects were invisible
   from inside the report; this is the section that would have caught them.
 
+**Reported from live play after the first fix round**
+
+- **12.0 secret values, swept rather than patched one at a time.** Midnight
+  hands a tainted addon a *secret value* where a client string used to be, and
+  any string operation on one throws — including `~= ""`, which needs no
+  concatenation at all. This arrived as four separate reports: every boss kill,
+  then delve combat, then three more events at once, then a calendar title.
+  Fixing the reported *site* each time meant the next report was already
+  written. There is now one guard, `Util.ReadableString`, and **sixteen call
+  sites across ten files** go through it — unit names, vignette names, POI names
+  and descriptions, encounter names, calendar titles, quest titles and every
+  hearthstone bind. Two of those had not been reported; they are the same shape
+  as the ones that were.
+- Every site **degrades instead of throwing**: a vignette we cannot name teaches
+  no npc id (the id comes from the GUID and is unaffected, so rare alerts still
+  match), an event we cannot name joins no keyword matching.
+- **`[+]` in the planner's left pane did nothing.** Four attempts blamed a
+  different part of the child-`Button` machinery — the handler, the frame level,
+  the click registration, the scroll box's anchors — and the handlers turned out
+  to be identical to the two panes that worked. The machinery is gone: the glyph
+  is a `FontString` on the row, the region that responds is **the glyph's own
+  rect**, so what you see and what you can press are one rectangle by
+  construction, and it acts on `OnMouseDown` so it never needs a press and a
+  release to land on one recycled frame.
+- The left pane also described its own rectangle differently from every other
+  list in the addon — two anchors on the same edge plus `SetWidth`, where
+  Collection and the plan pane both anchor opposite corners.
+- **The `[+]`/`[-]` tooltip said "Add / remove from farm plan" everywhere.** That
+  describes the control, not the click in front of you. `mmTooltip` already
+  existed, was already set on the plan pane's button, and nothing ever read it.
+
+**New**
+
+- **`/mm fixes`**, and a `FIXES IN THIS BUILD` section at the end of the report.
+  Thirteen probes, every one measuring live state and carrying what the broken
+  version looked like. Four of the six defects reported by players were
+  invisible from inside the report; this is the section that catches them — and
+  it is what named the last three secret-value sites.
+- **`/mm rowprobe`** reports what the planner's left pane actually is: frame
+  levels, geometry, whether the scripts exist, and whether a click would add
+  anything at all.
+
+**Self-test**
+
+- Two checks failed for reasons unrelated to what they tested, and one passed
+  *vacuously* on an empty plan — `cap 8 costs 0.0% more travel (0 → 0 min)`.
+  Zero minutes against zero minutes is not evidence, and going green on it was
+  the more dangerous of the two: one held the release gate shut for no reason,
+  the other would have waved a real regression through.
+
 ## 1.1.5 — released
 
 **Data**
@@ -162,7 +242,7 @@ nothing and looked exactly like "the data is not there".
   placeholder.
 
 
-## 1.1.0 — unreleased
+## 1.1.0 — superseded by 1.1.5, never shipped separately
 
 **Titan Panel**
 

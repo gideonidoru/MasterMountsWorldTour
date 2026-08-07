@@ -1075,11 +1075,11 @@ MM:On("MM_FIXES_DEBUG", function()
 	-- ---- print ------------------------------------------------------------
 	local bad = 0
 	for _, r in ipairs(rows) do if not r[1] then bad = bad + 1 end end
-	-- The "(was N)" figures are what 1.1.5 SHIPPED -- the version players are
-	-- actually running -- rather than an internal high-water mark. That is what
-	-- makes them worth printing: someone comparing a report against a bug they
-	-- filed is comparing against 1.1.5.
-	MM:Print("|cffffd84dFIXES IN THIS BUILD|r  %s, measured live; (was N) is what 1.1.5 shipped",
+	-- The "(was N)" figures are the state BEFORE these fixes, which was 1.1.5 --
+	-- not an internal high-water mark, and deliberately not "the version players
+	-- run", because that moves every time one ships. What they are for is
+	-- letting a reader tell a fix from a check that was always green.
+	MM:Print("|cffffd84dFIXES IN THIS BUILD|r  %s, measured live; (was N) is the state before these fixes",
 		MM.VERSION or "?")
 	for _, r in ipairs(rows) do
 		MM:Print("   %s  %s", r[1] and "|cff40d860 OK |r" or "|cffff4444CHECK|r", r[2])
