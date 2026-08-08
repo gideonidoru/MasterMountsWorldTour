@@ -7,6 +7,14 @@ local U = MM.Util
 MM.Availability = {}
 local A = MM.Availability
 
+-- Which build this is, read once. GetStatus runs for every mount in several
+-- lists, and the answer cannot change without a client restart. Guarded because
+-- a nil here would make unreleased content look released, which is the failure
+-- worth avoiding: better to keep saying "not yet" than to route somebody at
+-- something that is not there.
+local interfaceVersion = select(4, GetBuildInfo())
+if type(interfaceVersion) ~= "number" then interfaceVersion = 0 end
+
 ------------------------------------------------------------
 -- Holiday detection (calendar scan)
 ------------------------------------------------------------
@@ -521,8 +529,30 @@ function A.ComputeStatus(entry)
 
 	-- Content from a patch that is not live yet. Recorded so the database is
 	-- ready on release day, but there is nothing to do about it today.
+	--
+	-- AND IT STOPS BEING TRUE BY ITSELF, WHICH IS THE WHOLE POINT.
+	--
+	-- This flag used to be unconditional, so every one of the 22 12.1 mounts
+	-- would still have read "not in the game yet" on 12.1 launch day -- to a
+	-- player looking at them in their own journal. Fixing that would have meant
+	-- an edit, a rebuild and a CurseForge upload on the morning of the patch,
+	-- which is the worst possible time to need one.
+	--
+	-- The client already knows. `select(4, GetBuildInfo())` is the interface
+	-- number, and the .toc declares 120100 -- 12.1 -- as a supported build, so
+	-- the same number that says "this addon runs here" says "this content has
+	-- arrived". Scanner.lua gates the 12.0 combat-log restriction on exactly
+	-- this call, for exactly this reason.
+	--
+	-- `true` means the current unreleased patch, and every record carrying it is
+	-- 12.1 Coiled Isle content from Data_15_Patch121.lua. A number is honoured
+	-- as-is, so 12.2 records can say which build they wait for without touching
+	-- this line again.
 	if rec.unreleased then
-		return "PREREQ", "Not in the game yet — arrives with the next patch", nil
+		local arrives = rec.unreleased == true and 120100 or rec.unreleased
+		if (interfaceVersion or 0) < arrives then
+			return "PREREQ", "Not in the game yet — arrives with the next patch", nil
+		end
 	end
 
 	-- Prerequisites that going there cannot satisfy: wrong class or faction, a

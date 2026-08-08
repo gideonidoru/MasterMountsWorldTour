@@ -34732,8 +34732,9 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		vendor = "Second Mate Sluggs",
 		zone = {
 			name = "The Coiled Isle",
-			x = 58.8,
-			y = 46,
+			mapID = 2512,
+			x = 51.6,
+			y = 49.8,
 		},
 		conditions = {
 			{
@@ -34772,10 +34773,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		obtainable = true,
 		source = "Six-quest time-gated chain from Renown 10, beginning with Ancestral Gems",
 		zone = {
-			name = "Zul'Aman",
-			mapID = 2437,
-			x = 45.8,
-			y = 65.8,
+			name = "The Coiled Isle",
 		},
 		questChain = {
 			name = "Ancestral Gems",
@@ -34818,11 +34816,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		category = "DROP",
 		obtainable = true,
 		source = "Drops in Altar of Fangs",
-		zone = {
-			name = "The Coiled Isle",
-			x = 58.8,
-			y = 46,
-		},
 		instance = {
 			name = "Altar of Fangs",
 			lockout = "DAILY",
@@ -34851,11 +34844,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		category = "DROP",
 		obtainable = true,
 		source = "Drops in The Venomous Abyss on Mythic difficulty",
-		zone = {
-			name = "The Coiled Isle",
-			x = 58.8,
-			y = 46,
-		},
 		instance = {
 			name = "The Venomous Abyss",
 			difficulty = "Mythic",
@@ -34887,11 +34875,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Achievement meta: complete the The Venomous Abyss achievements",
-		zone = {
-			name = "The Coiled Isle",
-			x = 58.8,
-			y = 46,
-		},
 		instance = {
 			name = "The Venomous Abyss",
 			lockout = "WEEKLY",
@@ -44843,7 +44826,7 @@ MM.AddMounts({
 	},
 })
 
--- 40 vendor locations
+-- 42 vendor locations
 MM.AddVendorLocations({
 	["anub'okki"] = {
 		name = "Azj-Kahet",
@@ -44932,6 +44915,12 @@ MM.AddVendorLocations({
 		x = 51,
 		y = 56.6,
 	},
+	["jan'sari the watchful"] = {
+		name = "The Coiled Isle",
+		mapID = 2512,
+		x = 58.8,
+		y = 46,
+	},
 	kiatke = {
 		name = "Stormwind City",
 		x = 76.2,
@@ -44977,6 +44966,12 @@ MM.AddVendorLocations({
 		name = "Undermine",
 		x = 39.2,
 		y = 22.2,
+	},
+	["second mate sluggs"] = {
+		name = "The Coiled Isle",
+		mapID = 2512,
+		x = 51.6,
+		y = 49.8,
 	},
 	["shredz the scrapper"] = {
 		name = "Undermine",
