@@ -573,6 +573,51 @@ end
 -- matters more here than saving it.
 U.secretReads = 0
 
+-- Showing or hiding a frame the client protects.
+--
+-- A FRAME THAT PARENTS A SECURE BUTTON IS ITSELF PROTECTED. Both of ours do:
+-- the arrow carries a click-to-use button, and the rare alert carries a
+-- /targetexact macro button, because an addon cannot call TargetUnit directly.
+-- Blizzard then refuses Show and Hide on the PARENT in combat, exactly as it
+-- refuses SetAttribute on the child.
+--
+-- REPORTED TWICE, and the second time from killing an open-world rare, with the
+-- same shape both times: the SetAttribute call sat under an InCombatLockdown
+-- check with a comment explaining why, and the Show and Hide four lines away
+-- did not. Knowing about the attributes and not the visibility is apparently
+-- easy to do twice, so this lives in one place now rather than in each file
+-- that happens to need it.
+--
+-- Nothing is lost by waiting: the frame appears the moment combat ends, and a
+-- show still sitting in the queue can be cancelled by asking to hide.
+local pendingShown = setmetatable({}, { __mode = "k" })
+
+function U.SetShownWhenCombatAllows(frame, want)
+	if not frame then return end
+	if InCombatLockdown() then
+		pendingShown[frame] = want
+		return
+	end
+	pendingShown[frame] = nil
+	if want then frame:Show() else frame:Hide() end
+end
+
+-- Whether a change is still waiting. A caller that reads IsShown alone cannot
+-- tell a cancelled show from one that never happened.
+function U.ShownPending(frame)
+	if not frame then return nil end
+	return pendingShown[frame]
+end
+
+function U.FlushShownWhenCombatAllows()
+	for frame, want in pairs(pendingShown) do
+		pendingShown[frame] = nil
+		if want then frame:Show() else frame:Hide() end
+	end
+end
+
+MM:RegisterGameEvent("PLAYER_REGEN_ENABLED", U.FlushShownWhenCombatAllows)
+
 -- The npc id inside a unit GUID, when the client will let us look.
 --
 -- REPORTED FROM ZONING INTO A DELVE, and this is the fourth shape of the same

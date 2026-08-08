@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.15 — unreleased
+
+- **Killing an open-world rare blocked the alert from hiding.** The alert frame
+  parents a secure macro button — an addon cannot call TargetUnit, so the
+  "Target" button has to be one — and Blizzard refuses to show or hide the
+  parent of a secure button in combat, exactly as it refuses to set the child's
+  attributes. Reported twice now with the same shape: the SetAttribute call sat
+  under a combat check with a comment explaining why, and the Show and Hide four
+  lines away did not.
+
+  The waiting now lives in one place instead of one copy per file, and the same
+  sweep found the arrow's own HUD container unguarded — it parents the secure
+  action button, so hiding it was refused for the same reason and had simply
+  never been reported.
+
 ## 1.1.14 — 2026-08-07
 
 - **Zoning into a delve threw on every nameplate.** A unit's GUID is a

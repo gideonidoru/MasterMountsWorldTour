@@ -197,7 +197,9 @@ local function build()
 	end)
 	MM.Theme.Register(pill, "panel")
 	MM.Theme.SkinTree(frame)
-	frame:Hide()
+	-- Protected as well: it PARENTS the secure button, and Blizzard refuses
+	-- an ancestor of one just as firmly as the button itself.
+	MM.Util.SetShownWhenCombatAllows(frame, false)
 end
 
 -- Swap the arrow for a clickable "use this" button, or back again.
@@ -211,17 +213,16 @@ end
 -- has stored them as `spell` rather than `item` from the beginning, and its own
 -- cooldown helper branches on exactly that. This button only ever read `item`,
 -- so for a spell hop it was handed nil and offered nothing to click.
--- Deferred visibility, alongside the deferred attributes. nil means nothing is
--- waiting; true and false are a Show and a Hide that combat refused.
-local pendingShown
+-- Deferred visibility, alongside the deferred attributes.
+--
+-- The waiting is done by Util now, because the rare alert turned out to need
+-- exactly the same thing for exactly the same reason -- it parents a secure
+-- macro button, this parents a secure action button, and Blizzard refuses to
+-- show or hide either in combat. Two copies of a rule is how the last one got
+-- missed.
 function setActionShown(want)
 	if not action then return end
-	if InCombatLockdown() then
-		pendingShown = want
-		return
-	end
-	pendingShown = nil
-	if want then action:Show() else action:Hide() end
+	MM.Util.SetShownWhenCombatAllows(action, want)
 end
 
 local pendingAction
@@ -330,7 +331,7 @@ function Arrow:HideAction()
 	-- Reading IsShown alone, this returned early whenever a Show was sitting in
 	-- the queue rather than on screen -- and combat then ended and put up an
 	-- action button for a hop that had already been cancelled.
-	if not (action and (action:IsShown() or pendingShown)) then return end
+	if not (action and (action:IsShown() or MM.Util.ShownPending(action))) then return end
 	action.mmItemID = nil
 	setActionShown(false)
 	tex:Show()
@@ -338,8 +339,9 @@ function Arrow:HideAction()
 end
 
 -- Apply anything deferred by combat.
+-- Visibility drains in Util's own PLAYER_REGEN_ENABLED handler; this one only
+-- has the attributes left to apply.
 MM:RegisterGameEvent("PLAYER_REGEN_ENABLED", function()
-	if pendingShown ~= nil then setActionShown(pendingShown) end
 	if pendingAction then
 		applyAction(pendingAction.itemID, pendingAction.isToy, pendingAction.spellID)
 	end
@@ -387,14 +389,14 @@ function Arrow:SetTarget(step)
 	build()
 	target = step
 	label:SetText(step.label or "")
-	frame:Show()
+	MM.Util.SetShownWhenCombatAllows(frame, true)
 end
 
 function Arrow:Clear()
 	target = nil
 	if frame then
 		Arrow:HideAction()
-		frame:Hide()
+		MM.Util.SetShownWhenCombatAllows(frame, false)
 	end
 end
 

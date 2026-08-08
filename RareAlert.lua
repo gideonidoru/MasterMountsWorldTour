@@ -477,7 +477,9 @@ local function buildAlert()
 	local close = MM.Theme.CreateCloseButton(alertFrame, 16)
 	close:SetPoint("TOPRIGHT", -6, -6)
 	close.mmTooltip = "Dismiss"
-	close:SetScript("OnClick", function() alertFrame:Hide() end)
+	close:SetScript("OnClick", function()
+		MM.Util.SetShownWhenCombatAllows(alertFrame, false)
+	end)
 	alertFrame:HookScript("OnHide", function() if RA.StopMini then RA.StopMini() end end)
 
 	-- A small arrow of our own, for rares that are not in the plan.
@@ -512,7 +514,7 @@ local function buildAlert()
 			MM.db.rareAlertPos.relPoint, MM.db.rareAlertPos.x, MM.db.rareAlertPos.y)
 	end
 	MM.Theme.SkinTree(alertFrame)
-	alertFrame:Hide()
+	MM.Util.SetShownWhenCombatAllows(alertFrame, false)
 end
 
 -- `force` is for the options preview only. A preview that silently did nothing
@@ -587,7 +589,9 @@ function RA.Alert(npcName, hit, mapPos, force)
 		if link then mountText = link end
 	end
 	alertFrame.body:SetText(("|cffffffff%s|r is up — drops %s"):format(npcName, mountText))
-	alertFrame:Show()
+	-- Protected: this frame parents a secure macro button, so its visibility
+	-- is refused in combat exactly as the attribute below is.
+	MM.Util.SetShownWhenCombatAllows(alertFrame, true)
 
 	-- secure attributes cannot be set in combat
 	if not InCombatLockdown() then
@@ -661,7 +665,9 @@ function RA.Alert(npcName, hit, mapPos, force)
 	-- that vanishes after 45 seconds cannot be dragged anywhere deliberately.
 	if not RA.previewing then
 		C_Timer.After(45, function()
-			if alertFrame and alertFrame:IsShown() then alertFrame:Hide() end
+			if alertFrame and (alertFrame:IsShown() or MM.Util.ShownPending(alertFrame)) then
+				MM.Util.SetShownWhenCombatAllows(alertFrame, false)
+			end
 		end)
 	end
 end
