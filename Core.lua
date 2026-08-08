@@ -390,6 +390,19 @@ local accountDefaults = {
 	hideIgnored = false,      -- ignoring MARKS; hiding is a separate filter
 	mapPins = true,           -- draw mount locations on the world map
 	mapPinsShowCollected = false,
+	-- CONTINENT ROLLUP, OFF BY DEFAULT.
+	--
+	-- Projecting every child zone's pins onto the continent map exists so a
+	-- continent is not blank, and it works -- on some continents. The round trip
+	-- through world space succeeds for Pandaria and the Broken Isles and
+	-- silently produces nothing for Outland, Zandalar and the Dragon Isles,
+	-- because those parent maps are not a simple projection of their children.
+	--
+	-- Reported from play as both symptoms at once: two continents buried under
+	-- overlapping icons, and mounts "missing" on the others. Half a feature
+	-- reads as two different bugs, so it is off unless asked for; the zone maps
+	-- have always shown everything.
+	mapPinsChildZones = false,
 	-- Teleports the player has switched off by hand, keyed by option key. A
 	-- saving they would rather not take -- M+ charges being the case that asked
 	-- for it -- is not something the router can work out on its own.

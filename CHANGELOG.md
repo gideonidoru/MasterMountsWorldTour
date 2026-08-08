@@ -2,6 +2,15 @@
 
 ## 1.1.15 — unreleased
 
+- **Continent maps no longer bury themselves in mount pins.** Projecting every
+  child zone's pins up onto the continent map worked for Pandaria and the Broken
+  Isles and silently produced nothing for Outland, Zandalar and the Dragon
+  Isles, because those parent maps are not a simple projection of their
+  children. Half a feature reads as two separate bugs — two continents unusable
+  under overlapping icons, and mounts apparently missing on the rest. It is off
+  by default now, with a checkbox for anyone who wants it, and the zone maps
+  have always shown everything.
+
 - **The Darkshore warfront rares come in faction pairs, and ours were crossed.**
   Each nightsaber was tagged with one faction and standing on the *other*
   faction's rare, so the goal passed the faction gate and then sent a Horde

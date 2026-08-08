@@ -87,7 +87,8 @@ local function buildPanel()
 		c:SetScript("OnShow", function(self) self:SetChecked(MM.db[key] and true or false) end)
 		c:SetScript("OnClick", function(self)
 			MM.db[key] = self:GetChecked() and true or false
-			if key == "mapPins" or key == "mapPinsShowCollected" then
+			if key == "mapPins" or key == "mapPinsShowCollected"
+				or key == "mapPinsChildZones" then
 				if MM.MapPins then MM.MapPins.Refresh() end
 			elseif key == "useTomTom" then
 				-- Hand the leg being travelled to the other provider NOW.
@@ -153,6 +154,7 @@ local function buildPanel()
 		.. "comes back in the next zone. /mm zone show summons it any time.", 16)
 	check("Show mount locations on the world map", "mapPins")
 	check("Include mounts I already own on the map", "mapPinsShowCollected", nil, 16)
+	check("Also show a continent's zones on the continent map", "mapPinsChildZones", nil, 16)
 	check("Hand waypoints to TomTom instead of the built-in arrow", "useTomTom",
 		"Off by default. TomTom has a single arrow that any addon can write "
 		.. "to, so whichever wrote last owns it — which can steer you off "
