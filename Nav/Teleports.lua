@@ -456,7 +456,44 @@ local function meetsRequirements(option)
 end
 
 -- Returns true, or false plus the reason -- the reason is the whole point.
-local function usable(option)
+-- TURNED OFF BY HAND.
+--
+-- Asked for directly: "I don't want it to suggest my M+ dungeon teleports."
+-- They are a real saving and the router is right to price them, but a player
+-- who is saving those charges for a key would rather walk, and no amount of
+-- modelling can know that.
+--
+-- Checked HERE, in the one gate every caller already goes through, so a switched
+-- off option disappears from the route, the landing list and the evaluator at
+-- once -- and TP.Gates reports the reason, so it reads as a decision rather than
+-- as a teleport that mysteriously stopped being offered.
+function TP.IsOff(key)
+	local off = MM.db and MM.db.teleportsOff
+	return (key and off and off[key]) and true or false
+end
+
+function TP.SetOff(key, off)
+	if not (key and MM.db) then return end
+	MM.db.teleportsOff = MM.db.teleportsOff or {}
+	MM.db.teleportsOff[key] = off or nil
+	snapshot = nil
+	if MM.Fire then MM:Fire("MM_PLAN_CHANGED") end
+end
+
+-- The dungeon and raid teleports as one group, because that is how the request
+-- arrived and how anybody would think of them.
+function TP.DungeonKeys()
+	local out = {}
+	for _, option in ipairs(OPTIONS) do
+		if option.key and option.key:find("^dungeontp_") then out[#out + 1] = option.key end
+	end
+	return out
+end
+
+local function usable(option, ignoreOff)
+	if not ignoreOff and TP.IsOff(option.key) then
+		return false, "you turned this one off"
+	end
 	local allowed, why = meetsRequirements(option)
 	if not allowed then return false, why end
 
@@ -663,6 +700,31 @@ MM:RegisterGameEvent("PLAYER_ENTERING_WORLD", function() wipe(arrivalWorld) end)
 -- Every option with its verdict, for diagnostics. Deliberately reports the
 -- REASON: an option that silently never appears is indistinguishable from one
 -- we forgot to add.
+-- Every option this character could actually press, with its switch state.
+-- Deliberately not the whole catalogue: a list of eighty teleports nobody has
+-- earned is not a setting, it is a wall.
+function TP.Switchable()
+	local out = {}
+	for _, option in ipairs(OPTIONS) do
+		local ok = usable(option, true)
+		if ok then
+			local _, _, _, placeName = option.dest()
+			out[#out + 1] = {
+				key = option.key,
+				name = option.name,
+				place = placeName or option.place,
+				dungeon = option.key and option.key:find("^dungeontp_") ~= nil,
+				off = TP.IsOff(option.key),
+			}
+		end
+	end
+	table.sort(out, function(a, b)
+		if a.dungeon ~= b.dungeon then return not a.dungeon end
+		return (a.name or "") < (b.name or "")
+	end)
+	return out
+end
+
 function TP.Gates()
 	local out = {}
 	for _, option in ipairs(OPTIONS) do

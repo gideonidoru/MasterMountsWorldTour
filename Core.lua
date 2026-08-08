@@ -390,6 +390,10 @@ local accountDefaults = {
 	hideIgnored = false,      -- ignoring MARKS; hiding is a separate filter
 	mapPins = true,           -- draw mount locations on the world map
 	mapPinsShowCollected = false,
+	-- Teleports the player has switched off by hand, keyed by option key. A
+	-- saving they would rather not take -- M+ charges being the case that asked
+	-- for it -- is not something the router can work out on its own.
+	teleportsOff = {},
 	zoneAlert = true,         -- on entering a zone, list what's farmable here
 	zoneAlertSeconds = 12,
 	zoneAlertSticky = false,   -- pin the zone window open instead of auto-hiding

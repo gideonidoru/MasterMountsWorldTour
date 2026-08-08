@@ -2,6 +2,14 @@
 
 ## 1.1.15 — unreleased
 
+- **Teleports can be switched off.** Options > Master Mounts > Travel lists
+  every teleport this character can actually press, and an unticked one is never
+  suggested and never priced into a route. Dungeon and raid teleports have a
+  single switch for the lot, because "don't spend my M+ charges" is one decision
+  rather than eighty. The router is not wrong to price those — they really are
+  the fastest way in — but nothing it can measure will ever tell it you are
+  saving them for a key.
+
 - **Killing an open-world rare blocked the alert from hiding.** The alert frame
   parents a secure macro button — an addon cannot call TargetUnit, so the
   "Target" button has to be one — and Blizzard refuses to show or hide the

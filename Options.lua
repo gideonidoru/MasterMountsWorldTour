@@ -687,6 +687,119 @@ local function buildWeights()
 end
 
 ------------------------------------------------------------
+-- Travel subcategory: which teleports the router may spend
+------------------------------------------------------------
+-- ASKED FOR DIRECTLY: "I don't want it to suggest my M+ dungeon teleports."
+--
+-- The router is not wrong to price them -- they genuinely are the fastest way
+-- into those instances -- but a player saving the charges for a key would
+-- rather walk, and nothing the addon can measure will ever tell it that. So it
+-- is a switch, not a heuristic.
+--
+-- Lists only what this character can actually press. The catalogue is over
+-- eighty teleports; a page of ones nobody has earned is a wall rather than a
+-- setting, and the ones being suggested are exactly the ones worth switching.
+local function buildTravel()
+	local panel = CreateFrame("Frame")
+	panel.name = "Travel"
+
+	local backing = panel:CreateTexture(nil, "BACKGROUND")
+	backing:SetAllPoints(panel)
+	backing:SetColorTexture(0.05, 0.05, 0.06, 0.94)
+
+	local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+	title:SetPoint("TOPLEFT", 16, -16)
+	title:SetText("Teleports the route may use")
+
+	local blurb = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	blurb:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
+	blurb:SetPoint("RIGHT", panel, "RIGHT", -16, 0)
+	blurb:SetJustifyH("LEFT")
+	blurb:SetText("Unticked teleports are never suggested and never priced into a "
+		.. "route. Only what this character can use is listed. The plan redraws "
+		.. "as you change them.")
+
+	local group = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+	group:SetSize(210, 24)
+	group:SetPoint("TOPLEFT", blurb, "BOTTOMLEFT", 0, -12)
+
+	local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+	scroll:SetPoint("TOPLEFT", group, "BOTTOMLEFT", 0, -12)
+	scroll:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -34, 16)
+	local content = CreateFrame("Frame", nil, scroll)
+	content:SetSize(1, 1)
+	scroll:SetScrollChild(content)
+
+	local rows = {}
+	local function refresh()
+		local TP = MM.Teleports
+		if not (TP and TP.Switchable) then return end
+		local list = TP.Switchable()
+		local anyDungeonOn = false
+		for _, item in ipairs(list) do
+			if item.dungeon and not item.off then anyDungeonOn = true break end
+		end
+		group:SetText(anyDungeonOn and "Turn off all dungeon teleports"
+			or "Turn on all dungeon teleports")
+		group:SetShown(#list > 0)
+		group.turnOff = anyDungeonOn
+
+		for _, row in ipairs(rows) do row:Hide() end
+		local y, lastDungeon = 0, nil
+		for i, item in ipairs(list) do
+			local row = rows[i]
+			if not row then
+				row = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+				row.label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+				row.label:SetPoint("LEFT", row, "RIGHT", 2, 0)
+				row.heading = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+				row.heading:SetPoint("BOTTOMLEFT", row, "TOPLEFT", 0, 4)
+				rows[i] = row
+			end
+			-- A heading only where the kind changes, so the two groups read as
+			-- groups without a separate frame for each.
+			if lastDungeon ~= item.dungeon then
+				row.heading:SetText(item.dungeon and "Dungeon & raid teleports"
+					or "Items, hearthstones and class spells")
+				row.heading:Show()
+				y = y + (i > 1 and 26 or 14)
+				lastDungeon = item.dungeon
+			else
+				row.heading:Hide()
+			end
+			row:SetSize(24, 24)
+			row:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -y)
+			row.label:SetText(item.place and item.place ~= ""
+				and ("%s  |cff9d9d9d-> %s|r"):format(item.name, item.place)
+				or item.name)
+			row:SetChecked(not item.off)
+			row.mmKey = item.key
+			row:SetScript("OnClick", function(self)
+				MM.Teleports.SetOff(self.mmKey, not self:GetChecked())
+				refresh()
+			end)
+			row:Show()
+			y = y + 24
+		end
+		content:SetSize(math.max(scroll:GetWidth() - 4, 1), math.max(y, 1))
+	end
+
+	group:SetScript("OnClick", function()
+		local TP = MM.Teleports
+		if not (TP and TP.DungeonKeys) then return end
+		local off = group.turnOff
+		for _, key in ipairs(TP.DungeonKeys()) do TP.SetOff(key, off) end
+		refresh()
+	end)
+
+	panel:SetScript("OnShow", refresh)
+	-- Learning a teleport, or logging in on a character who has different ones,
+	-- changes what belongs on this list.
+	MM:On("MM_SCANNED", function() if panel:IsShown() then refresh() end end)
+	return panel
+end
+
+------------------------------------------------------------
 -- Diagnostics subcategory
 ------------------------------------------------------------
 -- Registered as a Settings SUBcategory rather than an in-panel tab: that is the
@@ -832,6 +945,8 @@ MM:On("MM_LOGIN", function()
 			if Settings.RegisterCanvasLayoutSubcategory then
 				local weights = buildWeights()
 				pcall(Settings.RegisterCanvasLayoutSubcategory, category, weights, weights.name)
+				local travel = buildTravel()
+				pcall(Settings.RegisterCanvasLayoutSubcategory, category, travel, travel.name)
 				local diag = buildDiagnostics()
 				pcall(Settings.RegisterCanvasLayoutSubcategory, category, diag, diag.name)
 			end

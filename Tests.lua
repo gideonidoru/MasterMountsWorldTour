@@ -4904,6 +4904,45 @@ local function runLogic()
 		return true, ("unknown price costs %.0f min against %.0f for a quick job"):format(a, b)
 	end)
 
+	check("A teleport switched off is never suggested", function()
+		-- Asked for directly: "I don't want it to suggest my M+ dungeon
+		-- teleports." A switch is only worth having if it reaches the ROUTE, not
+		-- merely the list -- so this turns a real option off, reads back every
+		-- place the router asks about teleports, and puts it back.
+		local TP = MM.Teleports
+		if not (TP and TP.Switchable and TP.SetOff) then return nil, "travel layer not loaded" end
+		local list = TP.Switchable()
+		if #list == 0 then return nil, "this character can press no teleport" end
+		local victim
+		for _, item in ipairs(list) do if not item.off then victim = item break end end
+		if not victim then return true, ("%d option(s), all switched off already")
+			:format(#list) end
+
+		local before = #TP.Options()
+		TP.SetOff(victim.key, true)
+		local during = #TP.Options()
+		local stillListed = false
+		for _, g in ipairs(TP.Gates() or {}) do
+			if g.name == victim.name and g.usable then stillListed = true end
+		end
+		TP.SetOff(victim.key, false)
+		local after = #TP.Options()
+
+		if during >= before then
+			return false, ("%q was switched off and the router still offered %d option(s)")
+				:format(victim.name, during)
+		end
+		if stillListed then
+			return false, ("%q was switched off and still reads as usable"):format(victim.name)
+		end
+		if after ~= before then
+			return false, ("switching %q back on left %d option(s), not the %d it started with")
+				:format(victim.name, after, before)
+		end
+		return true, ("%d switchable option(s); turning %q off removed it from the "
+			.. "route and turning it back on restored it"):format(#list, victim.name)
+	end)
+
 	check("Travel options respect their gates", function()
 		-- Class, faction and profession are independent gates. Any class can be
 		-- an Engineer, so the wormholes must never be filtered by class -- and
