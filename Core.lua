@@ -711,14 +711,59 @@ SLASH_MASTERMOUNTS2 = "/mastermounts"
 -- explicitly when the result really is empty.
 local function windowed(title, fn)
 	local D = MM.Diagnostics
-	if not (D and D.Capture and D.ShowExport) then return fn() end
-	local text = table.concat(D.Capture(fn) or {}, "\n")
-	if text == "" then text = "Nothing to report." end
-	D.ShowExport(text, title)
+	-- One copy, in Diagnostics, because Tests.lua needs the same thing for the
+	-- full check and this file cannot be depended on from there.
+	if not (D and D.Windowed) then return fn() end
+	return D.Windowed(title, fn)
 end
+
+-- Report-shaped commands: everything whose answer is a page rather than a line.
+--
+-- ONE LINE PER COMMAND BEATS TWENTY-TWO COPIES OF FOUR. Every one of these
+-- printed to a chat frame that cannot be selected and drops its oldest lines,
+-- which is exactly the fault already fixed for the report, for the id export,
+-- and for remaining gaps -- three times, one command at a time, while the rest
+-- kept doing it.
+--
+-- DELIBERATELY NOT EVERYTHING. `bags`, `theme`, `attempts` and `group` answer in
+-- one or two lines, and Capture strips colour, so a window would cost them their
+-- highlighting to solve a problem they do not have. Length is the test, and it is
+-- applied by hand because it is a judgement about reading, not a measurement.
+local WINDOWED_COMMANDS = {
+	release     = { "MM_RELEASE_DEBUG",     "Release readiness" },
+	audit       = { "MM_AUDIT",             "Database audit" },
+	travel      = { "MM_TRAVEL_DEBUG",      "Travel options" },
+	fixes       = { "MM_FIXES_DEBUG",       "Fixes in this build" },
+	layers      = { "MM_LAYERS_DEBUG",      "Layered ordering" },
+	routeinfo   = { "MM_ROUTE_DEBUG",       "Route" },
+	whynot      = { "MM_WHYNOT_DEBUG",      "Why a goal is not on the route" },
+	gates       = { "MM_GATES_DEBUG",       "Prerequisite gates" },
+	assaults    = { "MM_ASSAULTS_DEBUG",    "Assaults" },
+	events      = { "MM_EVENTS_DEBUG",      "Events and Timewalking" },
+	post        = { "MM_TRADINGPOST_DEBUG", "Trading Post" },
+	score       = { "MM_SCORE_DEBUG",       "Scorecard" },
+	known       = { "MM_KNOWN_DEBUG",       "Known and unknowable" },
+	costs       = { "MM_COSTS_DEBUG",       "Cost coverage" },
+	timemodel   = { "MM_TIMEMODEL_DEBUG",   "Time model" },
+	crafting    = { "MM_CRAFTING_DEBUG",    "Crafting" },
+	flightpoints= { "MM_FLIGHTPOINTS_DEBUG","Flight points" },
+	queue       = { "MM_QUEUE_DEBUG",       "Queueable goals" },
+	rarity      = { "MM_RARITY_DEBUG",      "Rarity coverage" },
+	weights     = { "MM_WEIGHTS_DEBUG",     "Weights and priorities" },
+	zone        = { "MM_ZONE_DEBUG",        "Zone alerts" },
+	rowprobe    = { "MM_ROWPROBE_DEBUG",    "Planner left pane" },
+	onboarding  = { "MM_ONBOARDING_DEBUG",  "Onboarding" },
+}
 
 SlashCmdList.MASTERMOUNTS = function(input)
 	input = (input or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
+	-- Report-shaped commands first, so each is one table row rather than a
+	-- branch that has to remember to ask for a window.
+	local win = WINDOWED_COMMANDS[input]
+	if win then
+		windowed(win[2], function() MM:Fire(win[1]) end)
+		return
+	end
 	if input == "" or input == "show" then
 		MM:Fire("MM_TOGGLE_MAIN")
 	elseif input == "plan" then
@@ -731,19 +776,11 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Fire("MM_ROUTE_TOGGLE")
 	elseif input == "easiest" then
 		MM:Fire("MM_EASIEST")
-	elseif input == "audit" then
-		MM:Fire("MM_AUDIT")
-	elseif input == "events" then
-		MM:Fire("MM_EVENTS_DEBUG")
 	elseif input == "callings" then
 		MM.Callings.Request()
 		MM:Fire("MM_CALLINGS_DEBUG")
 	elseif input == "callings clear" then
 		MM:Fire("MM_CALLINGS_CLEAR")
-	elseif input == "post" then
-		MM:Fire("MM_TRADINGPOST_DEBUG")
-	elseif input == "rarity" then
-		MM:Fire("MM_RARITY_DEBUG")
 	elseif input == "report" or input == "diag" then
 		-- "diag" is the obvious name for it and doing nothing is a poor answer to
 		-- a near miss.
@@ -754,22 +791,8 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Fire("MM_SELFTEST")
 	elseif input == "matrix" then
 		MM:Fire("MM_WEIGHTS_MATRIX_EXPORT")
-	elseif input == "layers" then
-		MM:Fire("MM_LAYERS_DEBUG")
-	elseif input == "routeinfo" then
-		MM:Fire("MM_ROUTE_DEBUG")
-	elseif input == "weights" then
-		MM:Fire("MM_WEIGHTS_DEBUG")
-	elseif input == "assaults" then
-		MM:Fire("MM_ASSAULTS_DEBUG")
-	elseif input == "gates" then
-		MM:Fire("MM_GATES_DEBUG")
 	elseif input == "bags" then
 		MM:Fire("MM_CARRIED_DEBUG")
-	elseif input == "travel" then
-		MM:Fire("MM_TRAVEL_DEBUG")
-	elseif input == "whynot" then
-		MM:Fire("MM_WHYNOT_DEBUG")
 	elseif input == "welcome" then
 		MM:Fire("MM_ONBOARDING")
 	elseif input:match("^session") then
@@ -780,10 +803,6 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Fire("MM_CONTRIBUTE_IMPORT")
 	elseif input == "contribute clear" then
 		MM.Contribute.Clear()
-	elseif input == "queue" then
-		MM:Fire("MM_QUEUE_DEBUG")
-	elseif input == "release" then
-		MM:Fire("MM_RELEASE_DEBUG")
 	elseif input == "sources" or input:match("^sources ") then
 		MM:Fire("MM_SOURCES", input:match("^sources%s+([%d.]+)"))
 	elseif input == "sourcesexport" or input:match("^sourcesexport ") then
@@ -853,30 +872,10 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		else
 			MM:Print("Dev command: add tools/RareLootHarvest.lua and tools/RareLootResolve.lua to the .toc first.")
 		end
-	elseif input == "flightpoints" then
-		MM:Fire("MM_FLIGHTPOINTS_DEBUG")
-	elseif input == "fixes" then
-		MM:Fire("MM_FIXES_DEBUG")
-	elseif input == "rowprobe" then
-		MM:Fire("MM_ROWPROBE_DEBUG")
-	elseif input == "score" then
-		MM:Fire("MM_SCORE_DEBUG")
-	elseif input == "known" then
-		MM:Fire("MM_KNOWN_DEBUG")
-	elseif input == "costs" then
-		MM:Fire("MM_COSTS_DEBUG")
-	elseif input == "timemodel" then
-		MM:Fire("MM_TIMEMODEL_DEBUG")
-	elseif input == "crafting" then
-		MM:Fire("MM_CRAFTING_DEBUG")
 	elseif input == "zone show" then
 		-- so the window can be summoned on demand rather than by walking
 		-- somewhere, which is the only way it used to be testable
 		MM:Fire("MM_ZONE_SHOW")
-	elseif input == "onboarding" then
-		MM:Fire("MM_ONBOARDING_DEBUG")
-	elseif input == "zone" then
-		MM:Fire("MM_ZONE_DEBUG")
 	elseif input == "compare" then
 		MM.GroupSync.Request()
 	elseif input == "group" then

@@ -5732,7 +5732,19 @@ function T.RunOnce()
 	return counts
 end
 
-MM:On("MM_SELFTEST", function() T.Run() end)
+-- Into a window, like every other page-length answer. Wrapped at the HANDLER and
+-- not around T.Run, because the report and the release gate both call T.Run
+-- directly while already capturing -- and a second window opening mid-report
+-- would walk off with the section's output.
+local function windowed(title, fn)
+	local D = MM.Diagnostics
+	if not (D and D.Windowed) then return fn() end
+	return D.Windowed(title, fn)
+end
+
+MM:On("MM_SELFTEST", function()
+	windowed("Self-test", function() T.Run() end)
+end)
 
 ------------------------------------------------------------
 -- /mm check — the one command
@@ -5887,9 +5899,21 @@ function T.FullCheck()
 	pcall(function() MM.TradingPost.Refresh() end)
 	-- 4s is enough for the calendar and Callings to answer in practice, and the
 	-- bag scan debounce is 0.5s.
+	-- THE CAPTURE GOES ROUND THE RUN, NOT ROUND THE COMMAND. This returns four
+	-- seconds before the suite starts, so wrapping FullCheck itself would capture
+	-- the warming line and nothing else, then draw an empty window -- which looks
+	-- exactly like a check that found nothing to say.
 	C_Timer.After(4, function()
-		local ok, err = pcall(T.RunSync)
-		if not ok then MM:Print("|cffff4d4dCheck crashed:|r %s", tostring(err)) end
+		local crashed
+		windowed("Full check", function()
+			local ok, err = pcall(T.RunSync)
+			if not ok then crashed = err end
+		end)
+		-- Said in chat as well: a crash the window cannot show is the one thing
+		-- worth interrupting for, and the window may not exist to show it.
+		if crashed then
+			MM:Print("|cffff4d4dCheck crashed:|r %s", tostring(crashed))
+		end
 	end)
 end
 

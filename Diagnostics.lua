@@ -113,6 +113,29 @@ function D.Capture(fn)
 	return lines
 end
 
+-- Run something that reports through MM:Print, and put the result in a window.
+--
+-- LONG OUTPUT BELONGS IN A WINDOW, AND THIS KEPT BEING DECIDED ONE COMMAND AT A
+-- TIME. Chat scrollback is capped and cannot be selected, so /mm release,
+-- /mm check, /mm travel and the rest were unpastable -- the /mm export fix was
+-- the same fault in a third place, and the helper Core wrote to stop it
+-- happening a fourth time was never wired to anything but the two id commands.
+--
+-- It lives here rather than in Core because Tests.lua needs it too: the full
+-- check finishes inside a C_Timer callback four seconds after the command
+-- returns, so the capture has to wrap the run and not the command.
+--
+-- NESTED CAPTURE IS THE TRAP. The report runs every one of these sections while
+-- capturing, and a section that opened its own window mid-report would take its
+-- output with it -- half the report on screen, half in a window. `capturing`
+-- already exists to say so; this honours it by simply running the work.
+function D.Windowed(title, fn)
+	if D.capturing then return fn() end
+	local text = table.concat(D.Capture(fn) or {}, "\n")
+	if text == "" then text = "Nothing to report." end
+	D.ShowExport(text, title)
+end
+
 ------------------------------------------------------------
 -- Environment header
 ------------------------------------------------------------
