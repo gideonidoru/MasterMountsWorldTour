@@ -389,6 +389,9 @@ local accountDefaults = {
 	ignored = {},             -- [spellID] = true, mounts you'll never chase
 	hideIgnored = false,      -- ignoring MARKS; hiding is a separate filter
 	mapPins = true,           -- draw mount locations on the world map
+	-- Two surfaces, two switches, both on. `mapPins` is the world map and keeps
+	-- its old name so nobody's saved setting resets; the minimap is its own.
+	mapPinsMinimap = true,
 	mapPinsShowCollected = false,
 	-- CONTINENT ROLLUP, OFF BY DEFAULT.
 	--

@@ -88,7 +88,7 @@ local function buildPanel()
 		c:SetScript("OnClick", function(self)
 			MM.db[key] = self:GetChecked() and true or false
 			if key == "mapPins" or key == "mapPinsShowCollected"
-				or key == "mapPinsChildZones" then
+				or key == "mapPinsChildZones" or key == "mapPinsMinimap" then
 				if MM.MapPins then MM.MapPins.Refresh() end
 			elseif key == "useTomTom" then
 				-- Hand the leg being travelled to the other provider NOW.
@@ -153,6 +153,7 @@ local function buildPanel()
 		.. "nothing left to farm. Close it with the X or a right-click; it "
 		.. "comes back in the next zone. /mm zone show summons it any time.", 16)
 	check("Show mount locations on the world map", "mapPins")
+	check("Show mount locations on the minimap", "mapPinsMinimap")
 	check("Include mounts I already own on the map", "mapPinsShowCollected", nil, 16)
 	check("Also show a continent's zones on the continent map", "mapPinsChildZones", nil, 16)
 	check("Hand waypoints to TomTom instead of the built-in arrow", "useTomTom",
