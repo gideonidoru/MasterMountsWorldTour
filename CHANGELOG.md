@@ -38,6 +38,13 @@
   text or rows in them — one unlabelled button on an empty page. It draws when
   it is built now, and the dungeon group switch sits with its own section
   instead of above the whole page.
+- **Switching a teleport off did not reach the route.** The switch cleared a
+  cached list from two hundred lines above where that cache is declared, so Lua
+  wrote a global of the same name and left the real one untouched — the option
+  vanished from the settings and the router kept serving the list it already
+  had. The build now fails on a file-level local assigned above its declaration,
+  which is worse than the read it already caught: a read is nil and usually
+  throws, a write silently succeeds against the wrong variable.
 - **Teleports can be switched off.** Options > Master Mounts > Travel lists
   every teleport this character can actually press, and an unticked one is never
   suggested and never priced into a route. Dungeon and raid teleports have a

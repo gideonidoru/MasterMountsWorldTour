@@ -476,7 +476,12 @@ function TP.SetOff(key, off)
 	if not (key and MM.db) then return end
 	MM.db.teleportsOff = MM.db.teleportsOff or {}
 	MM.db.teleportsOff[key] = off or nil
-	snapshot = nil
+	-- REBUILT, NOT CLEARED. `snapshot` is declared two hundred lines below this
+	-- function, so assigning it here wrote a GLOBAL of that name and left the
+	-- real cache untouched -- the switch reached usable() and the router went
+	-- on serving the list it had already built. Refresh is resolved at call
+	-- time and assigns the local that actually exists.
+	if TP.Refresh then TP.Refresh() end
 	if MM.Fire then MM:Fire("MM_PLAN_CHANGED") end
 end
 

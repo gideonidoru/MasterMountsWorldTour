@@ -47,13 +47,6 @@ local function buildPanel()
 	content:SetSize(1, 1)
 	scroll:SetScrollChild(content)
 
-	-- The group switch belongs WITH the group, not at the top of the page.
-	-- Reported as such: it is the heading for the dungeon teleports, so it sits
-	-- above them in the scrolling list rather than floating above everything
-	-- including the items it does not affect.
-	local group = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-	group:SetSize(230, 22)
-	group:Hide()
 
 	-- running layout cursor; every helper advances it and returns its widget
 	local y = -8
@@ -746,6 +739,13 @@ local function buildTravel()
 	local content = CreateFrame("Frame", nil, scroll)
 	content:SetSize(1, 1)
 	scroll:SetScrollChild(content)
+
+	-- The group switch belongs WITH the group, not at the top of the page: it is
+	-- the heading for the dungeon teleports, so it sits above them in the list
+	-- rather than floating above everything including what it does not affect.
+	local group = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+	group:SetSize(230, 22)
+	group:Hide()
 
 	local rows = {}
 	local function refresh()
