@@ -843,7 +843,7 @@ local function approx(a, b) return math.abs(a - b) < 0.001 end
 -- price. Current() is gated on the player having started a route, which is
 -- correct for the arrow and wrong as a test precondition -- it made two travel
 -- checks unrunnable unless somebody happened to be mid-route when they typed
--- /mm test.
+-- /mm report.
 local function firstPlacedStop()
 	local R = MM.Router
 	for _, stop in ipairs(R and R.route or {}) do
@@ -1916,7 +1916,7 @@ local function runLogic()
 		local Sc = MM.Score
 		if not (Sc and Sc.Compute) then return false, "scorecard missing" end
 		local score, rows, possible, unmeasured = Sc.Compute()
-		if not score then return nil, "nothing measurable yet — run /mm test" end
+		if not score then return nil, "nothing measurable yet — run /mm report" end
 		if score < 0 or score > 100 then
 			return false, ("scored %.1f, which is not a percentage"):format(score)
 		end
@@ -2243,6 +2243,15 @@ local function runLogic()
 		local blame = {}
 		for i = 1, math.min(#rows, 3) do
 			blame[#blame + 1] = ("%s %.0f ms"):format(rows[i].name, rows[i].ms)
+		end
+		-- Router's share is three steps, and it records the split itself. A
+		-- handler total counts the nested MM_ROUTE_ADVANCED fire as well, so
+		-- without this the number reads as a slow rebuild when the rebuild is
+		-- independently measured at ~50 ms.
+		local split = MM.Router and MM.Router.lastPlanEditMs
+		if split then
+			blame[#blame + 1] = ("Router splits as build %.0f / waypoint %.0f / route-advanced %.0f ms")
+				:format(split.build or 0, split.waypoint or 0, split.advanced or 0)
 		end
 
 		return true, ("add and remove round-trip on a %d-goal plan%s%s"):format(
@@ -5633,7 +5642,7 @@ function T.RunOnce()
 	-- would pay for the whole suite twice: once in the background, once inside
 	-- the section that prints it.
 	--
-	-- ONLY INSIDE THE REPORT. `/mm test` must always be a fresh run: it is what
+	-- ONLY INSIDE THE REPORT. `/mm selftest` must always be a fresh run: it is what
 	-- someone types to find out whether a change took, and answering it from a
 	-- set of results gathered minutes ago would be the exact opposite of what
 	-- was asked -- and impossible to notice, because the output looks the same.

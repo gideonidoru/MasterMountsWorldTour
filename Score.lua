@@ -316,7 +316,7 @@ end
 MM:On("MM_SCORE_DEBUG", function()
 	local score, rows, possible, unmeasured = S.Compute()
 	if not score then
-		MM:Print("Nothing measurable yet — run /mm test first.")
+		MM:Print("Nothing measurable yet — run /mm report first.")
 		return
 	end
 

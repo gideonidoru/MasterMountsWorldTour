@@ -3203,17 +3203,37 @@ MM:On("MM_SESSION_CHANGED", function()
 end)
 
 -- Plan edits invalidate the route order.
+--
+-- AND THE THREE STEPS ARE TIMED SEPARATELY, because the total was misleading.
+-- The per-handler profiler put 3,736 ms of a plan edit inside this handler,
+-- which reads as "the rebuild is slow" -- except a self-test that clears the
+-- signature and times BuildSync on its own measures 52 ms for the same 285
+-- goals. The profiler attributes nested fires to whoever raised them, so
+-- MM_ROUTE_ADVANCED and everything listening to it is counted here too.
+--
+-- One number for three steps cannot say which one to fix, so each is recorded.
+R.lastPlanEditMs = nil
+
 MM:On("MM_PLAN_CHANGED", function()
 	if MM.cdb.routeActive then
+		local clock = debugprofilestop
+		local t0 = clock and clock() or nil
 		-- SYNCHRONOUS: the next line decides whether the route still exists.
 		-- Chunked, this read the PREVIOUS route -- so clearing the plan while a
 		-- route was running left it running, and pointed the arrow at a goal
 		-- that had just been removed. A plan edit is not a hot path; the frame
 		-- it costs is worth an answer that is about the plan you now have.
 		R:BuildSync()
+		local t1 = clock and clock() or nil
 		if #R.route == 0 then R:Stop() return end
 		MM.Nav.SetWaypoint(R:Current())
+		local t2 = clock and clock() or nil
 		MM:Fire("MM_ROUTE_ADVANCED")
+		if t0 then
+			R.lastPlanEditMs = {
+				build = t1 - t0, waypoint = t2 - t1, advanced = clock() - t2,
+			}
+		end
 	end
 end)
 
