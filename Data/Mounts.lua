@@ -32271,6 +32271,13 @@ MM.AddMounts({
 				"Peculiar Cauldron",
 			},
 		},
+		spawns = {
+			{
+				mapID = 2413,
+				x = 40.64,
+				y = 28.02,
+			},
+		},
 	},
 	{
 		name = "Untainted Grove Crawler",
@@ -32299,6 +32306,13 @@ MM.AddMounts({
 		poi = {
 			match = {
 				"Sporespawned Cache",
+			},
+		},
+		spawns = {
+			{
+				mapID = 2413,
+				x = 46.65,
+				y = 67.78,
 			},
 		},
 	},
@@ -39369,6 +39383,13 @@ MM.AddMounts({
 		},
 		effort = 1,
 		goldCost = 80,
+		spawns = {
+			{
+				mapID = 2151,
+				x = 35.61,
+				y = 59.48,
+			},
+		},
 	},
 	{
 		name = "Majestic Armored Vorquin",
@@ -39392,6 +39413,13 @@ MM.AddMounts({
 		},
 		effort = 1,
 		goldCost = 80,
+		spawns = {
+			{
+				mapID = 2151,
+				x = 35.61,
+				y = 59.48,
+			},
+		},
 	},
 	{
 		name = "Swift Armored Vorquin",
@@ -39415,6 +39443,13 @@ MM.AddMounts({
 		},
 		effort = 1,
 		goldCost = 80,
+		spawns = {
+			{
+				mapID = 2151,
+				x = 35.61,
+				y = 59.48,
+			},
+		},
 	},
 	{
 		name = "Armored Vorquin Leystrider",
@@ -39441,6 +39476,13 @@ MM.AddMounts({
 		},
 		effort = 1,
 		goldCost = 80,
+		spawns = {
+			{
+				mapID = 2151,
+				x = 35.61,
+				y = 59.48,
+			},
+		},
 	},
 	{
 		name = "Iskaara Trader's Ottuk",
