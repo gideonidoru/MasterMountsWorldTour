@@ -738,118 +738,123 @@ local function buildTravel()
 		.. "route. Only what this character can use is listed. The plan redraws "
 		.. "as you change them.")
 
-	local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+	-- BUILT THE WAY THE TWO PANELS THAT WORK ARE BUILT.
+	--
+	-- Reported blank three times, and I fixed two different theories about why
+	-- before doing this. The panels beside it -- which have never been reported
+	-- broken -- share three things this one did not: the scroll frame is NAMED,
+	-- the scroll child gets an explicit width and a generous height AT BUILD
+	-- TIME, and every widget is created during build with refresh only updating
+	-- what is already there.
+	--
+	-- Mine had an unnamed scroll frame, sized its child from a frame that has no
+	-- width until the Settings UI lays the panel out, and created every row
+	-- inside refresh -- so anything that stopped refresh from running, or ran it
+	-- before the frame had a size, left a page with nothing on it but the two
+	-- labels that are siblings of the scroll rather than children of it. That is
+	-- exactly what the screenshots showed.
+	--
+	-- Rather than diagnose which of the three it was, it is now built like its
+	-- neighbours in all three respects.
+	local scroll = CreateFrame("ScrollFrame", "MasterMountsTravelScroll", panel,
+		"UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", blurb, "BOTTOMLEFT", 0, -12)
-	scroll:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -34, 16)
+	scroll:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -32, 16)
 	local content = CreateFrame("Frame", nil, scroll)
-	content:SetSize(1, 1)
+	content:SetSize(560, 1200)   -- generous until the real measurement lands
 	scroll:SetScrollChild(content)
 
-	-- The group switch belongs WITH the group, not at the top of the page: it is
-	-- the heading for the dungeon teleports, so it sits above them in the list
-	-- rather than floating above everything including what it does not affect.
-	local group = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-	group:SetSize(230, 22)
-	group:Hide()
+	local WIDTH = 560
+	local rows, group, empty = {}, nil, nil
 
-	local rows = {}
-	local function refresh()
-		local TP = MM.Teleports
-		if not (TP and TP.Switchable) then return end
-		local list = TP.Switchable()
-		local anyDungeonOn = false
-		for _, item in ipairs(list) do
-			if item.dungeon and not item.off then anyDungeonOn = true break end
+	-- Every widget exists after build. refresh() only re-labels and re-ticks.
+	local function layout()
+		local list = (MM.Teleports and MM.Teleports.Switchable
+			and MM.Teleports.Switchable()) or {}
+
+		if not empty then
+			empty = content:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+			empty:SetPoint("TOPLEFT", content, "TOPLEFT", 6, -6)
+			empty:SetWidth(WIDTH - 20)
+			empty:SetJustifyH("LEFT")
+			empty:SetText("This character has no teleports to switch yet. "
+				.. "Hearthstones, class portals, wormholes and dungeon teleports "
+				.. "appear here as you earn them.")
 		end
-		group:SetText(anyDungeonOn and "Turn off all dungeon teleports"
-			or "Turn on all dungeon teleports")
-		group.turnOff = anyDungeonOn
-		group:Hide()
+		empty:SetShown(#list == 0)
 
-		for _, row in ipairs(rows) do row:Hide() end
-		local y, lastDungeon = 0, nil
+		for _, r in ipairs(rows) do r:Hide() end
+		if group then group:Hide() end
+
+		local y, lastKind = 8, nil
 		for i, item in ipairs(list) do
 			local row = rows[i]
 			if not row then
 				row = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-				row.label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-				row.label:SetPoint("LEFT", row, "RIGHT", 2, 0)
-				row.heading = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-				row.heading:SetPoint("BOTTOMLEFT", row, "TOPLEFT", 0, 4)
+				row:SetSize(26, 26)
+				row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+				row.label:SetPoint("LEFT", row, "RIGHT", 4, 1)
+				row.label:SetWidth(WIDTH - 60)
+				row.label:SetJustifyH("LEFT")
+				row.head = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+				row.head:SetPoint("BOTTOMLEFT", row, "TOPLEFT", 0, 6)
+				row:SetScript("OnClick", function(self)
+					MM.Teleports.SetOff(self.mmKey, not self:GetChecked())
+					layout()
+				end)
 				rows[i] = row
 			end
-			-- A heading only where the kind changes, so the two groups read as
-			-- groups without a separate frame for each.
-			if lastDungeon ~= item.dungeon then
-				row.heading:SetText(item.dungeon and "Dungeon & raid teleports"
+
+			if lastKind ~= item.dungeon then
+				lastKind = item.dungeon
+				y = y + (i > 1 and 30 or 16)
+				row.head:SetText(item.dungeon and "Dungeon & raid teleports"
 					or "Items, hearthstones and class spells")
-				row.heading:Show()
-				y = y + (i > 1 and 26 or 14)
-				lastDungeon = item.dungeon
-				-- The one switch for the whole group, directly under its
-				-- heading and above the rows it acts on.
+				row.head:Show()
 				if item.dungeon then
+					if not group then
+						group = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+						group:SetSize(230, 22)
+						group:SetScript("OnClick", function(self)
+							for _, key in ipairs(MM.Teleports.DungeonKeys()) do
+								MM.Teleports.SetOff(key, self.turnOff)
+							end
+							layout()
+						end)
+					end
+					local anyOn = false
+					for _, it in ipairs(list) do
+						if it.dungeon and not it.off then anyOn = true break end
+					end
+					group.turnOff = anyOn
+					group:SetText(anyOn and "Turn off all dungeon teleports"
+						or "Turn on all dungeon teleports")
 					group:ClearAllPoints()
-					group:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -y)
+					group:SetPoint("TOPLEFT", content, "TOPLEFT", 10, -y)
 					group:Show()
-					y = y + 28
+					y = y + 30
 				end
 			else
-				row.heading:Hide()
+				row.head:Hide()
 			end
-			row:SetSize(24, 24)
-			row:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -y)
+
+			row:ClearAllPoints()
+			row:SetPoint("TOPLEFT", content, "TOPLEFT", 8, -y)
 			row.label:SetText(item.place and item.place ~= ""
 				and ("%s  |cff9d9d9d-> %s|r"):format(item.name, item.place)
 				or item.name)
-			row:SetChecked(not item.off)
 			row.mmKey = item.key
-			row:SetScript("OnClick", function(self)
-				MM.Teleports.SetOff(self.mmKey, not self:GetChecked())
-				refresh()
-			end)
+			row:SetChecked(not item.off)
 			row:Show()
-			y = y + 24
+			y = y + 28
 		end
-		-- WIDTH CANNOT COME FROM THE SCROLL FRAME AT BUILD TIME.
-		--
-		-- Reported as a blank page for the second time, and this is why: the
-		-- panel has not been laid out when it is built, so scroll:GetWidth() is
-		-- 0, this sized the scroll CHILD to one pixel, and every row and the
-		-- group button -- all children of it -- were clipped out of existence.
-		-- The title and blurb are siblings of the scroll frame, which is exactly
-		-- why they were the only two things on screen.
-		local w = scroll:GetWidth()
-		if not w or w < 80 then w = 560 end
-		content:SetSize(w - 4, math.max(y, 1))
-
-		-- A LIST THAT IS GENUINELY EMPTY SHOULD SAY SO. Blank reads as broken,
-		-- and this page has now been reported blank twice for two different
-		-- reasons -- neither of which was "you cannot use any teleports".
-		if not panel.emptyText then
-			panel.emptyText = content:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-			panel.emptyText:SetPoint("TOPLEFT", content, "TOPLEFT", 6, -6)
-			panel.emptyText:SetWidth(520)
-			panel.emptyText:SetJustifyH("LEFT")
-			panel.emptyText:SetText("This character has no teleports to switch. "
-				.. "Hearthstones, class portals and dungeon teleports appear here "
-				.. "once you have them.")
-		end
-		panel.emptyText:SetShown(#list == 0)
+		content:SetSize(WIDTH, math.max(y + 20, 1))
 	end
 
-	group:SetScript("OnClick", function()
-		local TP = MM.Teleports
-		if not (TP and TP.DungeonKeys) then return end
-		local off = group.turnOff
-		for _, key in ipairs(TP.DungeonKeys()) do TP.SetOff(key, off) end
-		refresh()
-	end)
-
-	panel:SetScript("OnShow", refresh)
-	-- Learning a teleport, or logging in on a character who has different ones,
-	-- changes what belongs on this list.
-	MM:On("MM_SCANNED", function() if panel:IsShown() then refresh() end end)
+	layout()
+	panel.OnRefresh = layout
+	panel:SetScript("OnShow", layout)
+	MM:On("MM_SCANNED", function() if panel:IsShown() then layout() end end)
 	return panel
 end
 
