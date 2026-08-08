@@ -618,6 +618,75 @@ end
 
 MM:RegisterGameEvent("PLAYER_REGEN_ENABLED", U.FlushShownWhenCombatAllows)
 
+-- WHICH CLASSES OF CLIENT STRING THIS CLIENT WILL ACTUALLY HAND OVER.
+--
+-- Five reports, five shapes, one change: a boss name, a vignette name, a unit
+-- name, a unit GUID, and the guard itself. Each arrived from play, each was
+-- fixed, and each time the honest answer to "what else?" was a guess.
+--
+-- Guarding everything is not the answer, because it costs capability. Map names
+-- and achievement names are read constantly -- routing and 5,438 achievement
+-- ids depend on them -- and wrapping those in a degrade-to-nil path would trade
+-- a fault the client does not have for a feature that stops working.
+--
+-- So measure instead. Every class we read gets a live attempt at the operation
+-- that fails, and the answer is reported. A payload that goes secret in some
+-- later patch shows up in the first report anybody pastes, named, rather than
+-- after four rounds of crash reports -- and a class we DEPEND on going secret
+-- fails the self-test outright, because that is a broken addon and not a
+-- degraded one.
+--
+-- The probes are deliberately real values, not fixtures: a fixture can only
+-- confirm what I already believe, which is precisely how this class kept
+-- getting missed.
+function U.SecretAudit()
+	local out = {}
+	local function try(label, relied, fn)
+		local ok, raw = pcall(fn)
+		if not ok or raw == nil then
+			out[#out + 1] = { label = label, relied = relied, state = "unavailable" }
+			return
+		end
+		local readable = U.ReadableString(raw)
+		out[#out + 1] = { label = label, relied = relied,
+			state = readable and "readable" or "WITHHELD",
+			sample = readable and readable:sub(1, 28) or nil }
+	end
+
+	try("your own name", true, function() return UnitName("player") end)
+	try("a unit name (target)", false, function()
+		return UnitExists("target") and UnitName("target") or nil end)
+	try("a unit GUID (player)", true, function() return UnitGUID("player") end)
+	try("your class", true, function() return (UnitClass("player")) end)
+	try("your realm", true, function() return GetRealmName() end)
+	try("the zone you are in", false, function() return GetZoneText() end)
+	try("a map name", true, function()
+		local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(84)
+		return info and info.name end)
+	try("an achievement name", true, function()
+		return select(2, GetAchievementInfo(2143)) end)
+	try("an item name", true, function()
+		return C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(6948) end)
+	try("a spell name", true, function()
+		return C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(556) end)
+	try("a currency name", true, function()
+		local c = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo
+			and C_CurrencyInfo.GetCurrencyInfo(1166)
+		return c and c.name end)
+	try("a vignette name", false, function()
+		local ids = C_VignetteInfo and C_VignetteInfo.GetVignettes and C_VignetteInfo.GetVignettes()
+		local first = ids and ids[1]
+		local info = first and C_VignetteInfo.GetVignetteInfo(first)
+		return info and info.name end)
+	try("an area POI name", false, function()
+		local ids = C_AreaPoiInfo and C_AreaPoiInfo.GetAreaPOIForMap
+			and C_AreaPoiInfo.GetAreaPOIForMap(84)
+		local first = ids and ids[1]
+		local info = first and C_AreaPoiInfo.GetAreaPOIInfo(84, first)
+		return info and info.name end)
+	return out
+end
+
 -- The npc id inside a unit GUID, when the client will let us look.
 --
 -- REPORTED FROM ZONING INTO A DELVE, and this is the fourth shape of the same

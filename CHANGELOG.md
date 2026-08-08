@@ -2,6 +2,18 @@
 
 ## 1.1.15 — unreleased
 
+- **Chel the Chip is where Abundance is, not where it was.** The route sent
+  players to a fixed point in the middle of the troll camp in Zul'Aman when the
+  event was running somewhere else entirely. Abundance now uses the same live
+  read the Grand Hunt does — the zone in the record is only a fallback for when
+  the client cannot be asked. Voidstorm is in the rotation because it was seen
+  there; our own source text listed three zones and was simply incomplete.
+- **The report now says which kinds of client string this client hands over.**
+  Five separate reports have been one 12.0 change wearing different clothes, and
+  every time the answer to "what else is secret?" was a guess. It is measured
+  now, against live values, and a payload the addon *depends* on going secret
+  fails the self-test rather than surfacing as a crash days later.
+
 - **Teleports can be switched off.** Options > Master Mounts > Travel lists
   every teleport this character can actually press, and an unticked one is never
   suggested and never priced into a route. Dungeon and raid teleports have a

@@ -33989,7 +33989,7 @@ MM.AddMounts({
 		expansion = 11,
 		category = "VENDOR",
 		obtainable = true,
-		source = "Abundance world event — sold by Chel the Chip for 1,600 Unalloyed Abundance.",
+		source = "Bought from Chel the Chip for Unalloyed Abundance. Chel follows the Abundance world event around Quel'Thalas, so the route points at wherever it is running now rather than at a remembered spot.",
 		npc = {
 			name = "Chel the Chip",
 		},
@@ -34019,6 +34019,22 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		notes = "The zone below is only a fallback for when the client cannot be asked where Abundance is running; the live map POI is preferred and carries its own coordinate.\
+\
+Prices are heavily discounted while an event is active, which is the other reason to go where it actually is.",
+		rotating = {
+			key = "abundance",
+			label = "Abundance",
+			maps = {
+				2395,
+				2437,
+				2413,
+				2405,
+			},
+			match = {
+				"Abundance",
+			},
+		},
 	},
 	{
 		name = "Contained Stormarion Defender",

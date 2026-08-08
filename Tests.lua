@@ -2208,6 +2208,42 @@ local function runLogic()
 		return true, ("add and remove round-trip on a %d-goal plan"):format(before)
 	end)
 
+	check("Every kind of client string we depend on is still readable", function()
+		-- Five reports, five shapes, one 12.0 change -- and every time, the
+		-- honest answer to "what else is secret?" was a guess.
+		--
+		-- Guarding everything would cost capability. Map names, achievement
+		-- names and item names are read constantly, and routing and 5,438
+		-- achievement ids depend on them; wrapping those in a degrade-to-nil
+		-- path trades a fault the client does not have for a feature that stops
+		-- working. So this measures instead, against LIVE values.
+		--
+		-- A class marked `relied` going secret is a broken addon rather than a
+		-- degraded one, and fails here. A class we merely use opportunistically
+		-- -- a vignette name, a POI name -- degrades by design and is reported
+		-- rather than failed.
+		local U = MM.Util
+		if not (U and U.SecretAudit) then return nil, "the audit is not loaded" end
+		local rows = U.SecretAudit()
+		local broken, degraded, known, unavailable = {}, {}, 0, 0
+		for _, r in ipairs(rows) do
+			if r.state == "WITHHELD" then
+				if r.relied then broken[#broken + 1] = r.label
+				else degraded[#degraded + 1] = r.label end
+			elseif r.state == "readable" then known = known + 1
+			else unavailable = unavailable + 1 end
+		end
+		if #broken > 0 then
+			return false, ("this client withholds %d string(s) the addon depends on: %s")
+				:format(#broken, table.concat(broken, ", "))
+		end
+		if known == 0 then return nil, "nothing could be probed here" end
+		return true, ("%d of %d kinds readable, %d not probeable here%s")
+			:format(known, #rows, unavailable,
+				#degraded > 0 and (", withheld but non-essential: "
+					.. table.concat(degraded, ", ")) or "")
+	end)
+
 	check("A client string we cannot read degrades, it does not throw", function()
 		-- 12.0 secret values. Reported twice: once as every boss kill throwing,
 		-- then AGAIN from delve combat, because the first fix lived in Scanner

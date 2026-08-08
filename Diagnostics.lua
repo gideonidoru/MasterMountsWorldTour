@@ -1188,6 +1188,23 @@ MM:On("MM_FIXES_DEBUG", function()
 			or "hidden by 12.0 -- attempts are not auto-counted, and that is handled"
 	end)
 
+	probe("Which kinds of client string this client hands over", function()
+		-- Five reports, five shapes of one 12.0 change, and every time the
+		-- answer to "what else is secret?" was a guess. This asks the client.
+		local U = MM.Util
+		if not (U and U.SecretAudit) then return false, "the audit is not loaded" end
+		local withheld, readable, absent = {}, 0, 0
+		for _, r in ipairs(U.SecretAudit()) do
+			if r.state == "WITHHELD" then
+				withheld[#withheld + 1] = r.label .. (r.relied and " (DEPENDED ON)" or "")
+			elseif r.state == "readable" then readable = readable + 1
+			else absent = absent + 1 end
+		end
+		return #withheld == 0,
+			("%d readable, %d not probeable here%s"):format(readable, absent,
+				#withheld > 0 and (" -- WITHHELD: " .. table.concat(withheld, ", ")) or "")
+	end)
+
 	probe("Arrow survives a hop with no item", function()
 		-- The exact call that produced 1,124 errors: a spell-only teleport
 		-- arrives here as nil, twenty times a second.
