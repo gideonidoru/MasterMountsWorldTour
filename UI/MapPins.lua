@@ -85,8 +85,23 @@ local function createPin()
 		and WorldMapFrame.ScrollContainer.Child
 	local pin = CreateFrame("Button", nil, canvas)
 	pin:SetSize(PIN_SIZE, PIN_SIZE)
-	-- counter-scale: without this the pin grows with canvas zoom
-	if pin.SetIgnoreParentScale then pin:SetIgnoreParentScale(true) end
+	-- NOT SetIgnoreParentScale, WHICH IS WHAT BROKE THIS.
+	--
+	-- Ignoring the parent's scale stops a pin growing as the map zooms, and it
+	-- also means SetPoint offsets are measured in the PIN's coordinate space
+	-- while the canvas width they were computed from is in the CANVAS's. Where
+	-- the two happen to agree -- a continent at default zoom -- the pins land
+	-- correctly; on a zone map, drawn at a different canvas scale, every pin is
+	-- pushed off the canvas. Reported as pins on Pandaria and the Broken Isles
+	-- and none in the zone the player was standing in, while the index reported
+	-- six points for that very map.
+	--
+	-- Checked against HereBeDragons-Pins-2.0, which is what HandyNotes draws
+	-- with: it never ignores parent scale and never multiplies by a canvas
+	-- width. It hands NORMALISED coordinates to Blizzard's own pin provider via
+	-- SetPosition, and bounds zoom growth with SetScalingLimits(1, 1.0, 1.2).
+	-- Ours keeps its own frames, so it does the equivalent: share the canvas's
+	-- scale, so one set of coordinates means one thing.
 
 	pin.border = pin:CreateTexture(nil, "BACKGROUND")
 	pin.border:SetPoint("TOPLEFT", -2, 2)
@@ -200,6 +215,7 @@ function MP.Refresh()
 			else
 				pin.border:SetColorTexture(1, 0.82, 0, 0.9)
 			end
+			-- Canvas width and canvas offsets, in one coordinate space.
 			pin:SetPoint("CENTER", canvas, "TOPLEFT",
 				width * (loc.x / 100), -height * (loc.y / 100))
 			pin:SetFrameLevel(canvas:GetFrameLevel() + 10)
