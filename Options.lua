@@ -693,6 +693,9 @@ local function buildWeights()
 	refresh()
 	panel.OnRefresh = refresh
 	panel:SetScript("OnShow", refresh)
+	-- And again once the frame actually has a width, which is the moment the
+	-- build-time guess above stops being needed.
+	scroll:SetScript("OnSizeChanged", function() refresh() end)
 	MM:On("MM_SCANNED", function() if panel:IsShown() then refresh() end end)
 	-- The plan is rewritten a moment after a change (debounced), so redraw when
 	-- it lands: otherwise the preview shows the order from before the edit and
@@ -808,7 +811,31 @@ local function buildTravel()
 			row:Show()
 			y = y + 24
 		end
-		content:SetSize(math.max(scroll:GetWidth() - 4, 1), math.max(y, 1))
+		-- WIDTH CANNOT COME FROM THE SCROLL FRAME AT BUILD TIME.
+		--
+		-- Reported as a blank page for the second time, and this is why: the
+		-- panel has not been laid out when it is built, so scroll:GetWidth() is
+		-- 0, this sized the scroll CHILD to one pixel, and every row and the
+		-- group button -- all children of it -- were clipped out of existence.
+		-- The title and blurb are siblings of the scroll frame, which is exactly
+		-- why they were the only two things on screen.
+		local w = scroll:GetWidth()
+		if not w or w < 80 then w = 560 end
+		content:SetSize(w - 4, math.max(y, 1))
+
+		-- A LIST THAT IS GENUINELY EMPTY SHOULD SAY SO. Blank reads as broken,
+		-- and this page has now been reported blank twice for two different
+		-- reasons -- neither of which was "you cannot use any teleports".
+		if not panel.emptyText then
+			panel.emptyText = content:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+			panel.emptyText:SetPoint("TOPLEFT", content, "TOPLEFT", 6, -6)
+			panel.emptyText:SetWidth(520)
+			panel.emptyText:SetJustifyH("LEFT")
+			panel.emptyText:SetText("This character has no teleports to switch. "
+				.. "Hearthstones, class portals and dungeon teleports appear here "
+				.. "once you have them.")
+		end
+		panel.emptyText:SetShown(#list == 0)
 	end
 
 	group:SetScript("OnClick", function()

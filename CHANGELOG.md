@@ -42,6 +42,13 @@
   now, against live values, and a payload the addon *depends* on going secret
   fails the self-test rather than surfacing as a crash days later.
 
+- **The Travel panel drew blank a second time, for a different reason.** The
+  scroll child was sized from a frame that has no width yet when the panel is
+  built, so it came out one pixel across and clipped every row and the group
+  button — while the title and blurb, which are siblings of the scroll frame
+  rather than children of it, drew perfectly. It now falls back to a sensible
+  width and redraws once the frame really has one. An empty list also says it is
+  empty, since blank has now meant three different things on this page.
 - **The Travel panel drew blank until something was clicked.** Its only draw was
   an OnShow the Settings framework never sent, so the frames existed with no
   text or rows in them — one unlabelled button on an empty page. It draws when
