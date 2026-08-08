@@ -1217,15 +1217,26 @@ MM:On("MM_FIXES_DEBUG", function()
 		local st = MP.stats
 		local here = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
 		local mine = MP.CountFor and MP.CountFor(here) or 0
+		-- Indexed and drawn are separate facts. The index was right through the
+		-- whole of the last fault; what was missing was any statement that the
+		-- drawing layer had been asked, and by whom. The provider either is
+		-- registered with the map canvas or it is not, and the last refresh of
+		-- each surface either put pins up or put none up.
 		local detail = ("%d journal entries -> %d points indexed; this map (%s) "
 			.. "holds %d. Rejected: %d no record, %d stub, %d other faction, %d "
 			.. "no zone at all, %d zone with no coordinates, %d zone name that "
-			.. "resolved to no map%s")
+			.. "resolved to no map%s. Canvas provider %s; last draw %d on map %s, "
+			.. "%d on the minimap%s")
 			:format(st.entries, st.indexed, tostring(here), mine, st.noRec,
 				st.stub, st.factionFiltered, st.noPoints, st.noCoords,
 				st.unresolvedMap,
-				st.scannerReady and "" or " (SCANNER WAS NOT READY -- nothing could be indexed)")
-		return st.indexed > 0 and st.scannerReady, detail
+				st.scannerReady and "" or " (SCANNER WAS NOT READY -- nothing could be indexed)",
+				st.installed and "registered" or "NOT REGISTERED",
+				MP.lastDrawn or 0, tostring(MP.lastMapID), MP.lastMinimapDrawn or 0,
+				st.minimapRadiusAPI == false
+					and " (THIS CLIENT HAS NO MINIMAP VIEW RADIUS API -- minimap pins cannot be placed)"
+					or "")
+		return st.indexed > 0 and st.scannerReady and st.installed, detail
 	end)
 
 	probe("Arrow survives a hop with no item", function()
