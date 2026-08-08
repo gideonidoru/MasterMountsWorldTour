@@ -33,6 +33,11 @@
   now, against live values, and a payload the addon *depends* on going secret
   fails the self-test rather than surfacing as a crash days later.
 
+- **The Travel panel drew blank until something was clicked.** Its only draw was
+  an OnShow the Settings framework never sent, so the frames existed with no
+  text or rows in them — one unlabelled button on an empty page. It draws when
+  it is built now, and the dungeon group switch sits with its own section
+  instead of above the whole page.
 - **Teleports can be switched off.** Options > Master Mounts > Travel lists
   every teleport this character can actually press, and an unticked one is never
   suggested and never priced into a route. Dungeon and raid teleports have a

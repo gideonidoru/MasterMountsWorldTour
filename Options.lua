@@ -47,6 +47,14 @@ local function buildPanel()
 	content:SetSize(1, 1)
 	scroll:SetScrollChild(content)
 
+	-- The group switch belongs WITH the group, not at the top of the page.
+	-- Reported as such: it is the heading for the dungeon teleports, so it sits
+	-- above them in the scrolling list rather than floating above everything
+	-- including the items it does not affect.
+	local group = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+	group:SetSize(230, 22)
+	group:Hide()
+
 	-- running layout cursor; every helper advances it and returns its widget
 	local y = -8
 	local LEFT = 16
@@ -676,6 +684,19 @@ local function buildWeights()
 	-- navigated to it the event had already been spent and the page sat empty
 	-- until something else forced a redraw.
 	refresh()
+	-- DRAWN AT BUILD TIME, not only on show.
+	--
+	-- Reported as a blank page with one unlabelled button on it, which is
+	-- exactly what a panel looks like when its only draw is an OnShow that the
+	-- Settings framework never fires: the frames exist, and nothing has put text
+	-- or rows into them. Clicking the button called refresh and the whole page
+	-- appeared, which was the tell.
+	--
+	-- Three triggers now, because the modern Settings UI and the old canvas one
+	-- disagree about which they send: once here, OnRefresh where the framework
+	-- offers it, and OnShow.
+	refresh()
+	panel.OnRefresh = refresh
 	panel:SetScript("OnShow", refresh)
 	MM:On("MM_SCANNED", function() if panel:IsShown() then refresh() end end)
 	-- The plan is rewritten a moment after a change (debounced), so redraw when
@@ -719,12 +740,8 @@ local function buildTravel()
 		.. "route. Only what this character can use is listed. The plan redraws "
 		.. "as you change them.")
 
-	local group = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-	group:SetSize(210, 24)
-	group:SetPoint("TOPLEFT", blurb, "BOTTOMLEFT", 0, -12)
-
 	local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
-	scroll:SetPoint("TOPLEFT", group, "BOTTOMLEFT", 0, -12)
+	scroll:SetPoint("TOPLEFT", blurb, "BOTTOMLEFT", 0, -12)
 	scroll:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -34, 16)
 	local content = CreateFrame("Frame", nil, scroll)
 	content:SetSize(1, 1)
@@ -741,8 +758,8 @@ local function buildTravel()
 		end
 		group:SetText(anyDungeonOn and "Turn off all dungeon teleports"
 			or "Turn on all dungeon teleports")
-		group:SetShown(#list > 0)
 		group.turnOff = anyDungeonOn
+		group:Hide()
 
 		for _, row in ipairs(rows) do row:Hide() end
 		local y, lastDungeon = 0, nil
@@ -764,6 +781,14 @@ local function buildTravel()
 				row.heading:Show()
 				y = y + (i > 1 and 26 or 14)
 				lastDungeon = item.dungeon
+				-- The one switch for the whole group, directly under its
+				-- heading and above the rows it acts on.
+				if item.dungeon then
+					group:ClearAllPoints()
+					group:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -y)
+					group:Show()
+					y = y + 28
+				end
 			else
 				row.heading:Hide()
 			end
