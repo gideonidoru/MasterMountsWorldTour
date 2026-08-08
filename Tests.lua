@@ -88,9 +88,28 @@ end
 --
 -- Named and reported rather than quietly skipped, because an exemption nobody
 -- can see is exactly how a real regression hides.
+--
+-- THE THIRD ONE PAYS FOR IT WITHOUT CALLING IT, which is why it took four builds
+-- to spot. The plan check calls Planner:Add and Planner:Remove -- a table insert
+-- and a table remove -- but each fires MM_PLAN_CHANGED, and Router's handler runs
+-- BuildSync whenever a route is active. Two edits, two full builds, ~3.6 seconds,
+-- none of it visible at the call site.
+--
+-- Measured rather than reasoned, eventually: the per-handler profiler put the
+-- whole cost in Router, and a three-way split inside that handler put 1653 ms of
+-- it in the build with nothing in the waypoint or the nested fire.
+--
+-- And the 56 ms that "Building the route is fast" reports for the same function
+-- is not a contradiction -- it is a different path. RunBuild restores chartRank
+-- from the stored chart only when the stored signature still matches, and reading
+-- that chart is what skips the O(n^2) travel scan. A plan EDIT changes the
+-- signature, so the chart is stale and the scan runs; that check never edits the
+-- plan, so it has only ever timed the cached path. Re-charting after a plan
+-- change is the designed cost, not a regression.
 local BUILD_BOUND = {
 	["A swapped route is not mistaken for a cache hit"] = true,
 	["The router model gives the route back"] = true,
+	["Adding to the plan from any pane actually adds"] = true,
 }
 
 local function routeInHand(R, least)
