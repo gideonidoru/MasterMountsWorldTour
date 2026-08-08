@@ -30,12 +30,21 @@ local MP = MM.MapPins
 local PIN_TEMPLATE = "MasterMountsWorldMapPinTemplate"
 local WORLD_PIN_SIZE, MINIMAP_PIN_SIZE = 18, 14
 
-local max, sqrt, sin, cos = math.max, math.sqrt, math.sin, math.cos
+local max, sqrt, sin, cos, floor = math.max, math.sqrt, math.sin, math.cos, math.floor
 
 ------------------------------------------------------------
 -- Which mounts have a location on the displayed map
 ------------------------------------------------------------
--- Cache: [mapID] = { { entry, rec, mapID, x, y }, ... }
+-- Cache: [mapID] = { { mapID, x, y, entries = { entry, ... } }, ... }
+--
+-- ONE PIN PER PLACE, NOT ONE PER MOUNT. The database describes 649 points
+-- across only 148 distinct places, because a shared source is the normal case
+-- rather than an oddity: Witherbark Pango and Amani Sharptalon drop from the
+-- same thirteen Zul'Aman rares, four Mana Ray variants from the same four, and
+-- 103 Trading Post mounts from the same four kiosks. A pin per mount would
+-- stack 105 frames on one kiosk, where only the top one can be seen or hovered
+-- and the other 104 are invisible work. Grouped, that kiosk is one pin that
+-- says what is sold there.
 local byMap, indexBuilt = {}, false
 
 -- WHY A PIN IS NOT THERE, counted rather than guessed at.
@@ -45,13 +54,37 @@ local byMap, indexBuilt = {}, false
 -- here and the report prints it, so the next question is answered by the client
 -- instead of by reading code and picking the likeliest story.
 MP.stats = { entries = 0, noRec = 0, stub = 0, factionFiltered = 0,
-	noPoints = 0, noCoords = 0, unresolvedMap = 0, indexed = 0,
-	scannerReady = false, installed = false }
+	noPoints = 0, noCoords = 0, unresolvedMap = 0, indexed = 0, places = 0,
+	fromSpawns = 0, scannerReady = false, installed = false }
 
 -- What the last refresh of each surface actually drew. The index counter proved
 -- the data was sound while nothing appeared on screen; these two prove whether
 -- the draw was even asked for, which is the other half of that answer.
 MP.lastDrawn, MP.lastMapID, MP.lastMinimapDrawn = 0, nil, 0
+
+-- WHERE A RECORD SAYS IT IS, IN ALL THREE OF THE PLACES IT MAY SAY IT.
+--
+-- `spawns` was the whole reason no rare ever pinned. 137 records carry it --
+-- 649 points, extracted from HandyNotes into Data_99n_RareSpawns.lua and
+-- Data_99zzV_RareSpawns.lua -- and `Router.lua` and `RareAlert.lua` both read
+-- it, so the route could send you to a rare the map refused to draw. This index
+-- read `patrolWaypoints` and `zone` only, and every Midnight rare keeps its
+-- location in `spawns` while its `zone` carries a name and no coordinate. That
+-- is why a zone full of rares drew a vendor, a treasure and nothing else.
+--
+-- `spawns` wins over `zone` where both exist because it is the superset: a
+-- Trading Post record's `zone` is one kiosk and its `spawns` are all four.
+local function pointsFor(rec)
+	if rec.patrolWaypoints then return rec.patrolWaypoints end
+	if rec.spawns then return rec.spawns, true end
+	if rec.zone then return { rec.zone } end
+	return nil
+end
+
+-- Places closer together than this are one place as far as a pin is concerned:
+-- a pin is about 2% of the canvas wide, so points inside a tenth of a percent
+-- are drawn on top of each other whatever we do.
+local function quantise(v) return floor(v * 10 + 0.5) end
 
 local function indexLocations()
 	wipe(byMap)
@@ -59,9 +92,11 @@ local function indexLocations()
 	local st = MP.stats
 	st.entries, st.noRec, st.stub, st.factionFiltered = 0, 0, 0, 0
 	st.noPoints, st.noCoords, st.unresolvedMap, st.indexed = 0, 0, 0, 0
+	st.places, st.fromSpawns = 0, 0
 	st.scannerReady = MM.Scanner.ready and true or false
 	if not MM.Scanner.ready then return end
 
+	local placeByKey = {}
 	for _, entry in ipairs(MM.Scanner.mounts) do
 		local rec = entry.rec
 		st.entries = st.entries + 1
@@ -69,24 +104,32 @@ local function indexLocations()
 		elseif rec.stub then st.stub = st.stub + 1
 		elseif not MM.Scanner:FactionOk(entry) then
 			st.factionFiltered = st.factionFiltered + 1
-		elseif not (rec.patrolWaypoints or rec.zone) then
+		elseif not (rec.patrolWaypoints or rec.spawns or rec.zone) then
 			st.noPoints = st.noPoints + 1
 		end
 		if rec and not rec.stub and MM.Scanner:FactionOk(entry) then
-			-- a record may carry several points (roaming rares)
-			local points = rec.patrolWaypoints
-			if not points and rec.zone then points = { rec.zone } end
+			local points, viaSpawns = pointsFor(rec)
 			if points then
+				if viaSpawns then st.fromSpawns = st.fromSpawns + 1 end
 				for _, p in ipairs(points) do
 					local mapID = p.mapID or (p.name and U.ResolveMapForRecord(p.name, rec))
 						or (rec.zone and rec.zone.name and U.ResolveMapForRecord(rec.zone.name, rec))
 					if mapID and p.x and p.y then
 						st.indexed = st.indexed + 1
-						byMap[mapID] = byMap[mapID] or {}
-						tinsert(byMap[mapID], {
-							entry = entry, rec = rec, mapID = mapID,
-							x = p.x, y = p.y, label = p.label,
-						})
+						local key = mapID .. ":" .. quantise(p.x) .. ":" .. quantise(p.y)
+						local place = placeByKey[key]
+						if not place then
+							place = { mapID = mapID, x = p.x, y = p.y,
+								label = p.label, entries = {} }
+							placeByKey[key] = place
+							byMap[mapID] = byMap[mapID] or {}
+							tinsert(byMap[mapID], place)
+							st.places = st.places + 1
+						end
+						-- one mount can reach the same place by two routes
+						if place.entries[#place.entries] ~= entry then
+							tinsert(place.entries, entry)
+						end
 					elseif not mapID then st.unresolvedMap = st.unresolvedMap + 1
 					else st.noCoords = st.noCoords + 1
 					end
@@ -107,7 +150,30 @@ local function shouldShow(entry)
 	return true
 end
 
-local function dress(pin, entry)
+-- Which mount speaks for a shared place. A kiosk selling one mount you are
+-- hunting and a hundred you own should look like the one you are hunting.
+local function rank(entry)
+	if MM.db.ignored and MM.db.ignored[entry.spellID] then return 3 end
+	if entry.collected then return 4 end
+	if MM.Planner:InPlan(entry.spellID) then return 1 end
+	return 2
+end
+
+-- The pin's headline mount and how many mounts it stands for, without building
+-- a table -- this runs for every candidate on the minimap once a second.
+local function placeStatus(place)
+	local primary, best, count = nil, 99, 0
+	for _, entry in ipairs(place.entries) do
+		if shouldShow(entry) then
+			count = count + 1
+			local r = rank(entry)
+			if r < best then primary, best = entry, r end
+		end
+	end
+	return primary, count
+end
+
+local function dress(pin, entry, count)
 	local ignored = MM.db.ignored and MM.db.ignored[entry.spellID]
 	pin.icon:SetTexture(entry.icon or 134400)
 	pin.icon:SetDesaturated(entry.collected or ignored or false)
@@ -122,11 +188,57 @@ local function dress(pin, entry)
 	else
 		pin.border:SetColorTexture(1, 0.82, 0, 0.9)
 	end
+	-- Say when a pin is standing for more than itself, so a place holding six
+	-- mounts does not read as a place holding one.
+	if count > 1 then
+		pin.count:SetText(count > 99 and "*" or count)
+		pin.count:Show()
+	else
+		pin.count:Hide()
+	end
 end
 
+local MAX_TOOLTIP_ROWS = 12
+
 local function pinEnter(self)
-	if not self.data then return end
-	MM.UI.ShowMountTooltip(self, self.data.entry)
+	local place = self.data
+	if not place then return end
+
+	local primary, count = placeStatus(place)
+	if not primary then return end
+	if count == 1 then
+		MM.UI.ShowMountTooltip(self, primary)
+		return
+	end
+
+	-- Several mounts, one place. The full per-mount tooltip repeated six times
+	-- would be taller than the screen, so this is a list: what is here, and
+	-- what state each one is in. Hovering is the only time this is built.
+	local shown = {}
+	for _, entry in ipairs(place.entries) do
+		if shouldShow(entry) then shown[#shown + 1] = entry end
+	end
+	table.sort(shown, function(a, b)
+		local ra, rb = rank(a), rank(b)
+		if ra ~= rb then return ra < rb end
+		return (a.name or "") < (b.name or "")
+	end)
+
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	GameTooltip:AddLine(("%d mounts here"):format(count), 1, 1, 1)
+	local rows = math.min(#shown, MAX_TOOLTIP_ROWS)
+	for i = 1, rows do
+		local entry = shown[i]
+		local status = MM.Availability.GetStatus(entry)
+		GameTooltip:AddDoubleLine(entry.name,
+			U.STATUS_LABEL[status] or status or "", 1, 0.82, 0, 0.7, 0.7, 0.7)
+	end
+	if #shown > rows then
+		GameTooltip:AddLine(("...and %d more"):format(#shown - rows), 0.6, 0.6, 0.6)
+	end
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddLine("Click to open the topmost one in the journal", 0.5, 0.5, 0.5)
+	GameTooltip:Show()
 end
 
 local function pinLeave()
@@ -134,7 +246,9 @@ local function pinLeave()
 end
 
 local function pinClick(self, button)
-	if self.data then MM.UI.RowClick(self.data.entry, button) end
+	if not self.data then return end
+	local primary = placeStatus(self.data)
+	if primary then MM.UI.RowClick(primary, button) end
 end
 
 ------------------------------------------------------------
@@ -155,18 +269,19 @@ local function projectChildren(mapID)
 	cached = {}
 	projected[mapID] = cached
 	for _, child in ipairs(C_Map.GetMapChildrenInfo(mapID, nil, true) or {}) do
-		for _, loc in ipairs(byMap[child.mapID] or {}) do
+		for _, place in ipairs(byMap[child.mapID] or {}) do
 			local ok, continentID, worldPos = pcall(C_Map.GetWorldPosFromMapPos,
-				child.mapID, CreateVector2D(loc.x / 100, loc.y / 100))
+				child.mapID, CreateVector2D(place.x / 100, place.y / 100))
 			if ok and continentID and worldPos then
 				local ok2, _, vec = pcall(C_Map.GetMapPosFromWorldPos,
 					continentID, worldPos, mapID)
 				if ok2 and vec then
 					local fx, fy = vec:GetXY()
 					if fx and fy and fx >= 0 and fx <= 1 and fy >= 0 and fy <= 1 then
+						-- the same entry list, at the parent map's coordinates
 						tinsert(cached, {
-							entry = loc.entry, rec = loc.rec, mapID = mapID,
-							x = fx * 100, y = fy * 100, projected = true,
+							mapID = mapID, x = fx * 100, y = fy * 100,
+							entries = place.entries, projected = true,
 						})
 					end
 				end
@@ -206,16 +321,20 @@ function providerMethods:RefreshAllData(fromOnShow)
 	MP.lastMapID = mapID
 
 	local drawn = 0
-	for _, loc in ipairs(byMap[mapID] or {}) do
-		if shouldShow(loc.entry) then
-			map:AcquirePin(PIN_TEMPLATE, loc, loc.x / 100, loc.y / 100)
+	for _, place in ipairs(byMap[mapID] or {}) do
+		local primary, count = placeStatus(place)
+		if primary then
+			map:AcquirePin(PIN_TEMPLATE, place, place.x / 100, place.y / 100,
+				primary, count)
 			drawn = drawn + 1
 		end
 	end
 	if MM.db.mapPinsChildZones then
-		for _, loc in ipairs(projectChildren(mapID)) do
-			if shouldShow(loc.entry) then
-				map:AcquirePin(PIN_TEMPLATE, loc, loc.x / 100, loc.y / 100)
+		for _, place in ipairs(projectChildren(mapID)) do
+			local primary, count = placeStatus(place)
+			if primary then
+				map:AcquirePin(PIN_TEMPLATE, place, place.x / 100, place.y / 100,
+					primary, count)
 				drawn = drawn + 1
 			end
 		end
@@ -233,12 +352,12 @@ function pinMethods:OnLoad()
 	self:SetScalingLimits(1, 1.0, 1.2)
 end
 
-function pinMethods:OnAcquired(loc, x, y)
-	self.data = loc
+function pinMethods:OnAcquired(place, x, y, primary, count)
+	self.data = place
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
 	self:SetSize(WORLD_PIN_SIZE, WORLD_PIN_SIZE)
 	self:SetPosition(x, y)
-	dress(self, loc.entry)
+	dress(self, primary, count)
 end
 
 function pinMethods:OnReleased()
@@ -267,6 +386,10 @@ local function createWorldPin()
 	pin.icon = pin:CreateTexture(nil, "ARTWORK")
 	pin.icon:SetAllPoints()
 	pin.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+
+	pin.count = pin:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	pin.count:SetPoint("BOTTOMRIGHT", pin, "BOTTOMRIGHT", 3, -3)
+	pin.count:Hide()
 
 	return Mixin(pin, pinMixin)
 end
@@ -384,15 +507,15 @@ local function offsetYards(basis, world, loc)
 	return dx * basis.ex + dy * basis.ey, dx * basis.sx + dy * basis.sy
 end
 
-local function worldPosFor(loc)
-	if loc.wx then return true end
-	if loc.noWorldPos then return false end
-	local instance, world = U.GetWorldPos(loc.mapID, loc.x, loc.y)
+local function worldPosFor(place)
+	if place.wx then return true end
+	if place.noWorldPos then return false end
+	local instance, world = U.GetWorldPos(place.mapID, place.x, place.y)
 	if not world then
-		loc.noWorldPos = true
+		place.noWorldPos = true
 		return false
 	end
-	loc.instance, loc.wx, loc.wy = instance, world.x, world.y
+	place.instance, place.wx, place.wy = instance, world.x, world.y
 	return true
 end
 
@@ -410,9 +533,9 @@ local function buildCandidates(playerMapID, playerInstance)
 	wipe(candidates)
 	for mapID, list in pairs(byMap) do
 		if U.GetContinentMapID(mapID) == continent then
-			for _, loc in ipairs(list) do
-				if worldPosFor(loc) and loc.instance == playerInstance then
-					tinsert(candidates, loc)
+			for _, place in ipairs(list) do
+				if worldPosFor(place) and place.instance == playerInstance then
+					tinsert(candidates, place)
 				end
 			end
 		end
@@ -498,6 +621,10 @@ local function createMinimapPin()
 	pin.icon:SetAllPoints()
 	pin.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
+	pin.count = pin:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	pin.count:SetPoint("BOTTOMRIGHT", pin, "BOTTOMRIGHT", 3, -3)
+	pin.count:Hide()
+
 	pin:SetScript("OnEnter", pinEnter)
 	pin:SetScript("OnLeave", pinLeave)
 	pin:SetScript("OnMouseUp", pinClick)
@@ -555,17 +682,18 @@ local function fullMinimapUpdate()
 	MP.minimapRadius = mapRadius
 
 	local used, weighed, nearest = 0, 0, nil
-	for _, loc in ipairs(buildCandidates(mapID, instance)) do
-		if shouldShow(loc.entry) then
+	for _, place in ipairs(buildCandidates(mapID, instance)) do
+		local primary, count = placeStatus(place)
+		if primary then
 			weighed = weighed + 1
-			local east, south = offsetYards(basis, world, loc)
+			local east, south = offsetYards(basis, world, place)
 			local away = sqrt(east * east + south * south)
 			if not nearest or away < nearest then nearest = away end
 			if away <= mapRadius then
 				local pin = minimapFrames[used + 1] or createMinimapPin()
 				minimapFrames[used + 1] = pin
-				pin.data = loc
-				dress(pin, loc.entry)
+				pin.data = place
+				dress(pin, primary, count)
 				if placeMinimapPin(pin, east, south) then
 					used = used + 1
 				else

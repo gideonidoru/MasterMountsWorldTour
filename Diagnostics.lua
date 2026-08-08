@@ -1222,12 +1222,14 @@ MM:On("MM_FIXES_DEBUG", function()
 		-- drawing layer had been asked, and by whom. The provider either is
 		-- registered with the map canvas or it is not, and the last refresh of
 		-- each surface either put pins up or put none up.
-		local detail = ("%d journal entries -> %d points indexed; this map (%s) "
+		local detail = ("%d journal entries -> %d points indexed as %d place(s), "
+			.. "%d record(s) via `spawns`; this map (%s) "
 			.. "holds %d. Rejected: %d no record, %d stub, %d other faction, %d "
 			.. "no zone at all, %d zone with no coordinates, %d zone name that "
 			.. "resolved to no map%s. Canvas provider %s; last draw %d on map %s, "
 			.. "%d on the minimap (%s)%s")
-			:format(st.entries, st.indexed, tostring(here), mine, st.noRec,
+			:format(st.entries, st.indexed, st.places, st.fromSpawns,
+				tostring(here), mine, st.noRec,
 				st.stub, st.factionFiltered, st.noPoints, st.noCoords,
 				st.unresolvedMap,
 				st.scannerReady and "" or " (SCANNER WAS NOT READY -- nothing could be indexed)",
