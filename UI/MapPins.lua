@@ -519,23 +519,49 @@ local function minimapEnabled()
 	return MM.db and MM.db.mapPinsMinimap ~= false
 end
 
--- Which pins belong on the minimap. Costs a pass over one continent's points,
--- which is why it runs once a second and not every frame.
+-- AN EMPTY MINIMAP IS TWO COMPLETELY DIFFERENT ANSWERS.
+--
+-- "Nothing is within 400 yards of you" is the correct and overwhelmingly common
+-- one: a zone is minutes of flying across and the minimap shows a few hundred
+-- yards of it, so most of the time a zone full of mounts still puts nothing on
+-- the minimap. "The pass bailed before it looked" is a fault. On screen the two
+-- are the same blank ring, which is precisely the shape of the fault this file
+-- was rewritten for -- so the pass records which one happened, how many points
+-- it weighed, and how far the closest of them was. A number that reads as
+-- obviously-correct is worth more than a fix nobody can check.
+MP.minimapWhy, MP.minimapCandidates, MP.minimapNearest = "has not run yet", 0, nil
+MP.minimapRadius = nil
+
 local function fullMinimapUpdate()
 	hideMinimapPins()
-	if not minimapEnabled() then return end
+	MP.minimapCandidates, MP.minimapNearest = 0, nil
+	if not minimapEnabled() then MP.minimapWhy = "switched off" return end
 	if not indexBuilt then indexLocations() end
 
 	local instance, world, mapID = U.PlayerWorldPos()
-	if not (world and mapID) then return end
+	if not (world and mapID) then
+		MP.minimapWhy = "no player position here (instances do not report one)"
+		return
+	end
 	local basis = mapBasis(mapID)
-	if not (basis and readMinimap()) then return end
+	if not basis then
+		MP.minimapWhy = ("map %d has no world position to measure against"):format(mapID)
+		return
+	end
+	if not readMinimap() then
+		MP.minimapWhy = "could not read the minimap's view radius"
+		return
+	end
+	MP.minimapRadius = mapRadius
 
-	local used = 0
+	local used, weighed, nearest = 0, 0, nil
 	for _, loc in ipairs(buildCandidates(mapID, instance)) do
 		if shouldShow(loc.entry) then
+			weighed = weighed + 1
 			local east, south = offsetYards(basis, world, loc)
-			if east * east + south * south <= mapRadius * mapRadius then
+			local away = sqrt(east * east + south * south)
+			if not nearest or away < nearest then nearest = away end
+			if away <= mapRadius then
 				local pin = minimapFrames[used + 1] or createMinimapPin()
 				minimapFrames[used + 1] = pin
 				pin.data = loc
@@ -550,6 +576,14 @@ local function fullMinimapUpdate()
 	end
 	activeCount, activeInstance = used, instance
 	MP.lastMinimapDrawn = used
+	MP.minimapCandidates, MP.minimapNearest = weighed, nearest
+	if used > 0 then
+		MP.minimapWhy = "drawing"
+	elseif weighed == 0 then
+		MP.minimapWhy = "nothing indexed on this continent, in this instance"
+	else
+		MP.minimapWhy = "everything is out of range"
+	end
 end
 
 -- Between full passes only the offsets change, so only the offsets are redone.

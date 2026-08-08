@@ -1226,13 +1226,21 @@ MM:On("MM_FIXES_DEBUG", function()
 			.. "holds %d. Rejected: %d no record, %d stub, %d other faction, %d "
 			.. "no zone at all, %d zone with no coordinates, %d zone name that "
 			.. "resolved to no map%s. Canvas provider %s; last draw %d on map %s, "
-			.. "%d on the minimap%s")
+			.. "%d on the minimap (%s)%s")
 			:format(st.entries, st.indexed, tostring(here), mine, st.noRec,
 				st.stub, st.factionFiltered, st.noPoints, st.noCoords,
 				st.unresolvedMap,
 				st.scannerReady and "" or " (SCANNER WAS NOT READY -- nothing could be indexed)",
 				st.installed and "registered" or "NOT REGISTERED",
 				MP.lastDrawn or 0, tostring(MP.lastMapID), MP.lastMinimapDrawn or 0,
+				-- "out of range" is the answer nearly all the time, and it is
+				-- only believable with the two distances beside it
+				("%s; %d point(s) on this continent weighed%s%s"):format(
+					tostring(MP.minimapWhy), MP.minimapCandidates or 0,
+					MP.minimapNearest
+						and (", nearest %.0f yd"):format(MP.minimapNearest) or "",
+					MP.minimapRadius
+						and (", minimap shows %.0f yd"):format(MP.minimapRadius) or ""),
 				st.minimapRadiusAPI == false
 					and " (THIS CLIENT HAS NO MINIMAP VIEW RADIUS API -- minimap pins cannot be placed)"
 					or "")
