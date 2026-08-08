@@ -517,6 +517,53 @@ local function buildAlert()
 	MM.Util.SetShownWhenCombatAllows(alertFrame, false)
 end
 
+-- THE TARGET BUTTON, AND THE HALF OF THE COMBAT RULE THAT WAS MISSING.
+--
+-- A secure attribute cannot be written in combat, and this knew that: it set
+-- macrotext out of combat and disabled the button in combat. What it never did
+-- was come back. Nothing re-applied the attribute when combat ended, so the
+-- button stayed dead and empty for the whole life of that alert.
+--
+-- Which is the common case, not the corner: a rare is normally noticed WHILE
+-- fighting something else, the alert stands for 45 seconds, and the fight ends
+-- well inside that. The one control that exists because an addon may not call
+-- TargetUnit was therefore switched off exactly when it was wanted.
+--
+-- The arrow already had this right -- deferred attributes, flushed on
+-- PLAYER_REGEN_ENABLED -- and Util already had it right for visibility. This is
+-- the third copy of one rule, and the second time the flush was the piece left
+-- out, so it now sits next to the attribute it belongs to.
+--
+-- Disabled rather than left clickable while it waits: a stale macrotext would
+-- target the PREVIOUS rare, and sending someone at the wrong mob is worse than
+-- a button that is briefly grey.
+local pendingTarget
+
+local function applyTarget(npcName)
+	local button = alertFrame and alertFrame.targetButton
+	if not button then return end
+	if InCombatLockdown() then
+		pendingTarget = npcName
+		button:Disable()
+		button:SetAlpha(0.5)
+		return
+	end
+	pendingTarget = nil
+	button:SetAttribute("macrotext", "/targetexact " .. npcName)
+	button:Enable()
+	button:SetAlpha(1)
+end
+
+-- Only worth applying while the alert this name belongs to is still up.
+MM:RegisterGameEvent("PLAYER_REGEN_ENABLED", function()
+	local waiting = pendingTarget
+	pendingTarget = nil
+	if not (waiting and alertFrame) then return end
+	if alertFrame:IsShown() or MM.Util.ShownPending(alertFrame) then
+		applyTarget(waiting)
+	end
+end)
+
 -- `force` is for the options preview only. A preview that silently did nothing
 -- because alerts were switched off, or because the same rare fired minutes ago,
 -- would read as a broken button rather than a working setting.
@@ -593,15 +640,8 @@ function RA.Alert(npcName, hit, mapPos, force)
 	-- is refused in combat exactly as the attribute below is.
 	MM.Util.SetShownWhenCombatAllows(alertFrame, true)
 
-	-- secure attributes cannot be set in combat
-	if not InCombatLockdown() then
-		alertFrame.targetButton:SetAttribute("macrotext", "/targetexact " .. npcName)
-		alertFrame.targetButton:Enable()
-		alertFrame.targetButton:SetAlpha(1)
-	else
-		alertFrame.targetButton:Disable()
-		alertFrame.targetButton:SetAlpha(0.5)
-	end
+	-- secure attributes cannot be set in combat; deferred and flushed above
+	applyTarget(npcName)
 
 	-- On the Master channel deliberately, and loud on purpose.
 	--

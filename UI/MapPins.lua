@@ -150,12 +150,36 @@ local function shouldShow(entry)
 	return true
 end
 
+-- MEMBERSHIP ONCE, NOT ONCE PER ENTRY PER SECOND.
+--
+-- Planner:InPlan is a linear scan of the plan and returns a POSITION, which two
+-- callers in Planner genuinely need. Nothing here does -- a pin only asks "is
+-- this planned" -- and asking it that way made the cost of one pin proportional
+-- to the size of the plan. The minimap weighs every place on the continent once
+-- a second and a Trading Post kiosk carries 105 mounts, so on a 287-goal plan
+-- that single place cost thirty thousand comparisons a second to colour one
+-- border.
+--
+-- Rebuilt on MM_PLAN_CHANGED with the rest of the index, which is the same
+-- signal that already invalidates everything else here.
+local plannedSet
+
+local function isPlanned(spellID)
+	if not plannedSet then
+		plannedSet = {}
+		for _, item in ipairs((MM.cdb and MM.cdb.plan) or {}) do
+			plannedSet[item.spellID] = true
+		end
+	end
+	return plannedSet[spellID]
+end
+
 -- Which mount speaks for a shared place. A kiosk selling one mount you are
 -- hunting and a hundred you own should look like the one you are hunting.
 local function rank(entry)
 	if MM.db.ignored and MM.db.ignored[entry.spellID] then return 3 end
 	if entry.collected then return 4 end
-	if MM.Planner:InPlan(entry.spellID) then return 1 end
+	if isPlanned(entry.spellID) then return 1 end
 	return 2
 end
 
@@ -183,7 +207,7 @@ local function dress(pin, entry, count)
 		pin.border:SetColorTexture(0.55, 0.55, 0.55, 0.9)
 	elseif ignored then
 		pin.border:SetColorTexture(0.75, 0.2, 0.2, 0.9)
-	elseif MM.Planner:InPlan(entry.spellID) then
+	elseif isPlanned(entry.spellID) then
 		pin.border:SetColorTexture(0.25, 0.85, 0.4, 0.95)
 	else
 		pin.border:SetColorTexture(1, 0.82, 0, 0.9)
@@ -834,6 +858,7 @@ end)
 
 local function invalidate()
 	indexBuilt = false
+	plannedSet = nil
 	wipe(projected)
 	candidateKey = nil
 	sinceFull = FULL_EVERY

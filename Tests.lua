@@ -2190,14 +2190,40 @@ local function runLogic()
 		-- Add silently declined. Drives the same call the [+] handlers make,
 		-- with a spellID that is definitely not planned, and puts the plan back
 		-- exactly as it was.
+		--
+		-- IT ALSO SAYS WHAT THE ROUND TRIP COST, AND TO WHOM.
+		--
+		-- This check is the addon's one release blocker and has been for several
+		-- builds, at ~3.6 seconds against a watchdog that kills long checks. The
+		-- work is not here -- Add and Remove are a table insert and a table
+		-- remove -- it is in the two MM_PLAN_CHANGED fires they raise, and ten
+		-- handlers listen. "Over budget" names none of them, so the number was
+		-- unactionable and stayed that way.
+		--
+		-- MM.Profile already accumulates milliseconds per (message, handler);
+		-- nothing read it for this. Snapshotting it either side of the round
+		-- trip costs one table walk and turns the blocker into a named
+		-- handler, which is the difference between a fix and a theory.
 		local P = MM.Planner
 		if not (P and P.Add and P.Remove and P.InPlan) then return nil, "no planner" end
 		local probe = -424242            -- cannot collide with a real spell id
 		if P:InPlan(probe) then return nil, "probe id already planned" end
+
+		local function snapshot()
+			local out, bucket = {}, MM.Profile and MM.Profile["MM_PLAN_CHANGED"]
+			if bucket then
+				for name, row in pairs(bucket) do out[name] = row.ms end
+			end
+			return out
+		end
+
 		local before = #MM.cdb.plan
+		local costBefore = snapshot()
+		local startedAt = debugprofilestop and debugprofilestop() or nil
 		P:Add(probe)
 		local added = P:InPlan(probe) ~= nil
 		P:Remove(probe)
+		local elapsed = startedAt and (debugprofilestop() - startedAt) or nil
 		local restored = (#MM.cdb.plan == before) and not P:InPlan(probe)
 		if not added then
 			return false, "Planner:Add did not put the goal on the plan"
@@ -2205,7 +2231,24 @@ local function runLogic()
 		if not restored then
 			return false, "Planner:Remove did not undo the probe -- plan left dirty"
 		end
-		return true, ("add and remove round-trip on a %d-goal plan"):format(before)
+
+		-- Who spent it, worst first. Anything under a millisecond is noise and
+		-- would only bury the one line worth reading.
+		local costAfter, rows = snapshot(), {}
+		for name, ms in pairs(costAfter) do
+			local spent = ms - (costBefore[name] or 0)
+			if spent >= 1 then rows[#rows + 1] = { name = name, ms = spent } end
+		end
+		table.sort(rows, function(a, b) return a.ms > b.ms end)
+		local blame = {}
+		for i = 1, math.min(#rows, 3) do
+			blame[#blame + 1] = ("%s %.0f ms"):format(rows[i].name, rows[i].ms)
+		end
+
+		return true, ("add and remove round-trip on a %d-goal plan%s%s"):format(
+			before,
+			elapsed and (" in %.0f ms"):format(elapsed) or "",
+			#blame > 0 and (" -- spent in: " .. table.concat(blame, ", ")) or "")
 	end)
 
 	check("Every kind of client string we depend on is still readable", function()
