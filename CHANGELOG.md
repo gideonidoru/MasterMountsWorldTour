@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.14 — unreleased
+## 1.1.14 — 2026-08-07
 
 - **Zoning into a delve threw on every nameplate.** A unit's GUID is a
   client-supplied string exactly as its name is, so splitting one to read the
