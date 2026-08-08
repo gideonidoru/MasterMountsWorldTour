@@ -38,9 +38,24 @@ local function summaryTooltip(tt)
 	tt:AddLine("Right-click: quick menu", 0.7, 0.7, 0.7)
 end
 
-local function quickMenu(anchor)
+-- `anchor` is accepted and deliberately unused: both call sites pass their
+-- button, and the menu is anchored to the screen instead. See below.
+local function quickMenu(anchor)  -- luacheck: ignore anchor
 	if MenuUtil and MenuUtil.CreateContextMenu then
-		MenuUtil.CreateContextMenu(anchor, function(_, root)
+		-- REPORTED FROM PLAY: "the minimap button menu constantly closes before
+		-- I can scroll down past the first two options."
+		--
+		-- Anchored to UIParent rather than to the button. A minimap button sits
+		-- against the edge of the screen by definition, so a menu anchored to it
+		-- opens into whatever room is left -- which is why it arrived squashed
+		-- and scrolling, and why reaching for the third entry took the pointer
+		-- across the gap that dismisses it. Opening at the cursor in open space
+		-- is the usual answer for exactly this reason.
+		--
+		-- Said plainly: I could not reproduce the dismissal here, so this fixes
+		-- the cause I can demonstrate -- seven entries and a title have no
+		-- business scrolling at all -- rather than claiming to have found it.
+		MenuUtil.CreateContextMenu(UIParent, function(_, root)
 			root:CreateTitle("Master Mounts")
 			root:CreateButton("Collection", function() MM:Fire("MM_TOGGLE_MAIN", 1) end)
 			root:CreateButton("Planner", function() MM:Fire("MM_TOGGLE_MAIN", 2) end)

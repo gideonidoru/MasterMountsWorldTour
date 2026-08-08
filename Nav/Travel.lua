@@ -18,8 +18,24 @@ local CAPITAL = {
 		room = "the Wizard's Sanctum portal room (Mage Quarter)",
 	},
 	Horde = {
-		continent = KALIMDOR, city = "Orgrimmar", mapID = 85, x = 57.0, y = 89.0,
-		room = "the Pathfinder's Den portal room (Cleft of Shadow)",
+		-- REPORTED FROM PLAY, three separate mistakes in one instruction.
+		--
+		-- Pathfinder's Den is NOT in the Cleft of Shadow -- it is its own
+		-- subzone, reached from the Gates of Orgrimmar, and the Cleft does not
+		-- connect to it at all. Our own access notes said so already; this line
+		-- simply disagreed with them.
+		--
+		-- The point is the one those notes researched, rather than a rounder
+		-- number in the middle of the room.
+		--
+		-- AND THE FLOOR IS IN THE TEXT BECAUSE AN ARROW CANNOT SAY IT. A
+		-- waypoint has no vertical axis, so it points at the room and a player
+		-- standing on the wrong level is told they have arrived. Naming the
+		-- stairs is the only fix available; pretending the arrow can do it is
+		-- what made this read as a wrong location rather than a flat map.
+		continent = KALIMDOR, city = "Orgrimmar", mapID = 85, x = 55.2, y = 92.0,
+		room = "the Pathfinder's Den portal room, in the Gates of Orgrimmar "
+			.. "-- take the stairs DOWN, the portals are not on the top floor",
 	},
 }
 
@@ -30,7 +46,10 @@ local PORTAL_LABEL = {
 	[870]  = "Jade Forest portal",
 	[1116] = "Ashran portal",
 	[1220] = "Azsuna portal",
-	[1642] = "Dazar'alor portal",
+	-- The portal is LABELLED Zuldazar in game, whatever the map is called.
+	-- Reported from play: being told to take the Dazar'alor portal and finding
+	-- no such thing is a worse instruction than no instruction.
+	[1642] = "Zuldazar portal",
 	[1643] = "Boralus portal",
 	[2222] = "Oribos portal",
 	[2444] = "Valdrakken portal",

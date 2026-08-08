@@ -646,11 +646,30 @@ StaticPopupDialogs["MASTERMOUNTS_WOWHEAD"] = {
 	preferredIndex = 3,
 }
 
+-- REPORTED FROM PLAY: Cobalt Pterrordax opened wowhead.com/spell=27, and
+-- Spectral Pterrorwing opened spell=24. Both records carry the right id --
+-- 275837 and 244712 -- so whatever this was handed was not the record, and I
+-- have not been able to reproduce which caller does it.
+--
+-- Two changes, neither of which pretends to know: the record's own id wins over
+-- whatever the row is carrying, and an id too small to be a mount spell is
+-- refused rather than turned into a link. A name search always resolves, so the
+-- fallback is a working page instead of a wrong one -- and the anomaly is
+-- printed, so if it happens again it arrives with the number attached.
+local MIN_PLAUSIBLE_SPELL = 1000
+
 function MM:ShowWowheadLink(entry)
 	if not entry then return end
+	local spellID = (entry.rec and entry.rec.spellID) or entry.spellID
+	if spellID and spellID < MIN_PLAUSIBLE_SPELL then
+		MM:Print("|cffff9a3cThat link looked wrong|r -- %q offered spell id %d, "
+			.. "which is too small to be a mount. Searching by name instead; "
+			.. "please report this.", tostring(entry.name or "?"), spellID)
+		spellID = nil
+	end
 	local url
-	if entry.spellID then
-		url = ("https://www.wowhead.com/spell=%d#comments"):format(entry.spellID)
+	if spellID then
+		url = ("https://www.wowhead.com/spell=%d#comments"):format(spellID)
 	else
 		url = "https://www.wowhead.com/search?q=" .. (entry.name or ""):gsub(" ", "+")
 	end

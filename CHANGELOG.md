@@ -2,6 +2,25 @@
 
 ## 1.1.15 — unreleased
 
+- **The Darkshore warfront rares come in faction pairs, and ours were crossed.**
+  Each nightsaber was tagged with one faction and standing on the *other*
+  faction's rare, so the goal passed the faction gate and then sent a Horde
+  player to an Alliance-only spawn. Ashenvale Chimaera claimed Horde when its
+  rare serves both, and Blackpaw claimed neither when its rare is Horde only.
+  Every correction moves a record onto the rare it already named.
+- **Pathfinder's Den is not in the Cleft of Shadow.** It is reached from the
+  Gates of Orgrimmar, which our own access notes already said. The portal there
+  is labelled **Zuldazar**, not Dazar'alor, and the instruction now names the
+  stairs — a waypoint has no vertical axis, so a player on the top floor was
+  being told they had arrived.
+- **A Wowhead link with an implausible spell id is refused.** Two mounts opened
+  pages for spell 27 and spell 24 while their records carry the right ids. The
+  record's id now wins over the row's, an id too small to be a mount falls back
+  to a name search, and the anomaly is printed so it arrives with the number
+  attached next time.
+- **The minimap quick menu opens at the cursor**, not against the screen edge
+  where it had no room to lay out.
+
 - **Chel the Chip is where Abundance is, not where it was.** The route sent
   players to a fixed point in the middle of the troll camp in Zul'Aman when the
   event was running somewhere else entirely. Abundance now uses the same live
