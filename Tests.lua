@@ -112,6 +112,30 @@ local BUILD_BOUND = {
 	["Adding to the plan from any pane actually adds"] = true,
 }
 
+-- ONE ANSWER TO "WHICH CHECK IS SLOWEST", because there were two and they
+-- disagreed. The self-test excluded the build-bound checks; the FIXES section in
+-- Diagnostics computed its own worst case without them and hardcoded the count,
+-- so the same run reported a clean self-test and "1 of 23 need looking at",
+-- naming an exempt check as the offender. Two copies of one rule, again.
+--
+-- Returns nil when nothing has been timed, so callers can say so rather than
+-- reporting a zero as a result.
+function T.SlowestCheck()
+	local ms = T.checkMs
+	if not (ms and next(ms)) then return nil end
+	local worst, worstMs, counted, exempt = nil, 0, 0, {}
+	for name, t in pairs(ms) do
+		if BUILD_BOUND[name] then
+			exempt[#exempt + 1] = ("%s %d ms"):format(name, t)
+		else
+			counted = counted + 1
+			if t > worstMs then worst, worstMs = name, t end
+		end
+	end
+	table.sort(exempt)
+	return worst, worstMs, counted, exempt
+end
+
 local function routeInHand(R, least)
 	if #(R.route or {}) >= (least or 3) then return #R.route end
 	R:BuildSync()
@@ -5211,19 +5235,10 @@ local function runLogic()
 		-- that matters -- the last one blamed the event dispatcher while the
 		-- real cost was seven re-plans it did not need. Slicing the suite
 		-- cannot help: a slice is only allowed to stop BETWEEN checks.
-		local ms = MM.Tests and MM.Tests.checkMs
-		if not (ms and next(ms)) then return nil, "nothing timed yet this session" end
-		local worst, worstMs, n = nil, 0, 0
-		local builds = {}
-		for name, t in pairs(ms) do
-			if BUILD_BOUND[name] then
-				builds[#builds + 1] = ("%s %d ms"):format(name, t)
-			else
-				n = n + 1
-				if t > worstMs then worst, worstMs = name, t end
-			end
+		local worst, worstMs, n, builds = T.SlowestCheck()
+		if not worst and not worstMs then
+			return nil, "nothing timed yet this session"
 		end
-		table.sort(builds)
 		-- THE LINE IS CALIBRATED, not chosen.
 		--
 		-- 500 ms was a guess, and it kept failing the router model -- a check

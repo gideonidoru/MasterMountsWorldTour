@@ -1353,18 +1353,19 @@ MM:On("MM_FIXES_DEBUG", function()
 	end)
 
 	probe("No single self-test check is over budget", function()
-		local ms = MM.Tests and MM.Tests.checkMs
-		if not (ms and next(ms)) then return true, "nothing timed yet" end
-		local worst, worstMs, n = nil, 0, 0
-		for name, t in pairs(ms) do
-			n = n + 1
-			if t > worstMs then worst, worstMs = name, t end
+		-- Asks Tests for the answer rather than working one out. Its own copy of
+		-- this omitted the build-bound exemption and hardcoded "two", so a clean
+		-- self-test still reported here as something to look at, naming a check
+		-- that is exempt by design.
+		if not (MM.Tests and MM.Tests.SlowestCheck) then
+			return true, "the self-test timings are not loaded"
 		end
-		return worstMs <= 1200, ("slowest check %s at %d ms of %d timed; two that "
-			.. "force a synchronous build are exempt and named in the self-test "
-			.. "(was: the "
-			.. "preset round-trip re-planned seven times and was killed on slower "
-			.. "hardware)"):format(tostring(worst), worstMs, n)
+		local worst, worstMs, n, exempt = MM.Tests.SlowestCheck()
+		if not worst and not worstMs then return true, "nothing timed yet" end
+		return worstMs <= 1200, ("slowest check %s at %d ms of %d timed; %d exempt "
+			.. "for forcing a synchronous build (was: the preset round-trip "
+			.. "re-planned seven times and was killed on slower hardware)")
+			:format(tostring(worst), worstMs, n, #(exempt or {}))
 	end)
 
 	probe("Grand Hunt: everything the client says about the banner", function()
