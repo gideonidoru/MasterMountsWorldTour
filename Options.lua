@@ -796,8 +796,13 @@ local function buildTravel()
 				row.label:SetPoint("LEFT", row, "RIGHT", 4, 1)
 				row.label:SetWidth(WIDTH - 60)
 				row.label:SetJustifyH("LEFT")
+				-- ANCHORED TO THE LIST, NOT TO ITS ROW.
+				--
+				-- Hanging the heading off the row it precedes meant its position
+				-- was whatever was left after the group button had taken its
+				-- space, and the two drew on top of each other. A heading
+				-- occupies its own line in the cursor like everything else.
 				row.head = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-				row.head:SetPoint("BOTTOMLEFT", row, "TOPLEFT", 0, 6)
 				row:SetScript("OnClick", function(self)
 					MM.Teleports.SetOff(self.mmKey, not self:GetChecked())
 					layout()
@@ -807,10 +812,13 @@ local function buildTravel()
 
 			if lastKind ~= item.dungeon then
 				lastKind = item.dungeon
-				y = y + (i > 1 and 30 or 16)
+				y = y + (i > 1 and 26 or 12)
 				row.head:SetText(item.dungeon and "Dungeon & raid teleports"
 					or "Items, hearthstones and class spells")
+				row.head:ClearAllPoints()
+				row.head:SetPoint("TOPLEFT", content, "TOPLEFT", 8, -y)
 				row.head:Show()
+				y = y + 22
 				if item.dungeon then
 					if not group then
 						group = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
