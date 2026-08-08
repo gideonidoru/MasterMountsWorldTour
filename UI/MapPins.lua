@@ -20,13 +20,34 @@ local PIN_SIZE = 18
 -- Cache: [mapID] = { { entry, rec, x, y }, ... }
 local byMap, indexBuilt = {}, false
 
+-- WHY A PIN IS NOT THERE, counted rather than guessed at.
+--
+-- Reported as no pins at all while standing in a zone with mounts to farm, and
+-- I have now theorised about this once too often. Every rejection is tallied
+-- here and the report prints it, so the next question is answered by the client
+-- instead of by me reading code and picking the likeliest story.
+MP.stats = { entries = 0, noRec = 0, stub = 0, factionFiltered = 0,
+	noPoints = 0, noCoords = 0, unresolvedMap = 0, indexed = 0, scannerReady = false }
+
 local function indexLocations()
 	wipe(byMap)
 	indexBuilt = true
+	local st = MP.stats
+	st.entries, st.noRec, st.stub, st.factionFiltered = 0, 0, 0, 0
+	st.noPoints, st.noCoords, st.unresolvedMap, st.indexed = 0, 0, 0, 0
+	st.scannerReady = MM.Scanner.ready and true or false
 	if not MM.Scanner.ready then return end
 
 	for _, entry in ipairs(MM.Scanner.mounts) do
 		local rec = entry.rec
+		st.entries = st.entries + 1
+		if not rec then st.noRec = st.noRec + 1
+		elseif rec.stub then st.stub = st.stub + 1
+		elseif not MM.Scanner:FactionOk(entry) then
+			st.factionFiltered = st.factionFiltered + 1
+		elseif not (rec.patrolWaypoints or rec.zone) then
+			st.noPoints = st.noPoints + 1
+		end
 		if rec and not rec.stub and MM.Scanner:FactionOk(entry) then
 			-- a record may carry several points (roaming rares)
 			local points = rec.patrolWaypoints
@@ -36,11 +57,14 @@ local function indexLocations()
 					local mapID = p.mapID or (p.name and U.ResolveMapForRecord(p.name, rec))
 						or (rec.zone and rec.zone.name and U.ResolveMapForRecord(rec.zone.name, rec))
 					if mapID and p.x and p.y then
+						st.indexed = st.indexed + 1
 						byMap[mapID] = byMap[mapID] or {}
 						tinsert(byMap[mapID], {
 							entry = entry, rec = rec, x = p.x, y = p.y,
 							label = p.label,
 						})
+					elseif not mapID then st.unresolvedMap = st.unresolvedMap + 1
+					else st.noCoords = st.noCoords + 1
 					end
 				end
 			end
@@ -98,6 +122,13 @@ function MP.Clear()
 		if pinPool then pinPool:Release(pin) end
 	end
 	wipe(activePins)
+end
+
+-- What the index holds for one map, for the report. Builds the index if it has
+-- not been built, because "no pins" and "never indexed" are different answers.
+function MP.CountFor(mapID)
+	if not indexBuilt then indexLocations() end
+	return #(byMap[mapID or -1] or {})
 end
 
 function MP.Refresh()

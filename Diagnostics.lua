@@ -1205,6 +1205,29 @@ MM:On("MM_FIXES_DEBUG", function()
 				#withheld > 0 and (" -- WITHHELD: " .. table.concat(withheld, ", ")) or "")
 	end)
 
+	probe("Map pins: what the index holds, and what it rejected", function()
+		-- Reported as no pins at all while standing in a zone with mounts left
+		-- to farm. Three theories in, this stops guessing: every rejection is
+		-- counted where it happens and printed here, alongside how many pins
+		-- THIS map would draw. "None indexed", "none for this map" and "indexed
+		-- but filtered at draw" are three different faults that look identical
+		-- on screen.
+		local MP = MM.MapPins
+		if not (MP and MP.stats) then return false, "the pin layer is not loaded" end
+		local st = MP.stats
+		local here = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+		local mine = MP.CountFor and MP.CountFor(here) or 0
+		local detail = ("%d journal entries -> %d points indexed; this map (%s) "
+			.. "holds %d. Rejected: %d no record, %d stub, %d other faction, %d "
+			.. "no zone at all, %d zone with no coordinates, %d zone name that "
+			.. "resolved to no map%s")
+			:format(st.entries, st.indexed, tostring(here), mine, st.noRec,
+				st.stub, st.factionFiltered, st.noPoints, st.noCoords,
+				st.unresolvedMap,
+				st.scannerReady and "" or " (SCANNER WAS NOT READY -- nothing could be indexed)")
+		return st.indexed > 0 and st.scannerReady, detail
+	end)
+
 	probe("Arrow survives a hop with no item", function()
 		-- The exact call that produced 1,124 errors: a spell-only teleport
 		-- arrives here as nil, twenty times a second.
