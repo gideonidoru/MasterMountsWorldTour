@@ -718,9 +718,10 @@ function R.Coverage()
 end
 
 ------------------------------------------------------------
--- Export: writes a committable Lua chunk into SavedVariables. After logout,
--- find it in WTF/Account/<ACCOUNT>/SavedVariables/MasterMounts.lua under
--- MasterMountsDB.idExport and paste it into Data/Data_87_ResolvedIDs.lua.
+-- Export: a committable Lua chunk, shown in a copy-paste window and also kept
+-- in SavedVariables as a fallback. The saved copy only reaches
+-- WTF/Account/<ACCOUNT>/SavedVariables/MasterMountsWorldTour.lua at /reload or
+-- logout -- the file takes the ADDON FOLDER's name, not the variable's.
 ------------------------------------------------------------
 function R.Export()
 	local store = db()
@@ -790,10 +791,35 @@ function R.Export()
 	tinsert(out, "  },")
 	tinsert(out, "})")
 
-	MM.db.idExport = table.concat(out, "\n")
-	MM:Print("Exported %d lines to MasterMountsDB.idExport. Log out, then copy it from "
-		.. "WTF/Account/<ACCOUNT>/SavedVariables/MasterMounts.lua into Data/Data_87_ResolvedIDs.lua.",
-		#out)
+	local text = table.concat(out, "\n")
+	MM.db.idExport = text
+
+	-- ON SCREEN, NOW -- BECAUSE "EXPORTED" WAS NOT TRUE YET.
+	--
+	-- An addon cannot write a file. This only ever put the chunk in a saved
+	-- variable, and the client writes those at /reload or logout and not before,
+	-- so the .lua on disk was untouched at the moment this said "Exported" and
+	-- stayed that way until the session ended. Reported from outside as exactly
+	-- that: the message claimed success and the timestamp disagreed.
+	--
+	-- The report window already solves this and has since it was built: no
+	-- length cap, and it selects its own contents so Ctrl+C is the only key
+	-- anybody needs. Nothing about an id export made it a different problem, it
+	-- simply never asked for the window.
+	if MM.Diagnostics and MM.Diagnostics.ShowExport then
+		MM.Diagnostics.ShowExport(text, ("Resolved IDs — %d lines"):format(#out))
+		MM:Print("%d lines ready to copy. Paste into Data/_source/Data_87_ResolvedIDs.lua.", #out)
+	else
+		MM:Print("%d lines stored in MasterMountsDB.idExport.", #out)
+	end
+	-- Said second and said accurately: the copy on disk is the fallback, and it
+	-- is not there yet. NAMED CORRECTLY TOO -- the saved-variables file takes the
+	-- ADDON FOLDER's name, so it is MasterMountsWorldTour.lua. Every message here
+	-- used to say MasterMounts.lua, which is a file that has never existed, so
+	-- anyone following the instruction was checking the wrong path.
+	MM:Print("   Also kept in MasterMountsDB.idExport, which reaches "
+		.. "WTF/Account/<ACCOUNT>/SavedVariables/MasterMountsWorldTour.lua "
+		.. "on your next /reload or logout -- not before.")
 end
 
 ------------------------------------------------------------

@@ -357,7 +357,8 @@ MM:On("MM_REPORT", function()
 		-- has a scrollback limit and none of it can be selected.
 		--
 		-- Saved variables ARE a file -- WTF/Account/<ACCOUNT>/SavedVariables/
-		-- MasterMounts.lua -- flushed on /reload or logout. So a report can be
+		-- MasterMountsWorldTour.lua, which takes the ADDON FOLDER's name and not
+		-- the variable's -- flushed on /reload or logout. So a report can be
 		-- handed to someone outside the game without copying anything by hand.
 		if MM.db then
 			MM.db.lastReport = text
@@ -371,7 +372,7 @@ MM:On("MM_REPORT", function()
 			end
 		end
 		MM:Print("Report ready (%d lines). Saved to disk as well -- /reload flushes it to "
-			.. "SavedVariables\\MasterMounts.lua.", select(2, text:gsub("\n", "")) + 1)
+			.. "SavedVariables\\MasterMountsWorldTour.lua.", select(2, text:gsub("\n", "")) + 1)
 	end)
 end)
 
