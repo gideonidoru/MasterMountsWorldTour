@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 — unreleased
+## 1.2.0 — 2026-08-15
 
 Minor rather than patch: numbers you already read start reading differently.
 Every saved route chart is rebuilt once on first login after upgrading, because
@@ -35,6 +35,21 @@ the router now records far more about what a chart was built for.
   route is published in one piece, at the end, together with its totals, its
   index and its session count — so a build that goes wrong leaves the last good
   route exactly where it was instead of half-replacing it.
+
+- **Patch 12.1 is treated as live.** Its mounts no longer wait behind a date
+  check, its bosses are named so kills there count, and its records no longer
+  describe themselves as unreleased content in a tooltip you read while
+  standing in the zone.
+
+- **The planner's travel line is the route's travel line.** The plan tooltip
+  computed its own estimate rather than reading the router's, so the two
+  surfaces could quote different numbers for the same journey.
+
+- **It got faster.** Charting an 82-stop route fell from 346 ms to about 50 ms.
+  Editing the plan while a route is active no longer freezes the frame — the
+  work is chunked, and the last edit measured 0 ms on frame. Travel lookups
+  reuse their search 98% of the time, and the minimap driver stands down when
+  there is nothing left to move.
 
 - **The interface has a themed surface.** Panes are real regions with their own
   edges and resting colour rather than one black canvas, and the ElvUI and
