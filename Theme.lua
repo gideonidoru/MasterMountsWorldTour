@@ -1,9 +1,9 @@
 -- Master Mounts theming.
 --
--- Two looks: "blizzard" (the stock gold-trimmed frames) and "elvui" (flat,
--- thin-bordered, matching an ElvUI setup). If ElvUI is installed we default to
--- its look, because a Blizzard-styled window inside an ElvUI interface is the
--- thing that looks broken.
+-- Three looks: "modern" (textured charcoal and warm gold), "blizzard" (the
+-- stock gold-trimmed frames), and "elvui" (flat, thin-bordered, matching an
+-- ElvUI setup). Auto prefers ElvUI when it is installed and Modern otherwise.
+-- Explicit choices always win, so a user who selected Blizzard stays on it.
 --
 -- Frames register themselves; the registry lets a theme change re-skin
 -- everything live instead of demanding a reload. Where ElvUI exposes its own
@@ -15,6 +15,9 @@ MM.Theme = {}
 local T = MM.Theme
 
 local registry = setmetatable({}, { __mode = "k" }) -- [frame] = kind
+local textRegistry = setmetatable({}, { __mode = "k" }) -- [fontString] = role/original
+local surfaceRegistry = setmetatable({}, { __mode = "k" }) -- [texture] = semantic surface
+local ruleRegistry = setmetatable({}, { __mode = "k" }) -- [texture] = visual strength
 
 ------------------------------------------------------------
 -- Detection
@@ -38,14 +41,29 @@ end
 
 function T.Active()
 	local set = MM.db and MM.db.theme
-	if set == "elvui" or set == "blizzard" then return set end
-	return T.HasElvUI() and "elvui" or "blizzard"
+	if set == "modern" or set == "elvui" or set == "blizzard" then return set end
+	return T.Auto()
+end
+
+function T.Auto()
+	if T.HasElvUI() then return "elvui" end
+	return "modern"
 end
 
 ------------------------------------------------------------
 -- Palettes
 ------------------------------------------------------------
 local PALETTE = {
+	modern = {
+		bg = { 0.025, 0.022, 0.020, 0.98 },
+		border = { 0.40, 0.31, 0.10, 0.72 },
+		accent = { 0.92, 0.76, 0.24 },
+		-- Vaultloom's header is warm stone, not a translucent yellow wash.
+		header = { 0.12, 0.085, 0.060, 0.78 },
+		row = { 0.235, 0.160, 0.060, 0.20 },
+		text = { 0.93, 0.89, 0.77 },
+		muted = { 0.60, 0.57, 0.52 },
+	},
 	blizzard = {
 		bg = { 0.05, 0.05, 0.08, 0.92 },
 		border = { 0.85, 0.65, 0.2, 1 },
@@ -75,9 +93,11 @@ end
 ------------------------------------------------------------
 -- Skinning
 ------------------------------------------------------------
-local restoreArt  -- forward declaration (defined with the flat skin below)
+local restoreArt, hideModern, restoreStatusTexture -- forward declarations
 local function skinBlizzard(frame, kind)
 	-- undo anything the flat skin added, so switching back is complete
+	if hideModern then hideModern(frame) end
+	if kind == "statusbar" and restoreStatusTexture then restoreStatusTexture(frame) end
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
 	if frame.mmBorder then
 		for _, t in pairs(frame.mmBorder) do t:SetAlpha(0) end
@@ -130,7 +150,148 @@ end
 -- else's art.
 ------------------------------------------------------------
 local SOLID = "Interface\\Buttons\\WHITE8X8"
+local MODERN = MM.MEDIA .. "Modern\\"
+local MODERN_ASSET = {
+	window = MODERN .. "surface_window_v2.tga",
+	panel = MODERN .. "surface_panel_v2.tga",
+	inset = MODERN .. "surface_inset_v2.tga",
+	content = MODERN .. "surface_content_v2.tga",
+	sidebar = MODERN .. "surface_sidebar_v2.tga",
+	utility = MODERN .. "surface_utility_v2.tga",
+	card = MODERN .. "surface_card_v2.tga",
+	cardInset = MODERN .. "surface_card_inset_v2.tga",
+	row = MODERN .. "surface_row_v2.tga",
+	title = MODERN .. "title_bar_stone.tga",
+	roundedBorder = MODERN .. "rounded_color_border.tga",
+	roundedMask = MODERN .. "rounded_icon_mask.tga",
+	button = MODERN .. "button_reskin_normal.tga",
+	buttonHover = MODERN .. "button_reskin_hover.tga",
+	buttonPressed = MODERN .. "button_reskin_pressed.tga",
+	tab = MODERN .. "tab_reskin_normal.tga",
+	tabHover = MODERN .. "tab_reskin_hover.tga",
+	tabActive = MODERN .. "tab_reskin_active.tga",
+	scrollTrack = MODERN .. "scroll_track_reskin.tga",
+	scrollThumb = MODERN .. "scroll_thumb_reskin.tga",
+	barBackground = MODERN .. "bar_bg_reskin.tga",
+	barFill = MODERN .. "bar_fill_reskin.tga",
+	barOverlay = MODERN .. "bar_overlay_reskin.tga",
+	barSpark = MODERN .. "bar_spark_reskin.tga",
+}
+
+for _, state in ipairs({ "normal", "hover", "pressed", "disabled" }) do
+	MODERN_ASSET["button_" .. state] = {
+		left = MODERN .. "button_warm_frame_" .. state .. "_left.tga",
+		middle = MODERN .. "button_warm_frame_" .. state .. "_middle.tga",
+		middleLong = MODERN .. "button_warm_frame_" .. state .. "_middle_long.tga",
+		right = MODERN .. "button_warm_frame_" .. state .. "_right.tga",
+	}
+end
 local flatSkin  -- forward declaration; skinElv falls through to it
+
+hideModern = function(frame)
+	if frame.mmModernBackground then frame.mmModernBackground:SetAlpha(0) end
+	if frame.mmModernTitle then frame.mmModernTitle:SetAlpha(0) end
+	if frame.mmModernLogo then frame.mmModernLogo:SetAlpha(0) end
+	if frame.mmModernLogoRing then frame.mmModernLogoRing:SetAlpha(0) end
+	if frame.mmModernTitleText then frame.mmModernTitleText:SetAlpha(0) end
+	if frame.mmModernButtonParts then
+		for _, part in pairs(frame.mmModernButtonParts) do part:SetAlpha(0) end
+	end
+	if frame.mmModernBarBackground then frame.mmModernBarBackground:SetAlpha(0) end
+	-- Modern substitutes a smaller title label. Restore the template title when
+	-- leaving it; texture restoration alone cannot revive a FontString alpha.
+	local title = frame.TitleText
+		or (frame.TitleContainer and frame.TitleContainer.TitleText)
+	if title and title.SetAlpha then title:SetAlpha(1) end
+end
+
+local function modernBackground(frame, path)
+	if not frame.mmModernBackground then
+		local t = frame:CreateTexture(nil, "BACKGROUND")
+		t:SetAllPoints()
+		frame.mmModernBackground = t
+	end
+	frame.mmModernBackground:SetTexture(path)
+	frame.mmModernBackground:SetVertexColor(1, 1, 1, 1)
+	frame.mmModernBackground:SetAlpha(1)
+end
+
+local function modernTitle(frame)
+	if not frame.mmModernTitle then
+		local t = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
+		t:SetPoint("TOPLEFT", 1, -1)
+		t:SetPoint("TOPRIGHT", -1, -1)
+		t:SetHeight(24)
+		frame.mmModernTitle = t
+	end
+	frame.mmModernTitle:SetTexture(MODERN_ASSET.title)
+	frame.mmModernTitle:SetVertexColor(1, 1, 1, 0.92)
+	frame.mmModernTitle:SetAlpha(1)
+end
+
+-- Current Vaultloom buttons are three-piece warm frames. Stretching the old
+-- one-piece texture across a 200px control flattened its end caps and made our
+-- buttons look like bordered rectangles; preserve the caps and stretch only
+-- the middle, exactly as the source addon does.
+local function modernButtonParts(frame, state)
+	local set = MODERN_ASSET["button_" .. state] or MODERN_ASSET.button_normal
+	if not frame.mmModernButtonParts then
+		local left = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
+		local middle = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
+		local right = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
+		left:SetWidth(10)
+		right:SetWidth(10)
+		left:SetPoint("TOPLEFT", -1, 4)
+		left:SetPoint("BOTTOMLEFT", -1, -4)
+		right:SetPoint("TOPRIGHT", 1, 4)
+		right:SetPoint("BOTTOMRIGHT", 1, -4)
+		middle:SetPoint("TOPLEFT", left, "TOPRIGHT")
+		middle:SetPoint("BOTTOMRIGHT", right, "BOTTOMLEFT")
+		frame.mmModernButtonParts = { left = left, middle = middle, right = right }
+	end
+	local p = frame.mmModernButtonParts
+	p.left:SetTexture(set.left)
+	p.middle:SetTexture((frame.GetWidth and frame:GetWidth() or 0) >= 96
+		and set.middleLong or set.middle)
+	p.right:SetTexture(set.right)
+	for _, part in pairs(p) do part:SetAlpha(1) end
+	if frame.mmModernBackground then frame.mmModernBackground:SetAlpha(0) end
+end
+
+local function borderAlpha(frame, alpha)
+	if not frame.mmBorder then return end
+	for _, edge in pairs(frame.mmBorder) do edge:SetAlpha(alpha) end
+end
+
+local function skinModernBar(frame, c)
+	if frame.GetStatusBarTexture and not frame.mmOriginalStatusTexture then
+		local texture = frame:GetStatusBarTexture()
+		if texture and texture.GetTexture then
+			local ok, path = pcall(texture.GetTexture, texture)
+			if ok then frame.mmOriginalStatusTexture = path end
+		end
+	end
+	if frame.SetStatusBarTexture then
+		pcall(frame.SetStatusBarTexture, frame, MODERN_ASSET.barFill)
+	end
+	if not frame.mmModernBarBackground then
+		local bg = frame:CreateTexture(nil, "BACKGROUND")
+		bg:SetAllPoints()
+		frame.mmModernBarBackground = bg
+	end
+	frame.mmModernBarBackground:SetTexture(MODERN_ASSET.barBackground)
+	frame.mmModernBarBackground:SetVertexColor(1, 1, 1, 0.96)
+	frame.mmModernBarBackground:SetAlpha(1)
+	if frame.SetStatusBarColor then
+		pcall(frame.SetStatusBarColor, frame, c.accent[1], c.accent[2], c.accent[3], 0.95)
+	end
+end
+
+restoreStatusTexture = function(frame)
+	if frame.mmOriginalStatusTexture and frame.SetStatusBarTexture then
+		pcall(frame.SetStatusBarTexture, frame, frame.mmOriginalStatusTexture)
+	end
+end
 
 -- Draw a 1px border out of four thin textures (cheap, no edge file, and it
 -- stays exactly 1px at any frame size unlike a scaled edgeFile).
@@ -246,6 +407,7 @@ function restoreArt(frame)
 end
 
 function flatSkin(frame, kind, c)
+	hideModern(frame)
 	if kind == "frame" or kind == "panel" then
 		-- A Blizzard template frame keeps drawing its gold chrome over
 		-- anything we add underneath, so it has to be hidden first.
@@ -369,7 +531,187 @@ function flatSkin(frame, kind, c)
 	end
 end
 
+------------------------------------------------------------
+-- Modern skin.
+--
+-- The textures are an intentionally small, reusable subset of the authorized
+-- Vaultloom artwork: neutral surfaces and control states only. All state lives
+-- in textures created by us, so changing theme can hide it and restore the
+-- original Blizzard/ElvUI art without requiring a reload.
+------------------------------------------------------------
+local function modernControlState(frame, kind, state)
+	if T.Active() ~= "modern" then
+		hideModern(frame)
+		return
+	end
+
+	local disabled = frame.IsEnabled and not frame:IsEnabled()
+	local activeTab = kind == "tab" and disabled
+	local path
+	if kind == "row" then
+		path = MODERN_ASSET.row
+	elseif kind == "tab" then
+		path = activeTab and MODERN_ASSET.tabActive
+			or (state == "hover" and MODERN_ASSET.tabHover or MODERN_ASSET.tab)
+	else
+		modernButtonParts(frame, disabled and "disabled" or state)
+	end
+	if path then
+		modernBackground(frame, path)
+		-- The source plates are intentionally detailed, but the content must sit
+		-- above them. A restrained material tint prevents large stretched areas
+		-- from turning into visible noise while leaving controls crisp.
+		if kind == "frame" then
+			frame.mmModernBackground:SetVertexColor(0.76, 0.73, 0.68, 0.98)
+		elseif kind == "content" or kind == "sidebar" or kind == "utility"
+			or kind == "card" then
+			frame.mmModernBackground:SetVertexColor(0.70, 0.68, 0.64, 0.96)
+		end
+		frame.mmModernBackground:SetAlpha(disabled and not activeTab and 0.55 or 1)
+		if kind == "row" then
+			local warm = state == "pressed" and { 0.78, 0.66, 0.46 }
+				or state == "hover" and { 1.00, 0.91, 0.72 }
+				or { 1, 1, 1 }
+			frame.mmModernBackground:SetVertexColor(warm[1], warm[2], warm[3], 1)
+		end
+	end
+
+	local c = PALETTE.modern
+	local fs = frame.GetFontString and frame:GetFontString()
+	if fs then
+		local tc = activeTab and c.accent or (disabled and c.muted or c.text)
+		fs:SetTextColor(tc[1], tc[2], tc[3])
+	end
+end
+
+local function hookModernControl(frame, kind)
+	if frame.mmModernHooks or not frame.HookScript then return end
+	frame.mmModernHooks = true
+	frame:HookScript("OnEnter", function(self)
+		modernControlState(self, kind, "hover")
+	end)
+	frame:HookScript("OnLeave", function(self)
+		modernControlState(self, kind, "normal")
+	end)
+	frame:HookScript("OnMouseDown", function(self)
+		modernControlState(self, kind, "pressed")
+	end)
+	frame:HookScript("OnMouseUp", function(self)
+		modernControlState(self, kind, self:IsMouseOver() and "hover" or "normal")
+	end)
+	frame:HookScript("OnEnable", function(self)
+		modernControlState(self, kind, "normal")
+	end)
+	frame:HookScript("OnDisable", function(self)
+		modernControlState(self, kind, "normal")
+	end)
+end
+
+local function skinModern(frame, kind)
+	local c = PALETTE.modern
+	-- A prior ElvUI fallback may have created its own solid fill. It is ours,
+	-- not native art, so hide it explicitly or it sits above the textured
+	-- Modern surface when switching themes live.
+	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
+	hideArt(frame)
+
+	if kind == "frame" or kind == "panel" or kind == "content"
+		or kind == "sidebar" or kind == "utility" or kind == "card" then
+		local path = kind == "frame" and MODERN_ASSET.window
+			or kind == "content" and MODERN_ASSET.content
+			or kind == "sidebar" and MODERN_ASSET.sidebar
+			or kind == "utility" and MODERN_ASSET.utility
+			or kind == "card" and MODERN_ASSET.cardInset
+			or kind == "panel" and MODERN_ASSET.panel
+			or MODERN_ASSET.inset
+		modernBackground(frame, path)
+		if frame.SetBackdrop and frame.mmBackdropOwned then
+			pcall(frame.SetBackdrop, frame, {
+				edgeFile = MODERN_ASSET.roundedBorder,
+				edgeSize = (kind == "frame" or kind == "panel") and 4 or 2,
+				insets = { left = 1, right = 1, top = 1, bottom = 1 },
+			})
+			pcall(frame.SetBackdropColor, frame, 1, 1, 1, 0)
+			pcall(frame.SetBackdropBorderColor, frame,
+				c.border[1], c.border[2], c.border[3], c.border[4])
+			borderAlpha(frame, 0)
+		else
+			flatBorder(frame, c.border[1], c.border[2], c.border[3], c.border[4])
+			borderAlpha(frame, kind == "card" and 0.38 or c.border[4])
+		end
+		if kind == "frame" then
+			modernTitle(frame)
+			if frame.mmModernLogo then frame.mmModernLogo:SetAlpha(1) end
+			if frame.mmModernLogoRing then frame.mmModernLogoRing:SetAlpha(1) end
+			if frame.mmModernTitleText then frame.mmModernTitleText:SetAlpha(1) end
+		end
+		local title = frame.TitleText
+			or (frame.TitleContainer and frame.TitleContainer.TitleText)
+		if title and title.SetTextColor then
+			-- The custom Modern label is deliberately small and centered in the
+			-- thin rail; displaying the large template title as well recreates the
+			-- journal silhouette we are replacing.
+			title:SetAlpha(kind == "frame" and frame.mmModernTitleText and 0 or 1)
+			title:SetTextColor(c.text[1], c.text[2], c.text[3])
+		end
+		return
+	end
+
+	if kind == "button" or kind == "tab" or kind == "row" then
+		if kind == "row" then
+			flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.32)
+			borderAlpha(frame, 0.32)
+		else
+			-- The shaped control artwork already contains its own frame.
+			-- A second rectangular edge is what made every control shout gold.
+			borderAlpha(frame, 0)
+		end
+		hookModernControl(frame, kind)
+		modernControlState(frame, kind, "normal")
+		return
+	end
+
+	if kind == "checkbox" or kind == "editbox" then
+		modernBackground(frame, MODERN_ASSET.inset)
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
+		local checked = frame.GetCheckedTexture and frame:GetCheckedTexture()
+		if checked then
+			checked:SetAlpha(1)
+			checked:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
+		end
+		return
+	end
+
+	if kind == "scrollbar" then
+		modernBackground(frame, MODERN_ASSET.scrollTrack)
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.35)
+		borderAlpha(frame, 0.35)
+		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
+		if thumb and thumb.SetTexture then thumb:SetTexture(MODERN_ASSET.scrollThumb) end
+		return
+	end
+
+	if kind == "statusbar" then
+		skinModernBar(frame, c)
+		return
+	end
+
+	-- Glyph, close and status-bar handling is already reversible and only needs
+	-- the Modern palette. Reuse it instead of duplicating those careful paths.
+	flatSkin(frame, kind, c)
+	if kind == "close" and frame.mmBorder then
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
+	end
+end
+
 local function skinElv(frame, kind)
+	hideModern(frame)
+	if kind == "statusbar" and restoreStatusTexture then restoreStatusTexture(frame) end
+	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
+	if frame.mmBorder then
+		for _, edge in pairs(frame.mmBorder) do edge:SetAlpha(0) end
+	end
+	if restoreArt then restoreArt(frame) end
 	local S = elvSkins()
 	local c = PALETTE.elvui
 
@@ -377,24 +719,35 @@ local function skinElv(frame, kind)
 	if S then
 		local handler =
 			(kind == "button" and S.HandleButton)
+			or (kind == "row" and S.HandleButton)
+			or (kind == "tab" and S.HandleTab)
 			or (kind == "close" and S.HandleCloseButton)
 			or (kind == "checkbox" and S.HandleCheckBox)
 			or (kind == "editbox" and S.HandleEditBox)
 			or (kind == "scrollbar" and S.HandleScrollBar)
-			or ((kind == "frame" or kind == "panel") and S.HandleFrame)
+			or ((kind == "frame" or kind == "panel" or kind == "content"
+				or kind == "sidebar" or kind == "utility" or kind == "card")
+				and S.HandleFrame)
 		if handler then
 			local ok = pcall(handler, S, frame)
 			if ok then return end
 		end
 	end
 
-	flatSkin(frame, kind, c)
+	local fallback = (kind == "tab" or kind == "row") and "button" or kind
+	if kind == "content" or kind == "sidebar" or kind == "utility" or kind == "card" then
+		fallback = "panel"
+	end
+	flatSkin(frame, fallback, c)
 end
 
 -- Apply the active theme to one frame.
 function T.Skin(frame, kind)
 	if not frame then return end
-	if T.Active() == "elvui" then
+	local active = T.Active()
+	if active == "modern" then
+		skinModern(frame, kind)
+	elseif active == "elvui" then
 		skinElv(frame, kind)
 	else
 		skinBlizzard(frame, kind)
@@ -409,6 +762,120 @@ function T.Register(frame, kind, owned)
 	registry[frame] = kind or "frame"
 	T.Skin(frame, kind or "frame")
 	return frame
+end
+
+-- Typography is part of the hierarchy too. `GameFontNormal` is bright yellow,
+-- which is useful for one Blizzard heading but overwhelming when every mount
+-- name inherits it. Register the semantic role once and let each theme choose
+-- the colour without changing the font, size, copy, or layout.
+local function skinText(fontString, spec)
+	if not (fontString and fontString.SetTextColor and spec) then return end
+	local active = T.Active()
+	local c = PALETTE[active] or PALETTE.blizzard
+	local color
+	if active == "modern" then
+		color = spec.role == "accent" and c.accent
+			or spec.role == "muted" and c.muted
+			or spec.role == "info" and { 0.39, 0.84, 1.00 }
+			or c.text
+	elseif active == "elvui" then
+		color = spec.role == "accent" and c.accent
+			or spec.role == "muted" and { 0.62, 0.62, 0.62 }
+			or spec.role == "info" and c.accent
+			or { 0.90, 0.90, 0.90 }
+	else
+		color = spec.original
+	end
+	if color then fontString:SetTextColor(color[1], color[2], color[3], color[4] or 1) end
+end
+
+function T.RegisterText(fontString, role)
+	if not fontString then return fontString end
+	local spec = textRegistry[fontString]
+	if not spec then
+		local original = { 1, 1, 1, 1 }
+		if fontString.GetTextColor then
+			local ok, r, g, b, a = pcall(fontString.GetTextColor, fontString)
+			if ok then original = { r, g, b, a or 1 } end
+		end
+		spec = { original = original }
+		textRegistry[fontString] = spec
+	end
+	spec.role = role or "primary"
+	skinText(fontString, spec)
+	return fontString
+end
+
+local function skinSurface(texture, role)
+	if not texture then return end
+	local active = T.Active()
+	if active == "modern" then
+		local path = role == "sidebar" and MODERN_ASSET.sidebar
+			or role == "utility" and MODERN_ASSET.utility
+			or role == "card" and MODERN_ASSET.cardInset
+			or MODERN_ASSET.content
+		texture:SetTexture(path)
+		if role == "utility" then
+			texture:SetVertexColor(0.78, 0.74, 0.68, 0.96)
+		elseif role == "card" then
+			texture:SetVertexColor(0.74, 0.71, 0.66, 0.96)
+		else
+			texture:SetVertexColor(0.70, 0.68, 0.64, 0.96)
+		end
+	elseif active == "elvui" then
+		texture:SetColorTexture(0.055, 0.055, 0.055, role == "card" and 0.82 or 0.94)
+	else
+		-- Blizzard keeps its ornate outer frame, but a quiet pane tint still
+		-- distinguishes navigation/list/detail regions instead of one black void.
+		local warm = role == "sidebar" and { 0.055, 0.045, 0.035, 0.62 }
+			or { 0.035, 0.035, 0.050, 0.52 }
+		texture:SetColorTexture(warm[1], warm[2], warm[3], warm[4])
+	end
+	texture:SetAlpha(1)
+end
+
+function T.RegisterSurface(texture, role)
+	if not texture then return texture end
+	surfaceRegistry[texture] = role or "content"
+	skinSurface(texture, role or "content")
+	return texture
+end
+
+-- Hairline rules carry hierarchy without turning every region into a heavy
+-- box. They are semantic so the shared layout can use warm gold in Modern,
+-- Blizzard gold in the stock look, and the configured ElvUI accent.
+local function skinRule(texture, strength)
+	if not texture then return end
+	local active = T.Active()
+	local c = PALETTE[active] or PALETTE.blizzard
+	local alpha = strength == "strong" and 0.78 or 0.38
+	texture:SetColorTexture(c.border[1], c.border[2], c.border[3], alpha)
+	texture:SetAlpha(1)
+end
+
+function T.RegisterRule(texture, strength)
+	if not texture then return texture end
+	ruleRegistry[texture] = strength or "subtle"
+	skinRule(texture, strength or "subtle")
+	return texture
+end
+
+-- Vaultloom's compact rounded icon silhouette is one of the details that
+-- makes its rows feel designed rather than assembled from stock widgets.
+-- Masks are content geometry, so keeping them across themes improves all
+-- three looks without interfering with Blizzard or ElvUI chrome.
+function T.RoundIcon(owner, texture)
+	if not (owner and texture and owner.CreateMaskTexture and texture.AddMaskTexture) then
+		return texture
+	end
+	if texture.mmRoundedMask then return texture end
+	local mask = owner:CreateMaskTexture(nil, "ARTWORK")
+	mask:SetTexture(MODERN_ASSET.roundedMask,
+		"CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+	mask:SetAllPoints(texture)
+	texture:AddMaskTexture(mask)
+	texture.mmRoundedMask = mask
+	return texture
 end
 
 ------------------------------------------------------------
@@ -603,6 +1070,20 @@ local function inferKind(child)
 		end
 		return "glyph"
 	end
+	-- Scroll-box element buttons do not expose a single GetFontString; their
+	-- labels are regions. Treating those wide, shallow rows as ACTION buttons
+	-- stretched button chrome across the entire list and produced the repeated
+	-- heavy gold boxes seen in the Modern screenshot.
+	if (not text or text == "") and h and h > 24 and h <= 60 and child.GetRegions then
+		local okRegions, regions = pcall(function() return { child:GetRegions() } end)
+		if okRegions then
+			for _, region in ipairs(regions) do
+				if region and region.GetObjectType and region:GetObjectType() == "FontString" then
+					return "row"
+				end
+			end
+		end
+	end
 	return "button"
 end
 
@@ -629,6 +1110,9 @@ function T.ReskinAll()
 	for frame, kind in pairs(registry) do
 		if frame.IsObjectType then T.Skin(frame, kind) end
 	end
+	for fontString, spec in pairs(textRegistry) do skinText(fontString, spec) end
+	for texture, role in pairs(surfaceRegistry) do skinSurface(texture, role) end
+	for texture, strength in pairs(ruleRegistry) do skinRule(texture, strength) end
 	-- re-sweep top-level windows: scroll rows are recycled and new ones may
 	-- have appeared since the last pass
 	local c = T.Colors()
@@ -648,10 +1132,16 @@ function T.ReskinAll()
 end
 
 function T.Set(name)
+	if name == "auto" then name = nil end
+	if name ~= nil and name ~= "modern" and name ~= "blizzard" and name ~= "elvui" then
+		MM:Print("Unknown theme '%s'. Use auto, modern, blizzard, or elvui.", tostring(name))
+		return false
+	end
 	MM.db.theme = name
 	T.ReskinAll()
-	MM:Print("Theme set to %s.%s", name,
-		name == "elvui" and "" or " (ElvUI detected — /mm theme elvui to switch back)")
+	local label = name or ("auto (" .. T.Auto() .. ")")
+	MM:Print("Theme set to %s.", label)
+	return true
 end
 
 ------------------------------------------------------------

@@ -99,6 +99,7 @@ local function build()
 		row.icon:SetSize(18, 18)
 		row.icon:SetPoint("LEFT", 0, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+		MM.Theme.RoundIcon(row, row.icon)
 
 		row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		row.text:SetPoint("LEFT", row.icon, "RIGHT", 5, 0)
@@ -353,5 +354,8 @@ MM:On("MM_ROUTE_STOPPED", syncStopButton)
 
 MM:On("MM_PLAN_CHANGED", function() MM.UI.RefreshCompact() end)
 MM:On("MM_ROUTE_ADVANCED", function() MM.UI.RefreshCompact() end)
+-- The route landing is its own event now. Without this the compact list would
+-- keep showing the previous route until the player happened to advance.
+MM:On("MM_ROUTE_BUILT", function() MM.UI.RefreshCompact() end)
 MM:On("MM_SCANNED", function() MM.UI.RefreshCompact() end)
 MM:On("MM_TRADINGPOST", function() MM.UI.RefreshCompact() end)

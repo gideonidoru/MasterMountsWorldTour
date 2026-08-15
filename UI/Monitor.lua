@@ -61,8 +61,10 @@ local function build()
 	frame.icon:SetSize(36, 36)
 	frame.icon:SetPoint("TOPLEFT", 10, -26)
 	frame.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+	MM.Theme.RoundIcon(frame, frame.icon)
 	frame.iconPlate:SetPoint("TOPLEFT", frame.icon, -2, 2)
 	frame.iconPlate:SetPoint("BOTTOMRIGHT", frame.icon, 2, -2)
+	MM.Theme.RoundIcon(frame, frame.iconPlate)
 
 	-- The NAME is a title and stays on one line beside the icon; a clipped
 	-- title still identifies the goal.
@@ -71,6 +73,7 @@ local function build()
 	frame.name:SetPoint("RIGHT", -10, 0)
 	frame.name:SetJustifyH("LEFT")
 	frame.name:SetWordWrap(false)
+	MM.Theme.RegisterText(frame.name, "primary")
 
 	-- THE INSTRUCTION MUST FINISH ITS SENTENCE.
 	--
@@ -261,6 +264,9 @@ MM:On("MM_TOGGLE_MONITOR", function()
 	MM.UI.ToggleMonitor()
 end)
 MM:On("MM_ROUTE_ADVANCED", refresh)
+-- The monitor states the goal and the stop count, and a rebuild can change
+-- both without the index moving at all.
+MM:On("MM_ROUTE_BUILT", refresh)
 MM:On("MM_ROUTE_STOPPED", function() MM.UI.HideMonitor() end)
 MM:On("MM_ATTEMPT", refresh)
 MM:On("MM_SCANNED", refresh)

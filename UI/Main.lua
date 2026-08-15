@@ -595,54 +595,69 @@ local function buildMain()
 	if frame.SetPortraitToAsset then
 		portraitSet = pcall(frame.SetPortraitToAsset, frame, PORTRAIT)
 	end
-	-- Tag it as ours either way. The flat theme strips `portrait` and everything
-	-- in PortraitContainer as Blizzard chrome, and our icon lives in that exact
-	-- slot -- without the tag it vanishes the moment you leave the Blizzard skin.
-	local function claim(tex)
-		if type(tex) == "table" then tex.mmKeep = true end
-		return tex
-	end
-	claim(frame.PortraitContainer and frame.PortraitContainer.portrait)
-	claim(frame.portrait)
-
 	if not portraitSet then
-		local tex = claim((frame.PortraitContainer and frame.PortraitContainer.portrait)
-			or frame.portrait)
+		local tex = (frame.PortraitContainer and frame.PortraitContainer.portrait)
+			or frame.portrait
 		if tex then
 			tex:SetTexture(PORTRAIT)
 			tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 			portraitSet = true
 		end
 	end
-	if not portraitSet then
-		-- draw our own round badge in the corner
-		local badge = frame:CreateTexture(nil, "OVERLAY")
-		badge:SetSize(36, 36)
-		badge:SetPoint("TOPLEFT", -5, 7)
-		badge:SetTexture(PORTRAIT)
-		local mask = frame:CreateMaskTexture()
-		mask:SetAllPoints(badge)
-		mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask",
-			"CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-		badge:AddMaskTexture(mask)
-	end
+
+	-- Modern has its own compact identity block instead of inheriting the
+	-- journal template's enormous portrait. It deliberately overlaps the title
+	-- and navigation rails by a few pixels, echoing a small wax seal rather than
+	-- a second panel. Theme.lua owns its visibility so Blizzard can restore the
+	-- native portrait and ElvUI can keep its own chrome.
+	local badgeRing = frame:CreateTexture(nil, "ARTWORK", nil, 5)
+	badgeRing:SetSize(46, 46)
+	badgeRing:SetPoint("TOPLEFT", 10, -7)
+	badgeRing:SetTexture(MM.MEDIA .. "Modern\\rounded_color_border.tga")
+	badgeRing:SetVertexColor(0.92, 0.76, 0.24, 1)
+	frame.mmModernLogoRing = badgeRing
+
+	local badge = frame:CreateTexture(nil, "ARTWORK", nil, 6)
+	badge:SetSize(38, 38)
+	badge:SetPoint("CENTER", badgeRing, "CENTER")
+	badge:SetTexture(PORTRAIT)
+	badge:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	MM.Theme.RoundIcon(frame, badge)
+	frame.mmModernLogo = badge
+
+	local modernTitle = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	modernTitle:SetPoint("TOP", 0, -8)
+	modernTitle:SetText("MASTER MOUNTS")
+	pcall(modernTitle.SetSpacing, modernTitle, 1)
+	MM.Theme.RegisterText(modernTitle, "accent")
+	frame.mmModernTitleText = modernTitle
+
+	-- A dedicated navigation rail keeps tabs, collection progress and utility
+	-- actions in one predictable band. The same geometry benefits every theme;
+	-- only its material changes.
+	local navSurface = frame:CreateTexture(nil, "BORDER", nil, 2)
+	navSurface:SetPoint("TOPLEFT", 4, -26)
+	navSurface:SetPoint("TOPRIGHT", -4, -26)
+	navSurface:SetHeight(36)
+	MM.Theme.RegisterSurface(navSurface, "utility")
+	frame.mmNavSurface = navSurface
 
 	-- Title-bar buttons: compact mode + options, left of the close button.
 	-- Plain labeled buttons — they render identically on every client build.
 	-- Header-area buttons (in the frame body, not the title bar — the title
 	-- bar proved unreliable across client builds for anchoring custom buttons)
 	local compactBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-	compactBtn:SetSize(84, 22)
+	compactBtn:SetSize(78, 24)
 	compactBtn:SetText("Compact")
 	compactBtn:SetFrameLevel(frame:GetFrameLevel() + 10)
-	compactBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -26, -30)
+	compactBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -12, -32)
 	compactBtn:SetScript("OnClick", function()
 		frame:Hide()
 		MM:Fire("MM_TOGGLE_COMPACT")
 	end)
 
 	local gearBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-	gearBtn:SetSize(72, 22)
+	gearBtn:SetSize(70, 24)
 	gearBtn:SetText("Options")
 	gearBtn:SetFrameLevel(frame:GetFrameLevel() + 10)
 	gearBtn:SetPoint("RIGHT", compactBtn, "LEFT", -4, 0)
@@ -655,8 +670,8 @@ local function buildMain()
 
 	-- collection progress, top right
 	local progress = CreateFrame("StatusBar", nil, frame)
-	progress:SetSize(220, 14)
-	progress:SetPoint("TOPRIGHT", -196, -34)
+	progress:SetSize(198, 12)
+	progress:SetPoint("TOPRIGHT", -174, -38)
 	local pframe = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 	pframe:SetPoint("TOPLEFT", progress, -3, 3)
 	pframe:SetPoint("BOTTOMRIGHT", progress, 3, -3)
@@ -679,8 +694,8 @@ local function buildMain()
 	-- content panels fill the inset, with a moody gradient backdrop
 	local function makePanel()
 		local p = CreateFrame("Frame", nil, frame)
-		p:SetPoint("TOPLEFT", 8, -60)
-		p:SetPoint("BOTTOMRIGHT", -8, 30)
+		p:SetPoint("TOPLEFT", 8, -68)
+		p:SetPoint("BOTTOMRIGHT", -8, 10)
 		local bg = p:CreateTexture(nil, "BACKGROUND")
 		bg:SetAllPoints()
 		local pc = MM.Theme.Colors()
@@ -690,6 +705,11 @@ local function buildMain()
 				CreateColor(0.02, 0.03, 0.07, 0.95),
 				CreateColor(0.08, 0.09, 0.16, 0.95))
 		end)
+		-- Semantic content surface: Modern uses Vaultloom's warm stone plate,
+		-- ElvUI renders the same region flat, and Blizzard keeps the native
+		-- journal gradient underneath. The hierarchy is shared; only material
+		-- changes with the theme.
+		MM.Theme.Register(p, "content", false)
 		p:Hide()
 		return p
 	end
@@ -707,14 +727,15 @@ local function buildMain()
 			tab:SetSize(110, 24)
 		end
 		tab:SetText(tabName)
+		tab:SetSize(104, 24)
 		tab:SetID(i)
 		if i == 1 then
-			tab:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 12, 2)
+			tab:SetPoint("TOPLEFT", frame, "TOPLEFT", 62, -32)
 		else
 			tab:SetPoint("LEFT", frame.Tabs[i - 1], "RIGHT", 4, 0)
 		end
 		tab:SetScript("OnClick", function(self) UI:SelectTab(self:GetID()) end)
-		MM.Theme.Register(tab, "button")
+		MM.Theme.Register(tab, "tab")
 		frame.Tabs[i] = tab
 	end
 	pcall(PanelTemplates_SetNumTabs, frame, 2)

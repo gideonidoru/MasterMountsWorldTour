@@ -79,6 +79,7 @@ local function initMissingRow(row, entry)
 		row.icon:SetSize(32, 32)
 		row.icon:SetPoint("LEFT", 6, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+		MM.Theme.RoundIcon(row, row.icon)
 
 		-- THE NAME AND ITS LINE ARE ONE BLOCK.
 		--
@@ -96,6 +97,7 @@ local function initMissingRow(row, entry)
 		row.name:SetPoint("RIGHT", -46, 0)
 		row.name:SetJustifyH("LEFT")
 		row.name:SetWordWrap(false)
+		MM.Theme.RegisterText(row.name, "primary")
 
 		row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		row.sub:SetPoint("TOPLEFT", row.name, "BOTTOMLEFT", 0, -2)
@@ -181,6 +183,10 @@ local function initMissingRow(row, entry)
 			if self.mmHitPlus then self.mmHitPlus = false return end
 			UI.RowClick(self.entry, mouse)
 		end)
+		-- Scroll rows are born after the window's initial SkinTree pass. Register
+		-- them at creation time so every recycled row receives its card surface,
+		-- not only the handful that happened to exist during a later reskin.
+		MM.Theme.Register(row, "row", false)
 	end
 
 	row.entry = entry
@@ -232,6 +238,7 @@ local function initPlanRow(row, data)
 		row.icon:SetSize(32, 32)
 		row.icon:SetPoint("LEFT", 40, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+		MM.Theme.RoundIcon(row, row.icon)
 
 		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 8, -1)
@@ -240,6 +247,7 @@ local function initPlanRow(row, data)
 		row.name:SetPoint("RIGHT", -46, 0)
 		row.name:SetJustifyH("LEFT")
 		row.name:SetWordWrap(false)
+		MM.Theme.RegisterText(row.name, "primary")
 
 		row.est = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		row.est:SetPoint("TOPLEFT", row.name, "BOTTOMLEFT", 0, -2)
@@ -282,6 +290,7 @@ local function initPlanRow(row, data)
 			if UI.CursorOver(self.remove) then return self.mmToggle(self) end
 			UI.RowClick(self.entry, mouse)
 		end)
+		MM.Theme.Register(row, "row", false)
 	end
 
 	row.entry = entry
@@ -349,12 +358,59 @@ function UI.BuildPlanner(panel)
 	MM.Planner.RestoreFilters()
 	local saved = MM.db and MM.db.ui or {}
 
+	-- The two halves are different semantic regions, not merely coordinates on
+	-- one black canvas. Texture regions stay below every FontString/ScrollBox,
+	-- while Theme maps them to Vaultloom stone, Blizzard pane tint, or ElvUI
+	-- flat surfaces. This also gives a short list a deliberate resting surface
+	-- instead of the large accidental black void visible in the first pass.
+	local leftSurface = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
+	leftSurface:SetPoint("TOPLEFT", 4, -62)
+	leftSurface:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 438, 4)
+	MM.Theme.RegisterSurface(leftSurface, "sidebar")
+	local rightSurface = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
+	rightSurface:SetPoint("TOPLEFT", 464, -62)
+	rightSurface:SetPoint("BOTTOMRIGHT", -24, 4)
+	MM.Theme.RegisterSurface(rightSurface, "content")
+
+	-- Each pane is a real visual region, not merely a differently coloured half
+	-- of the same canvas. Hairline edges provide the nested structure seen in
+	-- polished Warcraft interfaces without building heavy boxes around every
+	-- control. Because the rules are semantic, ElvUI and Blizzard inherit the
+	-- same hierarchy with their own accent colour.
+	local function borderSurface(surface)
+		local edges = {}
+		local top = panel:CreateTexture(nil, "ARTWORK")
+		top:SetPoint("TOPLEFT", surface, "TOPLEFT")
+		top:SetPoint("TOPRIGHT", surface, "TOPRIGHT")
+		top:SetHeight(1)
+		edges[#edges + 1] = top
+		local bottom = panel:CreateTexture(nil, "ARTWORK")
+		bottom:SetPoint("BOTTOMLEFT", surface, "BOTTOMLEFT")
+		bottom:SetPoint("BOTTOMRIGHT", surface, "BOTTOMRIGHT")
+		bottom:SetHeight(1)
+		edges[#edges + 1] = bottom
+		local left = panel:CreateTexture(nil, "ARTWORK")
+		left:SetPoint("TOPLEFT", surface, "TOPLEFT")
+		left:SetPoint("BOTTOMLEFT", surface, "BOTTOMLEFT")
+		left:SetWidth(1)
+		edges[#edges + 1] = left
+		local right = panel:CreateTexture(nil, "ARTWORK")
+		right:SetPoint("TOPRIGHT", surface, "TOPRIGHT")
+		right:SetPoint("BOTTOMRIGHT", surface, "BOTTOMRIGHT")
+		right:SetWidth(1)
+		edges[#edges + 1] = right
+		for _, edge in ipairs(edges) do MM.Theme.RegisterRule(edge, "subtle") end
+		return edges
+	end
+	panel.mmLeftPaneRules = borderSurface(leftSurface)
+	panel.mmRightPaneRules = borderSurface(rightSurface)
+
 	-- toolbar band behind the button row
 	local band = panel:CreateTexture(nil, "BORDER")
 	band:SetPoint("TOPLEFT")
 	band:SetPoint("TOPRIGHT")
 	band:SetHeight(30)
-	band:SetColorTexture(0, 0, 0, 0.35)
+	MM.Theme.RegisterSurface(band, "utility")
 
 	-- "All Missing" trimmed to "All": the row is 1000px of window and the long
 	-- form put the last control within a few pixels of the edge.
@@ -437,9 +493,25 @@ function UI.BuildPlanner(panel)
 	--
 	-- The router says when it lands. Repainting then is what makes an async
 	-- build invisible instead of confusing.
-	MM:On("MM_ROUTE_ADVANCED", function()
-		if panel:IsShown() and UI.RefreshPlanner then UI.RefreshPlanner() end
-	end)
+	--
+	-- TWO EVENTS, TWO MEANINGS. MM_ROUTE_BUILT is "a new route exists";
+	-- MM_ROUTE_ADVANCED is "the current goal moved". One event used to carry
+	-- both, so nothing could listen for a finished build without also being
+	-- woken by every step along it.
+	local repainting = false
+	local function repaintForRoute()
+		-- RefreshPlanner asks the router for a route, which on a cache hit is
+		-- free and on a miss starts a build that lands here again. The guard
+		-- makes that at most one repaint deep rather than a chain of them.
+		if repainting then return end
+		if not (panel:IsShown() and UI.RefreshPlanner) then return end
+		repainting = true
+		local ok, err = pcall(UI.RefreshPlanner)
+		repainting = false
+		if not ok then error(err, 0) end
+	end
+	MM:On("MM_ROUTE_BUILT", repaintForRoute)
+	MM:On("MM_ROUTE_ADVANCED", repaintForRoute)
 
 	local clearBtn = UI.MakeButton(panel, "Clear Plan")
 	clearBtn:SetPoint("LEFT", easyBtn, "RIGHT", 6, 0)
@@ -507,10 +579,7 @@ function UI.BuildPlanner(panel)
 	local leftLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	leftLabel:SetPoint("LEFT", leftHeader, "LEFT", 0, 0)
 	leftLabel:SetText("Missing Mounts")
-	local leftLine = panel:CreateTexture(nil, "ARTWORK")
-	leftLine:SetPoint("TOPLEFT", 8, -60)
-	leftLine:SetSize(430, 1)
-	leftLine:SetColorTexture(0.85, 0.65, 0.2, 0.4)
+	MM.Theme.RegisterText(leftLabel, "accent")
 
 	-- Right-aligned to the end of its own column rather than butted against the
 	-- label. Anchored to the label's RIGHT edge, its position depended on the
@@ -586,10 +655,7 @@ function UI.BuildPlanner(panel)
 
 	rightLabel:SetPoint("LEFT", rightHeader, "LEFT", 0, 0)
 	rightLabel:SetText("Farm Plan (route order)")
-	local rightLine = panel:CreateTexture(nil, "ARTWORK")
-	rightLine:SetPoint("TOPLEFT", 470, -60)
-	rightLine:SetSize(480, 1)
-	rightLine:SetColorTexture(0.85, 0.65, 0.2, 0.4)
+	MM.Theme.RegisterText(rightLabel, "accent")
 
 	panel.planEmpty = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	panel.planEmpty:SetPoint("TOPLEFT", 540, -140)
@@ -777,15 +843,12 @@ function UI.BuildPlanner(panel)
 	-- relative frame throws at run time -- invisible to a syntax check, and
 	-- the button is built well before the list it belongs to.
 	--
-	-- Anchored to BOTH edges of the plan column rather than given a fixed
-	-- width and centred. Two anchors make the width fall out of the layout, so
-	-- it stays centred and correctly proportioned however the column is sized
-	-- -- and it fills the empty band that a 170px button left on either side.
-	-- The inset is what keeps it a button rather than a bar.
+	-- Keep the primary action compact and centered. A nearly full-width button
+	-- read as a footer bar and gave the bottom of the pane more visual weight
+	-- than the route itself.
 	routeButton:ClearAllPoints()
-	routeButton:SetPoint("BOTTOMLEFT", planBox, "BOTTOMLEFT", 76, -42)
-	routeButton:SetPoint("BOTTOMRIGHT", planBox, "BOTTOMRIGHT", -76, -42)
-
+	routeButton:SetPoint("BOTTOM", planBox, "BOTTOM", 0, -42)
+	routeButton:SetWidth(240)
 	routeButton:SetHeight(34)
 end
 
@@ -867,8 +930,15 @@ function UI.RefreshPlannerNow()
 		end
 	end
 
-	-- ordered as the route would run it
-	MM.Router:Build()
+	-- Ordered as the route would run it.
+	--
+	-- ASYNCHRONOUS ON PURPOSE, and the read below is deliberately of whatever
+	-- route is currently complete: a repaint must never freeze the window to
+	-- chart a plan. While a build is in flight this pane shows the previous
+	-- complete route, and the empty-state text below says "charting" rather
+	-- than "empty" so a route that has not landed yet cannot read as a plan
+	-- that lost its goals. MM_ROUTE_BUILT brings us back when it lands.
+	MM.Router:Build()   -- audit-allow: the stale read is the intended behaviour here
 	-- A SESSION CONSTRAINS THIS LIST.
 	--
 	-- Picking "45 minutes" was computing the right answer, announcing it in

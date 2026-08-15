@@ -47,8 +47,10 @@ local function initRow(row, entry)
 		row.icon:SetSize(32, 32)
 		row.icon:SetPoint("LEFT", 10, 0)
 		row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+		MM.Theme.RoundIcon(row, row.icon)
 		row.iconPlate:SetPoint("TOPLEFT", row.icon, -2, 2)
 		row.iconPlate:SetPoint("BOTTOMRIGHT", row.icon, 2, -2)
+		MM.Theme.RoundIcon(row, row.iconPlate)
 
 		row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		row.name:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 8, -2)
@@ -83,6 +85,9 @@ local function initRow(row, entry)
 		row:SetScript("OnEnter", function(self) UI.ShowMountTooltip(self, self.entry) end)
 		row:SetScript("OnLeave", function() GameTooltip:Hide() end)
 		row:SetScript("OnClick", function(self, mouse) UI.RowClick(self.entry, mouse) end)
+		-- Scroll rows are allocated lazily, after the window-wide theme sweep.
+		-- Register at birth so the visual card contract applies immediately.
+		MM.Theme.Register(row, "row", false)
 	end
 
 	row.entry = entry

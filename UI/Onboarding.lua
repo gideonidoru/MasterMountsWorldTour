@@ -208,8 +208,8 @@ local function buildSteps()
 			body = "Master Mounts matches your interface automatically. "
 				.. "Change it here if you would rather it did not.",
 			draw = function(host)
-				-- nil means automatic, which is the shipped default and stays
-				-- correct if the player installs or removes ElvUI later.
+				-- nil means automatic: ElvUI when installed, Modern otherwise.
+				-- An explicit choice always wins.
 				local set = MM.db.theme
 				local hasElv = MM.Theme.HasElvUI()
 				local apply = function(v)
@@ -221,8 +221,11 @@ local function buildSteps()
 				push(function(y) return makeCard(host, "theme", nil,
 					"Automatic  |cff8a8a8a(recommended)|r",
 					hasElv and "ElvUI is installed, so it will use the ElvUI look."
-						or "Uses the Blizzard look. Switches itself if you install ElvUI later.",
+						or "Uses the Modern look. Switches itself if you install ElvUI later.",
 					y, set == nil) end).onPick = apply
+				push(function(y) return makeCard(host, "theme", "modern", "Modern",
+					"Textured charcoal panels with warm gold accents.",
+					y, set == "modern") end).onPick = apply
 				push(function(y) return makeCard(host, "theme", "blizzard", "Blizzard",
 					"Gold borders and the parchment feel of the default UI.",
 					y, set == "blizzard") end).onPick = apply

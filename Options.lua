@@ -248,21 +248,22 @@ local function buildPanel()
 	label("Sharing is opt-in. Your collection is whispered only to a player who asks, never broadcast.")
 
 	heading("|cffffd84dAppearance|r")
-	local THEMES = { "auto", "blizzard", "elvui" }
-	local THEME_LABEL = { auto = "Auto", blizzard = "Blizzard", elvui = "ElvUI" }
+	local THEMES = { "auto", "modern", "blizzard", "elvui" }
+	local THEME_LABEL = {
+		auto = "Auto", modern = "Modern", blizzard = "Blizzard", elvui = "ElvUI",
+	}
 	-- A DROPDOWN, like every other list of choices in the addon.
 	--
 	-- This was a button that opened a radio menu -- the same gesture the
 	-- planner and collection filters used, and the same problem: a control that
-	-- opens a list should look like one. The "(ElvUI)" suffix on Auto stays,
-	-- because Auto without saying what it resolved to is a setting you cannot
-	-- check.
+	-- opens a list should look like one. Auto includes its resolved theme because
+	-- a setting whose visible result is hidden is a setting you cannot check.
 	local themeBtn
 	local function themeLabel()
 		local set = MM.db.theme
 		local text = THEME_LABEL[set or "auto"] or "Auto"
 		if not set then
-			text = text .. " (" .. (MM.Theme.HasElvUI() and "ElvUI" or "Blizzard") .. ")"
+			text = text .. " (" .. (THEME_LABEL[MM.Theme.Auto()] or "Modern") .. ")"
 		end
 		return "Theme: " .. text
 	end
@@ -287,7 +288,7 @@ local function buildPanel()
 				local labelText = THEME_LABEL[v]
 				if v == "auto" then
 					labelText = labelText .. " ("
-						.. (MM.Theme.HasElvUI() and "ElvUI" or "Blizzard") .. ")"
+						.. (THEME_LABEL[MM.Theme.Auto()] or "Modern") .. ")"
 				elseif v == "elvui" and not MM.Theme.HasElvUI() then
 					-- Offered on purpose, and honest about what it gives you.
 					-- The palette is ours; only ElvUI's own skinning of
@@ -317,7 +318,8 @@ local function buildPanel()
 	place(themeBtn, 26)
 	label(MM.Theme.HasElvUI()
 		and "ElvUI detected - used automatically on Auto."
-		or "ElvUI is not installed; Auto uses the Blizzard look.")
+		or ("Auto currently uses " .. (THEME_LABEL[MM.Theme.Auto()] or "Modern")
+			.. ". If ElvUI is installed later, Auto will use its skin instead."))
 
 	heading("|cffffd84dTry it|r")
 	local testBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
