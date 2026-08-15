@@ -1953,12 +1953,14 @@ end
 -- Rewrite the plan's stored order into the optimized route order:
 -- actionable goals in travel order (cheap wins first), then locationless
 -- actionable goals, then everything currently blocked (lockout/event).
-function P:Optimize()
-	-- Charting is the ONE moment the anchor moves. Everything downstream --
-	-- the ease score's travel term, the route's first leg -- is measured from
-	-- here, and it holds until you edit the plan again.
-	if P.SetAnchor then P.SetAnchor() end
-	MM.Router:Build()
+-- Rewrite cdb.plan into the order the COMPLETED route puts it in.
+--
+-- Split out from Optimize so it can run as a build-completion callback. It must
+-- never run against a route that is still being charted: doing so rewrote the
+-- plan into the ORDER BEFORE LAST, which then looked like the optimizer
+-- shuffling goals for no reason.
+local function rewritePlanFromRoute()
+	local R = MM.Router
 	local order, seen = {}, {}
 	local function push(spellID)
 		if spellID and not seen[spellID] then
@@ -1966,18 +1968,51 @@ function P:Optimize()
 			tinsert(order, spellID)
 		end
 	end
-	for _, step in ipairs(MM.Router.route) do push(step.entry.spellID) end
-	for _, entry in ipairs(MM.Router.unrouted) do push(entry.spellID) end
-	for _, d in ipairs(MM.Router.deferred) do push(d.entry.spellID) end
+	for _, step in ipairs(R.route) do push(step.entry.spellID) end
+	for _, entry in ipairs(R.unrouted) do push(entry.spellID) end
+	for _, d in ipairs(R.deferred) do push(d.entry.spellID) end
 	for _, item in ipairs(MM.cdb.plan) do push(item.spellID) end
+
+	-- KEEP EACH GOAL'S OWN `added` TIMESTAMP.
+	--
+	-- Every item was restamped with one fresh timestamp on every optimize, so
+	-- "when did I plan this" became "when was the route last charted" -- the
+	-- same value for all of them, rewritten several times an hour. Anything
+	-- sorting or reporting by age was reading the chart clock.
+	local addedFor = {}
+	for _, item in ipairs(MM.cdb.plan) do
+		if item.spellID and item.added then addedFor[item.spellID] = item.added end
+	end
 
 	wipe(MM.cdb.plan)
 	local now = GetServerTime()
 	for _, spellID in ipairs(order) do
-		tinsert(MM.cdb.plan, { spellID = spellID, added = now })
+		tinsert(MM.cdb.plan, { spellID = spellID, added = addedFor[spellID] or now })
 	end
-	MM:Fire("MM_PLAN_CHANGED")
-	return #MM.Router.route, #MM.Router.deferred
+	return #R.route, #R.deferred
+end
+
+-- Rewrite the plan's stored order into the optimized route order:
+-- actionable goals in travel order (cheap wins first), then locationless
+-- actionable goals, then everything currently blocked (lockout/event).
+--
+-- `onDone` is called with (stops, deferred) once the rewrite has happened. The
+-- rewrite waits on the build, so a caller that needs the counts must wait too.
+function P:Optimize(onDone)
+	-- Charting is the ONE moment the anchor moves. Everything downstream --
+	-- the ease score's travel term, the route's first leg -- is measured from
+	-- here, and it holds until you edit the plan again.
+	if P.SetAnchor then P.SetAnchor() end
+	-- THE REWRITE WAITS FOR THE ROUTE.
+	--
+	-- This called the asynchronous Build and reordered the plan on the next
+	-- line, so it sorted the plan by the PREVIOUS route every single time.
+	MM.Router.AfterBuild(false, function()
+		local stops, waiting = rewritePlanFromRoute()
+		-- ONE settled notification, after the plan is in its final shape.
+		MM:Fire("MM_PLAN_CHANGED")
+		if onDone then onDone(stops, waiting) end
+	end)
 end
 
 ------------------------------------------------------------
@@ -2032,11 +2067,26 @@ local function scheduleOptimize()
 		-- would itself only appear after the client had finished being
 		-- unresponsive. Handing the frame back once lets it show first.
 		C_Timer.After(0, function()
-			local ok, err = pcall(function() P:Optimize() end)
-			optimizing = false
-			MM:Fire("MM_PLAN_PROGRESS", nil)
-			if not ok and MM.Print then
-				MM:Print("|cffff5555auto-optimize failed|r -- %s", tostring(err):sub(-140))
+			local released = false
+			local function done()
+				if released then return end
+				released = true
+				optimizing = false
+				MM:Fire("MM_PLAN_PROGRESS", nil)
+			end
+			-- THE LOCK IS HELD UNTIL THE REWRITE HAS ACTUALLY HAPPENED.
+			--
+			-- Optimize completes asynchronously and fires MM_PLAN_CHANGED at the
+			-- end, which is the event that schedules it. Releasing when Optimize
+			-- RETURNS rather than when it FINISHES would let its own notification
+			-- queue the next pass, and that pass the one after: an endless
+			-- build -> plan change -> build loop with nothing to end it.
+			local ok, err = pcall(function() P:Optimize(done) end)
+			if not ok then
+				done()
+				if MM.Print then
+					MM:Print("|cffff5555auto-optimize failed|r -- %s", tostring(err):sub(-140))
+				end
 			end
 		end)
 	end)

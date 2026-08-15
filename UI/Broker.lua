@@ -115,6 +115,10 @@ end
 
 MM:On("MM_SCANNED", updateBrokerText)
 MM:On("MM_ROUTE_ADVANCED", updateBrokerText)
+-- A finished build changes the stop count this line reports, which a goal
+-- change does not. They were one event; separating them means each surface
+-- subscribes to the one it actually depends on.
+MM:On("MM_ROUTE_BUILT", updateBrokerText)
 MM:On("MM_ROUTE_STARTED", updateBrokerText)
 MM:On("MM_ROUTE_STOPPED", updateBrokerText)
 

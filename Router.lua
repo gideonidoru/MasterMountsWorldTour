@@ -284,6 +284,33 @@ local function stopLabel(stop)
 	return ("%s  |cffffd84d(%d mounts)|r"):format(place, n)
 end
 
+-- IDENTITY OF A STOP, IN ONE PLACE.
+--
+-- A step carries its mount as `entry`, and `entry.spellID` is the only spellID
+-- it has ever had -- makeStep never writes a `spellID` field onto the step
+-- itself. Three separate places asked a step for `stop.spellID` anyway, so all
+-- three silently read nil: the route anchor was never recorded, and the
+-- resume-by-identity search that depends on it therefore never matched
+-- anything. A rebuilt route always restarted at the top, which reads as the
+-- router forgetting where you were.
+local function stopSpellID(stop)
+	if not stop then return nil end
+	if stop.entry and stop.entry.spellID then return stop.entry.spellID end
+	local first = stop.members and stop.members[1]
+	return first and first.entry and first.entry.spellID or nil
+end
+
+-- Does this stop cover that goal -- as its own mount, or as one of the mounts
+-- batched into it?
+local function stopHolds(stop, spellID)
+	if not (stop and spellID) then return false end
+	if stop.entry and stop.entry.spellID == spellID then return true end
+	for _, m in ipairs(stop.members or {}) do
+		if m.entry and m.entry.spellID == spellID then return true end
+	end
+	return false
+end
+
 -- Merge steps into stops, preserving the order they were produced in.
 local function groupStops(steps)
 	local stops, byKey = {}, {}
@@ -504,6 +531,12 @@ local function travelMinutes(state, step, wantLegs)
 		local fi = state.mapID and C_Map.GetMapInfo(state.mapID)
 		local ti = step.mapID and C_Map.GetMapInfo(step.mapID)
 		if fi and ti and fi.name and ti.name then
+			-- REUSABLE BY CONSTRUCTION, on this branch.
+			--
+			-- MinutesFrom runs one search from the origin over the STATIC graph
+			-- -- taxi and transit edges only. No teleport is ever wired into it,
+			-- so an answer from it cannot have spent one, and saying so here is
+			-- a fact about the search rather than a guess about the answer.
 			if not wantLegs and MM.Journey.MinutesFrom then
 				-- ONE SEARCH FOR THE WHOLE POOL, not one per candidate.
 				--
@@ -523,15 +556,28 @@ local function travelMinutes(state, step, wantLegs)
 				if mins and (not flyMinutes or mins < flyMinutes) then
 					best = mins
 					method = { key = "journey:" .. tostring(step.mapID), taxi = true,
-						name = "multi-leg route" }
+						name = "multi-leg route", reusable = true }
 				end
 			else
-				local mins, legs = MM.Journey.Plan(fi.name, state.x, state.y,
-					ti.name, step.x, step.y, flyMinutes, state.mapID, step.mapID)
+				-- `state.used` GOES IN. Without it the planner re-offered the
+				-- same hearthstone as the first leg of every journey in the
+				-- route, and the whole plan was costed as though the player
+				-- carried one charge per stop.
+				local mins, legs, _, spends = MM.Journey.Plan(fi.name,
+					state.x, state.y, ti.name, step.x, step.y, flyMinutes,
+					state.mapID, step.mapID, state.used)
 				if mins then
 					best = mins
+					-- `spends` COMES BACK FROM THE PLANNER, structured.
+					--
+					-- A journey is tagged `taxi = true` because most of one can
+					-- be ridden again -- but a journey whose first leg is a
+					-- hearthstone plainly spends a charge, and the only way to
+					-- know that used to be to search the human-readable leg
+					-- description for the word "teleport".
 					method = { key = "journey:" .. tostring(step.mapID), taxi = true,
-						name = MM.Journey.Describe(legs) or "multi-leg route", legs = legs }
+						name = MM.Journey.Describe(legs) or "multi-leg route",
+						legs = legs, spends = spends, reusable = (spends == nil) }
 				end
 			end
 		end
@@ -547,16 +593,74 @@ local function travelMinutes(state, step, wantLegs)
 		for _, option in ipairs(costs) do
 			if not (state.used and state.used[option.key]) then
 				-- sorted ascending, so the first unspent one is the best one
-				if option.minutes < best then best, method = option.minutes, option.landing end
+				if option.minutes < best then
+					best = option.minutes
+					-- WRAPPED, not handed out raw. `option.landing` is a row of
+					-- the shared teleport snapshot; writing this leg's
+					-- bookkeeping onto it would write it onto every other stop
+					-- that priced the same option.
+					local landing = option.landing
+					method = { key = option.key, name = landing and landing.name,
+						verb = landing and landing.verb,
+						place = landing and landing.place,
+						landing = landing, taxi = false,
+						spends = { [option.key] = true }, reusable = false }
+				end
 				break
 			end
 		end
 	elseif MM.Teleports and MM.Teleports.TravelMinutes then
 		-- not precomputed (a caller outside Build): ask the slow way
-		return MM.Teleports.TravelMinutes(state.continent, state.world,
+		local mins, m = MM.Teleports.TravelMinutes(state.continent, state.world,
 			step.continent, step.world, state.used)
+		-- The same contract on the way out, so a caller cannot tell which path
+		-- answered it. This one returns a bare landing, and a landing is a
+		-- charge: it is exactly the case `not method.taxi` used to stand for.
+		if m and not m.spends and m.key then
+			m = { key = m.key, name = m.name, verb = m.verb, place = m.place,
+				landing = m.landing or m, taxi = false,
+				spends = { [m.key] = true }, reusable = false }
+		end
+		return mins, m
 	end
 	return best, method
+end
+
+-- THE ONE PLACE A LEG IS CHARGED TO THE ROUTE.
+--
+-- Four call sites decided this for themselves and three of them decided it
+-- differently: the chart-restore path spent EVERY method including taxis and
+-- journeys, the greedy path spent the placeholder from its numbers-only pass,
+-- and the two measuring paths spent only bare landings. So the route was costed
+-- under one rule, measured under a second and reported under a third.
+--
+-- `spends` is now filled in wherever a method is built, from structured data
+-- rather than from the shape of a label, and this reads nothing else.
+function R.SpendTravel(state, method)
+	if not (state and method and method.spends) then return end
+	state.used = state.used or {}
+	for key in pairs(method.spends) do state.used[key] = true end
+end
+
+-- Cost ONE leg from a travel state, WITHOUT changing it.
+--
+-- Exposed so the session fitter prices a leg exactly the way the route does.
+-- It had its own path into Teleports.TravelMinutes, which knows about teleports
+-- and flying and nothing about taxis, boats or portals -- so a session and the
+-- route it is a view of disagreed about the same chain, and the session was the
+-- one the player was reading.
+--
+-- `wantLegs` false is the numbers-only form: no leg descriptions, one cached
+-- search per origin instead of one Dijkstra per candidate. Anything comparing
+-- candidates in a loop wants it.
+function R.LegFrom(state, step, wantLegs)
+	return travelMinutes(state, step, wantLegs)
+end
+
+-- Carry a travel state forward onto a step. The one owner of that transition;
+-- three places used to write it out by hand and only one set every field.
+function R.AdvanceTravelState(state, step)
+	advanceState(state, step)
 end
 
 -- Does getting to this stop actually spend a teleport?
@@ -572,18 +676,24 @@ end
 --   a journey whose first leg is a teleport -- "teleport:Hearthstone Valdrakken,
 --   then portal to Orgrimmar, then fly" is the common shape, and it plainly
 --   uses a charge even though the method that won is the journey
+-- ASKED OF THE DATA, NOT OF THE PROSE.
+--
+-- This used to search the leg descriptions for a "teleport:" prefix, so the
+-- answer depended on a string built for a player to read -- and the resource it
+-- actually spent was not recoverable at all. Every method now carries `spends`,
+-- filled in where the method is built, and this is one lookup.
 function R.ArrivesByTeleport(stop)
 	local m = stop and stop.arriveBy
-	if not m then return false end
-	-- A landing is not a taxi, which is exactly how the route decides to mark
-	-- the charge spent -- so it is the same question, asked once more here.
-	if not m.taxi then return true end
-	for _, leg in ipairs(m.legs or {}) do
-		if type(leg.mode) == "string" and leg.mode:find("^teleport:") then
-			return true
-		end
-	end
+	if not (m and m.spends) then return false end
+	for _ in pairs(m.spends) do return true end
 	return false
+end
+
+-- Which charges this stop's arrival costs, as a set. Empty when the trip is
+-- rideable again -- a taxi, a boat, an ordinary flight.
+function R.TravelSpends(stop)
+	local m = stop and stop.arriveBy
+	return (m and m.spends) or nil
 end
 
 -- Walk a chain and total it up, spending teleports as it goes. This is THE
@@ -608,7 +718,7 @@ function R.RouteMinutes(chain, start)
 		-- A teleport is a resource: spent on leg two, gone on leg nine. A taxi
 		-- is not -- you can ride the same route all day -- so marking it used
 		-- would silently forbid the second trip to a destination.
-		if method and not method.taxi then state.used[method.key] = true end
+		R.SpendTravel(state, method)
 		advanceState(state, step)
 	end
 	return total
@@ -1006,7 +1116,7 @@ function nearestChain(steps, start)
 			local minutes, method = travelMinutes(state, chosen)
 			chosen.arriveMinutes, chosen.arriveBy = minutes, method
 			tinsert(ordered, chosen)
-			if method then state.used[method.key] = true end
+			R.SpendTravel(state, method)
 			advanceState(state, chosen)
 		else
 
@@ -1057,7 +1167,13 @@ function nearestChain(steps, start)
 		tinsert(ordered, nextStep)
 		-- Spending the teleport here is what makes the rest of the chain honest:
 		-- a hearthstone used on leg two is not available on leg nine.
-		if bestMethod then state.used[bestMethod.key] = true end
+		--
+		-- CHARGED FOR WHAT WAS RECORDED, not for what was shortlisted. The
+		-- selection pass above runs without leg descriptions and cannot see a
+		-- teleport inside a journey, so spending its placeholder charged the
+		-- route for a key nothing else would ever match while the charge the
+		-- stop actually carries went unspent.
+		R.SpendTravel(state, nextStep.arriveBy)
 		advanceState(state, nextStep)
 		end
 	end
@@ -1353,9 +1469,25 @@ local function buildSignature()
 	table.sort(ids)
 	local a = MM.Planner and MM.Planner.Anchor and MM.Planner.Anchor()
 	local W = MM.Weights
+	-- ANCHOR CELL, not anchor coordinate.
+	--
+	-- The anchor only moves when the plan is charted, never as the player walks,
+	-- so including its position costs no churn -- but Advance re-anchors after
+	-- every completed goal, often within the same zone, and the first leg is
+	-- measured from it. A tenth of a zone is coarse enough that no realistic
+	-- re-anchor inside one spot changes the cell, and fine enough that crossing
+	-- a zone does.
+	local cell = "?"
+	if a and a.x and a.y then
+		cell = ("%d,%d"):format(math.floor(a.x / 10), math.floor(a.y / 10))
+	end
 	return table.concat({
 		UnitName and UnitName("player") or "?",
 		GetRealmName and GetRealmName() or "?",
+		-- Faction gates destinations and vendors, and the plan follows the
+		-- account rather than the character, so two characters of opposite
+		-- factions share a plan and must not share an order built for it.
+		(UnitFactionGroup and UnitFactionGroup("player")) or "?",
 		#plan, table.concat(ids, ","),
 		-- The anchor's MAP, never its timestamp.
 		--
@@ -1364,21 +1496,47 @@ local function buildSignature()
 		-- cache could never hit. That is why logging out and back in still
 		-- re-charted: the chart was being saved and then never matched.
 		a and a.mapID or "?",
+		cell,
 		-- Session length is deliberately ABSENT. The chart is the optimal
 		-- order; a session is a view applied over it by ApplySession. Folding
 		-- the length in here would re-chart the whole route every time the
 		-- dropdown moved, which is the churn that made a 45-minute list look
 		-- like a different plan rather than a shorter one.
-		-- The weights that actually move the chart. Not a Signature() helper --
-		-- there isn't one, and the audit caught me inventing it.
-		W and W.Get and ("%s/%s/%s/%s"):format(W.Get("travel"), W.Get("effort"),
-			W.Get("odds"), W.Get("priority")) or "w",
+		--
+		-- EVERY WEIGHT THAT MOVES THE CHART, not the four that were easiest to
+		-- name. `era` shifts a goal by half a tier, `urgency` reorders the
+		-- bands, and `orderCap` decides how far the clock may overrule layer 1
+		-- -- all three changed the route and none of them changed the
+		-- signature, so a saved chart built at one setting was restored at
+		-- another and the slider read as doing nothing.
+		--
+		-- `priority` carries strict ordering with it: strictness is a pure
+		-- function of that value (>= 1.45), so the threshold needs no field of
+		-- its own and cannot drift away from the number it is derived from.
+		W and W.Get and ("%s/%s/%s/%s/%s/%s/%s"):format(
+			W.Get("travel"), W.Get("effort"), W.Get("odds"), W.Get("priority"),
+			W.Get("era"), W.Get("urgency"), W.Get("orderCap")) or "w",
+		-- WHICH KIND OF GOAL COMES FIRST. The tier order is a setting the player
+		-- drags into place, and layer 1 is built from it.
+		W and W.Order and table.concat(W.Order(), ">") or "o",
+		-- What this character can travel with. See MM.TravelFingerprint: a
+		-- stored chart cannot outlive the teleports it was ordered around.
+		MM.TravelFingerprint and MM.TravelFingerprint() or "t?",
 	}, "|")
 end
 
+-- The signature this plan and this character would chart under, without
+-- charting anything.
+--
+-- Exposed because "does the route depend on X?" is otherwise only answerable by
+-- changing X and running a full build to see whether the order moved -- which
+-- is minutes of work per setting, and re-charts the player's plan to ask a
+-- question about it. The cache diagnostics read it for the same reason.
+function R.Signature() return buildSignature() end
+
 -- Force the next Build to do real work: anything that changes the WORLD rather
 -- than the plan (a new flight point, a teleport learned) calls this.
-function R.Invalidate()
+function R.InvalidateRouteOrder()
 	-- CLEARS THE IN-MEMORY MARKER ONLY. It must NOT delete the stored chart.
 	--
 	-- It used to, and MM_SCANNED -- which fires on every login as the journal
@@ -1393,20 +1551,55 @@ function R.Invalidate()
 	R.builtSignature = nil
 end
 
+-- ONE BROAD INVALIDATION IS HOW THE WRONG THING GETS THROWN AWAY.
+--
+-- `Invalidate` was the only verb available, so every caller used it for every
+-- reason and none of them could say what had actually changed. It stays as the
+-- route-order name it always meant, because that is what its callers meant.
+R.Invalidate = R.InvalidateRouteOrder
+
+-- The ANSWERS about travel are stale, the MAP is not. A teleport gained, lost
+-- or switched off changes which routes are legal without moving a single node,
+-- so the graph -- 29,000 within-zone edges, 1,360 transit links and 4,068 taxi
+-- hops -- is kept and only the cached journeys are dropped.
+function R.InvalidateTravelPlans()
+	local J = MM.Journey
+	if J and J.ForgetPlans then J.ForgetPlans() end
+	if J and J.ForgetTravelFrom then J.ForgetTravelFrom() end
+	local TP = MM.Teleports
+	if TP and TP.Refresh then TP.Refresh() end
+	if TP and TP.ForgetArrivals then TP.ForgetArrivals() end
+end
+
+-- The MAP itself moved: a flight point learned, a node added. This is the
+-- expensive one, and the only reason to keep it separate from the above.
+function R.InvalidateTravelTopology()
+	local J = MM.Journey
+	if J and J.Forget then J.Forget() end
+end
+
 -- The finished order, as spellIDs, keyed by the signature it was charted for.
 -- Only the SEQUENCE is stored: everything else about a stop is derived from the
 -- database on load and would be stale the moment anything moved.
-function R.SaveChart(sig)
-	if not (MM.cdb and sig and #R.route > 0) then return end
+-- `S` is the state being charted: the stage during a build, the live router
+-- otherwise. The result is STORED ON THE STATE rather than written straight to
+-- saved variables, so a build that throws after this point cannot leave a chart
+-- behind describing a route that was never published.
+function R.SaveChart(sig, S)
+	S = S or R
+	if not (MM.cdb and sig and #S.route > 0) then return end
 	local stops = {}
-	for _, stop in ipairs(R.route) do
+	for _, stop in ipairs(S.route) do
 		local ids = {}
 		for _, m in ipairs(stop.members or { stop }) do
 			if m.entry and m.entry.spellID then ids[#ids + 1] = m.entry.spellID end
 		end
 		if #ids > 0 then stops[#stops + 1] = ids end
 	end
-	MM.cdb.chart = { sig = sig, stops = stops }
+	S.chart = { sig = sig, stops = stops }
+	-- The live router has no publication step of its own, so a direct call
+	-- still commits. Only a staged build defers.
+	if S == R then MM.cdb.chart = S.chart end
 end
 
 -- Reorder the freshly built stops into the stored sequence. Returns false when
@@ -1415,7 +1608,8 @@ end
 -- Anything the stored order does not mention keeps its relative place at the
 -- END rather than being dropped -- a goal added since must still appear, and
 -- silently losing one would be far worse than charting it in the wrong slot.
-function R.RestoreChart(sig)
+function R.RestoreChart(sig, S)
+	S = S or R
 	local chart = MM.cdb and MM.cdb.chart
 	if not (chart and sig and chart.sig == sig and chart.stops) then return false end
 	local rank = {}
@@ -1425,7 +1619,7 @@ function R.RestoreChart(sig)
 		end
 	end
 	local order, seen = {}, 0
-	for i, stop in ipairs(R.route) do
+	for i, stop in ipairs(S.route) do
 		local best
 		for _, m in ipairs(stop.members or { stop }) do
 			local r = m.entry and rank[m.entry.spellID]
@@ -1437,8 +1631,8 @@ function R.RestoreChart(sig)
 	end
 	-- A chart that matches almost nothing is not worth trusting.
 	if seen == 0 then return false end
-	table.sort(R.route, function(a, b) return order[a] < order[b] end)
-	R.restoredChart = seen
+	table.sort(S.route, function(a, b) return order[a] < order[b] end)
+	S.restoredChart = seen
 	return true
 end
 
@@ -1467,6 +1661,19 @@ end
 local CHUNK_MS = 24            -- frame budget before handing control back
 local building                 -- the coroutine, while one is in flight
 
+-- TWO SIGNATURES, BECAUSE THERE ARE TWO QUESTIONS.
+--
+-- `R.builtSignature` answers "what is the route currently on screen?" and is
+-- written in exactly one place: R.Publish. `activeBuildSignature` answers "what
+-- is the build in flight producing?" and is private to this file.
+--
+-- They were one field, so starting a build immediately overwrote the published
+-- answer with a promise -- and a build that then failed or was superseded had
+-- to clear it, throwing away the description of a route that was still on
+-- screen and perfectly valid. The route survived the failure; the record of
+-- what it was did not.
+local activeBuildSignature
+
 -- Called from inside the chain: true when we have held the frame long enough.
 function R.ShouldYield()
 	if not (building and R.chunkStartedAt and debugprofilestop) then return false end
@@ -1489,14 +1696,6 @@ function R.Yield()
 	end
 end
 
--- Drive a build to completion before returning.
---
--- Chunking makes Build return with the work still in flight, which is right
--- for the game -- the previous route stays on screen and the frame is handed
--- back -- and wrong for anything that asks a question about the result on the
--- very next line. The checks and the router model both do exactly that: build,
--- then measure what was built. Without this they would measure the PREVIOUS
--- route and quietly report on the wrong thing.
 -- True while a chunked build is still in flight.
 --
 -- Chunking made Build return before the route exists, so a caller that renders
@@ -1508,8 +1707,161 @@ function R.IsBuilding()
 	return building ~= nil and coroutine.status(building) == "suspended"
 end
 
+------------------------------------------------------------
+-- The build contract
+------------------------------------------------------------
+-- BUILD RETURNS A STATUS, NEVER A COUNT.
+--
+-- It used to return nothing at all, and Start formatted that nothing with %d.
+-- The count is not knowable at the moment an asynchronous build is requested,
+-- so returning one is a promise the function cannot keep. Every caller that
+-- needs the number now asks for it through BuildSync, and every caller that
+-- can wait asks for it through AfterBuild.
+R.BUILD_CURRENT   = "current"    -- cache hit: the route already is this plan's
+R.BUILD_STARTED   = "started"    -- a fresh build is in flight
+R.BUILD_QUEUED    = "queued"     -- one was running; a replacement is queued
+R.BUILD_RUNNING   = "running"    -- one was already running and still stands
+R.BUILD_COMPLETED = "completed"  -- driven to completion before returning
+
+-- One-shot callbacks waiting on the CURRENT build. Held in slot tables so the
+-- same function can wait twice without one removal cancelling both.
+local pendingCompletion = {}
+
+-- Everything that happens when a build lands, in one place.
+--
+-- `ok` is false when the coroutine threw. Waiters are released either way --
+-- a caller blocked forever on a failed build is a hang, and the failure has
+-- already been reported -- but the completion event is not fired, because
+-- nothing new was built for anyone to redraw.
+local function finishBuild(ok)
+	R.buildFailed = not ok
+	local waiting = pendingCompletion
+	pendingCompletion = {}
+	local stops = #R.route
+	for i = 1, #waiting do
+		local fine, err = pcall(waiting[i].fn, stops, ok)
+		if not fine and MM.Print then
+			MM:Print("|cffff5555route completion handler failed|r -- %s",
+				tostring(err):sub(-140))
+		end
+	end
+	if ok then MM:Fire("MM_ROUTE_BUILT", stops, R.builtSignature) end
+end
+
+-- Resume the in-flight build one slice. Recursive through R:Build, which is how
+-- a queued replacement is picked up without duplicating the completion rules.
+local pumpBuild
+pumpBuild = function(sync)
+	if not building then return end
+	R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
+	local ok, err = coroutine.resume(building)
+	if not ok then
+		building = nil
+		R.rebuildWhenDone, R.rebuildForced = nil, nil
+		-- ONLY THE IN-FLIGHT SIGNATURE GOES. `R.builtSignature` still describes
+		-- the route on screen, which a failed build never replaced, and the
+		-- cache guard compares the request against THAT -- so a plan that has
+		-- moved still misses and charts for real, while a plan that has not
+		-- still hits. Clearing it here threw away a true statement.
+		--
+		-- `builtRouteCount` is kept for the same reason. `chartRank` goes back
+		-- to nil, which is exactly its value between builds, so a failure
+		-- leaves no field holding something a completed build would not.
+		activeBuildSignature = nil
+		R.chartRank = nil
+		if MM.Print then MM:Print("|cffff5555route build failed|r -- %s",
+			tostring(err):sub(-140)) end
+		finishBuild(false)
+		return
+	end
+	if coroutine.status(building) == "dead" then
+		building = nil
+		-- AN OBSOLETE BUILD DOES NOT ANNOUNCE ITSELF.
+		--
+		-- Its inputs changed while it ran, so its route is already wrong. It
+		-- hands straight over to the replacement, and the waiters stay queued
+		-- for that one -- which is the build whose result they asked for.
+		if R.rebuildWhenDone then
+			local forced = R.rebuildForced
+			R.rebuildWhenDone, R.rebuildForced = nil, nil
+			-- Same rule as the failure path: only the in-flight signature goes.
+			-- The published one still describes the route on screen, which a
+			-- superseded build never replaced.
+			activeBuildSignature = nil
+			R.chartRank = nil
+			R:Build(forced, sync)
+			return
+		end
+		finishBuild(true)
+		return
+	end
+	-- Only the chunked path schedules itself. A synchronous caller is already
+	-- looping on this, and a timer as well would drive the same coroutine twice.
+	if not sync then C_Timer.After(0, function() pumpBuild(false) end) end
+end
+
+-- Drive whatever is in flight to completion, including any replacement it
+-- queues on the way out.
+local function drain()
+	local guard = 0
+	while building and coroutine.status(building) == "suspended" do
+		pumpBuild(true)
+		-- A replacement re-enters Build, which drives itself to completion and
+		-- clears `building`; the loop then ends. The guard is a backstop against
+		-- a pathological chain of replacements, not an expected path.
+		guard = guard + 1
+		if guard > 10000 then break end
+	end
+	building = nil
+end
+
+-- Drive a build to completion before returning, and answer with the number of
+-- stops it produced.
+--
+-- Chunking makes Build return with the work still in flight, which is right for
+-- the game -- the previous route stays on screen and the frame is handed back --
+-- and wrong for anything that asks a question about the result on the very next
+-- line. The checks and the router model both do exactly that: build, then
+-- measure what was built. Without this they would measure the PREVIOUS route and
+-- quietly report on the wrong thing.
 function R:BuildSync(force)
-	return self:Build(force, true)
+	self:Build(force, true)
+	-- Belt and braces: Build(sync) only returns with `building` cleared, so this
+	-- is an assertion that the contract held rather than a loop that runs.
+	if R.IsBuilding() then drain() end
+	return #R.route
+end
+
+-- Run `fn(stops, ok)` when the route is complete and current, without freezing
+-- the frame to get there.
+--
+-- THE CALLBACK IS REGISTERED BEFORE THE BUILD IS ASKED FOR. A small plan can
+-- finish inside its first slice, so a callback added afterwards would have
+-- missed the very completion it was waiting for.
+function R.AfterBuild(force, fn)
+	if not fn then return R:Build(force) end
+	local slot = { fn = fn }
+	pendingCompletion[#pendingCompletion + 1] = slot
+	local status = R:Build(force)
+	if status ~= R.BUILD_CURRENT then return status end
+	-- Nothing to wait for: the route already is this plan's route, so the slot
+	-- comes back out and the answer is given now rather than at the next build.
+	for i = #pendingCompletion, 1, -1 do
+		if pendingCompletion[i] == slot then table.remove(pendingCompletion, i) break end
+	end
+	fn(#R.route, true)
+	return status
+end
+
+-- ONE BUILD FOR A WHOLE REPORT.
+--
+-- Several report sections each need a completed route, and each asking for one
+-- separately is several chances to chart the same plan twice -- and, before the
+-- contract existed, several chances to describe a different route from the one
+-- the section above described. Warming once up front means every section after
+-- it takes a cache hit and they all describe the same route.
+function R.Warm()
+	return R:BuildSync()
 end
 
 function R:Build(force, sync)
@@ -1525,10 +1877,34 @@ function R:Build(force, sync)
 	-- So a request that arrives mid-build is remembered and re-issued when the
 	-- current one lands.
 	if building and coroutine.status(building) == "suspended" then
-		if force or buildSignature() ~= R.builtSignature then
+		local queued = R.rebuildWhenDone
+		-- AGAINST THE BUILD IN FLIGHT, not against what is published. The
+		-- question here is whether the running build will still produce the
+		-- right answer, and only its own signature can say.
+		if force or buildSignature() ~= activeBuildSignature then
 			R.rebuildWhenDone = true
+			-- A FORCED REQUEST STAYS FORCED ACROSS THE QUEUE.
+			--
+			-- The re-issue below always asked for an unforced build, so a
+			-- forced rebuild that arrived mid-build was remembered and then
+			-- quietly downgraded: if the signature had not changed, the
+			-- replacement took a cache hit and the work never happened. The
+			-- caller was told a rebuild was queued and got nothing.
+			if force then R.rebuildForced = true end
+			queued = true
 		end
-		return
+		-- A SYNCHRONOUS CALLER DRAINS WHAT IS ALREADY RUNNING.
+		--
+		-- Returning here left the coroutine suspended and handed the caller the
+		-- PREVIOUS route -- the exact failure BuildSync exists to prevent, and
+		-- invisible because it only happens when a build is already in flight.
+		-- Draining also picks up the replacement queued just above, so a sync
+		-- caller that arrives mid-build still measures the plan it asked about.
+		if sync then
+			drain()
+			return R.BUILD_COMPLETED
+		end
+		return queued and R.BUILD_QUEUED or R.BUILD_RUNNING
 	end
 	local sig = buildSignature()
 	-- THE SIGNATURE DESCRIBES THE PLAN. IT DOES NOT DESCRIBE THE ROUTE.
@@ -1553,7 +1929,7 @@ function R:Build(force, sync)
 	-- which is the property that was actually missing.
 	if not force and R.builtSignature == sig and #R.route > 0
 		and R.builtRouteCount == #R.route then
-		return
+		return R.BUILD_CURRENT
 	end
 	-- SAY WHY, when it did not hit.
 	--
@@ -1568,8 +1944,13 @@ function R:Build(force, sync)
 		local was, now = {}, {}
 		for part in tostring(stored.sig):gmatch("[^|]*") do was[#was + 1] = part end
 		for part in sig:gmatch("[^|]*") do now[#now + 1] = part end
-		local LABEL = { "character", "realm", "plan size", "plan contents",
-			"anchor map", "weights" }
+		-- IN THE SAME ORDER AS buildSignature CONCATENATES THEM. A label list
+		-- that has drifted from the fields names the wrong component, which is
+		-- worse than naming none: the cache explains itself to whoever is
+		-- trying to work out why it missed.
+		local LABEL = { "character", "realm", "faction", "plan size",
+			"plan contents", "anchor map", "anchor cell", "weights",
+			"tier order", "travel options" }
 		for i = 1, math.max(#was, #now) do
 			if was[i] ~= now[i] then
 				R.cacheWhy = ("%s changed (%s -> %s)"):format(
@@ -1581,13 +1962,22 @@ function R:Build(force, sync)
 		R.cacheWhy = R.cacheWhy or "signature differs"
 	end
 
-	R.builtSignature = sig
-	-- Set at COMPLETION, not here: the build runs in a coroutine started below,
-	-- so at this point R.route is still the previous route and recording its
-	-- length would bless the very thing this check exists to catch.
-	R.builtRouteCount = nil
+	activeBuildSignature = sig
+	-- `R.builtSignature` IS NOT TOUCHED HERE. It describes the route on screen,
+	-- which this build has not replaced yet; R.Publish is the only writer.
+	-- `builtRouteCount` IS NOT TOUCHED HERE.
+	--
+	-- It describes the route currently on screen, which this build has not
+	-- replaced yet and may never replace. Nulling it at the start was a write to
+	-- published state before a single step of work had run -- so a build that
+	-- failed left the last good route reporting a length it no longer had.
+	--
+	-- Nulling it was load-bearing for exactly one case: a failed build must not
+	-- then take a cache hit under the signature it had already claimed. Clearing
+	-- the SIGNATURE on failure and on supersession covers that case at its
+	-- source, and leaves the count describing the thing it actually describes.
+	-- The build's own count is published with the rest of its state.
 
-	local n = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
 	R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
 	R.yieldsThisBuild = 0
 	building = coroutine.create(function() R.RunBuild(sig) end)
@@ -1608,52 +1998,120 @@ function R:Build(force, sync)
 	--
 	-- The frame budget is CHUNK_MS, checked in nearestChain, which is where the
 	-- graph searches are and the only place that yields.
-	local chunked = true
+	if not sync then
+		pumpBuild(false)
+		-- STARTED even if that first slice happened to finish it: the caller
+		-- asked for a build and got one. A caller that needs to know when it
+		-- landed uses AfterBuild, which registers before this point precisely
+		-- so a one-slice build cannot outrun it.
+		return R.BUILD_STARTED
+	end
+	-- Drive it to completion before returning, so a caller that measures on the
+	-- next line measures what it just asked for.
+	drain()
+	return R.BUILD_COMPLETED
+end
 
-	-- A caller that needs the answer now drives it to completion regardless.
-	local function pump()
-		if not building then return end
-		R.chunkStartedAt = debugprofilestop and debugprofilestop() or 0
-		local ok, err = coroutine.resume(building)
-		if not ok then
-			building = nil
-			if MM.Print then MM:Print("|cffff5555route build failed|r -- %s",
-				tostring(err):sub(-140)) end
-			return
-		end
-		if coroutine.status(building) == "dead" then
-			building = nil
-			-- Re-issue before announcing, so nothing renders the route this
-			-- build produced when we already know it is out of date.
-			if R.rebuildWhenDone then
-				R.rebuildWhenDone = nil
-				R.builtSignature, R.builtRouteCount = nil, nil
-				R:Build(false, sync)
-				return
-			end
-			MM:Fire("MM_ROUTE_ADVANCED")
-			return
-		end
-		-- Only the chunked path schedules itself. A synchronous caller is
-		-- already looping on pump, and a timer as well would drive the same
-		-- coroutine twice.
-		if chunked and not sync then C_Timer.After(0, pump) end
+------------------------------------------------------------
+-- Staged builds: nothing is published until everything succeeded
+------------------------------------------------------------
+-- THE ROUTE WAS ATOMIC AND ITS COMPANIONS WERE NOT.
+--
+-- R.route was swapped in one go, which is why a chunked build never showed a
+-- half-ordered list. But `unrouted` and `deferred` were wiped at the TOP of the
+-- build and refilled a goal at a time, while the previous route was still on
+-- screen -- so for the whole expensive middle of a build the planner could read
+-- a complete route alongside empty companion lists, and report "0 with nowhere
+-- to go" over a route that had 40.
+--
+-- Worse, publication happened before the failure-prone work. The route went
+-- live and THEN the chart restore, the 2-opt, the preference cap, Measure and
+-- the session view ran. Any of those throwing left the new order published with
+-- no totals and a stale index -- and destroyed the last good route, even though
+-- the build reported failure and fired no completion.
+--
+-- So a build now assembles into a STAGE and publishes once, at the end. The
+-- field names match the ones on R deliberately: every helper below takes the
+-- stage or the live router and cannot tell the difference.
+local function newStage()
+	return {
+		route = {}, unrouted = {}, deferred = {}, stopBySpell = {},
+		totals = nil, baseOrder = nil, builtRouteCount = nil,
+		restoredChart = nil, capReport = nil, pinReport = nil,
+		blocksSkipped = nil, timeSaved = nil, lastBuildMs = nil,
+		travelPrecomputed = nil, hereDebug = nil,
+		-- What this build charted for. Published as the description of the
+		-- route it publishes, and never before.
+		builtSignature = nil,
+		-- The session view's own bookkeeping. `planned` is read by the monitor
+		-- and the plan pane as "how many stops this session promises", so it
+		-- cannot be written before the stops it counts exist.
+		sessionState = nil, sessionPlanned = nil,
+		-- Deferred side effects. Saved variables are published state too: a
+		-- chart written by a build that then threw would outlive the route it
+		-- describes and be restored on the next login.
+		chart = nil, routeIndex = nil, dropRouteGoal = false,
+		applySession = nil,
+	}
+end
+
+-- Scalar derived state, published with the lists rather than as it is computed.
+local STAGED_FIELDS = {
+	"totals", "baseOrder", "builtRouteCount", "restoredChart", "capReport",
+	"pinReport", "blocksSkipped", "timeSaved", "lastBuildMs", "travelPrecomputed",
+	"hereDebug", "builtSignature",
+}
+
+-- The single moment a build becomes visible.
+function R.Publish(stage)
+	if not stage then return #R.route end
+	-- CONTENTS, NOT THE TABLE. R.route, R.unrouted, R.deferred and
+	-- R.stopBySpell are module tables other files hold direct references to;
+	-- assigning a new table would leave every one of those references pointing
+	-- at the previous build for the rest of the session.
+	wipe(R.route)
+	for i = 1, #stage.route do R.route[i] = stage.route[i] end
+	wipe(R.unrouted)
+	for i = 1, #stage.unrouted do R.unrouted[i] = stage.unrouted[i] end
+	wipe(R.deferred)
+	for i = 1, #stage.deferred do R.deferred[i] = stage.deferred[i] end
+	wipe(R.stopBySpell)
+	for k, v in pairs(stage.stopBySpell) do R.stopBySpell[k] = v end
+	for _, key in ipairs(STAGED_FIELDS) do R[key] = stage[key] end
+	R.ApplySession = stage.applySession
+
+	-- The session view's promise, committed with the route it is a view OF.
+	-- Applying a session to a stage used to write this straight onto the live
+	-- session object, so the monitor could be told "7 stops this session"
+	-- against a route that did not exist yet -- and keep that number if the
+	-- build then failed.
+	if stage.sessionState then
+		stage.sessionState.planned = stage.sessionPlanned
 	end
 
-	if chunked and not sync then
-		pump()
-	else
-		-- Small plan: drive it to completion before returning, so every
-		-- existing caller sees exactly what it saw before.
-		while building and coroutine.status(building) == "suspended" do pump() end
-		building = nil
-	end
+	-- Saved variables last, and only now: the chart describes the order being
+	-- published on the line above, and the index points into it.
+	if stage.chart and MM.cdb then MM.cdb.chart = stage.chart end
+	if stage.dropRouteGoal and MM.db then MM.db.routeGoal = nil end
+	if stage.routeIndex and MM.cdb then MM.cdb.routeIndex = stage.routeIndex end
+	return #R.route
 end
 
 function R.RunBuild(sig)
 	-- A stored chart for THIS signature means the order is already decided.
 	-- nearestChain reads it instead of re-deriving it, which is where the
 	-- login freeze actually lived -- the 2-opt skip never touched it.
+	--
+	-- DELIBERATELY NOT STAGED, and the one field in this function that is not.
+	-- It is an INPUT read out of saved variables, not anything derived from the
+	-- route being built, and nothing outside the router reads it for
+	-- information -- the model and the checks only clear it to force real work.
+	-- Threading it through nearestChain and routePool to stage a value nobody
+	-- observes would put a parameter on the hot path for nothing.
+	--
+	-- Its invariant instead: NIL EXCEPT DURING A BUILD. Set here, cleared at
+	-- publication, and cleared again on failure and on supersession -- so no
+	-- path can leave it holding a value from a build that never published.
 	R.chartRank = nil
 	local stored = MM.cdb and MM.cdb.chart
 	if stored and stored.sig == sig and stored.stops then
@@ -1666,26 +2124,22 @@ function R.RunBuild(sig)
 		R.chartRank = rank
 	end
 	local startedAt = debugprofilestop and debugprofilestop() or nil
-	-- R.route IS NOT CLEARED HERE.
+	-- NOTHING PUBLISHED IS TOUCHED FROM HERE UNTIL R.Publish AT THE BOTTOM.
 	--
-	-- It used to be, and that single line is why chunking had to stay off. The
-	-- expensive work below -- the graph searches in nearestChain -- is the only
-	-- thing that yields, and it builds LOCAL chains; it never touches R.route.
-	-- So clearing the route up front bought nothing and cost everything: across
-	-- a yield the plan was observably empty, and anything that looked at it
-	-- meanwhile drew an empty list. Six mounts after a login, nothing at all
-	-- after reopening the window.
+	-- The route was already assembled into a local and swapped in one go, which
+	-- is why a chunked build never showed a half-ordered list. Its companions
+	-- were not: `unrouted` and `deferred` were wiped HERE and refilled a goal at
+	-- a time across every yield, so a reader during a build saw the previous
+	-- complete route beside empty companion lists.
 	--
-	-- The old route stays visible and intact right up to the assembly below,
-	-- which is synchronous. A reader during a chunked build now sees the
-	-- PREVIOUS route -- one build stale, which is a far better answer than
-	-- none, and briefer than the freeze it replaces.
-	wipe(R.unrouted); wipe(R.deferred)
+	-- The stage holds all of it. A reader during a build sees the PREVIOUS
+	-- build, whole and self-consistent -- one build stale, which is a far better
+	-- answer than a mixture of two, and briefer than the freeze it replaces.
+	local stage = newStage()
 
 	-- Refresh the travel snapshot ONCE for this whole build. Every travel-time
 	-- question below then reads a plain table instead of the toybox.
 	if MM.Teleports and MM.Teleports.Refresh then MM.Teleports.Refresh() end
-	R.travelPrecomputed = nil
 
 	-- Urgency bands lead: expiring events, then lockout attempts (skipping
 	-- those wastes a roll forever), then everything that waits for you.
@@ -1705,7 +2159,7 @@ function R.RunBuild(sig)
 		local finishable = MM.Planner.CompletableNow(entry)
 		if status == "LOCKED" or status == "HOLIDAY" or status == "ROTATION"
 			or status == "PREREQ" or status == "UNOBTAINABLE" then
-			tinsert(R.deferred, { entry = entry, status = status, detail = detail })
+			tinsert(stage.deferred, { entry = entry, status = status, detail = detail })
 		elseif yields <= 0 and finishable == false then
 			-- Name the specific unmet requirement when we can. Guarded because
 			-- Conditions is not guaranteed present in every context that builds
@@ -1718,7 +2172,7 @@ function R.RunBuild(sig)
 					if line.met == false then why = line.text break end
 				end
 			end
-			tinsert(R.deferred, { entry = entry, status = "PREREQ",
+			tinsert(stage.deferred, { entry = entry, status = "PREREQ",
 				detail = why or "Requirements not met yet" })
 		else
 			local step = makeStep(entry)
@@ -1746,14 +2200,14 @@ function R.RunBuild(sig)
 				step.completableNow = MM.Planner.CompletableNow(entry)
 				tinsert(pending, step)
 			else
-				tinsert(R.unrouted, entry)
+				tinsert(stage.unrouted, entry)
 			end
 		end
 	end
 
 	-- Every travel question from here down reads these, not the toybox.
 	R.PrecomputeTravel(pending)
-	R.travelPrecomputed = #pending
+	stage.travelPrecomputed = #pending
 
 	------------------------------------------------------------
 	-- LAYER 1: preference
@@ -1929,7 +2383,11 @@ function R.RunBuild(sig)
 	-- boolean nobody could see: a nil player map and a genuinely-distant stop
 	-- produce the same empty band and the same wrong-looking route. The report
 	-- now says which, so the next person reads it instead of guessing.
-	R.hereDebug = {
+	-- STAGED. This is a diagnostic ABOUT the route being built, so publishing it
+	-- while the previous route is still on screen described one route with the
+	-- other's numbers -- and a failed build left the report explaining a route
+	-- that was never published.
+	stage.hereDebug = {
 		playerMap = playerMap,
 		promoted = #nearby,
 		candidates = #grouped,
@@ -1980,11 +2438,12 @@ function R.RunBuild(sig)
 	local tail = routePool(leftovers, playerContinent, cursor)
 	for _, s in ipairs(tail) do tinsert(built, s) end
 
-	-- THE SWAP, and the only moment R.route changes in a chunked build. Every
-	-- yield is behind us, so the route goes from the previous complete plan to
-	-- this one with nothing observable in between.
-	wipe(R.route)
-	for _, s in ipairs(built) do tinsert(R.route, s) end
+	-- Into the STAGE, not into the route. Every yield is behind us, but the
+	-- failure-prone work is still ahead: the chart restore, the 2-opt, the
+	-- preference cap, Measure, the session view. Publishing here meant any of
+	-- those throwing left the new order live with no totals and a stale index,
+	-- having already destroyed the last route that worked.
+	for _, s in ipairs(built) do tinsert(stage.route, s) end
 
 	-- DON'T LEAVE AND COME BACK.
 	--
@@ -2005,14 +2464,14 @@ function R.RunBuild(sig)
 	if not strictOrdering() then
 		local blockEnd = {} -- mapID -> index where its first run of stops ends
 		local i = 1
-		while i <= #R.route do
-			local s = R.route[i]
+		while i <= #stage.route do
+			local s = stage.route[i]
 			local m = s and s.mapID
 			local e = m and blockEnd[m]
 			if e and e < i - 1 and s.urgency > MM.Planner.URGENCY.EXPIRING
 				and shortWork(s) then
-				tremove(R.route, i)
-				tinsert(R.route, e + 1, s)
+				tremove(stage.route, i)
+				tinsert(stage.route, e + 1, s)
 				-- everything between the block and here shifted right by one
 				for k, v in pairs(blockEnd) do
 					if v > e then blockEnd[k] = v + 1 end
@@ -2033,21 +2492,31 @@ function R.RunBuild(sig)
 	--
 	-- Reordered, not truncated: the rest of the plan follows, so running over or
 	-- ending early simply continues.
-	R.ApplySession = function()
+	-- `into` is the state being reordered: the STAGE while a build is running,
+	-- and the live router afterwards, when MM_SESSION_CHANGED re-applies the
+	-- view without re-charting. Defaulting to R keeps every existing caller --
+	-- Session.Start and the session-changed handler -- working unchanged.
+	stage.applySession = function(into)
+		into = into or R
 		local S = MM.Session
 		-- THE BASE ORDER IS NEVER OVERWRITTEN.
 		--
-		-- This reordered R.route in place, so the session's order became the
+		-- This reordered the route in place, so the session's order became the
 		-- only order there was: going back to "No limit" had nothing to return
 		-- to. The un-sessioned order is kept aside and every application starts
 		-- from it, so a session is a view that can always be closed.
-		if R.baseOrder then
-			wipe(R.route)
-			for _, stop in ipairs(R.baseOrder) do R.route[#R.route + 1] = stop end
+		if into.baseOrder then
+			wipe(into.route)
+			for _, stop in ipairs(into.baseOrder) do into.route[#into.route + 1] = stop end
 		end
 		local st = S and S.Active and S.Active()
-		if not (st and S.Fit and R.route and #R.route > 0) then return end
-		local chosen = S.Fit(st.minutes)
+		if not (st and S.Fit and into.route and #into.route > 0) then return end
+		-- THE ROUTE IT IS FITTING GOES IN.
+		--
+		-- Session.Fit read MM.Router.route directly, so applying a session to a
+		-- staged build fitted against the PUBLISHED one -- the previous route --
+		-- and then reordered the staged route by the answer.
+		local chosen = S.Fit(st.minutes, into.route)
 		if not chosen or #chosen == 0 then return end
 		-- S.Fit RETURNS WRAPPERS, NOT STOPS.
 		--
@@ -2064,21 +2533,35 @@ function R.RunBuild(sig)
 		local inSession = {}
 		for _, sel in ipairs(chosen) do inSession[sel.stop] = true end
 		local rest = {}
-		for _, stop in ipairs(R.route) do
+		for _, stop in ipairs(into.route) do
 			if not inSession[stop] then rest[#rest + 1] = stop end
 		end
-		wipe(R.route)
-		for _, sel in ipairs(chosen) do R.route[#R.route + 1] = sel.stop end
-		for _, stop in ipairs(rest) do R.route[#R.route + 1] = stop end
-		st.planned = #chosen
+		wipe(into.route)
+		for _, sel in ipairs(chosen) do into.route[#into.route + 1] = sel.stop end
+		for _, stop in ipairs(rest) do into.route[#into.route + 1] = stop end
+		-- THE PROMISE IS COMMITTED WITH THE ROUTE IT DESCRIBES.
+		--
+		-- `st.planned` is live session state: the monitor reads it as "goal N of
+		-- PLANNED" and the plan pane hides everything past it. Writing it while
+		-- a build was still staging announced a count for stops that did not
+		-- exist yet, and left that count behind if the build then failed.
+		--
+		-- Applied to the LIVE router -- which is what MM_SESSION_CHANGED does,
+		-- re-applying the view over a route that is already published -- there
+		-- is nothing to wait for and it commits immediately, exactly as before.
+		if into == R then
+			st.planned = #chosen
+		else
+			into.sessionState, into.sessionPlanned = st, #chosen
+		end
 	end
 
 	-- Goals with no map location still belong in the sequence — otherwise
 	-- skipping through the route "finishes" while they sit unvisited.
-	table.sort(R.unrouted, function(a, b)
+	table.sort(stage.unrouted, function(a, b)
 		return MM.Planner.SessionScore(a) < MM.Planner.SessionScore(b)
 	end)
-	for _, entry in ipairs(R.unrouted) do
+	for _, entry in ipairs(stage.unrouted) do
 		-- A real stop, not a placeholder. These were bare tables with no
 		-- `mounts`, no `workMinutes` and no `members`, and everything downstream
 		-- assumed a stop has those -- Measure crashed on the first one, taking
@@ -2098,10 +2581,10 @@ function R.RunBuild(sig)
 			tpCosts = {},
 		}
 		stop.members = { stop }
-		tinsert(R.route, stop)
+		tinsert(stage.route, stop)
 	end
 
-	table.sort(R.deferred, function(a, b) return a.entry.name < b.entry.name end)
+	table.sort(stage.deferred, function(a, b) return a.entry.name < b.entry.name end)
 
 	------------------------------------------------------------
 	-- LAYER 3: the clock
@@ -2122,21 +2605,21 @@ function R.RunBuild(sig)
 	-- teleports, faction and lockouts) and restored when the signature still
 	-- matches. Restoring skips the 2-opt entirely, which is where the Dijkstras
 	-- live.
-	if not R.RestoreChart(R.builtSignature) then
-		R.ImproveTotalTime(playerContinent, playerWorld)
+	if not R.RestoreChart(sig, stage) then
+		R.ImproveTotalTime(playerContinent, playerWorld, stage)
 	end
-	R.ApplyPreferenceCap()
-	R.PinHereNow()
-	for i, stop in ipairs(R.route) do stop.layerRouted = i end
+	R.ApplyPreferenceCap(stage)
+	R.PinHereNow(stage)
+	for i, stop in ipairs(stage.route) do stop.layerRouted = i end
 	-- The route is final here. Recording its length now is what lets the next
 	-- Build tell "nothing changed" from "someone replaced my route".
-	R.builtRouteCount = #R.route
-	R.Measure()
+	stage.builtRouteCount = #stage.route
+	R.Measure(stage)
 
 	-- Index the finished route so a goal can be asked what it was batched with.
 	-- Built here rather than searched on demand: the tooltip asks per row, and
 	-- rescanning the route for every hover is work we already did once.
-	R.Reindex()
+	R.Reindex(stage)
 
 	-- The session's promise, applied AFTER every other layer and after the
 	-- stopBySpell index is built -- it only reorders, so the index stays valid.
@@ -2145,13 +2628,16 @@ function R.RunBuild(sig)
 	-- restored route depend on whatever length happened to be picked last.
 	-- Charting is done: stop reading the old order, and record the new one.
 	R.chartRank = nil
-	R.SaveChart(R.builtSignature)
+	-- STAGED, not written. MM.cdb.chart is saved-variable state: a chart
+	-- written by a build that then threw would outlive the route it describes
+	-- and be restored on the next login, under a signature that matches.
+	R.SaveChart(sig, stage)
 	-- Snapshot BEFORE ApplySession, so the view always has something to
 	-- restore to without rebuilding anything.
-	R.baseOrder = {}
-	for i, stop in ipairs(R.route) do R.baseOrder[i] = stop end
+	stage.baseOrder = {}
+	for i, stop in ipairs(stage.route) do stage.baseOrder[i] = stop end
 
-	if R.ApplySession then R.ApplySession() end
+	if stage.applySession then stage.applySession(stage) end
 
 	-- RESUME BY IDENTITY, NOT BY POSITION.
 	--
@@ -2163,37 +2649,52 @@ function R.RunBuild(sig)
 	-- If it is gone -- collected in the meantime, or blocked for whoever you
 	-- are now -- the anchor is dropped rather than approximated, and the route
 	-- starts from the top.
+	-- DECIDED HERE, WRITTEN AT PUBLICATION. The index points into the route
+	-- being published; writing it before the route exists would leave it
+	-- pointing into the previous one if anything below threw.
 	local goal = MM.db and MM.db.routeGoal
 	if goal then
 		local found
-		for i, stop in ipairs(R.route) do
-			if stop.spellID == goal then found = i break end
-			for _, member in ipairs(stop.members or {}) do
-				if member.spellID == goal then found = i break end
-			end
-			if found then break end
+		for i, stop in ipairs(stage.route) do
+			if stopHolds(stop, goal) then found = i break end
 		end
 		if found then
-			MM.cdb.routeIndex = found
+			stage.routeIndex = found
 		else
 			-- The anchored goal is gone -- collected, unplanned, or blocked for
 			-- whoever this is. Dropping the anchor was right and leaving the
 			-- INDEX where it was, was not: it still pointed into the old route,
 			-- so a rebuilt plan led with one goal and the arrow with another.
-			MM.db.routeGoal = nil
-			MM.cdb.routeIndex = 1
+			stage.dropRouteGoal = true
+			stage.routeIndex = 1
 		end
-	elseif MM.cdb.routeIndex ~= 1 then
+	elseif MM.cdb and MM.cdb.routeIndex ~= 1 then
 		-- Never anchored at all -- a fresh plan, or one just cleared. There is
 		-- nothing to resume TO, so the route starts where it reads: the top.
-		MM.cdb.routeIndex = 1
+		stage.routeIndex = 1
 	end
 
-	if MM.cdb.routeIndex > #R.route then MM.cdb.routeIndex = 1 end
+	if (stage.routeIndex or (MM.cdb and MM.cdb.routeIndex) or 1) > #stage.route then
+		stage.routeIndex = 1
+	end
 	-- Measured, not assumed. A route build froze the client for minutes and
 	-- nothing in the addon could say so.
-	if startedAt then R.lastBuildMs = debugprofilestop() - startedAt end
-	return #R.route
+	if startedAt then stage.lastBuildMs = debugprofilestop() - startedAt end
+	stage.builtSignature = sig
+
+	-- SUPERSEDED BUILDS DO NOT PUBLISH.
+	--
+	-- Its inputs changed while it ran, so this order is already known to be
+	-- wrong. Publishing it would put a route for the previous plan on screen
+	-- for the length of one more build -- and the completion contract already
+	-- says an obsolete build announces nothing, so it must not leave a visible
+	-- result either. The replacement publishes; this stage is dropped.
+	if R.rebuildWhenDone then return #R.route end
+
+	-- THE PUBLICATION POINT. Everything above either succeeded or threw, and a
+	-- throw never reaches this line: the stage is a local, so an error unwinds
+	-- it and the last successful route is still standing, untouched.
+	return R.Publish(stage)
 end
 
 ------------------------------------------------------------
@@ -2335,9 +2836,10 @@ end
 -- So the promotion is made sticky rather than advisory. Relative order among
 -- the pinned stops is left as the earlier layers arranged it, and everything
 -- else keeps the clock's ordering; only the boundary moves.
-function R.PinHereNow()
-	R.pinReport = nil
-	local route = R.route
+function R.PinHereNow(S)
+	S = S or R
+	S.pinReport = nil
+	local route = S.route
 	if not route or #route < 2 then return 0 end
 	local here, rest = {}, {}
 	for _, stop in ipairs(route) do
@@ -2363,18 +2865,19 @@ function R.PinHereNow()
 	-- Recorded so the cap can say it was OVERRULED rather than claim a
 	-- guarantee it no longer keeps. Standing-here work is exempt on purpose;
 	-- a report that hides the exemption is how a number stops being trusted.
-	R.pinReport = { moved = moved, worst = worst, pinned = #here }
+	S.pinReport = { moved = moved, worst = worst, pinned = #here }
 	wipe(route)
 	for _, stop in ipairs(here) do route[#route + 1] = stop end
 	for _, stop in ipairs(rest) do route[#route + 1] = stop end
 	return moved
 end
 
-function R.ApplyPreferenceCap()
-	R.capReport = nil
+function R.ApplyPreferenceCap(S)
+	S = S or R
+	S.capReport = nil
 	local cap = R.PreferenceCap()
 	if not cap then return 0 end
-	local route = R.route
+	local route = S.route
 	local n = #route
 	if n < 3 then return 0 end
 
@@ -2433,13 +2936,14 @@ function R.ApplyPreferenceCap()
 		if d > worst then worst = d end
 		if before[stop] ~= i then shifted = shifted + 1 end
 	end
-	R.capReport = { cap = cap, worst = worst, shifted = shifted, stops = n }
+	S.capReport = { cap = cap, worst = worst, shifted = shifted, stops = n }
 	return shifted
 end
 
-function R.ImproveTotalTime(playerContinent, playerWorld)
-	local blocks = continentBlocks(R.route)
-	R.blocksSkipped = nil
+function R.ImproveTotalTime(playerContinent, playerWorld, S)
+	S = S or R
+	local blocks = continentBlocks(S.route)
+	S.blocksSkipped = nil
 	-- "Order rules" has to survive this too. Block reordering optimises travel
 	-- and nothing else, so with strict priority on it was quietly undoing the
 	-- ordering the player had just declared absolute -- the simulator showed the
@@ -2453,11 +2957,11 @@ function R.ImproveTotalTime(playerContinent, playerWorld)
 	if #blocks > MAX_BLOCKS_TO_REORDER then
 		-- Reorder the biggest blocks, which is where the travel actually is, and
 		-- leave the long tail of single stops where the greedy put them.
-		R.blocksSkipped = #blocks - MAX_BLOCKS_TO_REORDER
+		S.blocksSkipped = #blocks - MAX_BLOCKS_TO_REORDER
 	end
 
 	local start = { continent = playerContinent, world = playerWorld }
-	local best = R.RouteMinutes(R.route, start)
+	local best = R.RouteMinutes(S.route, start)
 	local before = best
 
 	-- Pairwise block swaps until nothing improves. Blocks are few -- one per
@@ -2519,22 +3023,23 @@ function R.ImproveTotalTime(playerContinent, playerWorld)
 	-- every one of them pointing at the old route.
 	if best < before - 0.5 then
 		local final = flatten(blocks)
-		wipe(R.route)
-		for _, stop in ipairs(final) do R.route[#R.route + 1] = stop end
+		wipe(S.route)
+		for _, stop in ipairs(final) do S.route[#S.route + 1] = stop end
 	end
 
-	R.timeSaved = before - best
-	return R.timeSaved
+	S.timeSaved = before - best
+	return S.timeSaved
 end
 
 -- Rebuild the goal -> stop index. Called after anything reorders R.route,
 -- including the session view, or a goal would report the stop it used to be in.
-function R.Reindex()
-	wipe(R.stopBySpell)
-	for _, stop in ipairs(R.route) do
+function R.Reindex(S)
+	S = S or R
+	wipe(S.stopBySpell)
+	for _, stop in ipairs(S.route) do
 		for _, member in ipairs(stop.members or { stop }) do
 			local e = member.entry
-			if e and e.spellID then R.stopBySpell[e.spellID] = stop end
+			if e and e.spellID then S.stopBySpell[e.spellID] = stop end
 		end
 	end
 end
@@ -2577,7 +3082,8 @@ function R.PositionlessExcuse(stop)
 	return nil
 end
 
-function R.Measure()
+function R.Measure(S)
+	S = S or R
 	local playerContinent, playerWorld = U.PlayerWorldPos()
 	-- Walk the route the way the player will, spending teleports as they go, so
 	-- the time we report is the time a wormhole actually buys them.
@@ -2586,12 +3092,12 @@ function R.Measure()
 	local sessionCap = MM.Weights and MM.Weights.Get("session") or 0
 	local boundaryMarked = false
 
-	for _, stop in ipairs(R.route) do
+	for _, stop in ipairs(S.route) do
 		local legMinutes, method = travelMinutes(state, stop)
 		-- A teleport is a resource: spent on leg two, gone on leg nine. A taxi
 		-- is not -- you can ride the same route all day -- so marking it used
 		-- would silently forbid the second trip to a destination.
-		if method and not method.taxi then state.used[method.key] = true end
+		R.SpendTravel(state, method)
 		stop.arriveBy = method
 		travelTotal = travelTotal + legMinutes
 		stop.travelMinutes = legMinutes
@@ -2620,14 +3126,14 @@ function R.Measure()
 		state.x, state.y = stop.x, stop.y
 	end
 
-	R.totals = {
-		stops = #R.route,
+	S.totals = {
+		stops = #S.route,
 		minutes = minutes,                       -- everything, grinds included
 		routeMinutes = travelTotal + visitTotal, -- travel plus one visit each
 		travelMinutes = travelTotal,
 		mounts = mounts,
 	}
-	return R.totals
+	return S.totals
 end
 
 -- One line for the UI: "12 stops · about 2h 10m · ~0.8 mounts expected".
@@ -2665,7 +3171,10 @@ MM:On("MM_LAYERS_DEBUG", function()
 	-- Never let a broken build produce an EMPTY section. "(no output)" is
 	-- the least useful thing a diagnostic can say, and it is exactly what
 	-- this printed while the router was throwing on every build.
-	local built, err = pcall(function() return R:Build() end)
+	-- SYNCHRONOUS, because a diagnostic that reports the PREVIOUS route is
+	-- worse than no diagnostic: it looks like an answer. R.Warm has usually
+	-- run this already for the full report, so this is a cache hit.
+	local built, err = pcall(function() return R:BuildSync() end)
 	if not built then
 		MM:Print("|cffff4444Layered ordering: the router failed to build: %s|r", tostring(err))
 		return
@@ -2725,7 +3234,9 @@ MM:On("MM_ROUTE_DEBUG", function()
 	-- Never let a broken build produce an EMPTY section. "(no output)" is
 	-- the least useful thing a diagnostic can say, and it is exactly what
 	-- this printed while the router was throwing on every build.
-	local built, err = pcall(function() return R:Build() end)
+	-- SYNCHRONOUS, for the same reason as /mm layers: this section's whole job
+	-- is to describe the route the request asked for, not the one before it.
+	local built, err = pcall(function() return R:BuildSync() end)
 	if not built then
 		MM:Print("|cffff4444Route: the router failed to build: %s|r", tostring(err))
 		return
@@ -2829,8 +3340,7 @@ function R.SetIndex(i)
 	MM.cdb.routeIndex = i
 	local stop = R.route[i]
 	if stop and MM.db then
-		local id = stop.spellID
-			or (stop.members and stop.members[1] and stop.members[1].spellID)
+		local id = stopSpellID(stop)
 		-- A stop with no spellID leaves the anchor alone rather than clearing
 		-- it: losing your place is worse than an anchor going briefly stale.
 		if id then MM.db.routeGoal = id end
@@ -2842,21 +3352,65 @@ function R:Current()
 	return R.route[MM.cdb.routeIndex]
 end
 
+-- True between the request and the route landing, so a second press does not
+-- start a second build behind the first.
+local startPending = false
+
 function R:Start()
-	local n = R:Build()
-	if n == 0 then
+	if startPending then
+		MM:Print("Still charting your route — one moment.")
+		return false
+	end
+	-- AN EMPTY PLAN IS ANSWERABLE WITHOUT CHARTING ANYTHING.
+	--
+	-- Asking the router first meant a build ran to discover what the plan
+	-- already knew, and Start read its return value as a count when Build
+	-- returns no count at all -- so `n == 0` was never true and an empty plan
+	-- activated a route with nothing in it.
+	local planned = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
+	if planned == 0 then
 		MM:Print("No routable goals in the plan. Add mounts with a farm location first.")
 		return false
 	end
-	MM.cdb.routeActive = true
-	-- Re-anchors to the new leader, so the next rebuild resumes to what the
-	-- plan actually shows rather than to whatever was current before.
-	R.SetIndex(1)
-	MM.Nav.SetWaypoint(R:Current())
-	MM:Fire("MM_ROUTE_STARTED")
-	MM:Fire("MM_ROUTE_ADVANCED")
-	MM:Print("Route started: %d goals. Good hunting.", n)
-	return true
+
+	local activated = false
+	startPending = true
+	-- ASYNCHRONOUS, because charting a large plan is seconds of work and Start
+	-- is a button. Nothing about the route is touched until it has landed.
+	--
+	-- WRAPPED, because `startPending` blocks every later press. If the request
+	-- itself throws, the flag has to come back down or the button is dead for
+	-- the rest of the session.
+	local requested = pcall(R.AfterBuild, false, function(stops, ok)
+		startPending = false
+		-- A FAILED BUILD LEAVES THE PREVIOUS ROUTE STANDING, and that route was
+		-- charted for a different plan. Starting on it would look like success.
+		if not ok then
+			MM:Print("The route could not be charted — nothing started. /mm route to retry.")
+			return
+		end
+		if stops == 0 then
+			MM:Print("No routable goals in the plan. Add mounts with a farm location first.")
+			return
+		end
+		MM.cdb.routeActive = true
+		-- Re-anchors to the new leader, so the next rebuild resumes to what the
+		-- plan actually shows rather than to whatever was current before.
+		R.SetIndex(1)
+		MM.Nav.SetWaypoint(R:Current())
+		MM:Fire("MM_ROUTE_STARTED")
+		MM:Fire("MM_ROUTE_ADVANCED")
+		MM:Print("Route started: %d goals. Good hunting.", stops)
+		activated = true
+	end)
+	if not requested then
+		startPending = false
+		MM:Print("The route could not be charted — nothing started.")
+		return false
+	end
+	-- A cached route completes inline, so the honest answer is whether it
+	-- activated; a real build is still pending, and that is also a yes.
+	return activated or startPending
 end
 
 function R:Stop()
@@ -2975,27 +3529,30 @@ function R:Advance(step)
 	-- across the rebuild, and stops behind it are not re-ordered.
 	local goal = R:Current()
 	if MM.Planner and MM.Planner.SetAnchor then
-		MM.Planner.SetAnchor()
-		R.Invalidate()
-		R:Build()
 		-- Build reorders what is left, so hold onto the goal we advanced TO by
 		-- identity rather than by index -- the same rule the resume path uses,
 		-- for the same reason.
 		local sid = goal and goal.entry and goal.entry.spellID
-		if sid then
-			for i, stop in ipairs(R.route) do
-				if stop.entry and stop.entry.spellID == sid then
-					R.SetIndex(i)
-					break
-				end
-				for _, m in ipairs(stop.members or {}) do
-					if m.entry and m.entry.spellID == sid then
-						R.SetIndex(i)
-						break
-					end
+		MM.Planner.SetAnchor()
+		R.Invalidate()
+		-- REPOINT ONLY AFTER THE NEW ROUTE EXISTS.
+		--
+		-- This searched R.route on the line after an asynchronous Build, so it
+		-- was searching the route the rebuild was about to replace: the arrow
+		-- and MM_ROUTE_ADVANCED both landed on the previous ordering. If a plan
+		-- edit arrives while this builds, the completion belongs to the newest
+		-- build, and that is the route these stops come from.
+		R.AfterBuild(false, function()
+			if not (MM.cdb and MM.cdb.routeActive) then return end
+			if sid then
+				for i, stop in ipairs(R.route) do
+					if stopHolds(stop, sid) then R.SetIndex(i) break end
 				end
 			end
-		end
+			MM.Nav.SetWaypoint(R:Current())
+			MM:Fire("MM_ROUTE_ADVANCED")
+		end)
+		return
 	end
 
 	MM.Nav.SetWaypoint(R:Current())
@@ -3055,16 +3612,24 @@ MM:On("MM_SCANNED", function()
 				.. "nearby goals may not be ordered first. /mm route to replan.")
 		end
 		local startedAt = debugprofilestop and debugprofilestop() or nil
-		R:Build()
-		if startedAt and debugprofilestop then
-			local secs = (debugprofilestop() - startedAt) / 1000
-			-- Only when it was slow enough to have looked broken. Below that
-			-- the player never noticed a pause and does not need a receipt.
-			if secs > 4 then
-				MM:Print("Route planned in %.1fs — %d goals.", secs, #R.route)
+		-- MEASURED THROUGH COMPLETION, NOT TO THE START OF THE COROUTINE.
+		--
+		-- Build returns with the work in flight, so timing around the call
+		-- measured how long it took to CREATE the build -- microseconds -- and
+		-- the receipt for a genuinely slow resume never printed. Finishing here
+		-- also means FinishResume can trust that an empty route is an empty
+		-- route rather than one that has not been charted yet.
+		R.AfterBuild(false, function(stops)
+			if startedAt and debugprofilestop then
+				local secs = (debugprofilestop() - startedAt) / 1000
+				-- Only when it was slow enough to have looked broken. Below that
+				-- the player never noticed a pause and does not need a receipt.
+				if secs > 4 then
+					MM:Print("Route planned in %.1fs — %d goals.", secs, stops)
+				end
 			end
-		end
-		R.FinishResume()
+			R.FinishResume()
+		end)
 	end
 	local function whenReady()
 		if C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player") then
@@ -3080,6 +3645,12 @@ end)
 
 -- The second half of the resume, split out so the build above can be deferred.
 function R.FinishResume()
+	-- A BUILD IN FLIGHT IS NOT AN EMPTY ROUTE.
+	--
+	-- Stopping here on an empty in-memory route would throw away a perfectly
+	-- valid saved route whenever the chart had not landed yet -- the route
+	-- would simply be gone after a reload, with nothing said about why.
+	if R.IsBuilding() then return end
 	if #R.route == 0 then
 		R:Stop()
 		return
@@ -3175,6 +3746,50 @@ MM:On("MM_ROUTE_STOPPED", stopPoller)
 -- say so outright rather than being inferred.
 MM:On("MM_LOCKS", R.Invalidate)
 MM:On("MM_SCANNED", R.Invalidate)
+
+-- TRAVEL CHANGED, WHICH THE PLAN CANNOT SEE.
+--
+-- Switching a teleport off used to fire MM_PLAN_CHANGED. That rebuilt the
+-- route, and the rebuild took a CACHE HIT -- the plan had not changed, and the
+-- signature could not see teleports -- so the option moved and the route did
+-- not. The signature now carries a travel fingerprint, and this is what tells
+-- each layer to drop what it owns.
+--
+-- Scope decides how much is thrown away. Rebuilding a 29,000-edge graph because
+-- a hearthstone came off cooldown is the waste this distinction exists to
+-- prevent.
+local lastTravelPrint
+MM:On("MM_TRAVEL_CHANGED", function(scope)
+	-- DID ANYTHING ACTUALLY MOVE?
+	--
+	-- SPELLS_CHANGED and TOYS_UPDATED fire for reasons that have nothing to do
+	-- with travel -- a talent swap, a pet learned. Invalidating on the EVENT
+	-- would re-chart the whole plan for each of them. The fingerprint answers
+	-- the question the event only raises.
+	local now = MM.TravelFingerprint and MM.TravelFingerprint() or "?"
+	local moved = (now ~= lastTravelPrint)
+	lastTravelPrint = now
+
+	if scope == "topology" then
+		-- The map moved. This is the expensive one, and the only reason the
+		-- scopes exist: rebuilding 29,000 edges because a hearthstone came off
+		-- cooldown is exactly the waste being avoided here.
+		R.InvalidateTravelTopology()
+	elseif scope == "cooldown" or moved then
+		-- Prices or options moved: the cached ANSWERS are wrong, the map is not.
+		R.InvalidateTravelPlans()
+	end
+
+	-- A cooldown changes what a route costs, not which routes are legal, and an
+	-- order is a decision about legality and value. Re-charting for one would
+	-- reshuffle the plan under the player every thirty seconds.
+	if scope == "cooldown" or not moved then return end
+	R.InvalidateRouteOrder()
+	-- Asynchronously, and only when there is a route to keep current: a settings
+	-- panel toggle must not freeze the frame, and the previous complete route
+	-- stays on screen until the replacement lands.
+	if MM.cdb and MM.cdb.routeActive then R:Build() end
+end)
 
 -- A SESSION IS A VIEW, AND A VIEW HAS TO BE ABLE TO CLOSE.
 --

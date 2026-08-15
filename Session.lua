@@ -82,22 +82,47 @@ end
 -- measured from the player, and nothing is chosen that cannot be finished.
 --
 -- Returns: stops, mounts expected, minutes used.
-function S.Fit(minutes)
+-- `route` is the ordering to fit. It defaults to the published route, which is
+-- what every caller outside the router wants -- but a build applying a session
+-- to its own staged result has to hand in that result, or the session is fitted
+-- against the PREVIOUS route and the staged one is reordered by the answer.
+function S.Fit(minutes, route)
 	local R = MM.Router
 	if not (R and R.route and R.Density) then return {}, 0, 0 end
+	route = route or R.route
 	minutes = minutes or (state().minutes or 60)
 
 	local pool = {}
-	for i, stop in ipairs(R.route) do pool[i] = stop end
+	for i, stop in ipairs(route) do pool[i] = stop end
 
 	local chosen, mounts, used = {}, 0, 0
+	-- ONE TRAVEL STATE FOR THE WHOLE FIT, the same one the route walks.
+	--
+	-- Every candidate was priced from a FRESH, unspent teleport set, so a
+	-- session could hand out the same hearthstone for six different stops and
+	-- promise a total nobody could achieve. The state carries position and
+	-- spent charges together, and only the stop actually chosen commits to it.
+	--
+	-- It also priced through Teleports.TravelMinutes, which knows about
+	-- teleports and flying and nothing about taxis, boats or portals -- so the
+	-- session and the route it is a view of disagreed about the same chain.
+	local state = R.TravelState and R.TravelState() or nil
 	local continent, world = U.PlayerWorldPos()
 
 	while #pool > 0 do
 		local bestIdx, bestScore, bestCost, bestTravel, bestPref
 		for i, stop in ipairs(pool) do
+			-- NON-MUTATING. Costing a candidate must not spend anything: the
+			-- state is read here and written only once the winner is known.
+			--
+			-- Numbers only, deliberately. Every candidate but one is discarded,
+			-- and building leg descriptions for all of them is one full graph
+			-- search per candidate per round -- the shape that froze the client
+			-- when the route builder did it.
 			local travel = 0
-			if MM.Teleports and MM.Teleports.TravelMinutes and stop.world then
+			if state and R.LegFrom then
+				travel = R.LegFrom(state, stop, false) or 0
+			elseif MM.Teleports and MM.Teleports.TravelMinutes and stop.world then
 				travel = MM.Teleports.TravelMinutes(continent, world,
 					stop.continent, stop.world) or 0
 			end
@@ -160,8 +185,23 @@ function S.Fit(minutes)
 		mounts = mounts + (stop.mounts or 0)
 		continent = stop.continent or continent
 		world = stop.world or world
+		if state then
+			-- PRICED AGAIN, WITH THE LEGS, for the one stop that was chosen.
+			--
+			-- The comparison above runs without leg descriptions and therefore
+			-- cannot see a teleport buried inside a multi-leg journey. This is
+			-- the only place a charge is spent, and it spends what the chosen
+			-- leg actually costs rather than what the shortlist guessed.
+			local _, method = R.LegFrom(state, stop, true)
+			-- Recorded on the entry as well as spent, so "did this session hand
+			-- out one hearthstone four times" is a question that can be asked
+			-- of the result rather than inferred from the total.
+			chosen[#chosen].spends = method and method.spends or nil
+			R.SpendTravel(state, method)
+			R.AdvanceTravelState(state, stop)
+		end
 	end
-	return chosen, mounts, used
+	return chosen, mounts, used, state and state.used or nil
 end
 
 ------------------------------------------------------------

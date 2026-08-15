@@ -482,7 +482,13 @@ function TP.SetOff(key, off)
 	-- on serving the list it had already built. Refresh is resolved at call
 	-- time and assigns the local that actually exists.
 	if TP.Refresh then TP.Refresh() end
-	if MM.Fire then MM:Fire("MM_PLAN_CHANGED") end
+	-- SAY WHAT ACTUALLY CHANGED.
+	--
+	-- This fired MM_PLAN_CHANGED, which is not true -- the plan is untouched --
+	-- and it did not work: the plan-change handler rebuilds the route, and that
+	-- rebuild took a cache hit, because the route signature could not see
+	-- teleports at all. Switching one off left the route routing through it.
+	if MM.TravelChanged then MM.TravelChanged("capability", "teleport switched") end
 end
 
 -- The dungeon and raid teleports as one group, because that is how the request
@@ -697,6 +703,25 @@ for _, event in ipairs({ "BAG_UPDATE_DELAYED", "SPELLS_CHANGED", "TOYS_UPDATED",
 	"PLAYER_ENTERING_WORLD", "HEARTHSTONE_BOUND", "SKILL_LINES_CHANGED",
 	"UPDATE_INSTANCE_INFO" }) do
 	MM:RegisterGameEvent(event, function() snapshot = nil end)
+end
+
+-- ANNOUNCED, NOT JUST DROPPED.
+--
+-- Dropping the snapshot means the NEXT question gets a fresh answer. It does
+-- nothing about answers already cached elsewhere -- a route ordered around a
+-- wormhole, a journey whose first leg is a hearthstone -- and those are the
+-- ones that go quietly wrong.
+--
+-- Separate from the loop above on purpose. These three genuinely change what
+-- the character can press; BAG_UPDATE_DELAYED fires constantly for reasons
+-- that have nothing to do with travel, and announcing a capability change on
+-- every bag movement would re-chart the plan while the player sorted their
+-- inventory. The snapshot drop above still covers it, so a bag change is
+-- noticed the next time anything asks -- it simply does not shout about it.
+for _, event in ipairs({ "TOYS_UPDATED", "HEARTHSTONE_BOUND", "SPELLS_CHANGED" }) do
+	MM:RegisterGameEvent(event, function()
+		if MM.TravelChanged then MM.TravelChanged("capability", event) end
+	end)
 end
 -- Arrivals resolve against map data, which is absent for a moment after a
 -- world change. Drop them with it so a miss is retried rather than remembered.

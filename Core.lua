@@ -265,6 +265,101 @@ function MM.TimeIt(label, fn)
 	end
 end
 
+------------------------------------------------------------
+-- Travel capability: one fingerprint, one signal
+------------------------------------------------------------
+-- Route order, journey plans and origin searches are all cached against what
+-- this character can currently do -- which teleports are owned and switched on,
+-- where the hearthstone points, which flight points are known. Each cache used
+-- to decide for itself when that had changed, and each decided differently.
+-- Switching a teleport off fired MM_PLAN_CHANGED, which rebuilt the route,
+-- which took a cache hit because the route signature could not see teleports at
+-- all: the option moved and the route did not.
+--
+-- Three scopes, in increasing severity. The distinction is what stops a
+-- hearthstone cooling down from throwing away a graph of 29,000 edges:
+--
+--   cooldown    a teleport got closer to ready. Prices move, options do not.
+--   capability  what the character can press changed: gained, lost, switched
+--               off, or rebound to somewhere else.
+--   topology    the MAP changed: a flight point learned, the graph rebuilt.
+local TRAVEL_SCOPES = { cooldown = true, capability = true, topology = true }
+
+-- A FINGERPRINT, NOT A COUNTER.
+--
+-- A counter restarts at 1 on every reload, so a chart saved under revision 3
+-- could never match again and every login would re-chart from scratch -- the
+-- exact regression the stored chart exists to prevent. A fingerprint of what
+-- the character can actually do is the same string across a reload, and a
+-- different one the moment a teleport is gained, lost, switched off or rebound.
+local travelPrint, travelPrintFrom
+
+-- djb2, folded to stay inside a double. The signature is written to saved
+-- variables and quoted back in cache diagnostics, so the component has to be
+-- short: the raw input is a couple of thousand characters of teleport keys.
+local function fold(s)
+	local h = 5381
+	for i = 1, #s do
+		h = (h * 33 + s:byte(i)) % 4294967296
+	end
+	return h
+end
+
+function MM.TravelFingerprint()
+	local TP = MM.Teleports
+	local options = (TP and TP.Options) and TP.Options() or nil
+	-- KEYED ON THE SNAPSHOT ITSELF, not on a timer and not on an event alone.
+	--
+	-- The teleport layer rebuilds that table whenever anything could have
+	-- changed what the character can press -- on its own events, and on its own
+	-- thirty-second cooldown TTL. A new table is therefore the one honest signal
+	-- that this needs recomputing. Caching against events alone left the
+	-- fingerprint stale for any capability change that fired none of them, which
+	-- is a route signature quietly describing a character who no longer exists.
+	if travelPrint and travelPrintFrom == options then return travelPrint end
+	local parts = {}
+	-- WHICH teleports, and where each one lands -- never WHEN it is ready.
+	-- A cooldown ticking down changes what a route costs, not which routes are
+	-- legal, and folding it in here would re-chart the whole plan every thirty
+	-- seconds for no change anybody asked for.
+	if options then
+		local keys = {}
+		for _, landing in ipairs(options) do
+			-- The destination belongs in the key as much as the option does: a
+			-- hearthstone rebound to another city is the same key pointing
+			-- somewhere else, and a route built for the old city is wrong.
+			keys[#keys + 1] = tostring(landing.key) .. ">" .. tostring(landing.place or "?")
+		end
+		table.sort(keys)
+		parts[#parts + 1] = table.concat(keys, ",")
+	else
+		parts[#parts + 1] = "tp?"
+	end
+	-- Flight points, by count. Learning one changes what the graph can reach,
+	-- and an order built without it was built for a world this character has
+	-- already left behind.
+	local maps, legs = 0, 0
+	for _ in pairs(MM.db and MM.db.taxi or {}) do maps = maps + 1 end
+	for _ in pairs(MM.db and MM.db.taxiLearned or {}) do legs = legs + 1 end
+	parts[#parts + 1] = ("%d/%d"):format(maps, legs)
+	travelPrint = tostring(fold(table.concat(parts, ";")))
+	travelPrintFrom = options
+	return travelPrint
+end
+
+-- THE ONE PLACE THAT SAYS TRAVEL CHANGED.
+--
+-- Callers name what changed and nothing else. Each layer subscribes to
+-- MM_TRAVEL_CHANGED and forgets exactly what it owns -- the router its order,
+-- the journey planner its answers, the graph itself only when the map moved.
+function MM.TravelChanged(scope, why)
+	if not TRAVEL_SCOPES[scope] then scope = "capability" end
+	-- Dropped as well as keyed, because the taxi counts folded into the print
+	-- are not part of the teleport snapshot and nothing else would notice them.
+	travelPrint, travelPrintFrom = nil, nil
+	MM:Fire("MM_TRAVEL_CHANGED", scope, why)
+end
+
 -- Slowest first, because the only question worth asking of this report is
 -- "what do I fix". Deferred work is listed separately: it does not block the
 -- login frame, but it is what a player feels as the addon "loading".
@@ -362,7 +457,7 @@ local accountDefaults = {
 	useTomTom = false,
 	tomTomDefaultReset = nil, -- stamped once when the default above flipped
 	autoMonitor = true,       -- open the monitor HUD when a route starts
-	theme = nil,             -- nil = auto (ElvUI if installed, else blizzard)
+	theme = nil,             -- nil = auto (ElvUI if installed, else Modern)
 	-- First-run onboarding. Stores the SCHEMA it was completed against, not a
 	-- boolean, so a future version that adds a step can re-ask without also
 	-- re-asking everyone who already answered the old questions.
@@ -498,6 +593,7 @@ MM:RegisterGameEvent("ADDON_LOADED", function(name)
 	MM.db = MasterMountsDB
 	MM.cdb = MasterMountsCharDB
 	accountPlanDefaults(MM.db)
+	MM.db.themeAutoFallback = nil -- remove the superseded pre-release migration key
 
 	-- THE TOMTOM DEFAULT FLIPPED, SO EXISTING INSTALLS GET MOVED ONCE.
 	--
@@ -884,8 +980,12 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Fire("MM_THEME_DEBUG")
 	elseif input == "theme elvui" then
 		MM.Theme.Set("elvui")
+	elseif input == "theme modern" then
+		MM.Theme.Set("modern")
 	elseif input == "theme blizzard" then
 		MM.Theme.Set("blizzard")
+	elseif input == "theme auto" then
+		MM.Theme.Set("auto")
 	elseif input == "ids" then
 		windowed("ID coverage", function() MM:Fire("MM_IDS_DEBUG") end)
 	elseif input == "resolve" then

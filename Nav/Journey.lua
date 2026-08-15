@@ -113,11 +113,19 @@ local function yards(zoneA, ax, ay, zoneB, bx, by, mapA, mapB)
 	return math.sqrt(dx * dx + dy * dy)
 end
 
-local function addEdge(from, to, secs, mode)
+-- `resource` names a ONE-USE charge this edge spends, when it spends one.
+--
+-- Carried as structured data rather than recovered later from the mode string.
+-- The router used to decide whether a journey had spent a teleport by looking
+-- for "teleport:" at the front of a human-readable label -- so the answer
+-- depended on prose, and the actual key it spent was not recoverable at all.
+local function addEdge(from, to, secs, mode, resource)
 	if not (from and to) or from == to then return end
 	edges[from] = edges[from] or {}
 	local cur = edges[from][to]
-	if not cur or secs < cur.secs then edges[from][to] = { secs = secs, mode = mode } end
+	if not cur or secs < cur.secs then
+		edges[from][to] = { secs = secs, mode = mode, resource = resource }
+	end
 end
 
 -- Where a place joins the graph: the nodes worth attaching a journey end to.
@@ -270,14 +278,26 @@ end
 -- previously computed route cached against a world that no longer exists --
 -- so a rebuild silently changed nothing, which is the worst kind of stale.
 local planCache
+-- Counted rather than measured on demand: `#` does not work on a string-keyed
+-- table and walking it to find out how big it is would cost more than the cap
+-- saves. Declared here, beside the cache, so everything that empties one
+-- empties the other.
+local planCacheSize = 0
 -- Clears the nearest-node caches too. They are derived from the graph, so a
 -- rebuild that left them standing would answer for nodes that no longer exist.
 function J.Forget()
 	graph = nil
 	planCache = {}
+	planCacheSize = 0
 	nodeWorldCache = {}
 	nearZoneCache = {}
 	planWhy = {}
+	-- The single-origin search is a result computed FROM the graph, so a
+	-- rebuild that left it standing would keep answering "how far is
+	-- everything from here" out of the map that was just thrown away. Called
+	-- through J rather than touching the local, which is declared six hundred
+	-- lines below this one.
+	if J.ForgetTravelFrom then J.ForgetTravelFrom() end
 end
 
 -- Throw away the ANSWERS but keep the map.
@@ -292,6 +312,7 @@ end
 -- scratch for every question asked of it.
 function J.ForgetPlans()
 	planCache = {}
+	planCacheSize = 0
 	planWhy = {}
 end
 
@@ -935,8 +956,13 @@ end
 -- seconds-from-here for every node, or nil if we cannot stand anywhere known.
 local function travelFrom(zone, x, y, mapID)
 	if not zone then return nil end
-	local key = ("%s#%s#%.1f#%.1f"):format(zone:lower(), tostring(mapID or "?"),
-		x or -1, y or -1)
+	-- The travel fingerprint belongs here even though this search wires no
+	-- teleports: its edges come from the graph, and a learned flight point
+	-- changes the graph. J.Forget drops this cache as well, so the fingerprint
+	-- is the second line of defence rather than the first -- and the cheap one
+	-- to be wrong about.
+	local key = ("%s#%s#%.1f#%.1f#%s"):format(zone:lower(), tostring(mapID or "?"),
+		x or -1, y or -1, MM.TravelFingerprint and MM.TravelFingerprint() or "?")
 	if fromCacheKey == key and fromCache then return fromCache end
 	build()
 
@@ -1036,21 +1062,81 @@ end
 -- meant 2118, and the name resolved to the other -- which has no world
 -- position, so the destination could not be attached at all and every journey
 -- there reported "no way to reach the forbidden reach from the graph".
+-- EVERY INPUT THAT MOVES THE ANSWER IS IN THE KEY.
+--
+-- The key was zone names and map ids. The answer also depends on the exact
+-- COORDINATES at each end (they decide which node the journey attaches to and
+-- how far the walk to it is), on the direct-flight cost handed in as a rival
+-- edge, on which teleports this character currently has, and on which of them
+-- the caller has already spent. None of those were in it, so:
+--
+--   two stops in one zone shared one answer, and the second got the first's
+--   route -- including its ENTRY NODE, which may be on the far side
+--   a cheaper direct flight could not beat a cached answer computed without it
+--   a teleport switched off stayed in a plan that had already been cached
+--   a "no path" for one corner of a zone suppressed a real route from another
+--
+-- 0.1 of a coordinate unit is the rounding, which at ~40 yards per unit is
+-- about four yards -- an order of magnitude finer than the distance at which
+-- any entry-node choice could change, and fine enough that the reuse that
+-- matters (the same leg asked twice) is still an exact hit.
+local function planKey(fromZone, fromX, fromY, fromMapID,
+		toZone, toX, toY, toMapID, directFlyMinutes, used)
+	local spent = ""
+	if used then
+		local keys = {}
+		for k in pairs(used) do keys[#keys + 1] = tostring(k) end
+		table.sort(keys)
+		spent = table.concat(keys, ",")
+	end
+	return ("%s#%s@%.1f,%.1f|%s#%s@%.1f,%.1f|f%.2f|t%s|u%s"):format(
+		fromZone, tostring(fromMapID or "?"), fromX or -1, fromY or -1,
+		toZone, tostring(toMapID or "?"), toX or -1, toY or -1,
+		directFlyMinutes or -1,
+		MM.TravelFingerprint and MM.TravelFingerprint() or "?",
+		spent)
+end
+
+-- A COMPLETE KEY IS AN UNBOUNDED KEY, so the cache needs a ceiling.
+--
+-- Keyed on zone pairs, this could only ever hold as many entries as there are
+-- pairs of zones. Keyed on coordinates it can hold one per leg per origin per
+-- spent-charge set, which across a long session is unbounded growth in a
+-- process that never restarts.
+--
+-- Cleared wholesale rather than evicted one at a time: the entries are worth a
+-- Dijkstra each, they are all cheap to recompute on demand, and an LRU over a
+-- table this size costs more bookkeeping than it saves. The cap is generous
+-- enough that a single route build -- roughly two entries per stop -- never
+-- reaches it.
+local PLAN_CACHE_MAX = 4000
+
+local function rememberPlan(key, value)
+	if planCacheSize >= PLAN_CACHE_MAX then
+		planCache, planWhy, planCacheSize = {}, {}, 0
+		J.planCacheFlushes = (J.planCacheFlushes or 0) + 1
+	end
+	if planCache[key] == nil then planCacheSize = planCacheSize + 1 end
+	planCache[key] = value
+	return value
+end
+
 function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
-		fromMapID, toMapID)
+		fromMapID, toMapID, used)
 	build()
 	planCache = planCache or {}
 	if not (fromZone and toZone) then return nil, nil, "no zone name at one end" end
 	fromZone, toZone = fromZone:lower(), toZone:lower()
 
-	-- Keyed by MAP where the caller gave one: two maps can share a name, and a
-	-- plan cached under the name alone would answer for the wrong one.
-	local key = ("%s#%s|%s#%s"):format(fromZone, tostring(fromMapID or "?"),
-		toZone, tostring(toMapID or "?"))
+	local key = planKey(fromZone, fromX, fromY, fromMapID,
+		toZone, toX, toY, toMapID, directFlyMinutes, used)
 	local hit = planCache[key]
 	if hit ~= nil then
 		if hit == false then return nil, nil, planWhy[key] end
-		return hit[1], hit[2]
+		-- minutes, legs, why, spends. `why` stays in third position because a
+		-- failure already answers there and a caller reading it must not
+		-- suddenly receive a table.
+		return hit[1], hit[2], nil, hit[3]
 	end
 
 	local ypm = J.SpeedFor(nil)
@@ -1098,16 +1184,21 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
 	local TP = MM.Teleports
 	if TP and TP.Options then
 		for _, landing in ipairs(TP.Options() or {}) do
-			local lz = landing.place and landing.place:lower()
+			-- ALREADY SPENT IS NOT AVAILABLE.
+			--
+			-- A one-use teleport offered on leg two is gone by leg nine, and
+			-- the planner had no way to be told so -- it re-offered the same
+			-- hearthstone for every leg of a route, and the route was costed
+			-- as though the player owned one per stop.
+			local spent = used and landing.key and used[landing.key]
+			local lz = (not spent) and landing.place and landing.place:lower() or nil
 			local target = lz and (byZone[lz] and lz or nil)
 			if target then
 				-- Land at every node in the destination zone; the graph sorts
 				-- out which one is actually worth walking to.
 				for _, name in ipairs(byZone[target]) do
-					local n = graph[name]
-					local secs = (landing.waitMinutes or 0) * 60 + 30
-						
-					addEdge(START, name, secs, "teleport:" .. (landing.name or "?"))
+					addEdge(START, name, (landing.waitMinutes or 0) * 60 + 30,
+						"teleport:" .. (landing.name or "?"), landing.key)
 				end
 			end
 		end
@@ -1211,20 +1302,29 @@ function J.Plan(fromZone, fromX, fromY, toZone, toX, toY, directFlyMinutes,
 			why = ("no path %s -> %s (%d start / %d goal attachments)")
 				:format(fromZone, toZone, fromCount, toCount)
 		end
-		planCache[key] = false
+		rememberPlan(key, false)
 		planWhy[key] = why
 		return nil, nil, why
 	end
 
 	local legs, node = {}, GOAL
+	local spends = nil
 	while prev[node] do
 		local from, e = prev[node][1], prev[node][2]
 		local label = temp[node] and "your goal" or (graph[node] and graph[node].name or node)
-		table.insert(legs, 1, { mode = e.mode, to = label, minutes = e.secs / 60 })
+		-- The resource travels WITH the leg. A caller that needs to know what
+		-- this journey costs in charges reads it here rather than parsing the
+		-- description it is about to show a player.
+		table.insert(legs, 1, { mode = e.mode, to = label, minutes = e.secs / 60,
+			resource = e.resource })
+		if e.resource then
+			spends = spends or {}
+			spends[e.resource] = true
+		end
 		node = from
 	end
-	planCache[key] = { best / 60, legs }
-	return best / 60, legs
+	rememberPlan(key, { best / 60, legs, spends })
+	return best / 60, legs, nil, spends
 end
 
 -- One line a player can act on.

@@ -323,16 +323,12 @@ local function observe(sample)
 		-- perfectly. A direct teleport is a landing (Measure marks it spent
 		-- precisely because it is not a taxi); a planned journey counts only if
 		-- one of its own legs is a teleport.
-		local by = stop.arriveBy
-		if by then
-			local isTeleport = not by.taxi
-			for _, leg in ipairs(by.legs or {}) do
-				if type(leg.mode) == "string" and leg.mode:find("^teleport") then
-					isTeleport = true
-					break
-				end
-			end
-			if isTeleport then obs.teleports = obs.teleports + 1 end
+		-- ASKED OF THE ROUTER, not re-derived here. This was a second copy of
+		-- the rule, and it read the same human-readable leg labels the router
+		-- used to read. One owner, one answer: a method now carries the
+		-- charges it spends as data, and ArrivesByTeleport reads them.
+		if MM.Router.ArrivesByTeleport and MM.Router.ArrivesByTeleport(stop) then
+			obs.teleports = obs.teleports + 1
 		end
 		obs.stops[#obs.stops + 1] = {
 			order = i,

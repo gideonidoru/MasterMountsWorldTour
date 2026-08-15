@@ -142,6 +142,20 @@ local function routeInHand(R, least)
 	return #(R.route or {})
 end
 
+-- MM_ROUTE_BUILT, counted, so a check can assert a build announced itself
+-- exactly once -- and that an obsolete build announced itself not at all.
+--
+-- Hooked once and lazily. MM:On has no unsubscribe, so registering inside a
+-- check would leave one more listener behind on every run.
+local routeBuiltCount, routeBuiltHooked = 0, false
+local function watchRouteBuilt()
+	if not routeBuiltHooked then
+		routeBuiltHooked = true
+		MM:On("MM_ROUTE_BUILT", function() routeBuiltCount = routeBuiltCount + 1 end)
+	end
+	return routeBuiltCount
+end
+
 -- ok == true -> PASS, false -> FAIL, nil -> WARN (absent but survivable)
 local function check(name, fn)
 	if collecting then
@@ -1363,6 +1377,609 @@ local function runLogic()
 		if R.IsBuilding() then return false, "still building after a sync build" end
 		return true, queued and "second request queued and re-issued"
 			or "first build finished before the second arrived"
+	end)
+
+	check("Build answers with a status, never a stop count", function()
+		-- Start did `local n = R:Build()` and then `if n == 0`, and formatted n
+		-- with %d. Build returned NOTHING, so n was nil: the zero-goal guard
+		-- could never fire, and the announcement formatted a nil.
+		local R = MM.Router
+		if not (R and R.Build and R.BUILD_CURRENT) then return nil, "no router" end
+		R:BuildSync()
+		local status = R:Build()
+		if type(status) ~= "string" then
+			return false, ("Build returned %s, not a status"):format(type(status))
+		end
+		local known = { [R.BUILD_CURRENT] = true, [R.BUILD_STARTED] = true,
+			[R.BUILD_QUEUED] = true, [R.BUILD_RUNNING] = true,
+			[R.BUILD_COMPLETED] = true }
+		if not known[status] then return false, "unknown build status: " .. status end
+		if status ~= R.BUILD_CURRENT then
+			return false, ("a settled route reported '%s', not '%s'")
+				:format(status, R.BUILD_CURRENT)
+		end
+		return true, "status '" .. status .. "' on a settled route"
+	end)
+
+	check("BuildSync answers with the number of stops", function()
+		-- BuildSync delegated to Build, which returned nothing, so every caller
+		-- that wanted a count got nil -- and nil compares equal to nothing.
+		local R = MM.Router
+		if not (R and R.BuildSync) then return nil, "no router" end
+		local n = R:BuildSync()
+		if type(n) ~= "number" then
+			return false, ("BuildSync returned %s, not a number"):format(type(n))
+		end
+		if n ~= #R.route then
+			return false, ("BuildSync said %d, route holds %d"):format(n, #R.route)
+		end
+		return true, ("%d stops"):format(n)
+	end)
+
+	check("BuildSync finishes a build that was already running", function()
+		-- Build returned EARLY when another build was suspended -- including for
+		-- a synchronous caller. So BuildSync during a build left the coroutine
+		-- suspended and handed back the PREVIOUS route, which is the exact
+		-- failure it exists to prevent.
+		local R = MM.Router
+		if not (R and R.Build and R.BuildSync and R.IsBuilding) then
+			return nil, "no router"
+		end
+		R:BuildSync()
+		if #(R.route or {}) < 2 then return nil, "route too short to test" end
+		R.builtSignature, R.builtRouteCount, R.chartRank = nil, nil, nil
+		R:Build()
+		local flying = R.IsBuilding()
+		local n = R:BuildSync()
+		if R.IsBuilding() then
+			return false, "BuildSync returned while a build was still in flight"
+		end
+		if type(n) ~= "number" or n ~= #R.route then
+			return false, "BuildSync did not report the finished route"
+		end
+		return true, flying and ("drained an in-flight build, %d stops"):format(n)
+			or ("build completed within one frame, %d stops"):format(n)
+	end)
+
+	check("BuildSync finishes a queued replacement build", function()
+		-- A request arriving mid-build is remembered and re-issued. A sync
+		-- caller has to drain BOTH, or it measures the build whose inputs are
+		-- already known to be out of date.
+		local R = MM.Router
+		if not (R and R.Build and R.BuildSync and R.IsBuilding) then
+			return nil, "no router"
+		end
+		R:BuildSync()
+		if #(R.route or {}) < 2 then return nil, "route too short to test" end
+		R.builtSignature, R.builtRouteCount, R.chartRank = nil, nil, nil
+		R:Build()
+		if not R.IsBuilding() then
+			return nil, "the build finished in one frame; nothing to queue behind it"
+		end
+		-- Force a replacement to be queued behind the running build.
+		R:Build(true)
+		local queued = R.rebuildWhenDone
+		R:BuildSync()
+		if R.IsBuilding() then
+			return false, "BuildSync returned with a replacement still in flight"
+		end
+		if R.rebuildWhenDone then
+			return false, "a replacement build was left queued after BuildSync"
+		end
+		return true, queued and "queued replacement drained to completion"
+			or "no replacement was needed"
+	end)
+
+	check("A finished build announces itself exactly once", function()
+		-- MM_ROUTE_ADVANCED meant both "the route finished building" and "the
+		-- current goal changed", so nothing could listen for one without being
+		-- woken by the other. MM_ROUTE_BUILT is the completion signal, and an
+		-- obsolete build -- one whose replacement is already queued -- must not
+		-- fire it at all.
+		local R = MM.Router
+		if not (R and R.BuildSync and R.Build) then return nil, "no router" end
+		R:BuildSync()
+		local before = watchRouteBuilt()
+		R.builtSignature, R.builtRouteCount, R.chartRank = nil, nil, nil
+		R:BuildSync()
+		local after = watchRouteBuilt()
+		if after - before ~= 1 then
+			return false, ("one build fired MM_ROUTE_BUILT %d times"):format(after - before)
+		end
+		-- A cache hit builds nothing, so it must announce nothing.
+		R:BuildSync()
+		if watchRouteBuilt() ~= after then
+			return false, "a cache hit announced a build that never happened"
+		end
+		return true, "one build, one notification; cache hits stay silent"
+	end)
+
+	check("Start refuses an empty plan without activating a route", function()
+		-- `if n == 0` never fired, because Build returned nil rather than a
+		-- count. An empty plan activated a route with nothing in it.
+		local R = MM.Router
+		if not (R and R.Start and MM.cdb) then return nil, "no router" end
+		local savedPlan, savedActive = MM.cdb.plan, MM.cdb.routeActive
+		local savedIndex = MM.cdb.routeIndex
+		MM.cdb.plan = {}
+		MM.cdb.routeActive = false
+		local ok, started = pcall(function() return R:Start() end)
+		MM.cdb.plan, MM.cdb.routeActive = savedPlan, savedActive
+		MM.cdb.routeIndex = savedIndex
+		if not ok then return false, "Start threw on an empty plan: " .. tostring(started) end
+		if started ~= false then
+			return false, ("Start returned %s on an empty plan"):format(tostring(started))
+		end
+		return true, "returned false, activated nothing, did not throw"
+	end)
+
+	check("The route anchor records a goal that can be found again", function()
+		-- SetIndex read `stop.spellID`, and a step has never carried one -- its
+		-- mount lives in `entry`. So the anchor was never written, and the
+		-- resume-by-identity search that reads it could never match: every
+		-- rebuild silently restarted the route at the top.
+		local R = MM.Router
+		if not (R and R.SetIndex and MM.db) then return nil, "no router" end
+		R:BuildSync()
+		if #(R.route or {}) < 2 then return nil, "route too short to test" end
+		local savedGoal, savedIndex = MM.db.routeGoal, MM.cdb.routeIndex
+		R.SetIndex(2)
+		local anchor = MM.db.routeGoal
+		MM.db.routeGoal, MM.cdb.routeIndex = savedGoal, savedIndex
+		if type(anchor) ~= "number" then
+			return false, "SetIndex recorded no goal anchor at all"
+		end
+		local wanted = R.route[2]
+		local holds = false
+		for _, m in ipairs(wanted.members or { wanted }) do
+			if m.entry and m.entry.spellID == anchor then holds = true break end
+		end
+		if not holds then
+			return false, ("anchor %d is not a mount at the stop it anchored")
+				:format(anchor)
+		end
+		return true, ("anchored on spell %d"):format(anchor)
+	end)
+
+	check("Optimize orders the plan from the route it just built", function()
+		-- Optimize called the ASYNCHRONOUS Build and reordered cdb.plan on the
+		-- next line, so it sorted the plan by the previous route every time.
+		-- With the route already settled the completion runs inline, so this
+		-- asserts the ordering itself rather than the timing.
+		local R, P = MM.Router, MM.Planner
+		if not (R and P and P.Optimize) then return nil, "no planner" end
+		R:BuildSync()
+		if #(R.route or {}) < 2 then return nil, "route too short to test" end
+		local wanted = {}
+		for _, stop in ipairs(R.route) do
+			for _, m in ipairs(stop.members or { stop }) do
+				if m.entry and m.entry.spellID then wanted[#wanted + 1] = m.entry.spellID end
+			end
+		end
+		local landed = false
+		P.SuppressAutoOptimize(function()
+			P:Optimize(function() landed = true end)
+		end)
+		if not landed then
+			return nil, "the build did not settle inline; nothing to compare"
+		end
+		local plan = MM.cdb and MM.cdb.plan or {}
+		for i = 1, math.min(#wanted, #plan) do
+			if plan[i].spellID ~= wanted[i] then
+				return false, ("plan position %d is %s, the route says %s")
+					:format(i, tostring(plan[i].spellID), tostring(wanted[i]))
+			end
+		end
+		return true, ("first %d plan entries match the route"):format(math.min(#wanted, #plan))
+	end)
+
+	check("Optimize keeps each goal's own added date", function()
+		-- Every plan item was restamped with one fresh timestamp on every
+		-- optimize, so "when did I plan this" became "when was the route last
+		-- charted" -- identical for all of them, rewritten several times an hour.
+		local P = MM.Planner
+		if not (P and P.Optimize and MM.cdb and MM.cdb.plan) then return nil, "no planner" end
+		local plan = MM.cdb.plan
+		if #plan < 2 then return nil, "plan too short to test" end
+		local was = {}
+		for _, item in ipairs(plan) do
+			if item.spellID and item.added then was[item.spellID] = item.added end
+		end
+		local sampled = 0
+		for _ in pairs(was) do sampled = sampled + 1 end
+		if sampled == 0 then return nil, "no plan entry carries an added date yet" end
+		local landed = false
+		P.SuppressAutoOptimize(function()
+			P:Optimize(function() landed = true end)
+		end)
+		if not landed then return nil, "the build did not settle inline" end
+		local moved, kept = nil, 0
+		for _, item in ipairs(MM.cdb.plan) do
+			local before = item.spellID and was[item.spellID]
+			if before then
+				if item.added ~= before then moved = item.spellID else kept = kept + 1 end
+			end
+		end
+		if moved then
+			return false, ("spell %d was restamped by an optimize"):format(moved)
+		end
+		return true, ("%d added dates survived the rewrite"):format(kept)
+	end)
+
+	check("Every weight that moves the route is in its cache signature", function()
+		-- The signature carried four weights. `era` shifts a goal by half a
+		-- tier, `urgency` reorders the bands and `orderCap` decides how far the
+		-- clock may overrule layer 1 -- all three changed the route and none
+		-- changed the signature, so a chart saved at one setting was restored
+		-- at another and the slider read as doing nothing at all.
+		--
+		-- Asked by swapping the ACCESSOR, not the setting: writing a weight
+		-- fires MM_WEIGHTS_CHANGED, which re-charts the plan. Nothing here
+		-- should re-chart anything.
+		local R, W = MM.Router, MM.Weights
+		if not (R and R.Signature and W and W.Get) then return nil, "no router" end
+		local base = R.Signature()
+		local realGet = W.Get
+		local missed = {}
+		for _, key in ipairs({ "travel", "effort", "odds", "priority", "era",
+			"urgency", "orderCap" }) do
+			W.Get = function(k)
+				if k == key then return (realGet(k) or 0) + 7 end
+				return realGet(k)
+			end
+			local moved = R.Signature()
+			W.Get = realGet
+			if moved == base then missed[#missed + 1] = key end
+		end
+		W.Get = realGet
+		if #missed > 0 then
+			return false, "invisible to the cache: " .. table.concat(missed, ", ")
+		end
+		-- The tier order is a setting too, and layer 1 is built from it.
+		local realOrder = W.Order
+		W.Get = realGet
+		W.Order = function()
+			local o = realOrder()
+			local flipped = {}
+			for i = 1, #o do flipped[i] = o[#o - i + 1] end
+			return flipped
+		end
+		local orderMoved = R.Signature()
+		W.Order = realOrder
+		if orderMoved == base then return false, "tier order is invisible to the cache" end
+		return true, "seven weights and the tier order all reach the signature"
+	end)
+
+	check("Session length is not part of the base chart", function()
+		-- A session is a VIEW applied over the chart, not a different chart.
+		-- Folding it into the signature would re-chart the whole plan every
+		-- time the dropdown moved.
+		local R, W = MM.Router, MM.Weights
+		if not (R and R.Signature and W and W.Get) then return nil, "no router" end
+		local base = R.Signature()
+		local realGet = W.Get
+		W.Get = function(k)
+			if k == "session" then return (realGet(k) or 0) + 45 end
+			return realGet(k)
+		end
+		local moved = R.Signature()
+		W.Get = realGet
+		if moved ~= base then
+			return false, "session length forces a full re-chart"
+		end
+		return true, "changing the session length reuses the base chart"
+	end)
+
+	check("What you can travel with is in the cache signature", function()
+		-- Switching a teleport off fired MM_PLAN_CHANGED, which rebuilt the
+		-- route -- and the rebuild took a CACHE HIT, because the signature
+		-- could not see teleports at all. The option moved and the route
+		-- carried on routing through it.
+		local R, TP = MM.Router, MM.Teleports
+		if not (R and R.Signature and MM.TravelFingerprint) then return nil, "no router" end
+		if not (TP and TP.Options) then return nil, "no teleport layer" end
+		local base = R.Signature()
+		local realOptions = TP.Options
+		-- One fewer option, exactly as switching one off produces.
+		TP.Options = function()
+			local full, fewer = realOptions() or {}, {}
+			for i = 2, #full do fewer[i - 1] = full[i] end
+			return fewer
+		end
+		local moved = R.Signature()
+		TP.Options = realOptions
+		local restored = R.Signature()
+		if #(realOptions() or {}) == 0 then
+			return nil, "no teleports available on this character to remove"
+		end
+		if moved == base then
+			return false, "losing a teleport does not change the route signature"
+		end
+		if restored ~= base then
+			return false, "the signature did not settle back when the option returned"
+		end
+		return true, "a lost teleport changes the signature; regaining it restores it"
+	end)
+
+	check("A settled route repaints without re-charting", function()
+		-- The cache has to still BE a cache. Everything above adds fields to
+		-- the signature, and a field that moves when nothing has changed turns
+		-- every repaint into a full chart.
+		local R = MM.Router
+		if not (R and R.BuildSync and R.Build) then return nil, "no router" end
+		R:BuildSync()
+		if #(R.route or {}) == 0 then return nil, "nothing routed" end
+		local first = R.Signature()
+		local status = R:Build()
+		local second = R.Signature()
+		if first ~= second then
+			return false, "the signature is not stable across two reads: " .. tostring(R.cacheWhy)
+		end
+		if status ~= R.BUILD_CURRENT then
+			return false, ("a settled route reported '%s' (%s)")
+				:format(tostring(status), tostring(R.cacheWhy))
+		end
+		return true, "repaint is a cache hit"
+	end)
+
+	check("A one-use teleport is spent at most once on the route", function()
+		-- Journey.Plan could put a teleport in as the FIRST LEG of a multi-leg
+		-- trip, and the router wrapped the whole journey as `taxi = true` --
+		-- taxis being reusable. So the charge inside it was never consumed, and
+		-- the same hearthstone was priced into stop after stop. The route
+		-- promised a total that could not be walked.
+		local R = MM.Router
+		if not (R and R.BuildSync and R.TravelSpends) then return nil, "no router" end
+		R:BuildSync()
+		if #(R.route or {}) < 2 then return nil, "route too short to test" end
+		local claims, worst, worstKey = {}, 0, nil
+		for _, stop in ipairs(R.route) do
+			for key in pairs(R.TravelSpends(stop) or {}) do
+				claims[key] = (claims[key] or 0) + 1
+				if claims[key] > worst then worst, worstKey = claims[key], key end
+			end
+		end
+		if worst > 1 then
+			return false, ("'%s' is spent %d times in one route"):format(
+				tostring(worstKey), worst)
+		end
+		local spent = 0
+		for _ in pairs(claims) do spent = spent + 1 end
+		return true, ("%d charge%s spent across %d stops, none twice")
+			:format(spent, spent == 1 and "" or "s", #R.route)
+	end)
+
+	check("A travel method names the charge it spends", function()
+		-- Whether a stop cost a teleport was decided by searching the
+		-- human-readable leg description for the word "teleport", and the KEY it
+		-- spent was not recoverable at all -- so the route could tell you a
+		-- charge had gone without being able to say which one.
+		local R = MM.Router
+		if not (R and R.ArrivesByTeleport and R.TravelSpends) then
+			return nil, "no router"
+		end
+		R:BuildSync()
+		if #(R.route or {}) == 0 then return nil, "nothing routed" end
+		local viaTeleport, named, prose = 0, 0, nil
+		for _, stop in ipairs(R.route) do
+			if R.ArrivesByTeleport(stop) then
+				viaTeleport = viaTeleport + 1
+				local keys = R.TravelSpends(stop)
+				local any = false
+				for key in pairs(keys or {}) do
+					any = true
+					-- A resource key is an option id, never a sentence.
+					if type(key) ~= "string" or key:find(" ") then
+						prose = tostring(key)
+					end
+				end
+				if any then named = named + 1 end
+			end
+		end
+		if prose then
+			return false, "a resource key looks like prose: " .. prose
+		end
+		if viaTeleport ~= named then
+			return false, ("%d stops arrive by teleport, %d can say which")
+				:format(viaTeleport, named)
+		end
+		if viaTeleport == 0 then
+			return nil, "no stop on this route arrives by a teleport"
+		end
+		return true, ("%d teleport arrival%s, every one named"):format(
+			viaTeleport, viaTeleport == 1 and "" or "s")
+	end)
+
+	check("A session cannot spend one teleport on several stops", function()
+		-- Session.Fit called TravelMinutes with no used-resource set at all, so
+		-- every candidate was priced from a fresh, unspent toybox: a two-hour
+		-- session could hand out the same hearthstone for six different stops
+		-- and promise a total nobody could achieve.
+		local R, S = MM.Router, MM.Session
+		if not (R and S and S.Fit) then return nil, "no session layer" end
+		R:BuildSync()
+		if #(R.route or {}) < 3 then return nil, "route too short to test" end
+		local ok, chosen = pcall(S.Fit, 240)
+		if not ok then return false, "Session.Fit threw: " .. tostring(chosen) end
+		if type(chosen) ~= "table" or #chosen < 2 then
+			return nil, "fewer than two stops fit; nothing to double-spend"
+		end
+		local claims, worst, worstKey = {}, 0, nil
+		for _, pick in ipairs(chosen) do
+			for key in pairs(pick.spends or {}) do
+				claims[key] = (claims[key] or 0) + 1
+				if claims[key] > worst then worst, worstKey = claims[key], key end
+			end
+		end
+		if worst > 1 then
+			return false, ("the session spends '%s' %d times"):format(
+				tostring(worstKey), worst)
+		end
+		return true, ("%d stops fitted, no charge spent twice"):format(#chosen)
+	end)
+
+	check("Two places in one zone are not given the same journey", function()
+		-- Journey.Plan computed with coordinates, direct-flight time and live
+		-- teleports, and cached the answer under zone names and map ids alone.
+		-- Two stops in one zone shared one answer -- including its ENTRY NODE,
+		-- which may be on the far side of the zone from the second one.
+		local J = MM.Journey
+		if not (J and J.Plan and C_Map and C_Map.GetMapInfo) then
+			return nil, "no journey planner"
+		end
+		local mapID = C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+		local info = mapID and C_Map.GetMapInfo(mapID)
+		if not (info and info.name) then return nil, "cannot name this map" end
+		-- Two corners of wherever we are standing, to the same destination.
+		local aMin, aLegs = J.Plan(info.name, 5, 5, info.name, 50, 50, nil, mapID, mapID)
+		local bMin, bLegs = J.Plan(info.name, 95, 95, info.name, 50, 50, nil, mapID, mapID)
+		if not (aMin and bMin) then
+			return nil, "no route between these points to compare"
+		end
+		local function entry(legs) return legs and legs[1] and legs[1].to end
+		if aMin == bMin and entry(aLegs) == entry(bLegs) then
+			return false, ("opposite corners got one identical answer (%.2f min via %s)")
+				:format(aMin, tostring(entry(aLegs)))
+		end
+		return true, ("%.2f min from one corner, %.2f from the other")
+			:format(aMin, bMin)
+	end)
+
+	check("A build publishes one mutually consistent state", function()
+		-- The route was swapped atomically; its companions were not. `unrouted`
+		-- and `deferred` were wiped at the top of a build and refilled a goal at
+		-- a time, and the route went live BEFORE the chart restore, the 2-opt,
+		-- the cap, Measure and the session view -- so a late failure could leave
+		-- a new order published with totals describing the old one.
+		local R = MM.Router
+		if not (R and R.BuildSync) then return nil, "no router" end
+		R:BuildSync()
+		if #(R.route or {}) == 0 then return nil, "nothing routed" end
+		if R.builtRouteCount ~= #R.route then
+			return false, ("builtRouteCount %s against %d stops")
+				:format(tostring(R.builtRouteCount), #R.route)
+		end
+		if not (R.totals and R.totals.stops == #R.route) then
+			return false, ("totals say %s stops, the route holds %d")
+				:format(tostring(R.totals and R.totals.stops), #R.route)
+		end
+		-- Every routed goal indexes to the stop it is actually in.
+		local wrong = nil
+		for _, stop in ipairs(R.route) do
+			for _, m in ipairs(stop.members or { stop }) do
+				local id = m.entry and m.entry.spellID
+				if id and R.stopBySpell[id] ~= stop then wrong = id end
+			end
+		end
+		if wrong then
+			return false, ("spell %d indexes to a stop it is not in"):format(wrong)
+		end
+		-- An unrouted goal is deliberately ALSO in the route, as a no-location
+		-- stop. A deferred one must not be in the route at all.
+		local placed = {}
+		for _, stop in ipairs(R.route) do
+			for _, m in ipairs(stop.members or { stop }) do
+				local id = m.entry and m.entry.spellID
+				if id then placed[id] = true end
+			end
+		end
+		for _, d in ipairs(R.deferred) do
+			if d.entry and placed[d.entry.spellID] then
+				return false, (d.entry.name or "a goal") .. " is both routed and held back"
+			end
+		end
+		local idx = MM.cdb and MM.cdb.routeIndex or 1
+		if idx < 1 or idx > #R.route then
+			return false, ("the route index is %d across %d stops"):format(idx, #R.route)
+		end
+		return true, ("%d stops, %d unrouted, %d held back, all agreeing")
+			:format(#R.route, #R.unrouted, #R.deferred)
+	end)
+
+	check("A build that fails late leaves the last route standing", function()
+		-- Publication happened before the failure-prone tail, so a throw in
+		-- Measure or the preference cap destroyed the last route that worked --
+		-- while the build correctly reported failure and fired no completion.
+		-- The build now assembles into a stage and publishes once, at the end.
+		local R = MM.Router
+		if not (R and R.BuildSync and R.Measure) then return nil, "no router" end
+		R:BuildSync()
+		if #(R.route or {}) < 2 then return nil, "route too short to test" end
+
+		local session = MM.Session and MM.Session.Active and MM.Session.Active()
+		local function fingerprint()
+			local ids = {}
+			for i, stop in ipairs(R.route) do
+				ids[i] = tostring(stop.entry and stop.entry.spellID or "?")
+			end
+			local hd = R.hereDebug
+			return table.concat(ids, ",") .. "|" .. #R.unrouted .. "|" .. #R.deferred
+				.. "|" .. tostring(R.totals and R.totals.stops)
+				.. "|" .. tostring(R.builtRouteCount)
+				-- The signature OF THE PUBLISHED ROUTE. It described the route
+				-- on screen and was overwritten the instant a build started, so
+				-- a failure left it naming a route that was never published.
+				.. "|" .. tostring(R.builtSignature)
+				-- Identity and content both: a failed build must neither swap
+				-- this table nor edit the one already there.
+				.. "|" .. tostring(hd) .. ":" .. tostring(hd and hd.promoted)
+				.. "," .. tostring(hd and hd.candidates)
+				-- The session's promise about the published route.
+				.. "|" .. tostring(session and session.planned)
+		end
+		local before = fingerprint()
+		local chartBefore = MM.cdb and MM.cdb.chart
+		local hereBefore = R.hereDebug
+
+		-- Measure runs as late as a build gets: after the route is assembled,
+		-- the chart restored, the 2-opt run, the cap applied and the pin done.
+		--
+		-- FORCED rather than clearing the signature: the signature is part of
+		-- what is being asserted, so clearing it would be the check moving the
+		-- very thing it is about to say has not moved.
+		local real = R.Measure
+		R.Measure = function() error("self-test: deliberate late build failure") end
+		local ok = pcall(function() return R:BuildSync(true) end)
+		R.Measure = real
+
+		local after = fingerprint()
+		local hereAfter = R.hereDebug
+		-- Put the router back before reporting, whatever happened above.
+		R:BuildSync(true)
+
+		if after ~= before then
+			return false, ("a failed build changed the published state\n  was %s\n  now %s")
+				:format(before, after)
+		end
+		if hereAfter ~= hereBefore then
+			return false, "a failed build replaced the here-now diagnostic"
+		end
+		if MM.cdb and MM.cdb.chart ~= chartBefore then
+			return false, "a failed build left a chart behind in saved variables"
+		end
+		return true, ok and "the failure was contained and nothing moved"
+			or "the build reported failure and nothing moved"
+	end)
+
+	check("The published signature describes the published route", function()
+		-- One field answered two questions: "what is on screen" and "what is
+		-- being built". Starting a build overwrote the first with the second,
+		-- so a build that failed or was superseded had to erase it -- throwing
+		-- away a true description of a route that was still there and correct.
+		local R = MM.Router
+		if not (R and R.Signature and R.BuildSync) then return nil, "no router" end
+		R:BuildSync()
+		if #(R.route or {}) == 0 then return nil, "nothing routed" end
+		if R.builtSignature ~= R.Signature() then
+			return false, "the published signature is not this plan's signature"
+		end
+		-- A settled route reports a cache hit, which is only possible when the
+		-- published signature genuinely matches.
+		if R:Build() ~= R.BUILD_CURRENT then
+			return false, ("a settled route reported '%s' (%s)")
+				:format(tostring(R:Build()), tostring(R.cacheWhy))
+		end
+		return true, "the route on screen and its signature agree"
 	end)
 
 	check("An unfinished build is not reported as an empty plan", function()

@@ -277,6 +277,16 @@ function TX.Harvest()
 		if i <= #maps then C_Timer.After(0, step)
 		else
 			wipe(cache)
+			-- A LEARNED FLIGHT POINT IS A CHANGE TO THE MAP.
+			--
+			-- New nodes mean new edges, so the travel graph is now a graph of a
+			-- world that no longer exists -- and every route ordered around
+			-- what used to be reachable was ordered for that old world.
+			-- Announced only when something was actually learned: the harvest
+			-- runs at every flight master and almost always finds nothing.
+			if learned > 0 and MM.TravelChanged then
+				MM.TravelChanged("topology", "flight points learned")
+			end
 			-- ONLY WHEN THE NUMBER CHANGES.
 			--
 			-- This fired on every TAXIMAP_OPENED -- every flight master in the
@@ -759,6 +769,13 @@ MM:RegisterGameEvent("PLAYER_CONTROL_GAINED", function()
 		MM.db.taxiLearned = MM.db.taxiLearned or {}
 		MM.db.taxiLearned[flightFrom:lower() .. "\1" .. arrive.name:lower()] = secs
 		wipe(tripCache)
+		-- TOPOLOGY, not capability: the graph BAKES trip seconds into its edge
+		-- weights when it is built, so a measured duration that beats the
+		-- shipped table cannot reach any route until the graph is laid down
+		-- again. Clearing tripCache alone left the old number in every edge.
+		if MM.TravelChanged then
+			MM.TravelChanged("topology", "measured a flight duration")
+		end
 	end
 	flightFrom = nil
 end)

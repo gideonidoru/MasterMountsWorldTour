@@ -264,11 +264,24 @@ local function header(add)
 	for _, l in ipairs(environment()) do add(l) end
 end
 
+-- CHART THE ROUTE ONCE, BEFORE ANY SECTION DESCRIBES IT.
+--
+-- Three sections read the route. Each used to ask for its own build, and while
+-- Build was asynchronous each of those asks returned before the route existed,
+-- so a section could describe the route from the request BEFORE it. Warming
+-- here settles it once; every section afterwards takes a cache hit and they all
+-- describe the same route.
+local function warmRoute()
+	if not (MM.Router and MM.Router.Warm) then return end
+	pcall(MM.Router.Warm)
+end
+
 local function build()
 	-- Sections can be run standalone or as part of the full report. Anything
 	-- expensive that the report ALREADY does elsewhere must not be repeated
 	-- here; this is the flag that lets a section tell the difference.
 	D.inReport = true
+	warmRoute()
 	local out = {}
 	local function add(s) out[#out + 1] = s or "" end
 	header(add)
@@ -321,7 +334,19 @@ function D.BuildChunked(onDone)
 			onDone(table.concat(out, "\n"))
 		end
 	end
-	step()
+	-- CHART FIRST, ASYNCHRONOUSLY, THEN RENDER.
+	--
+	-- Three sections need a completed route, and each asking for its own would
+	-- be three chances to describe a different one. Warming it synchronously
+	-- here would put a whole route build inside one uninterrupted call, which
+	-- is precisely the watchdog this chunking exists to stay under -- so the
+	-- build gets the same treatment the sections get, and the report starts
+	-- once it lands.
+	if MM.Router and MM.Router.AfterBuild then
+		MM.Router.AfterBuild(false, function() step() end)
+	else
+		step()
+	end
 end
 
 -- The slowest SINGLE section, which is what decides whether the watchdog fires
