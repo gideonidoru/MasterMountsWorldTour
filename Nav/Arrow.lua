@@ -65,7 +65,7 @@ local function build()
 	glow:SetSize(110, 110)
 	glow:SetTexture("Interface\\Cooldown\\star4")
 	glow:SetBlendMode("ADD")
-	glow:SetVertexColor(1, 0.75, 0.25, 0.22)
+	MM.Theme.RegisterVertexTint(glow, "accent", 0.22)
 	local spinGroup = glow:CreateAnimationGroup()
 	spinGroup:SetLooping("REPEAT")
 	local spin = spinGroup:CreateAnimation("Rotation")
@@ -115,13 +115,14 @@ local function build()
 	action.backdrop:SetFrameLevel(math.max(0, action:GetFrameLevel() - 1))
 	action.backdrop:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
 	action.backdrop:SetBackdropColor(0.04, 0.04, 0.07, 0.9)
+	MM.Theme.Register(action.backdrop, "card")
 
 	action.border = CreateFrame("Frame", nil, action, "BackdropTemplate")
 	action.border:SetAllPoints()
 	action.border:SetBackdrop({
 		edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1,
 	})
-	action.border:SetBackdropBorderColor(0.85, 0.68, 0.25, 0.9)
+	MM.Theme.RegisterBackdropBorder(action.border, "strong")
 
 	action.cooldown = CreateFrame("Cooldown", nil, action, "CooldownFrameTemplate")
 	action.cooldown:SetAllPoints(action.icon)
@@ -153,6 +154,7 @@ local function build()
 	label:SetWidth(340)
 	label:SetWordWrap(false)
 	label:SetTextColor(1, 0.86, 0.35)
+	MM.Theme.RegisterText(label, "accent")
 
 	dist = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
 	dist:SetPoint("TOP", label, "BOTTOM", 0, -2)
@@ -174,11 +176,13 @@ local function build()
 	pillPrimary:SetPoint("TOP", 0, -CARD_PAD_Y)
 	pillPrimary:SetJustifyH("CENTER")
 	pillPrimary:SetTextColor(1, 0.86, 0.35)
+	MM.Theme.RegisterText(pillPrimary, "accent")
 
 	pillSecondary = pill:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	pillSecondary:SetPoint("TOP", pillPrimary, "BOTTOM", 0, -CARD_GAP)
 	pillSecondary:SetJustifyH("CENTER")
 	pillSecondary:SetTextColor(0.82, 0.82, 0.82)
+	MM.Theme.RegisterText(pillSecondary, "muted")
 	pill:Hide()
 
 	if MM.db.arrowPos then
@@ -570,4 +574,3 @@ function Arrow:Update()
 	updateBody()
 	if not actionRequested then Arrow:HideAction() end
 end
-

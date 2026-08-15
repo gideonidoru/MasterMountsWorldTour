@@ -488,15 +488,18 @@ function D.ShowExport(text, title)
 			tile = true, tileSize = 16, edgeSize = 14,
 			insets = { left = 4, right = 4, top = 4, bottom = 4 },
 		})
-		exportFrame:SetBackdropColor(0.03, 0.03, 0.05, 0.95)
+			exportFrame:SetBackdropColor(0.03, 0.03, 0.05, 0.95)
+			MM.Theme.Register(exportFrame, "panel")
 
-		exportFrame.title = exportFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		exportFrame.title:SetPoint("TOPLEFT", 12, -10)
+			exportFrame.title = exportFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+			exportFrame.title:SetPoint("TOPLEFT", 12, -10)
+			MM.Theme.RegisterText(exportFrame.title, "accent")
 
 		local hint = exportFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		hint:SetPoint("TOPLEFT", exportFrame.title, "BOTTOMLEFT", 0, -4)
-		hint:SetText("Ctrl+A then Ctrl+C. Escape closes.")
-		hint:SetTextColor(0.6, 0.6, 0.6)
+			hint:SetText("Ctrl+A then Ctrl+C. Escape closes.")
+			hint:SetTextColor(0.6, 0.6, 0.6)
+			MM.Theme.RegisterText(hint, "muted")
 
 		local close = MM.Theme.CreateCloseButton(exportFrame, 16)
 		close:SetPoint("TOPRIGHT", -8, -8)
@@ -519,9 +522,10 @@ function D.ShowExport(text, title)
 		edit:SetFontObject("ChatFontNormal")
 		edit:SetWidth(640)
 		edit:SetScript("OnEscapePressed", function() exportFrame:Hide() end)
-		edit:SetScript("OnTextChanged", function(self, userInput)
-			if userInput and self.mmText then self:SetText(self.mmText) end
-		end)
+			edit:SetScript("OnTextChanged", function(self, userInput)
+				if userInput and self.mmText then self:SetText(self.mmText) end
+			end)
+			MM.Theme.Register(edit, "editbox")
 		scroll:SetScrollChild(edit)
 		exportFrame.edit = edit
 		MM.Theme.SkinTree(exportFrame)

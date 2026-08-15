@@ -993,13 +993,25 @@ end
 local function skinTint(texture, spec)
 	if not (texture and spec) then return end
 	local color = T.Color(spec.role)
-	texture:SetColorTexture(color[1], color[2], color[3], spec.alpha or 1)
+	if spec.vertex and texture.SetVertexColor then
+		texture:SetVertexColor(color[1], color[2], color[3], spec.alpha or 1)
+	else
+		texture:SetColorTexture(color[1], color[2], color[3], spec.alpha or 1)
+	end
 	texture:SetAlpha(1)
 end
 
 function T.RegisterTint(texture, role, alpha)
 	if not texture then return texture end
 	local spec = { role = role or "accent", alpha = alpha or 1 }
+	tintRegistry[texture] = spec
+	skinTint(texture, spec)
+	return texture
+end
+
+function T.RegisterVertexTint(texture, role, alpha)
+	if not texture then return texture end
+	local spec = { role = role or "accent", alpha = alpha or 1, vertex = true }
 	tintRegistry[texture] = spec
 	skinTint(texture, spec)
 	return texture

@@ -1,8 +1,8 @@
 Modern theme texture provenance
 ===============================
 
-The neutral surface, button, tab, scrollbar, progress-bar, and portrait-ring
-textures in this folder come from Vaultloom by Legijaone. They are included in
+The neutral surface, title-bar control, button, tab, scrollbar, progress-bar,
+and portrait-ring textures in this folder come from Vaultloom by Legijaone. They are included in
 Master Mounts World Tour with the Vaultloom author's permission, as confirmed
 by the project owner on 2026-08-15.
 
