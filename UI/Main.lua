@@ -613,8 +613,7 @@ local function buildMain()
 	local badgeRing = frame:CreateTexture(nil, "ARTWORK", nil, 5)
 	badgeRing:SetSize(46, 46)
 	badgeRing:SetPoint("TOPLEFT", 10, -7)
-	badgeRing:SetTexture(MM.MEDIA .. "Modern\\rounded_color_border.tga")
-	badgeRing:SetVertexColor(0.92, 0.76, 0.24, 1)
+	badgeRing:SetTexture(MM.MEDIA .. "Modern\\class_ring_reskin.tga")
 	frame.mmModernLogoRing = badgeRing
 
 	local badge = frame:CreateTexture(nil, "ARTWORK", nil, 6)

@@ -167,7 +167,7 @@ function UI.BuildCollection(panel)
 	band:SetPoint("TOPLEFT")
 	band:SetPoint("TOPRIGHT")
 	band:SetHeight(30)
-	band:SetColorTexture(0, 0, 0, 0.35)
+	MM.Theme.RegisterSurface(band, "utility")
 
 	local search = CreateFrame("EditBox", nil, panel, "SearchBoxTemplate")
 	search:SetSize(180, 22)
@@ -233,9 +233,12 @@ function UI.BuildCollection(panel)
 	avail:SetPoint("LEFT", missing.labelText, "RIGHT", 14, -1)
 	avail:SetChecked(filters.availableOnly)
 
-	-- lives in the frame's bottom bar, opposite the tabs — never overlaps filters
+	-- A quiet count strip closes the list inside its own pane. The previous
+	-- anchor lived below the panel because the tabs used to hang off the frame;
+	-- once navigation moved to the top that became dead footer space.
 	countText = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	countText:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -4, -20)
+	countText:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 8, 7)
+	MM.Theme.RegisterText(countText, "muted")
 
 	panel.emptyText = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	panel.emptyText:SetPoint("CENTER", 0, 20)
@@ -244,10 +247,18 @@ function UI.BuildCollection(panel)
 	panel.emptyText:Hide()
 	MM.UI.collectionEmptyText = panel.emptyText
 
+	-- The collection is a contained browsing surface rather than rows floating
+	-- on the window material. This same boundary remains useful in all themes.
+	local listSurface = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
+	listSurface:SetPoint("TOPLEFT", 4, -34)
+	listSurface:SetPoint("BOTTOMRIGHT", -24, 24)
+	MM.Theme.RegisterSurface(listSurface, "content")
+	panel.mmCollectionPaneRules = MM.Theme.BorderSurface(panel, listSurface, "subtle")
+
 	-- the list
 	scrollBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
 	scrollBox:SetPoint("TOPLEFT", 4, -34)
-	scrollBox:SetPoint("BOTTOMRIGHT", -26, 4)
+	scrollBox:SetPoint("BOTTOMRIGHT", -26, 26)
 
 	local scrollBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	scrollBar:SetPoint("TOPLEFT", scrollBox, "TOPRIGHT", 6, 0)

@@ -377,33 +377,8 @@ function UI.BuildPlanner(panel)
 	-- polished Warcraft interfaces without building heavy boxes around every
 	-- control. Because the rules are semantic, ElvUI and Blizzard inherit the
 	-- same hierarchy with their own accent colour.
-	local function borderSurface(surface)
-		local edges = {}
-		local top = panel:CreateTexture(nil, "ARTWORK")
-		top:SetPoint("TOPLEFT", surface, "TOPLEFT")
-		top:SetPoint("TOPRIGHT", surface, "TOPRIGHT")
-		top:SetHeight(1)
-		edges[#edges + 1] = top
-		local bottom = panel:CreateTexture(nil, "ARTWORK")
-		bottom:SetPoint("BOTTOMLEFT", surface, "BOTTOMLEFT")
-		bottom:SetPoint("BOTTOMRIGHT", surface, "BOTTOMRIGHT")
-		bottom:SetHeight(1)
-		edges[#edges + 1] = bottom
-		local left = panel:CreateTexture(nil, "ARTWORK")
-		left:SetPoint("TOPLEFT", surface, "TOPLEFT")
-		left:SetPoint("BOTTOMLEFT", surface, "BOTTOMLEFT")
-		left:SetWidth(1)
-		edges[#edges + 1] = left
-		local right = panel:CreateTexture(nil, "ARTWORK")
-		right:SetPoint("TOPRIGHT", surface, "TOPRIGHT")
-		right:SetPoint("BOTTOMRIGHT", surface, "BOTTOMRIGHT")
-		right:SetWidth(1)
-		edges[#edges + 1] = right
-		for _, edge in ipairs(edges) do MM.Theme.RegisterRule(edge, "subtle") end
-		return edges
-	end
-	panel.mmLeftPaneRules = borderSurface(leftSurface)
-	panel.mmRightPaneRules = borderSurface(rightSurface)
+	panel.mmLeftPaneRules = MM.Theme.BorderSurface(panel, leftSurface, "subtle")
+	panel.mmRightPaneRules = MM.Theme.BorderSurface(panel, rightSurface, "subtle")
 
 	-- toolbar band behind the button row
 	local band = panel:CreateTexture(nil, "BORDER")

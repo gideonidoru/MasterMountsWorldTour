@@ -558,15 +558,6 @@ local function modernControlState(frame, kind, state)
 	end
 	if path then
 		modernBackground(frame, path)
-		-- The source plates are intentionally detailed, but the content must sit
-		-- above them. A restrained material tint prevents large stretched areas
-		-- from turning into visible noise while leaving controls crisp.
-		if kind == "frame" then
-			frame.mmModernBackground:SetVertexColor(0.76, 0.73, 0.68, 0.98)
-		elseif kind == "content" or kind == "sidebar" or kind == "utility"
-			or kind == "card" then
-			frame.mmModernBackground:SetVertexColor(0.70, 0.68, 0.64, 0.96)
-		end
 		frame.mmModernBackground:SetAlpha(disabled and not activeTab and 0.55 or 1)
 		if kind == "row" then
 			local warm = state == "pressed" and { 0.78, 0.66, 0.46 }
@@ -625,6 +616,15 @@ local function skinModern(frame, kind)
 			or kind == "panel" and MODERN_ASSET.panel
 			or MODERN_ASSET.inset
 		modernBackground(frame, path)
+		-- The source plates are intentionally detailed, but the content must sit
+		-- above them. A restrained material tint prevents large stretched areas
+		-- from turning into visible noise while leaving controls crisp.
+		if kind == "frame" then
+			frame.mmModernBackground:SetVertexColor(0.76, 0.73, 0.68, 0.98)
+		elseif kind == "content" or kind == "sidebar" or kind == "utility"
+			or kind == "card" then
+			frame.mmModernBackground:SetVertexColor(0.70, 0.68, 0.64, 0.96)
+		end
 		if frame.SetBackdrop and frame.mmBackdropOwned then
 			pcall(frame.SetBackdrop, frame, {
 				edgeFile = MODERN_ASSET.roundedBorder,
@@ -858,6 +858,29 @@ function T.RegisterRule(texture, strength)
 	ruleRegistry[texture] = strength or "subtle"
 	skinRule(texture, strength or "subtle")
 	return texture
+end
+
+-- Frame any semantic surface with the same four hairlines. Keeping the
+-- geometry here makes pane hierarchy a theme primitive instead of copied
+-- coordinates in every screen.
+function T.BorderSurface(parent, surface, strength)
+	if not (parent and surface) then return {} end
+	local edges = {}
+	local definitions = {
+		{ "TOPLEFT", "TOPRIGHT", "height" },
+		{ "BOTTOMLEFT", "BOTTOMRIGHT", "height" },
+		{ "TOPLEFT", "BOTTOMLEFT", "width" },
+		{ "TOPRIGHT", "BOTTOMRIGHT", "width" },
+	}
+	for _, definition in ipairs(definitions) do
+		local edge = parent:CreateTexture(nil, "ARTWORK")
+		edge:SetPoint(definition[1], surface, definition[1])
+		edge:SetPoint(definition[2], surface, definition[2])
+		if definition[3] == "height" then edge:SetHeight(1) else edge:SetWidth(1) end
+		T.RegisterRule(edge, strength or "subtle")
+		edges[#edges + 1] = edge
+	end
+	return edges
 end
 
 -- Vaultloom's compact rounded icon silhouette is one of the details that
