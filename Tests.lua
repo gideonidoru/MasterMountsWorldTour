@@ -2271,6 +2271,89 @@ local function runLogic()
 			rep and rep.worst or -1)
 	end)
 
+	check("One kill counts for every mount that source owes", function()
+		-- The watch list was `[npcID] = spellID`, so the last planned record to
+		-- mention an npc overwrote every earlier one. Twelve ids in the
+		-- database carry more than one kill-source record -- Coren Direbrew has
+		-- both Brewfest mounts, three ids carry three each -- and killing one
+		-- of those moved a single mount's count and silently left the rest.
+		--
+		-- SENTINEL SPELL IDS, and the tally is put back afterwards. A check
+		-- that inflates real attempt counts corrupts the very statistic it
+		-- exists to protect.
+		local A = MM.Attempts
+		if not (A and A.RecordMany and A.ForgetSources) then
+			return nil, "batch recording not available"
+		end
+		local a, b = -9001, -9002
+		local acct = MM.db.attempts or {}
+		local wasA, wasB = acct[a], acct[b]
+		local restore = function()
+			acct[a], acct[b] = wasA, wasB
+			if MM.cdb and MM.cdb.attempts then
+				MM.cdb.attempts[a], MM.cdb.attempts[b] = nil, nil
+			end
+			A.ForgetSources()
+		end
+		A.ForgetSources()
+		local ok, err = pcall(function()
+			local both = A.RecordMany({ a, b }, "selftest:corpse-1", "loot")
+			if both ~= 2 then
+				error(("one source paid %d of 2 mounts"):format(both), 0)
+			end
+			-- The same corpse opened again is not a second attempt.
+			if A.RecordMany({ a, b }, "selftest:corpse-1", "loot") ~= 0 then
+				error("re-opening one corpse counted again", 0)
+			end
+			-- A different corpse of the same rare is.
+			if A.RecordMany({ a, b }, "selftest:corpse-2", "loot") ~= 2 then
+				error("a second corpse did not count", 0)
+			end
+			-- The same kill arriving down the other pipe is not.
+			if A.RecordMany({ a, b }, "selftest:encounter-1", "kill") ~= 0 then
+				error("the encounter signal counted a kill the loot already had", 0)
+			end
+		end)
+		restore()
+		if not ok then return false, tostring(err) end
+		return true, "one source, one attempt per mount, across both signals"
+	end)
+
+	check("The attempt watch list is a set, not a single mount", function()
+		-- A count of shared sources is the trace that was missing: without it,
+		-- "0 attempts" on one Brewfest mount beside a healthy number on the
+		-- other reads as bad luck rather than as a bug.
+		local S = MM.Scanner
+		if not (S and S.WatchedCounts) then return nil, "scanner counts missing" end
+		local npcs, watched, shared = S.WatchedCounts()
+		if type(npcs) ~= "number" or type(watched) ~= "number"
+			or type(shared) ~= "number" then
+			return false, "watch counts are not numbers"
+		end
+		if watched < npcs then
+			return false, ("%d npcs watched but only %d mounts claimed")
+				:format(npcs, watched)
+		end
+		if shared > npcs then
+			return false, ("%d shared npcs out of %d"):format(shared, npcs)
+		end
+		-- Every watched mount must be planned and still missing.
+		local planned = 0
+		for _, item in ipairs(MM.cdb and MM.cdb.plan or {}) do
+			local entry = S.bySpell and S.bySpell[item.spellID]
+			local rec = entry and entry.rec
+			if rec and rec.npc and rec.npc.id and MM.KILL_BASED[rec.category] then
+				planned = planned + 1
+			end
+		end
+		if watched ~= planned then
+			return false, ("%d kill-source goals planned, %d watched")
+				:format(planned, watched)
+		end
+		return true, ("%d npcs, %d mounts, %d source%s owing more than one")
+			:format(npcs, watched, shared, shared == 1 and "" or "s")
+	end)
+
 	check("Attempts are account-wide and never imply a pity timer", function()
 		-- Mounts are account-wide, so attempts must be. They were counted per
 		-- character, which made thirty kills on a main and twenty on an alt

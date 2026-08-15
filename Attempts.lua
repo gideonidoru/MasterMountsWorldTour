@@ -86,6 +86,88 @@ function A.Record(spellID)
 end
 
 ------------------------------------------------------------
+-- One kill, every mount it could have dropped
+------------------------------------------------------------
+-- A BOSS THAT DROPS TWO MOUNTS IS ONE KILL AND TWO ATTEMPTS.
+--
+-- Twelve npc ids in the database carry more than one kill-source record --
+-- Coren Direbrew has both Brewfest mounts, three ids carry three mounts each --
+-- and the watch list held one spellID per npc, so the later record overwrote
+-- the earlier one and only ever counted the survivor. On a Brewfest kill one
+-- mount's odds moved and the other's did not.
+--
+-- The dedupe lives HERE rather than at each call site, because there are two
+-- call sites and they see the same kill through different signals.
+--
+--   sourceKey  identifies the thing that produced the attempt: a corpse GUID
+--              for a loot, an encounter name and time bucket for a boss. A
+--              source credits each mount at most once, which is what makes
+--              re-opening a half-looted corpse free.
+--   path       "loot" or "kill" -- which signal saw it. Two DIFFERENT corpses
+--              are two attempts even with the same npc id, but one corpse seen
+--              through both signals is still one.
+local SOURCE_MEMORY = 900        -- how long a source is remembered, seconds
+-- A boss kill and the loot from that same boss arrive seconds apart through two
+-- unrelated events with no shared id, so the only thing linking them is that
+-- they concern the same mount at almost the same moment. Generous, because you
+-- cannot kill one instance boss twice inside it -- and rares never raise the
+-- encounter signal at all, so a genuine second rare kill is unaffected.
+local CROSS_PATH_SECONDS = 120
+
+local creditedBy = {}   -- sourceKey -> { at = seconds, [spellID] = true }
+local lastCredit = {}   -- spellID   -> { at = seconds, path = "loot"|"kill" }
+
+local function nowSeconds()
+	return (GetTime and GetTime()) or (time and time()) or 0
+end
+
+-- Exposed so a check can prove the dedupe without waiting out its memory.
+function A.ForgetSources()
+	wipe(creditedBy)
+	wipe(lastCredit)
+end
+
+-- Returns how many attempts were actually recorded, which is not always how
+-- many were offered -- that difference IS the dedupe working.
+function A.RecordMany(spellIDs, sourceKey, path)
+	if type(spellIDs) ~= "table" then return 0 end
+	local now = nowSeconds()
+	for key, seen in pairs(creditedBy) do
+		if now - (seen.at or 0) > SOURCE_MEMORY then creditedBy[key] = nil end
+	end
+
+	local seen
+	if sourceKey then
+		seen = creditedBy[sourceKey]
+		if not seen then seen = { at = now } creditedBy[sourceKey] = seen end
+	end
+
+	local recorded = 0
+	for _, spellID in ipairs(spellIDs) do
+		local skip = false
+		if seen and seen[spellID] then
+			-- This exact source has already paid for this mount.
+			skip = true
+		elseif path then
+			local last = lastCredit[spellID]
+			-- The same kill reaching us down the other pipe. Only across
+			-- paths: two corpses on the loot path are two real attempts.
+			if last and last.path and last.path ~= path
+				and now - last.at < CROSS_PATH_SECONDS then
+				skip = true
+			end
+		end
+		if not skip then
+			if seen then seen[spellID] = true end
+			lastCredit[spellID] = { at = now, path = path }
+			A.Record(spellID)
+			recorded = recorded + 1
+		end
+	end
+	return recorded
+end
+
+------------------------------------------------------------
 -- How long an attempt actually takes
 ------------------------------------------------------------
 -- Only ~22% of records state a timePerAttempt, so for most of the collection
@@ -203,6 +285,23 @@ MM:On("MM_ATTEMPTS_DEBUG", function()
 	MM:Print("Attempts: %d recorded across %d mount%s, account-wide "
 		.. "(%d character%s folded in).", total, #rows, #rows == 1 and "" or "s",
 		merged, merged == 1 and "" or "s")
+
+	-- WHAT IS BEING WATCHED, AND WHERE ONE KILL PAYS TWICE.
+	--
+	-- The watch list was one mount per npc, so a shared source silently counted
+	-- only the last one planned. A count of the shared ones is the trace that
+	-- was missing: without it, "attempts: 0" for one Brewfest mount and a
+	-- healthy number for the other reads as bad luck rather than a bug.
+	if MM.Scanner and MM.Scanner.WatchedCounts then
+		local npcs, pairsWatched, shared = MM.Scanner.WatchedCounts()
+		MM:Print("   Watching %d npc%s for %d planned mount%s%s.",
+			npcs, npcs == 1 and "" or "s",
+			pairsWatched, pairsWatched == 1 and "" or "s",
+			shared > 0 and (", %d of which drop more than one"):format(shared) or "")
+		if shared > 0 then
+			MM:Print("   A kill at a shared source counts for every mount it owes.")
+		end
+	end
 	if #rows == 0 then
 		MM:Print("   Nothing tracked yet. Kills of a planned mount's source are")
 		MM:Print("   counted automatically -- no setup, and no clicking.")

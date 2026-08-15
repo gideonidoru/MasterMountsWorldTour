@@ -166,18 +166,68 @@ local function npcIDFromGUID(guid)
 	return MM.Util.NpcIDFromGUID(guid)
 end
 
-local watchedNPCs = {} -- [npcID] = spellID
+-- ONE NPC CAN OWE YOU SEVERAL MOUNTS.
+--
+-- This was `[npcID] = spellID`, so the last planned record to mention an npc
+-- overwrote every earlier one. Twelve ids in the database carry more than one
+-- kill-source record -- Coren Direbrew has both Brewfest mounts, three ids
+-- carry three each -- and for those, killing the boss moved one mount's count
+-- and silently left the others where they were.
+local watchedNPCs = {}          -- [npcID] = { [spellID] = true, ... }
+local watchedNPCCount, watchedPairCount, sharedNPCCount = 0, 0, 0
 
 local function rebuildWatched()
 	wipe(watchedNPCs)
+	watchedNPCCount, watchedPairCount, sharedNPCCount = 0, 0, 0
 	if not (MM.cdb and MM.cdb.plan) then return end
 	for _, item in ipairs(MM.cdb.plan) do
 		local entry = S.bySpell[item.spellID]
 		local rec = entry and entry.rec
+		-- KILL_BASED is what keeps a vendor or a quest turn-in out of the watch
+		-- list even when it shares an npc id with something you kill -- one
+		-- record in the database does exactly that.
 		if rec and rec.npc and rec.npc.id and MM.KILL_BASED[rec.category] then
-			watchedNPCs[rec.npc.id] = item.spellID
+			local set = watchedNPCs[rec.npc.id]
+			if not set then
+				set = {}
+				watchedNPCs[rec.npc.id] = set
+				watchedNPCCount = watchedNPCCount + 1
+			end
+			if not set[item.spellID] then
+				set[item.spellID] = true
+				watchedPairCount = watchedPairCount + 1
+				local n = 0
+				for _ in pairs(set) do n = n + 1 end
+				if n == 2 then sharedNPCCount = sharedNPCCount + 1 end
+			end
 		end
 	end
+end
+
+-- Watched npcs, watched npc->mount relationships, and how many of those npcs
+-- owe more than one mount. Reported because a silent overwrite is exactly the
+-- kind of bug that leaves no trace to read.
+function S.WatchedCounts()
+	return watchedNPCCount, watchedPairCount, sharedNPCCount
+end
+
+-- Every planned, still-missing mount this npc could drop.
+--
+-- `collected` is checked HERE rather than when the list is built: a mount
+-- learned mid-session must stop counting attempts immediately, and the watch
+-- list is only rebuilt on a plan change.
+local function claimsOn(npcID)
+	local set = npcID and watchedNPCs[npcID]
+	if not set then return nil end
+	local out
+	for spellID in pairs(set) do
+		local entry = S.bySpell[spellID]
+		if entry and not entry.collected then
+			out = out or {}
+			out[#out + 1] = spellID
+		end
+	end
+	return out
 end
 
 local onEncounterEnd -- forward-declared; defined below
@@ -185,10 +235,11 @@ local onEncounterEnd -- forward-declared; defined below
 local function onCombatLog()
 	local _, subevent, _, _, _, _, _, destGUID = CombatLogGetCurrentEventInfo()
 	if subevent ~= "UNIT_DIED" and subevent ~= "PARTY_KILL" then return end
-	local npcID = npcIDFromGUID(destGUID)
-	local spellID = npcID and watchedNPCs[npcID]
-	if not spellID then return end
-	MM.Attempts.Record(spellID)
+	local claims = claimsOn(npcIDFromGUID(destGUID))
+	if not claims then return end
+	-- The corpse is the source, so one death cannot be counted twice -- and
+	-- every mount that npc owes is counted once.
+	MM.Attempts.RecordMany(claims, "guid:" .. tostring(destGUID), "loot")
 end
 
 -- 12.0 HANDS OUT SECRET VALUES, AND A SECRET IS NOT A STRING.
@@ -240,14 +291,22 @@ function onEncounterEnd(_, encounterName, _, _, success)
 	local wanted = readableName(encounterName)
 	if not wanted then return end
 	if not (MM.cdb and MM.cdb.plan) then return end
+	local claims
 	for _, item in ipairs(MM.cdb.plan) do
 		local entry = S.bySpell[item.spellID]
 		local rec = entry and entry.rec
 		if rec and rec.npc and rec.npc.name and not entry.collected
 			and rec.npc.name:lower() == wanted then
-			MM.Attempts.Record(item.spellID)
+			claims = claims or {}
+			claims[#claims + 1] = item.spellID
 		end
 	end
+	if not claims then return end
+	-- ONE SOURCE PER KILL. The name alone would be remembered for the rest of
+	-- the session and refuse the next kill of the same boss; the five-second
+	-- bucket matches the debounce BOSS_KILL already applies to that same name.
+	local bucket = math.floor(((GetTime and GetTime()) or 0) / 5)
+	MM.Attempts.RecordMany(claims, ("kill:%s:%d"):format(wanted, bucket), "kill")
 end
 
 ------------------------------------------------------------
@@ -320,11 +379,14 @@ local function onLootOpened()
 		if ok then
 			for _, guid in ipairs({ a, b }) do
 				if type(guid) == "string" and not lootSeen[guid] then
-					local npcID = npcIDFromGUID(guid)
-					local spellID = npcID and watchedNPCs[npcID]
-					if spellID then
+					local claims = claimsOn(npcIDFromGUID(guid))
+					if claims then
 						lootSeen[guid] = now
-						MM.Attempts.Record(spellID)
+						-- The GUID is the source, so two corpses of the same
+						-- rare are two attempts and one corpse opened twice is
+						-- one -- while `path` stops a boss whose kill was
+						-- already counted from paying again here.
+						MM.Attempts.RecordMany(claims, "guid:" .. guid, "loot")
 					end
 				end
 			end
@@ -357,7 +419,12 @@ local function pollTracked()
 			local prev = questState[spellID]
 			questState[spellID] = flagged
 			if flagged and prev == false then
-				MM.Attempts.Record(spellID)
+				-- A THIRD SIGNAL FOR THE SAME EVENT. A rare that carries a
+				-- tracking quest is usually also looted, and both would have
+				-- counted. The quest id is the source -- it flips once -- and
+				-- the path lets the dedupe collapse it with the loot that
+				-- almost certainly arrived moments earlier.
+				MM.Attempts.RecordMany({ spellID }, "quest:" .. tostring(questID), "quest")
 			end
 		end
 	end
