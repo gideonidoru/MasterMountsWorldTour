@@ -18,6 +18,8 @@ local registry = setmetatable({}, { __mode = "k" }) -- [frame] = kind
 local textRegistry = setmetatable({}, { __mode = "k" }) -- [fontString] = role/original
 local surfaceRegistry = setmetatable({}, { __mode = "k" }) -- [texture] = semantic surface
 local ruleRegistry = setmetatable({}, { __mode = "k" }) -- [texture] = visual strength
+local tintRegistry = setmetatable({}, { __mode = "k" }) -- [texture] = role/alpha
+local backdropBorderRegistry = setmetatable({}, { __mode = "k" }) -- [frame] = strength
 
 ------------------------------------------------------------
 -- Detection
@@ -63,6 +65,8 @@ local PALETTE = {
 		row = { 0.235, 0.160, 0.060, 0.20 },
 		text = { 0.93, 0.89, 0.77 },
 		muted = { 0.60, 0.57, 0.52 },
+		info = { 0.39, 0.84, 1.00 },
+		danger = { 1.00, 0.36, 0.32 },
 	},
 	blizzard = {
 		bg = { 0.05, 0.05, 0.08, 0.92 },
@@ -70,6 +74,10 @@ local PALETTE = {
 		accent = { 1, 0.82, 0.2 },
 		header = { 0.85, 0.65, 0.2, 0.15 },
 		row = { 1, 1, 1, 0.03 },
+		text = { 1.00, 1.00, 1.00 },
+		muted = { 0.62, 0.62, 0.66 },
+		info = { 0.36, 0.76, 1.00 },
+		danger = { 1.00, 0.32, 0.28 },
 	},
 	elvui = {
 		-- flat near-black with a hairline border is the ElvUI signature
@@ -78,6 +86,10 @@ local PALETTE = {
 		accent = { 0.09, 0.51, 0.82 },   -- ElvUI's default blue
 		header = { 0.09, 0.51, 0.82, 0.12 },
 		row = { 1, 1, 1, 0.02 },
+		text = { 0.90, 0.90, 0.90 },
+		muted = { 0.62, 0.62, 0.62 },
+		info = { 0.25, 0.67, 0.96 },
+		danger = { 1.00, 0.30, 0.30 },
 	},
 }
 
@@ -88,6 +100,34 @@ end
 function T.Accent()
 	local c = T.Colors().accent
 	return c[1], c[2], c[3]
+end
+
+function T.Color(role)
+	local c = T.Colors()
+	return c[role] or c.text or { 1, 1, 1 }
+end
+
+-- Theme changes must round-trip, including the part most skinning libraries
+-- forget: a button's label. Modern deliberately warms button text and ElvUI
+-- may recolour it again; without remembering the original, returning to
+-- Blizzard leaves beige or blue labels inside otherwise stock controls.
+local function controlFont(frame)
+	return frame and frame.GetFontString and frame:GetFontString()
+end
+
+local function rememberControlFont(frame)
+	if frame.mmOriginalFontColor then return end
+	local fs = controlFont(frame)
+	if not (fs and fs.GetTextColor) then return end
+	local ok, r, g, b, a = pcall(fs.GetTextColor, fs)
+	if ok then frame.mmOriginalFontColor = { r, g, b, a or 1 } end
+end
+
+local function restoreControlFont(frame)
+	local fs, color = controlFont(frame), frame.mmOriginalFontColor
+	if fs and color and fs.SetTextColor then
+		pcall(fs.SetTextColor, fs, color[1], color[2], color[3], color[4])
+	end
 end
 
 ------------------------------------------------------------
@@ -104,6 +144,7 @@ local function skinBlizzard(frame, kind)
 	end
 	if frame.mmCloseX then frame.mmCloseX:SetAlpha(0) end
 	if restoreArt then restoreArt(frame) end
+	restoreControlFont(frame)
 	-- undo glyph tinting
 	for _, get in ipairs({ "GetNormalTexture", "GetPushedTexture",
 		"GetDisabledTexture", "GetHighlightTexture" }) do
@@ -114,9 +155,6 @@ local function skinBlizzard(frame, kind)
 				pcall(t.SetDesaturated, t, false)
 			end
 		end
-	end
-	if kind == "statusbar" and frame.SetStatusBarColor then
-		pcall(frame.SetStatusBarColor, frame, 0.25, 0.85, 0.4)
 	end
 	-- restore native close geometry (its art needs the padded anchor)
 	local g = frame.mmCloseGeom
@@ -162,6 +200,7 @@ local MODERN_ASSET = {
 	cardInset = MODERN .. "surface_card_inset_v2.tga",
 	row = MODERN .. "surface_row_v2.tga",
 	title = MODERN .. "title_bar_stone.tga",
+	titleClose = MODERN .. "title_close_button.tga",
 	roundedBorder = MODERN .. "rounded_color_border.tga",
 	roundedMask = MODERN .. "rounded_icon_mask.tga",
 	button = MODERN .. "button_reskin_normal.tga",
@@ -207,6 +246,7 @@ hideModern = function(frame)
 		for _, part in pairs(frame.mmModernButtonParts) do part:SetAlpha(0) end
 	end
 	if frame.mmModernBarBackground then frame.mmModernBarBackground:SetAlpha(0) end
+	if frame.mmModernBarOverlay then frame.mmModernBarOverlay:SetAlpha(0) end
 	-- Modern substitutes a smaller title label. Restore the template title when
 	-- leaving it; texture restoration alone cannot revive a FontString alpha.
 	local title = frame.TitleText
@@ -310,14 +350,30 @@ local function skinModernBar(frame, c)
 	frame.mmModernBarBackground:SetTexture(MODERN_ASSET.barBackground)
 	frame.mmModernBarBackground:SetVertexColor(1, 1, 1, 0.96)
 	frame.mmModernBarBackground:SetAlpha(1)
-	if frame.SetStatusBarColor then
-		pcall(frame.SetStatusBarColor, frame, c.accent[1], c.accent[2], c.accent[3], 0.95)
+	if not frame.mmModernBarOverlay then
+		local overlay = frame:CreateTexture(nil, "OVERLAY", nil, 1)
+		overlay:SetAllPoints()
+		frame.mmModernBarOverlay = overlay
+	end
+	frame.mmModernBarOverlay:SetTexture(MODERN_ASSET.barOverlay)
+	frame.mmModernBarOverlay:SetVertexColor(1, 1, 1, 0.88)
+	frame.mmModernBarOverlay:SetAlpha(1)
+	if frame.mmSpark then
+		if not frame.mmOriginalSparkTexture and frame.mmSpark.GetTexture then
+			local ok, path = pcall(frame.mmSpark.GetTexture, frame.mmSpark)
+			if ok then frame.mmOriginalSparkTexture = path end
+		end
+		frame.mmSpark:SetTexture(MODERN_ASSET.barSpark)
 	end
 end
 
 restoreStatusTexture = function(frame)
 	if frame.mmOriginalStatusTexture and frame.SetStatusBarTexture then
 		pcall(frame.SetStatusBarTexture, frame, frame.mmOriginalStatusTexture)
+	end
+	if frame.mmModernBarOverlay then frame.mmModernBarOverlay:SetAlpha(0) end
+	if frame.mmSpark and frame.mmOriginalSparkTexture then
+		pcall(frame.mmSpark.SetTexture, frame.mmSpark, frame.mmOriginalSparkTexture)
 	end
 end
 
@@ -436,18 +492,24 @@ end
 
 function flatSkin(frame, kind, c)
 	hideModern(frame)
-	if kind == "frame" or kind == "panel" then
+	if kind == "frame" or kind == "panel" or kind == "content"
+		or kind == "sidebar" or kind == "utility" or kind == "card" then
 		-- A Blizzard template frame keeps drawing its gold chrome over
 		-- anything we add underneath, so it has to be hidden first.
 		hideArt(frame)
+		local fill = c.bg
+		if kind == "sidebar" then fill = { 0.045, 0.045, 0.045, 0.96 }
+		elseif kind == "utility" then fill = { 0.075, 0.075, 0.075, 0.96 }
+		elseif kind == "card" then fill = { 0.085, 0.085, 0.085, 0.90 }
+		elseif kind == "content" then fill = { 0.055, 0.055, 0.055, 0.96 } end
 		if frame.SetBackdrop and frame.mmBackdropOwned then
 			pcall(frame.SetBackdrop, frame, {
 				bgFile = SOLID, edgeFile = SOLID, edgeSize = 1,
 			})
-			pcall(frame.SetBackdropColor, frame, unpack(c.bg))
+			pcall(frame.SetBackdropColor, frame, unpack(fill))
 			pcall(frame.SetBackdropBorderColor, frame, unpack(c.border))
 		else
-			flatBackground(frame, { c.bg[1], c.bg[2], c.bg[3], 0.96 })
+			flatBackground(frame, { fill[1], fill[2], fill[3], fill[4] or 0.96 })
 			flatBorder(frame, 0, 0, 0, 1)
 		end
 		-- title text is part of the look; recolour rather than hide it
@@ -457,6 +519,13 @@ function flatSkin(frame, kind, c)
 			title:SetAlpha(1)
 			title:SetTextColor(1, 1, 1)
 		end
+		return
+	end
+
+	if kind == "row" then
+		hideArt(frame)
+		flatBackground(frame, c.row)
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.58)
 		return
 	end
 
@@ -473,7 +542,7 @@ function flatSkin(frame, kind, c)
 			pcall(hl.SetAlpha, hl, 1)
 		end
 		local fs = frame.GetFontString and frame:GetFontString()
-		if fs then fs:SetTextColor(1, 1, 1) end
+		if fs then fs:SetTextColor(c.text[1], c.text[2], c.text[3]) end
 		return
 	end
 
@@ -492,7 +561,7 @@ function flatSkin(frame, kind, c)
 	-- Small glyph buttons (close, scroll arrows, +/- row buttons): tint the
 	-- existing art rather than hiding it, so the glyph survives.
 	if kind == "glyph" then
-		local dimmed = { 0.55, 0.55, 0.58 }
+		local dimmed = c.muted or { 0.55, 0.55, 0.58 }
 		for _, get in ipairs({ "GetNormalTexture", "GetPushedTexture", "GetDisabledTexture" }) do
 			if frame[get] then
 				local okT, t = pcall(frame[get], frame)
@@ -510,9 +579,8 @@ function flatSkin(frame, kind, c)
 	end
 
 	if kind == "statusbar" then
-		if frame.SetStatusBarColor then
-			pcall(frame.SetStatusBarColor, frame, c.accent[1], c.accent[2], c.accent[3])
-		end
+		-- Fill colour communicates data (collection progress), not chrome. The
+		-- owner controls it; a theme only changes the bar's material.
 		return
 	end
 
@@ -547,13 +615,16 @@ function flatSkin(frame, kind, c)
 			frame.mmCloseX = x
 			-- brighten on hover so it reads as interactive without shouting
 			frame:HookScript("OnEnter", function(self)
-				if self.mmCloseX then self.mmCloseX:SetTextColor(1, 0.4, 0.4) end
+				local danger = T.Color("danger")
+				if self.mmCloseX then self.mmCloseX:SetTextColor(danger[1], danger[2], danger[3]) end
 			end)
 			frame:HookScript("OnLeave", function(self)
-				if self.mmCloseX then self.mmCloseX:SetTextColor(0.65, 0.65, 0.65) end
+				local muted = T.Color("muted")
+				if self.mmCloseX then self.mmCloseX:SetTextColor(muted[1], muted[2], muted[3]) end
 			end)
 		end
-		frame.mmCloseX:SetTextColor(0.65, 0.65, 0.65)
+		local muted = c.muted or { 0.65, 0.65, 0.65 }
+		frame.mmCloseX:SetTextColor(muted[1], muted[2], muted[3])
 		frame.mmCloseX:SetAlpha(1)
 		return
 	end
