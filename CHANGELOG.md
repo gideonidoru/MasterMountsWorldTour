@@ -1,6 +1,46 @@
 # Changelog
 
-## 1.1.15 — unreleased
+## 1.2.0 — unreleased
+
+Minor rather than patch: numbers you already read start reading differently.
+Every saved route chart is rebuilt once on first login after upgrading, because
+the router now records far more about what a chart was built for.
+
+- **A kill counts for every mount it could have dropped.** The attempt watch
+  list held one mount per creature, so where a source owes several — Coren
+  Direbrew owes both Brewfest mounts, and twelve creatures owe 27 mounts
+  between them — only the last one planned was counted. The rest sat at zero
+  and read as bad luck. Worse, the one being counted was whichever happened to
+  be planned last, which could be a mount already collected. Attempts are no
+  longer double-counted either, when a boss kill and the loot from it arrive as
+  two separate signals.
+
+- **Weights that did nothing now do something.** The route's cache could not
+  see the era nudge, deadline pressure, the reorder cap or the tier order, so a
+  chart built at one setting was restored at another and the slider read as
+  decorative. It could not see a teleport being switched off either, so the
+  route kept routing through a portal you had just disabled.
+
+- **Two places in one zone are no longer given the same directions.** Journeys
+  were computed from your coordinates and then cached under the zone name
+  alone, so the second stop in a zone inherited the first one's route —
+  including its entry flight point, which may be on the opposite side.
+
+- **One hearthstone can no longer pay for a whole route.** A teleport used as
+  the first leg of a longer trip was never marked as spent, so a plan was
+  costed as though you carried one charge per stop. Session lengths were costed
+  the same way, and now measure travel exactly as the route does.
+
+- **A route that fails to build no longer takes the working one with it.** The
+  route is published in one piece, at the end, together with its totals, its
+  index and its session count — so a build that goes wrong leaves the last good
+  route exactly where it was instead of half-replacing it.
+
+- **The interface has a themed surface.** Panes are real regions with their own
+  edges and resting colour rather than one black canvas, and the ElvUI and
+  Blizzard skins inherit the same structure with their own accent.
+
+## 1.1.15
 
 - **Continent maps no longer bury themselves in mount pins.** Projecting every
   child zone's pins up onto the continent map worked for Pandaria and the Broken
