@@ -612,7 +612,7 @@ local function buildMain()
 	-- native portrait and ElvUI can keep its own chrome.
 	local badgeRing = frame:CreateTexture(nil, "ARTWORK", nil, 5)
 	badgeRing:SetSize(46, 46)
-	badgeRing:SetPoint("TOPLEFT", 10, -7)
+	badgeRing:SetPoint("CENTER", frame, "TOPLEFT", 10, -18)
 	badgeRing:SetTexture(MM.MEDIA .. "Modern\\class_ring_reskin.tga")
 	frame.mmModernLogoRing = badgeRing
 
@@ -625,19 +625,31 @@ local function buildMain()
 	frame.mmModernLogo = badge
 
 	local modernTitle = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	modernTitle:SetPoint("TOP", 0, -8)
+	modernTitle:SetPoint("TOP", 0, -7)
 	modernTitle:SetText("MASTER MOUNTS")
 	pcall(modernTitle.SetSpacing, modernTitle, 1)
 	MM.Theme.RegisterText(modernTitle, "accent")
 	frame.mmModernTitleText = modernTitle
 
+	-- Do not depend on Blizzard's close-button texture surviving a template-art
+	-- sweep. Modern owns an explicit close affordance; the native one is restored
+	-- automatically when switching to Blizzard or ElvUI.
+	frame.mmNativeClose = frame.CloseButton or frame.closeButton
+	local modernClose = MM.Theme.CreateCloseButton(frame, 18)
+	modernClose:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -7, -3)
+	modernClose:SetFrameLevel(frame:GetFrameLevel() + 30)
+	modernClose.mmTooltip = "Close Master Mounts"
+	modernClose:SetScript("OnClick", function() frame:Hide() end)
+	modernClose:Hide()
+	frame.mmModernClose = modernClose
+
 	-- A dedicated navigation rail keeps tabs, collection progress and utility
 	-- actions in one predictable band. The same geometry benefits every theme;
 	-- only its material changes.
 	local navSurface = frame:CreateTexture(nil, "BORDER", nil, 2)
-	navSurface:SetPoint("TOPLEFT", 4, -26)
-	navSurface:SetPoint("TOPRIGHT", -4, -26)
-	navSurface:SetHeight(36)
+	navSurface:SetPoint("TOPLEFT", 4, -24)
+	navSurface:SetPoint("TOPRIGHT", -4, -24)
+	navSurface:SetHeight(38)
 	MM.Theme.RegisterSurface(navSurface, "utility")
 	frame.mmNavSurface = navSurface
 
@@ -729,7 +741,7 @@ local function buildMain()
 		tab:SetSize(104, 24)
 		tab:SetID(i)
 		if i == 1 then
-			tab:SetPoint("TOPLEFT", frame, "TOPLEFT", 62, -32)
+			tab:SetPoint("TOPLEFT", frame, "TOPLEFT", 46, -31)
 		else
 			tab:SetPoint("LEFT", frame.Tabs[i - 1], "RIGHT", 4, 0)
 		end

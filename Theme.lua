@@ -191,9 +191,18 @@ local flatSkin  -- forward declaration; skinElv falls through to it
 hideModern = function(frame)
 	if frame.mmModernBackground then frame.mmModernBackground:SetAlpha(0) end
 	if frame.mmModernTitle then frame.mmModernTitle:SetAlpha(0) end
+	if frame.mmModernTitleShade then frame.mmModernTitleShade:SetAlpha(0) end
+	if frame.mmModernTitleRules then
+		for _, rule in pairs(frame.mmModernTitleRules) do rule:SetAlpha(0) end
+	end
 	if frame.mmModernLogo then frame.mmModernLogo:SetAlpha(0) end
 	if frame.mmModernLogoRing then frame.mmModernLogoRing:SetAlpha(0) end
 	if frame.mmModernTitleText then frame.mmModernTitleText:SetAlpha(0) end
+	if frame.mmModernClose then frame.mmModernClose:Hide() end
+	if frame.mmNativeClose then
+		frame.mmNativeClose:SetAlpha(1)
+		frame.mmNativeClose:Show()
+	end
 	if frame.mmModernButtonParts then
 		for _, part in pairs(frame.mmModernButtonParts) do part:SetAlpha(0) end
 	end
@@ -221,12 +230,31 @@ local function modernTitle(frame)
 		local t = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
 		t:SetPoint("TOPLEFT", 1, -1)
 		t:SetPoint("TOPRIGHT", -1, -1)
-		t:SetHeight(24)
+		t:SetHeight(22)
 		frame.mmModernTitle = t
+
+		local shade = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
+		shade:SetAllPoints(t)
+		shade:SetColorTexture(0.015, 0.010, 0.008, 0.34)
+		frame.mmModernTitleShade = shade
+
+		local top = frame:CreateTexture(nil, "BORDER", nil, 5)
+		top:SetPoint("TOPLEFT", t, "TOPLEFT", 0, -1)
+		top:SetPoint("TOPRIGHT", t, "TOPRIGHT", 0, -1)
+		top:SetHeight(1)
+		top:SetColorTexture(0.72, 0.58, 0.30, 0.52)
+		local bottom = frame:CreateTexture(nil, "BORDER", nil, 5)
+		bottom:SetPoint("BOTTOMLEFT", t, "BOTTOMLEFT", 0, 1)
+		bottom:SetPoint("BOTTOMRIGHT", t, "BOTTOMRIGHT", 0, 1)
+		bottom:SetHeight(1)
+		bottom:SetColorTexture(0.045, 0.030, 0.020, 0.90)
+		frame.mmModernTitleRules = { top = top, bottom = bottom }
 	end
 	frame.mmModernTitle:SetTexture(MODERN_ASSET.title)
-	frame.mmModernTitle:SetVertexColor(1, 1, 1, 0.92)
+	frame.mmModernTitle:SetVertexColor(0.82, 0.79, 0.73, 0.84)
 	frame.mmModernTitle:SetAlpha(1)
+	frame.mmModernTitleShade:SetAlpha(1)
+	for _, rule in pairs(frame.mmModernTitleRules) do rule:SetAlpha(1) end
 end
 
 -- Current Vaultloom buttons are three-piece warm frames. Stretching the old
@@ -644,6 +672,8 @@ local function skinModern(frame, kind)
 			if frame.mmModernLogo then frame.mmModernLogo:SetAlpha(1) end
 			if frame.mmModernLogoRing then frame.mmModernLogoRing:SetAlpha(1) end
 			if frame.mmModernTitleText then frame.mmModernTitleText:SetAlpha(1) end
+			if frame.mmModernClose then frame.mmModernClose:Show() end
+			if frame.mmNativeClose then frame.mmNativeClose:Hide() end
 		end
 		local title = frame.TitleText
 			or (frame.TitleContainer and frame.TitleContainer.TitleText)
