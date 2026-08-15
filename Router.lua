@@ -3066,6 +3066,39 @@ end
 -- handicap takes the min -- and re-deriving them here would be a second copy of
 -- that rule, drifting from the first. They are briefly high for a stop that has
 -- lost one of several mounts, and correct again when the chart lands.
+-- A STOP *IS* ITS FIRST MEMBER, AND THAT MEMBER CAN BE THE ONE REMOVED.
+--
+-- groupStops builds a stop by taking the first step and hanging the rest off it
+-- as `members`, so `stop.entry`, `stop.mapID` and `stop.label` all describe
+-- members[1]. Filtering that member out of the list left the stop still
+-- claiming it -- stopSpellID returned the removed mount, stopHolds matched it,
+-- SetIndex wrote it to routeGoal, Current reported it and the waypoint pointed
+-- at its coordinates. The goal you had just unplanned became the one the arrow
+-- sent you to.
+--
+-- So a survivor is promoted into the container: identity, place and label,
+-- which is everything that answers "which mount is this, and where". The
+-- AGGREGATES are deliberately left alone -- groupStops owns how those combine
+-- and the chart that follows recomputes them.
+local PROMOTED_FIELDS = {
+	"entry", "rec", "mapID", "x", "y", "continent", "world",
+	"path", "approxFrom", "sweep", "sweepIndex", "unmappedZone",
+}
+
+local function promoteMember(stop, survivor)
+	if not survivor or stop == survivor then return end
+	for _, key in ipairs(PROMOTED_FIELDS) do stop[key] = survivor[key] end
+	stop.desc = survivor.desc
+	stop.label = (survivor.entry and survivor.entry.name) or stop.label
+	-- Rebuilt rather than kept: the grouped label counts the mounts at the stop,
+	-- and one of them has just left.
+	if #(stop.members or {}) > 1 then
+		stop.label = stopLabel(stop)
+		stop.desc = ("%s — %d mounts drop here"):format(
+			survivor.desc or "One visit", #stop.members)
+	end
+end
+
 function R.DropUnplanned(planned)
 	if not planned then return 0, 0 end
 	local kept, removedStops, removedGoals = {}, 0, 0
@@ -3082,7 +3115,14 @@ function R.DropUnplanned(planned)
 		else
 			-- Filtered so the pane stops listing a mount that is off the plan,
 			-- even where the stop itself survives for the others.
-			if #live ~= #members then stop.members = live end
+			if #live ~= #members then
+				stop.members = live
+				local stillHere = false
+				for _, m in ipairs(live) do
+					if m == stop then stillHere = true break end
+				end
+				if not stillHere then promoteMember(stop, live[1]) end
+			end
 			kept[#kept + 1] = stop
 		end
 	end
@@ -3591,7 +3631,12 @@ function R:Advance(step)
 		-- and MM_ROUTE_ADVANCED both landed on the previous ordering. If a plan
 		-- edit arrives while this builds, the completion belongs to the newest
 		-- build, and that is the route these stops come from.
-		R.AfterBuild(false, function()
+		R.AfterBuild(false, function(_, ok)
+			-- A FAILED BUILD LEAVES THE PREVIOUS ROUTE STANDING, and that route
+			-- is the one this advance was moving away from. Repointing into it
+			-- would put the arrow on a stop chosen by a chart that no longer
+			-- describes the plan, and announce it as progress.
+			if not ok then return end
 			if not (MM.cdb and MM.cdb.routeActive) then return end
 			if sid then
 				for i, stop in ipairs(R.route) do
@@ -3668,7 +3713,17 @@ MM:On("MM_SCANNED", function()
 		-- the receipt for a genuinely slow resume never printed. Finishing here
 		-- also means FinishResume can trust that an empty route is an empty
 		-- route rather than one that has not been charted yet.
-		R.AfterBuild(false, function(stops)
+		R.AfterBuild(false, function(stops, ok)
+			-- Resuming onto the PREVIOUS route would restore a route charted for
+			-- whatever the plan was last session, re-arm the arrow on it and
+			-- open the monitor over it -- all of which reads as a successful
+			-- resume. Say so instead, and leave the route alone.
+			if not ok then
+				MM:Print("Could not plan your route — it is not running. "
+					.. "/mm route to try again.")
+				R:Stop()
+				return
+			end
 			if startedAt and debugprofilestop then
 				local secs = (debugprofilestop() - startedAt) / 1000
 				-- Only when it was slow enough to have looked broken. Below that
@@ -3927,8 +3982,14 @@ MM:On("MM_PLAN_CHANGED", function()
 		-- The OPTIMISED order is recomputed off-frame. Until it lands the
 		-- previous chart stays on screen, minus whatever left the plan -- one
 		-- build stale, which is a far better thing to show than a frozen client.
-		R.AfterBuild(false, function(stops)
+		R.AfterBuild(false, function(stops, ok)
 			if not (MM.cdb and MM.cdb.routeActive) then return end
+			-- The trim above already took the unplanned goals out of the visible
+			-- route, so what is on screen is correct even without the chart. A
+			-- failed build must not repoint or announce against it: `stops` then
+			-- describes the PREVIOUS route, and zero would stop a route that is
+			-- perfectly alive.
+			if not ok then return end
 			if stops == 0 then R:Stop() return end
 			local goal = MM.db and MM.db.routeGoal
 			if goal then

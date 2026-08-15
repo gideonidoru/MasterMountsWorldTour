@@ -716,7 +716,9 @@ function UI.BuildPlanner(panel)
 	-- At the foot of the panel it gets margin on every side, it reads as the
 	-- end of the flow (plan above, act below), and the ETA gets the whole row.
 	routeButton = UI.MakeButton(panel, "Start Route", 170)
-	routeButton:SetHeight(32)
+	routeButton.mmStartWidth, routeButton.mmStartHeight = 204, 32
+	routeButton.mmStopWidth, routeButton.mmStopHeight = 168, 28
+	routeButton:SetSize(routeButton.mmStartWidth, routeButton.mmStartHeight)
 	routeButton:SetScript("OnClick", function() MM:Fire("MM_ROUTE_TOGGLE") end)
 
 	-- A thin accent EDGE, not a glow.
@@ -766,6 +768,9 @@ function UI.BuildPlanner(panel)
 
 	function routeButton:SetRouteState(active)
 		self:SetText(active and "Stop Route" or "Start Route")
+		self:SetSize(
+			active and self.mmStopWidth or self.mmStartWidth,
+			active and self.mmStopHeight or self.mmStartHeight)
 		-- The edge marks the PRIMARY action. Once a route is running, stopping
 		-- is not what the player is being encouraged to do, so it comes off.
 		for _, e in ipairs(self.mmEdges or {}) do e:SetShown(not active) end
@@ -834,13 +839,11 @@ function UI.BuildPlanner(panel)
 	-- relative frame throws at run time -- invisible to a syntax check, and
 	-- the button is built well before the list it belongs to.
 	--
-	-- Keep the primary action compact and centered. A nearly full-width button
-	-- read as a footer bar and gave the bottom of the pane more visual weight
-	-- than the route itself.
+	-- Keep the primary action compact and centered. The stop state is deliberately
+	-- quieter than the start state; a wide disabled-looking footer made stopping
+	-- the route more visually important than the route being followed.
 	routeButton:ClearAllPoints()
-	routeButton:SetPoint("BOTTOM", planBox, "BOTTOM", 0, -42)
-	routeButton:SetWidth(240)
-	routeButton:SetHeight(34)
+	routeButton:SetPoint("BOTTOM", planBox, "BOTTOM", 0, -39)
 end
 
 -- ONE REFRESH PER FRAME, AND NEVER INSIDE ANOTHER.

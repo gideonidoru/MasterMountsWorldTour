@@ -2007,7 +2007,17 @@ function P:Optimize(onDone)
 	--
 	-- This called the asynchronous Build and reordered the plan on the next
 	-- line, so it sorted the plan by the PREVIOUS route every single time.
-	MM.Router.AfterBuild(false, function()
+	MM.Router.AfterBuild(false, function(_, ok)
+		-- REWRITING FROM A ROUTE THAT WAS NEVER BUILT IS THE ORIGINAL BUG.
+		--
+		-- On failure the previous route is still published, and sorting the
+		-- plan by it is exactly what this function was changed to stop doing --
+		-- it would order the plan by the chart from before last, silently.
+		-- `onDone` still runs, because the caller holds a lock on it.
+		if not ok then
+			if onDone then onDone(nil, nil) end
+			return
+		end
 		local stops, waiting = rewritePlanFromRoute()
 		-- ONE settled notification, after the plan is in its final shape.
 		MM:Fire("MM_PLAN_CHANGED")

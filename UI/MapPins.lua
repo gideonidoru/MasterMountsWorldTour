@@ -689,19 +689,29 @@ local function fullMinimapUpdate()
 	if not minimapEnabled() then MP.minimapWhy = "switched off" return end
 	if not indexBuilt then indexLocations() end
 
+	-- A PASS THAT COULD NOT RUN IS NOT A PASS THAT FOUND NOTHING.
+	--
+	-- These three are transient: the client withholds a position for a moment
+	-- after a zone change, a map's world position resolves late, and the view
+	-- radius is unreadable while the minimap is mid-resize. Each used to return
+	-- exactly like a completed pass, and the driver read "no candidates" from
+	-- them and parked -- so a stutter at the wrong moment silently switched
+	-- minimap pins off until something else happened to re-arm it.
+	--
+	-- `false` means "ask again"; `true` means the answer below is real.
 	local instance, world, mapID = U.PlayerWorldPos()
 	if not (world and mapID) then
 		MP.minimapWhy = "no player position here (instances do not report one)"
-		return
+		return false
 	end
 	local basis = mapBasis(mapID)
 	if not basis then
 		MP.minimapWhy = ("map %d has no world position to measure against"):format(mapID)
-		return
+		return false
 	end
 	if not readMinimap() then
 		MP.minimapWhy = "could not read the minimap's view radius"
-		return
+		return false
 	end
 	MP.minimapRadius = mapRadius
 
@@ -736,6 +746,7 @@ local function fullMinimapUpdate()
 	else
 		MP.minimapWhy = "everything is out of range"
 	end
+	return true
 end
 
 -- Between full passes only the offsets change, so only the offsets are redone.
@@ -768,6 +779,7 @@ MP.driverStats = {
 	ticks = 0,        -- OnUpdate calls
 	fulls = 0,        -- full passes over the candidates
 	moves = 0,        -- offset-only repositions
+	transient = 0,    -- passes that could not run and were retried
 	parked = 0,       -- times it stopped ticking entirely
 	ms = 0,           -- time inside the handler
 }
@@ -815,13 +827,19 @@ local function ensureDriver()
 		sinceMove = sinceMove + elapsed
 		if sinceFull >= FULL_EVERY then
 			sinceFull, sinceMove = 0, 0
-			fullMinimapUpdate()
+			local valid = fullMinimapUpdate()
 			stats.fulls = stats.fulls + 1
-			-- NOTHING INDEXED HERE AT ALL is different from everything being out
-			-- of range. Out of range resolves by walking, so it has to keep
-			-- ticking; nothing indexed cannot resolve without a new map, a new
-			-- scan or a plan edit, and each of those re-arms this.
-			if activeCount == 0 and (MP.minimapCandidates or 0) == 0 then
+			if not valid then
+				-- The pass could not run. Try again on the next tick rather
+				-- than reading a missing position as an empty zone.
+				stats.transient = (stats.transient or 0) + 1
+				sinceFull = FULL_EVERY
+			elseif activeCount == 0 and (MP.minimapCandidates or 0) == 0 then
+				-- NOTHING INDEXED HERE AT ALL is different from everything being
+				-- out of range, and different again from a pass that failed. Out
+				-- of range resolves by walking, so it keeps ticking; nothing
+				-- indexed cannot resolve without a new map, a new scan or a plan
+				-- edit, and each of those re-arms this.
 				parkDriver(MP.minimapWhy or "nothing indexed here")
 			end
 		elseif sinceMove >= MOVE_EVERY then

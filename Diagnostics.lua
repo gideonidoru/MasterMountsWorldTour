@@ -343,6 +343,14 @@ function D.BuildChunked(onDone)
 	-- build gets the same treatment the sections get, and the report starts
 	-- once it lands.
 	if MM.Router and MM.Router.AfterBuild then
+		-- RENDERED EITHER WAY. A route that will not build is exactly when the
+		-- diagnostics are wanted, so a failed warm must not suppress the report.
+		--
+		-- Nothing is recorded about the failure here on purpose: the two
+		-- sections that describe the route each call BuildSync inside a pcall
+		-- and print the error themselves, so they report the failure rather than
+		-- describing the route from before it. A flag set here would be a second
+		-- copy of that fact, and the sections would still have to try.
 		MM.Router.AfterBuild(false, function() step() end)
 	else
 		step()

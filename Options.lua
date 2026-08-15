@@ -59,9 +59,24 @@ local function buildPanel()
 	scroll:SetScrollChild(content)
 
 
-	-- running layout cursor; every helper advances it and returns its widget
+	-- A readable content column inside Blizzard's very wide Settings canvas.
+	-- Sections use quiet semantic cards instead of one uninterrupted wallpaper,
+	-- so headings describe groups rather than floating in empty space.
 	local y = -8
-	local LEFT = 16
+	-- Lay out against the narrow legacy host first. Wider Settings canvases may
+	-- expand the cards and prose later; widening cannot create overlaps, while
+	-- constructing at 760 and shrinking after measurement could.
+	local LEFT, CONTENT_W, TEXT_W = 24, 560, 500
+	local sectionSurfaces, wrappingLabels = {}, {}
+	local activeSection
+
+	local function finishSection()
+		if not activeSection then return end
+		local bottom = y - 6
+		activeSection.surface:SetHeight(math.max(52, activeSection.top - bottom))
+		activeSection = nil
+		y = y - 10
+	end
 
 	local function place(widget, height, indent)
 		widget:SetPoint("TOPLEFT", content, "TOPLEFT", LEFT + (indent or 0), y)
@@ -70,7 +85,17 @@ local function buildPanel()
 	end
 
 	local function heading(text, gap)
+		finishSection()
 		y = y - (gap or 10)
+		local top = y + 8
+		local surface = content:CreateTexture(nil, "BACKGROUND", nil, 2)
+		surface:SetPoint("TOPLEFT", content, "TOPLEFT", 12, top)
+		surface:SetWidth(CONTENT_W - 24)
+		sectionSurfaces[#sectionSurfaces + 1] = surface
+		MM.Theme.RegisterSurface(surface, "card")
+		MM.Theme.BorderSurface(content, surface, "subtle")
+		activeSection = { surface = surface, top = top }
+
 		local fs = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		fs:SetPoint("TOPLEFT", content, "TOPLEFT", LEFT, y)
 		-- Old headings carried their own gold escape sequence, which stayed gold
@@ -78,14 +103,15 @@ local function buildPanel()
 		text = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
 		fs:SetText(text)
 		MM.Theme.RegisterText(fs, "accent")
-		y = y - 22
+		y = y - 28
 		return fs
 	end
 
 	local function label(text, size)
 		local fs = content:CreateFontString(nil, "OVERLAY", size or "GameFontHighlightSmall")
 		fs:SetPoint("TOPLEFT", content, "TOPLEFT", LEFT, y)
-		fs:SetWidth(560)
+		fs:SetWidth(TEXT_W)
+		wrappingLabels[#wrappingLabels + 1] = fs
 		fs:SetJustifyH("LEFT")
 		fs:SetText(text)
 		MM.Theme.RegisterText(fs, "muted")
@@ -95,7 +121,7 @@ local function buildPanel()
 
 	local function check(text, key, tip, indent)
 		local c = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-		c:SetSize(26, 26)
+		c:SetSize(24, 24)
 		local t = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 		t:SetPoint("LEFT", c, "RIGHT", 4, 1)
 		t:SetText(text)
@@ -114,13 +140,13 @@ local function buildPanel()
 				if MM.Nav and MM.Nav.Refresh then MM.Nav.Refresh() end
 			end
 		end)
-		return place(c, 26, indent)
+		return place(c, 24, indent)
 	end
 
 	-- nested under MM.db.announce
 	local function announceCheck(text, key, tip, indent)
 		local c = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-		c:SetSize(26, 26)
+		c:SetSize(24, 24)
 		local t = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 		t:SetPoint("LEFT", c, "RIGHT", 4, 1)
 		t:SetText(text)
@@ -171,6 +197,8 @@ local function buildPanel()
 		"Pinned, it stays put instead of fading, and says so when a zone has "
 		.. "nothing left to farm. Close it with the X or a right-click; it "
 		.. "comes back in the next zone. /mm zone show summons it any time.", 16)
+
+	heading("Map and navigation", 6)
 	check("Show mount locations on the world map", "mapPins")
 	check("Show mount locations on the minimap", "mapPinsMinimap")
 	check("Include mounts I already own on the map", "mapPinsShowCollected", nil, 16)
@@ -225,7 +253,7 @@ local function buildPanel()
 	y = y - 34
 
 	local minimap = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-	minimap:SetSize(26, 26)
+	minimap:SetSize(24, 24)
 	local mmText = minimap:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	mmText:SetPoint("LEFT", minimap, "RIGHT", 4, 1)
 	mmText:SetText("Show the minimap button")
@@ -236,7 +264,7 @@ local function buildPanel()
 	minimap:SetScript("OnClick", function(self)
 		MM.SetMinimapShown(self:GetChecked() and true or false)
 	end)
-	place(minimap, 26)
+	place(minimap, 24)
 
 	heading("|cffffd84dAnnounce new mounts in chat|r")
 	announceCheck("Announce when I collect a mount", "enabled",
@@ -407,9 +435,25 @@ local function buildPanel()
 
 	label("Shows a rare you still need, so the preview matches the real thing. Works even with alerts switched off.")
 
-	-- the scroll child must know how tall the content actually is
+	-- Close the final card before measuring the scroll child.
+	finishSection()
 	content:SetHeight(math.abs(y) + 20)
-	content:SetWidth(580)
+
+	-- The legacy Interface Options host is considerably narrower than the
+	-- current Settings canvas. Fit the readable column to the actual viewport
+	-- so cards and wrapped copy never disappear beyond an unreachable right edge.
+	local function fitContentWidth(_, width)
+		width = width or scroll:GetWidth()
+		if not width or width <= 0 then width = 564 end
+		local available = math.max(560, math.min(760, width - 4))
+		CONTENT_W = available
+		TEXT_W = math.max(300, available - 60)
+		content:SetWidth(CONTENT_W)
+		for _, surface in ipairs(sectionSurfaces) do surface:SetWidth(CONTENT_W - 24) end
+		for _, text in ipairs(wrappingLabels) do text:SetWidth(TEXT_W) end
+	end
+	scroll:SetScript("OnSizeChanged", fitContentWidth)
+	fitContentWidth(scroll, scroll:GetWidth())
 
 	return finishThemedPanel(panel, backing)
 end
@@ -830,7 +874,7 @@ local function buildTravel()
 			local row = rows[i]
 			if not row then
 				row = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-				row:SetSize(26, 26)
+				row:SetSize(24, 24)
 				row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 				row.label:SetPoint("LEFT", row, "RIGHT", 4, 1)
 					row.label:SetWidth(WIDTH - 60)

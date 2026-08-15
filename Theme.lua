@@ -172,11 +172,12 @@ end
 ------------------------------------------------------------
 -- Skinning
 ------------------------------------------------------------
-local restoreArt, hideModern, restoreStatusTexture -- forward declarations
+local restoreArt, hideModern, restoreStatusTexture, restoreModernControls -- forward declarations
 local function skinBlizzard(frame, kind)
 	-- undo anything the flat skin added, so switching back is complete
 	if hideModern then hideModern(frame) end
 	if kind == "statusbar" and restoreStatusTexture then restoreStatusTexture(frame) end
+	if restoreModernControls then restoreModernControls(frame, kind) end
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
 	if frame.mmBorder then
 		for _, t in pairs(frame.mmBorder) do t:SetAlpha(0) end
@@ -254,6 +255,8 @@ local MODERN_ASSET = {
 	tabActive = MODERN .. "tab_reskin_active.tga",
 	scrollTrack = MODERN .. "scroll_track_reskin.tga",
 	scrollThumb = MODERN .. "scroll_thumb_reskin.tga",
+	arrowUp = MODERN .. "arrow_up_small.tga",
+	arrowDown = MODERN .. "arrow_down_small.tga",
 	barBackground = MODERN .. "bar_bg_reskin.tga",
 	barFill = MODERN .. "bar_fill_reskin.tga",
 	barOverlay = MODERN .. "bar_overlay_reskin.tga",
@@ -290,6 +293,9 @@ hideModern = function(frame)
 	end
 	if frame.mmModernBarBackground then frame.mmModernBarBackground:SetAlpha(0) end
 	if frame.mmModernBarOverlay then frame.mmModernBarOverlay:SetAlpha(0) end
+	if frame.mmModernCheckboxBox then frame.mmModernCheckboxBox:SetAlpha(0) end
+	if frame.mmModernSliderTrack then frame.mmModernSliderTrack:SetAlpha(0) end
+	if frame.mmModernSliderFill then frame.mmModernSliderFill:SetAlpha(0) end
 	-- Modern substitutes a smaller title label. Restore the template title when
 	-- leaving it; texture restoration alone cannot revive a FontString alpha.
 	local title = frame.TitleText
@@ -405,14 +411,28 @@ local function skinModernBar(frame, c)
 		frame.mmModernBarOverlay = overlay
 	end
 	frame.mmModernBarOverlay:SetTexture(MODERN_ASSET.barOverlay)
-	frame.mmModernBarOverlay:SetVertexColor(1, 1, 1, 0.88)
+	-- This asset is an opaque white highlight, not transparent gloss. At the old
+	-- 0.88 alpha it covered the fill and read as a broken white bar. It is now a
+	-- whisper of reflected light; the progress colour remains the information.
+	frame.mmModernBarOverlay:SetBlendMode("BLEND")
+	frame.mmModernBarOverlay:SetVertexColor(1, 0.93, 0.78, 0.11)
 	frame.mmModernBarOverlay:SetAlpha(1)
 	if frame.mmSpark then
-		if not frame.mmOriginalSparkTexture and frame.mmSpark.GetTexture then
-			local ok, path = pcall(frame.mmSpark.GetTexture, frame.mmSpark)
-			if ok then frame.mmOriginalSparkTexture = path end
+		if not frame.mmOriginalSpark then
+			local r, g, b, a = frame.mmSpark:GetVertexColor()
+			frame.mmOriginalSpark = {
+				texture = frame.mmSpark.GetTexture and frame.mmSpark:GetTexture(),
+				width = frame.mmSpark:GetWidth(), height = frame.mmSpark:GetHeight(),
+				alpha = frame.mmSpark:GetAlpha(),
+				blend = frame.mmSpark.GetBlendMode and frame.mmSpark:GetBlendMode(),
+				vertex = { r, g, b, a or 1 },
+			}
 		end
 		frame.mmSpark:SetTexture(MODERN_ASSET.barSpark)
+		frame.mmSpark:SetSize(6, math.max(12, frame:GetHeight()))
+		frame.mmSpark:SetBlendMode("BLEND")
+		frame.mmSpark:SetVertexColor(1, 0.83, 0.38, 0.52)
+		frame.mmSpark:SetAlpha(0.52)
 	end
 end
 
@@ -421,8 +441,14 @@ restoreStatusTexture = function(frame)
 		pcall(frame.SetStatusBarTexture, frame, frame.mmOriginalStatusTexture)
 	end
 	if frame.mmModernBarOverlay then frame.mmModernBarOverlay:SetAlpha(0) end
-	if frame.mmSpark and frame.mmOriginalSparkTexture then
-		pcall(frame.mmSpark.SetTexture, frame.mmSpark, frame.mmOriginalSparkTexture)
+	local spark = frame.mmSpark and frame.mmOriginalSpark
+	if spark then
+		if spark.texture then pcall(frame.mmSpark.SetTexture, frame.mmSpark, spark.texture) end
+		frame.mmSpark:SetSize(spark.width or 8, spark.height or 16)
+		frame.mmSpark:SetAlpha(spark.alpha or 1)
+		local vertex = spark.vertex or { 1, 1, 1, 1 }
+		frame.mmSpark:SetVertexColor(vertex[1], vertex[2], vertex[3], vertex[4])
+		if spark.blend then frame.mmSpark:SetBlendMode(spark.blend) end
 	end
 end
 
@@ -537,6 +563,50 @@ end
 
 function restoreArt(frame)
 	for _, t in ipairs(templateRegions(frame)) do t:SetAlpha(1) end
+end
+
+-- Any Modern control that borrows a native texture records it first. Theme
+-- switching then restores the exact path and geometry instead of relying on a
+-- reload to repair a slider thumb or scrollbar arrow.
+local function modernTexture(frame, texture, path)
+	if not (frame and texture and texture.GetTexture and texture.SetTexture) then return end
+	frame.mmModernTextureRestore = frame.mmModernTextureRestore or {}
+	if not frame.mmModernTextureRestore[texture] then
+		local r, g, b, a = texture:GetVertexColor()
+		local texcoord = texture.GetTexCoord and { texture:GetTexCoord() } or nil
+		frame.mmModernTextureRestore[texture] = {
+			atlas = texture.GetAtlas and texture:GetAtlas() or nil,
+			path = texture:GetTexture(), texcoord = texcoord,
+			width = texture:GetWidth(), height = texture:GetHeight(),
+			vertex = { r, g, b, a or 1 }, alpha = texture:GetAlpha(),
+			blend = texture.GetBlendMode and texture:GetBlendMode() or nil,
+		}
+	end
+	texture:SetTexture(path)
+end
+
+restoreModernControls = function(frame)
+	for texture, original in pairs(frame.mmModernTextureRestore or {}) do
+		if texture and texture.SetTexture then
+			if original.atlas and texture.SetAtlas then
+				texture:SetAtlas(original.atlas, false)
+			else
+				texture:SetTexture(original.path)
+			end
+			if original.texcoord and texture.SetTexCoord then
+				texture:SetTexCoord(unpack(original.texcoord))
+			end
+			if original.width and original.height then
+				texture:SetSize(original.width, original.height)
+			end
+			local vertex = original.vertex or { 1, 1, 1, 1 }
+			texture:SetVertexColor(vertex[1], vertex[2], vertex[3], vertex[4])
+			texture:SetAlpha(original.alpha or 1)
+			if original.blend and texture.SetBlendMode then
+				texture:SetBlendMode(original.blend)
+			end
+		end
+	end
 end
 
 function flatSkin(frame, kind, c)
@@ -732,6 +802,13 @@ local function modernControlState(frame, kind, state)
 				or state == "hover" and { 1.00, 0.91, 0.72 }
 				or { 1, 1, 1 }
 			frame.mmModernBackground:SetVertexColor(warm[1], warm[2], warm[3], 1)
+		elseif activeTab then
+			-- The source texture carries a theatrical yellow bloom. A restrained
+			-- warm tint keeps the selected state clear without turning the tab into
+			-- the brightest object in the entire window.
+			frame.mmModernBackground:SetVertexColor(0.78, 0.72, 0.58, 0.88)
+		else
+			frame.mmModernBackground:SetVertexColor(1, 1, 1, 1)
 		end
 	end
 
@@ -766,6 +843,142 @@ local function hookModernControl(frame, kind)
 	end)
 end
 
+-- The hit target stays generous, but the visible checkbox is an 18px control.
+-- Shrinking the CheckButton itself would make Options harder to use; shrinking
+-- only its authored chassis gives the calmer rhythm without losing usability.
+local function modernCheckboxState(frame)
+	local box = frame.mmModernCheckboxBox
+	if not box then return end
+	local active = T.Active() == "modern"
+	box:SetAlpha(active and (frame:IsEnabled() and 1 or 0.45) or 0)
+	if frame.mmModernCheck then
+		frame.mmModernCheck:SetShown(active and frame:GetChecked() and true or false)
+	end
+	local c = PALETTE.modern
+	local hover = frame.IsMouseOver and frame:IsMouseOver()
+	flatBorder(box, c.border[1], c.border[2], c.border[3], hover and 0.78 or 0.42)
+end
+
+local function skinModernCheckbox(frame, c)
+	hideArt(frame)
+	local native = frame.GetCheckedTexture and frame:GetCheckedTexture()
+	if native then native:SetAlpha(0) end
+	if not frame.mmModernCheckboxBox then
+		local box = CreateFrame("Frame", nil, frame)
+		box:SetSize(18, 18)
+		box:SetPoint("CENTER", frame, "CENTER", 0, 0)
+		box:SetFrameLevel(frame:GetFrameLevel())
+		box.mmNoSkin = true
+		modernBackground(box, MODERN_ASSET.inset)
+		box.mmModernBackground:SetVertexColor(0.58, 0.54, 0.47, 0.96)
+		flatBorder(box, c.border[1], c.border[2], c.border[3], 0.42)
+
+		local check = box:CreateTexture(nil, "OVERLAY")
+		check:SetSize(14, 14)
+		check:SetPoint("CENTER", 0, 0)
+		check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+		check:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
+		frame.mmModernCheckboxBox = box
+		frame.mmModernCheck = check
+	end
+	frame.mmModernCheckboxBox:SetAlpha(1)
+	if not frame.mmModernCheckboxHooks then
+		frame.mmModernCheckboxHooks = true
+		for _, event in ipairs({ "OnShow", "OnClick", "OnEnter", "OnLeave",
+			"OnEnable", "OnDisable" }) do
+			frame:HookScript(event, modernCheckboxState)
+		end
+		-- Programmatic refreshes use SetChecked without firing OnClick. A secure
+		-- post-hook keeps the authored tick in sync without replacing the native
+		-- method, so Blizzard and ElvUI receive the exact control on round-trip.
+		if hooksecurefunc then
+			hooksecurefunc(frame, "SetChecked", modernCheckboxState)
+		end
+	end
+	modernCheckboxState(frame)
+end
+
+local function updateModernSlider(frame)
+	if T.Active() ~= "modern" or not frame.mmModernSliderFill then return end
+	local lo, hi = frame:GetMinMaxValues()
+	local value = frame:GetValue() or lo
+	local span = (hi or 0) - (lo or 0)
+	local pct = span > 0 and math.max(0, math.min(1, (value - lo) / span)) or 0
+	local width = math.max(0, (frame:GetWidth() or 0) - 12) * pct
+	frame.mmModernSliderFill:SetShown(width > 0)
+	if width > 0 then frame.mmModernSliderFill:SetWidth(math.max(1, width)) end
+end
+
+local function skinModernSlider(frame, c)
+	hideArt(frame)
+	if not frame.mmModernSliderTrack then
+		local track = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
+		track:SetPoint("LEFT", 6, 0)
+		track:SetPoint("RIGHT", -6, 0)
+		track:SetHeight(5)
+		track:SetColorTexture(0.035, 0.026, 0.020, 0.96)
+		frame.mmModernSliderTrack = track
+
+		local fill = frame:CreateTexture(nil, "ARTWORK", nil, 2)
+		fill:SetPoint("LEFT", track, "LEFT", 1, 0)
+		fill:SetHeight(3)
+		frame.mmModernSliderFill = fill
+	end
+	frame.mmModernSliderTrack:SetAlpha(1)
+	frame.mmModernSliderFill:SetColorTexture(c.accent[1], c.accent[2], c.accent[3], 0.62)
+	frame.mmModernSliderFill:SetAlpha(1)
+	local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
+	if thumb then
+		modernTexture(frame, thumb, MODERN_ASSET.scrollThumb)
+		thumb:SetSize(10, 16)
+		thumb:SetVertexColor(0.92, 0.78, 0.48, 0.92)
+		thumb:SetAlpha(1)
+	end
+	if not frame.mmModernSliderHooks then
+		frame.mmModernSliderHooks = true
+		frame:HookScript("OnValueChanged", updateModernSlider)
+		frame:HookScript("OnShow", updateModernSlider)
+		frame:HookScript("OnSizeChanged", updateModernSlider)
+	end
+	updateModernSlider(frame)
+end
+
+local function skinModernScrollbar(frame, c)
+	modernBackground(frame, MODERN_ASSET.scrollTrack)
+	frame.mmModernBackground:SetVertexColor(0.58, 0.55, 0.49, 0.62)
+	flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.22)
+	borderAlpha(frame, 0.22)
+	local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
+	if thumb then
+		modernTexture(frame, thumb, MODERN_ASSET.scrollThumb)
+		thumb:SetVertexColor(0.82, 0.70, 0.45, 0.78)
+		thumb:SetAlpha(0.86)
+	end
+
+	local function arrow(button, path)
+		if not button then return end
+		local states = {
+			{ "GetNormalTexture",   { 0.82, 0.72, 0.52, 0.88 }, 0.92 },
+			{ "GetPushedTexture",   { 1.00, 0.82, 0.34, 1.00 }, 1.00 },
+			{ "GetDisabledTexture", { 0.46, 0.43, 0.38, 0.46 }, 0.42 },
+		}
+		for _, state in ipairs(states) do
+			local getter, tint, alpha = state[1], state[2], state[3]
+			local ok, texture = button[getter] and pcall(button[getter], button)
+			if not ok then texture = nil end
+			if texture then
+				modernTexture(frame, texture, path)
+				texture:SetVertexColor(tint[1], tint[2], tint[3], tint[4])
+				texture:SetAlpha(alpha)
+			end
+		end
+	end
+	arrow(frame.ScrollUpButton or frame.UpButton or frame.Back or frame.DecrementButton,
+		MODERN_ASSET.arrowUp)
+	arrow(frame.ScrollDownButton or frame.DownButton or frame.Forward or frame.IncrementButton,
+		MODERN_ASSET.arrowDown)
+end
+
 local function skinModern(frame, kind)
 	local c = PALETTE.modern
 	-- A prior ElvUI fallback may have created its own solid fill. It is ours,
@@ -773,12 +986,7 @@ local function skinModern(frame, kind)
 	-- Modern surface when switching themes live.
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
 	if kind == "slider" then
-		restoreArt(frame)
-		borderAlpha(frame, 0)
-		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
-		if thumb and thumb.SetVertexColor then
-			thumb:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
-		end
+		skinModernSlider(frame, c)
 		return
 	end
 	hideArt(frame)
@@ -852,23 +1060,21 @@ local function skinModern(frame, kind)
 		return
 	end
 
-	if kind == "checkbox" or kind == "editbox" then
+	if kind == "checkbox" then
+		skinModernCheckbox(frame, c)
+		return
+	end
+
+	if kind == "editbox" then
 		modernBackground(frame, MODERN_ASSET.inset)
-		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
-		local checked = frame.GetCheckedTexture and frame:GetCheckedTexture()
-		if checked then
-			checked:SetAlpha(1)
-			checked:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
-		end
+		frame.mmModernBackground:SetVertexColor(0.64, 0.61, 0.56, 0.92)
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.34)
+		borderAlpha(frame, 0.34)
 		return
 	end
 
 	if kind == "scrollbar" then
-		modernBackground(frame, MODERN_ASSET.scrollTrack)
-		flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.35)
-		borderAlpha(frame, 0.35)
-		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
-		if thumb and thumb.SetTexture then thumb:SetTexture(MODERN_ASSET.scrollThumb) end
+		skinModernScrollbar(frame, c)
 		return
 	end
 
@@ -888,6 +1094,7 @@ end
 local function skinElv(frame, kind)
 	hideModern(frame)
 	if kind == "statusbar" and restoreStatusTexture then restoreStatusTexture(frame) end
+	if restoreModernControls then restoreModernControls(frame, kind) end
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
 	if frame.mmBorder then
 		for _, edge in pairs(frame.mmBorder) do edge:SetAlpha(0) end
@@ -1087,7 +1294,11 @@ local function skinBackdropBorder(frame, strength)
 	if not (frame and frame.SetBackdropBorderColor) then return end
 	local active, c = T.Active(), T.Colors()
 	local color = active == "elvui" and c.accent or c.border
-	local alpha = strength == "strong" and 0.92 or 0.58
+	-- Modern's progress texture already contains its own fine gold rim. Drawing
+	-- the generic frame border around it created the doubled, overlapping track
+	-- visible in the first pass.
+	local alpha = active == "modern" and frame.mmStatusFrame and 0
+		or strength == "strong" and 0.92 or 0.58
 	frame:SetBackdropBorderColor(color[1], color[2], color[3], alpha)
 end
 

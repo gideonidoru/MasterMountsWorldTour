@@ -447,9 +447,17 @@ local function build()
 	skipBtn:SetText("Skip")
 	skipBtn:SetScript("OnClick", function() finish(true) end)
 
-	-- Deliberately NOT theme-registered. This is the screen where the player
-	-- chooses a theme, and reskinning it underneath them mid-choice is
-	-- disorienting -- the cards preview the theme, the chrome stays put.
+	-- NOT THEME-REGISTERED, AND THE STATED REASON WAS NOT TRUE.
+	--
+	-- This claimed the cards preview the theme while the chrome stays put, so
+	-- that reskinning mid-choice would be disorienting. The cards preview
+	-- nothing -- they are plain rows of text and a check mark, and no code here
+	-- draws a sample of any theme. The justification described a feature that
+	-- does not exist, which made a gap look like a decision.
+	--
+	-- Registering this frame is outstanding work, not a settled choice: every
+	-- other window follows the active theme and this one does not, so picking
+	-- Modern on the theme step leaves the screen you picked it on unchanged.
 	return frame
 end
 

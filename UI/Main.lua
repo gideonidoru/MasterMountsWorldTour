@@ -682,12 +682,16 @@ local function buildMain()
 
 	-- collection progress, top right
 	local progress = CreateFrame("StatusBar", nil, frame)
-	progress:SetSize(198, 12)
+	progress:SetSize(198, 14)
 	progress:SetPoint("TOPRIGHT", -174, -38)
+	-- Keep the moving edge highlight inside the recessed track. Without clipping,
+	-- even a small spark can bleed into the navigation rail at 0% and 100%.
+	if progress.SetClipsChildren then progress:SetClipsChildren(true) end
 	local pframe = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 	pframe:SetPoint("TOPLEFT", progress, -3, 3)
 	pframe:SetPoint("BOTTOMRIGHT", progress, 3, -3)
 	pframe:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+	pframe.mmStatusFrame = true
 	MM.Theme.RegisterBackdropBorder(pframe, "strong")
 	progress:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	progress:SetStatusBarColor(0.25, 0.85, 0.4)
@@ -698,8 +702,9 @@ local function buildMain()
 	ptext:SetPoint("CENTER")
 	MM.Theme.RegisterText(ptext, "primary")
 	local spark = progress:CreateTexture(nil, "OVERLAY")
-	spark:SetSize(20, 30)
+	spark:SetSize(8, 16)
 	spark:SetBlendMode("ADD")
+	spark:SetAlpha(0.62)
 	spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
 	progress.mmSpark = spark
 	frame.progress, frame.progressText, frame.progressSpark = progress, ptext, spark
