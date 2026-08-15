@@ -4924,23 +4924,23 @@ local function runLogic()
 		--
 		-- The import does not care whether a mount has a gap. Any record it can
 		-- name will do, so it takes one from the database itself.
+		-- THE FIRST `| dropRate` IN THE EXPORT IS THE FORMAT COMMENT.
+		--
+		-- This scanned the export text for a name followed by `| dropRate`, and
+		-- the export's own header line is `-- Format:  <Mount Name> | dropRate`.
+		-- So the target was the literal string "-- Format:  <Mount Name>", the
+		-- importer correctly refused to recognise it as a mount, and the check
+		-- reported the importer for doing the right thing.
+		--
+		-- The comment above already says where the target should come from: the
+		-- database. The import does not care whether a mount has a gap, so any
+		-- record it can name will do -- and taking it from the database means
+		-- this half cannot be switched off by answering every open question.
 		local target, field, value, want
-		for name in text:gmatch("([^\n|]+)|%s*dropRate") do
-			target, field, value, want = strtrim(name), "dropRate", "dropRate = 3.5", 3.5
-			break
-		end
-		if not target then
-			for name in text:gmatch("([^\n|]+)|%s*solo") do
-				target, field, value, want = strtrim(name), "solo", "solo = false", false
+		for _, rec in ipairs(MM.DBList or {}) do
+			if rec.name and not rec.stub and MM.DBByName[rec.name:lower()] then
+				target, field, value, want = rec.name, "solo", "solo = false", false
 				break
-			end
-		end
-		if not target then
-			for _, rec in ipairs(MM.DBList or {}) do
-				if rec.name and not rec.stub then
-					target, field, value, want = rec.name, "solo", "solo = false", false
-					break
-				end
 			end
 		end
 		if not target then

@@ -810,11 +810,26 @@ function UI:Refresh()
 	frame.progress:SetMinMaxValues(0, math.max(t, 1))
 	frame.progress:SetValue(c)
 	frame.progressText:SetText(("%d / %d  (%d%%)"):format(c, t, t > 0 and (c * 100 / t) or 0))
-	local pct = t > 0 and (c / t) or 0
+	local pct = t > 0 and math.max(0, math.min(1, c / t)) or 0
 	frame.progressSpark:ClearAllPoints()
 	frame.progressSpark:SetPoint("CENTER", frame.progress, "LEFT", frame.progress:GetWidth() * pct, 0)
 	-- warms from amber to green as the collection completes
-	frame.progress:SetStatusBarColor(0.85 - 0.55 * pct, 0.55 + 0.3 * pct, 0.2 + 0.2 * pct)
+	local r, g, b = 0.85 - 0.55 * pct, 0.55 + 0.3 * pct, 0.2 + 0.2 * pct
+	frame.progress:SetStatusBarColor(r, g, b)
+	if MM.Theme.Active() == "modern" then
+		local overlay = frame.progress.mmModernBarOverlay
+		if overlay then
+			overlay:SetAlpha(pct > 0 and 0.035 or 0)
+			overlay:SetShown(pct > 0)
+		end
+		frame.progressSpark:SetBlendMode("ADD")
+		frame.progressSpark:SetVertexColor(r, g, b, 1)
+		frame.progressSpark:SetAlpha(0.16)
+		frame.progressSpark:SetShown(pct > 0.04 and pct < 0.992)
+	else
+		-- Native and ElvUI skins own the spark outside Modern.
+		frame.progressSpark:Show()
+	end
 	if frame.selectedTab == 2 then
 		if UI.RefreshPlanner then UI.RefreshPlanner() end
 	else

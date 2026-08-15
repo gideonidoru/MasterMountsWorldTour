@@ -404,19 +404,29 @@ local function skinModernBar(frame, c)
 	frame.mmModernBarBackground:SetVertexColor(1, 1, 1, 0.96)
 	frame.mmModernBarBackground:SetAlpha(1)
 	if not frame.mmModernBarOverlay then
-		-- Below the label and spark, above the fill. A positive OVERLAY sublevel
-		-- put the gloss on top of the progress text and softened its legibility.
-		local overlay = frame:CreateTexture(nil, "OVERLAY", nil, -1)
-		overlay:SetAllPoints()
+		-- The sheen belongs to the completed portion, not the entire track.
+		-- ARTWORK keeps it below the OVERLAY-layer label and edge spark.
+		local overlay = frame:CreateTexture(nil, "ARTWORK")
 		frame.mmModernBarOverlay = overlay
 	end
+	local fill = frame.GetStatusBarTexture and frame:GetStatusBarTexture()
+	frame.mmModernBarOverlay:ClearAllPoints()
+	if fill then
+		frame.mmModernBarOverlay:SetPoint("TOPLEFT", fill, "TOPLEFT")
+		frame.mmModernBarOverlay:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT")
+	else
+		frame.mmModernBarOverlay:SetAllPoints(frame)
+	end
+	if frame.mmModernBarOverlay.SetDrawLayer then
+		frame.mmModernBarOverlay:SetDrawLayer("ARTWORK", 0)
+	end
 	frame.mmModernBarOverlay:SetTexture(MODERN_ASSET.barOverlay)
-	-- This asset is an opaque white highlight, not transparent gloss. At the old
-	-- 0.88 alpha it covered the fill and read as a broken white bar. It is now a
-	-- whisper of reflected light; the progress colour remains the information.
-	frame.mmModernBarOverlay:SetBlendMode("BLEND")
-	frame.mmModernBarOverlay:SetVertexColor(1, 0.93, 0.78, 0.11)
-	frame.mmModernBarOverlay:SetAlpha(1)
+	-- The source image is almost opaque, so normal blending turns it into a white
+	-- slab. Add only a trace of light; the status colour remains the information.
+	frame.mmModernBarOverlay:SetBlendMode("ADD")
+	frame.mmModernBarOverlay:SetVertexColor(1, 1, 1, 1)
+	frame.mmModernBarOverlay:SetAlpha(0.035)
+	frame.mmModernBarOverlay:Show()
 	if frame.mmSpark then
 		if not frame.mmOriginalSpark then
 			local r, g, b, a = frame.mmSpark:GetVertexColor()
@@ -424,15 +434,16 @@ local function skinModernBar(frame, c)
 				texture = frame.mmSpark.GetTexture and frame.mmSpark:GetTexture(),
 				width = frame.mmSpark:GetWidth(), height = frame.mmSpark:GetHeight(),
 				alpha = frame.mmSpark:GetAlpha(),
+				shown = frame.mmSpark:IsShown(),
 				blend = frame.mmSpark.GetBlendMode and frame.mmSpark:GetBlendMode(),
 				vertex = { r, g, b, a or 1 },
 			}
 		end
 		frame.mmSpark:SetTexture(MODERN_ASSET.barSpark)
 		frame.mmSpark:SetSize(6, math.max(12, frame:GetHeight()))
-		frame.mmSpark:SetBlendMode("BLEND")
-		frame.mmSpark:SetVertexColor(1, 0.83, 0.38, 0.52)
-		frame.mmSpark:SetAlpha(0.52)
+		frame.mmSpark:SetBlendMode("ADD")
+		frame.mmSpark:SetVertexColor(1, 0.83, 0.38, 1)
+		frame.mmSpark:SetAlpha(0.16)
 	end
 end
 
@@ -446,6 +457,7 @@ restoreStatusTexture = function(frame)
 		if spark.texture then pcall(frame.mmSpark.SetTexture, frame.mmSpark, spark.texture) end
 		frame.mmSpark:SetSize(spark.width or 8, spark.height or 16)
 		frame.mmSpark:SetAlpha(spark.alpha or 1)
+		frame.mmSpark:SetShown(spark.shown ~= false)
 		local vertex = spark.vertex or { 1, 1, 1, 1 }
 		frame.mmSpark:SetVertexColor(vertex[1], vertex[2], vertex[3], vertex[4])
 		if spark.blend then frame.mmSpark:SetBlendMode(spark.blend) end
