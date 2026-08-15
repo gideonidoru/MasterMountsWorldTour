@@ -116,6 +116,11 @@ local BUILD_BOUND = {
 	-- which is what this list is for -- and it is reported separately by the
 	-- route section rather than hidden.
 	["The cap costs travel, and says how much"] = true,
+	-- Drives two synchronous builds to prove an unanchored rebuild leads from
+	-- the top. It used to ask for a chunked build and read the index on the
+	-- next line, which was quick and wrong; waiting for the build is what makes
+	-- it correct, and the wait is the router's cost.
+	["The arrow and the plan cannot disagree about where you are going"] = true,
 }
 
 -- ONE ANSWER TO "WHICH CHECK IS SLOWEST", because there were two and they
