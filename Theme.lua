@@ -1243,7 +1243,8 @@ function T.CreateCloseButton(parent, size)
 	else
 		glyphFallback(b, "x")
 	end
-	b:mmTint(REST[1], REST[2], REST[3])
+	local rest = iconRest(b)
+	b:mmTint(rest[1], rest[2], rest[3])
 	return b
 end
 
@@ -1274,7 +1275,8 @@ end
 function T.CreateExpandButton(parent, size)
 	local b = iconButton(parent, size, { 1, 0.86, 0.35 })
 	b.art:SetTexture(MM.MEDIA .. "expand.tga")
-	b:mmTint(REST[1], REST[2], REST[3])
+	local rest = iconRest(b)
+	b:mmTint(rest[1], rest[2], rest[3])
 	return b
 end
 
@@ -1288,7 +1290,8 @@ function T.CreateStopButton(parent, size)
 	local inset = math.max(3, math.floor(size * 0.28))
 	b.art:SetPoint("TOPLEFT", inset, -inset)
 	b.art:SetPoint("BOTTOMRIGHT", -inset, inset)
-	b:mmTint(REST[1], REST[2], REST[3])
+	local rest = iconRest(b)
+	b:mmTint(rest[1], rest[2], rest[3])
 	return b
 end
 

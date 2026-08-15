@@ -1048,9 +1048,27 @@ function UI.RefreshPlannerNow()
 	local function add(k, v) lines[#lines + 1] = { k, v } end
 	if t and t.stops > 0 then
 		add("On the route", U.FormatSeconds((t.routeMinutes or t.minutes) * 60))
-		local travel = (t.minutes or 0) - (t.routeMinutes or t.minutes or 0)
-		if travel > 1 then
-			add("Of which travel", U.FormatSeconds(travel * 60))
+		-- TRAVEL IS A NUMBER THE ROUTER ALREADY MEASURED.
+		--
+		-- This subtracted `routeMinutes` from `minutes` and called the remainder
+		-- travel. Those two totals do not differ by travel -- they both contain
+		-- all of it. `minutes` counts every attempt a mount is expected to need;
+		-- `routeMinutes` counts travel plus ONE visit each. What is left over is
+		-- the grind.
+		--
+		-- So a plan of long farms reported almost all of its time as flying, to
+		-- a collector using exactly that figure to decide whether an evening is
+		-- worth it. Measure walks the route spending teleports as it goes and
+		-- totals the legs; that total is what this line means.
+		if (t.travelMinutes or 0) > 1 then
+			add("Of which travel", U.FormatSeconds(t.travelMinutes * 60))
+		end
+		-- The old subtraction, under the name it always had. Worth keeping: both
+		-- totals it sits between are already on screen, so the gap between them
+		-- was visible and unexplained -- this says what it is.
+		local farming = (t.minutes or 0) - (t.routeMinutes or t.minutes or 0)
+		if farming > 1 then
+			add("Repeated farming", U.FormatSeconds(farming * 60))
 		end
 		add("Expected mounts", ("%.1f"):format(t.mounts or 0))
 		add("To finish everything", U.FormatSeconds((t.minutes or 0) * 60))
@@ -1074,6 +1092,10 @@ function UI.RefreshPlannerNow()
 	if waiting > 0 then add("Waiting on something", tostring(waiting)) end
 	summaryText.mmLines = lines
 	routeButton:SetRouteState(MM.cdb.routeActive)
+	-- Exposed so a check can read the rows the tooltip will SHOW, rather than
+	-- re-deriving them and testing its own arithmetic. The travel line was wrong
+	-- for exactly as long as nothing could see it.
+	UI.PlannerSummaryLines = function() return summaryText and summaryText.mmLines end
 	-- NOTHING TO ROUTE, NOTHING TO START.
 	--
 	-- Start Route stayed pressable with an empty plan, which offered to walk a

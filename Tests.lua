@@ -2271,6 +2271,48 @@ local function runLogic()
 			rep and rep.worst or -1)
 	end)
 
+	check("The plan tooltip's travel figure is the travel figure", function()
+		-- It showed `minutes - routeMinutes` under the label "Of which travel".
+		-- Those two totals do not differ by travel -- both contain all of it.
+		-- `minutes` counts every attempt a mount is expected to need,
+		-- `routeMinutes` counts travel plus ONE visit each, so the remainder is
+		-- the grind. A plan of long farms therefore reported nearly all of its
+		-- time as flying, to someone using that exact number to decide whether
+		-- an evening was worth it.
+		local R, UI = MM.Router, MM.UI
+		if not (R and UI and UI.PlannerSummaryLines) then
+			return nil, "the planner has not been drawn yet this session"
+		end
+		local lines = UI.PlannerSummaryLines()
+		if not lines then return nil, "no summary rendered yet" end
+		R:BuildSync()
+		local t = R.totals
+		if not (t and t.stops and t.stops > 0) then return nil, "nothing routed" end
+
+		local shown
+		for _, row in ipairs(lines) do
+			if row[1] == "Of which travel" then shown = row[2] end
+		end
+		if not shown then
+			-- Only omitted when travel rounds to nothing, which has to be true.
+			if (t.travelMinutes or 0) > 1 then
+				return false, ("travel is %.1f min but no travel row was shown")
+					:format(t.travelMinutes)
+			end
+			return nil, "this route has no travel worth showing"
+		end
+
+		local wanted = U.FormatSeconds((t.travelMinutes or 0) * 60)
+		if shown ~= wanted then
+			local oldFormula = (t.minutes or 0) - (t.routeMinutes or t.minutes or 0)
+			local looksOld = shown == U.FormatSeconds(oldFormula * 60)
+			return false, ("the tooltip shows %s, travelMinutes is %s%s")
+				:format(tostring(shown), wanted,
+					looksOld and " — it is still showing repeated farming" or "")
+		end
+		return true, ("travel reads %s, from totals.travelMinutes"):format(shown)
+	end)
+
 	check("One kill counts for every mount that source owes", function()
 		-- The watch list was `[npcID] = spellID`, so the last planned record to
 		-- mention an npc overwrote every earlier one. Twelve ids in the
