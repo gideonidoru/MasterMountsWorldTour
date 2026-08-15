@@ -34538,6 +34538,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		category = "CURRENCY",
 		obtainable = true,
 		source = "Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. 12.1 content -- not yet on live, so the zone cannot be resolved.",
+		vendor = "Skull of Er'inye",
 		npc = {
 			name = "Skull of Erinye",
 		},
@@ -34563,7 +34564,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
-		source = "Achievement: complete 250 patrols in the Coiled Isle",
+		source = "Achievement: complete 250 patrols within the Vaults of Atal'Utek",
 		zone = {
 			name = "The Coiled Isle",
 			x = 58.8,
@@ -34571,7 +34572,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "250 Coiled Isle patrols",
+				name = "250 Vault patrols",
 				id = 63653,
 				type = "ACHIEVEMENT",
 			},
@@ -34598,7 +34599,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
-		source = "Achievement meta: complete the Coiled Isle achievements",
+		source = "Achievement meta: complete the Vaults of Atal'Utek achievements",
 		zone = {
 			name = "The Coiled Isle",
 			x = 58.8,
@@ -34606,7 +34607,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "Coiled Isle meta",
+				name = "Assault the Vault",
 				id = 63630,
 				type = "ACHIEVEMENT",
 			},
@@ -34622,7 +34623,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 5,
-		notes = "Meta achievement — depends on everything else on the isle.",
+		notes = "Meta achievement — depends on the rest of the Vaults.",
 		solo = true,
 	},
 	{
@@ -34762,7 +34763,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "QUEST",
 		obtainable = true,
-		source = "Six-quest time-gated chain from Renown 10, beginning with Ancestral Gems",
+		source = "Six-quest time-gated chain from Du'gal at Renown 10, beginning with Ancestral Gems and ending with The Innocent Essence",
 		zone = {
 			name = "The Coiled Isle",
 		},
@@ -34805,7 +34806,10 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops in Altar of Fangs",
+		source = "Drops from Zul'jan in Altar of Fangs",
+		npc = {
+			name = "Zul'jan",
+		},
 		instance = {
 			name = "Altar of Fangs",
 			lockout = "DAILY",
@@ -34832,7 +34836,10 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops in The Venomous Abyss on Mythic difficulty",
+		source = "Drops from Ula'tek in The Venomous Abyss on Mythic difficulty",
+		npc = {
+			name = "Ula'tek",
+		},
 		instance = {
 			name = "The Venomous Abyss",
 			difficulty = "Mythic",
@@ -34957,7 +34964,10 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
-		source = "Achievement: defeat the Delves nemesis boss solo",
+		source = "Achievement: defeat the Delves nemesis boss Azta'rec solo",
+		npc = {
+			name = "Azta'rec",
+		},
 		zone = {
 			name = "Silvermoon City",
 			mapID = 2393,
@@ -34966,7 +34976,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "Delves nemesis boss",
+				name = "Let Me Solo Him: Azta'rec",
 				id = 63333,
 				type = "ACHIEVEMENT",
 			},
@@ -34982,7 +34992,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 4,
-		notes = "Solo kill — the required tier was still unconfirmed in the guide.",
+		notes = "The guide still prints the required tier as '??'.",
 		solo = true,
 	},
 	{
@@ -35028,7 +35038,10 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
-		source = "Drops from the Prey hunt 'Prey: A Ghostly Nightmare'",
+		source = "Drops from Ral'kala on the Prey hunt 'Prey: A Ghostly Nightmare'",
+		npc = {
+			name = "Ral'kala",
+		},
 		zone = {
 			name = "The Coiled Isle",
 			x = 58.8,

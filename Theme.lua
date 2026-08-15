@@ -93,8 +93,41 @@ local PALETTE = {
 	},
 }
 
+local function readRGB(value, fallback)
+	if type(value) ~= "table" then return fallback end
+	local r, g, b = value.r or value[1], value.g or value[2], value.b or value[3]
+	if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
+		return fallback
+	end
+	return { r, g, b }
+end
+
 function T.Colors()
-	return PALETTE[T.Active()] or PALETTE.blizzard
+	local active = T.Active()
+	local base = PALETTE[active] or PALETTE.blizzard
+	if active ~= "elvui" then return base end
+
+	-- Match the player's profile, not a screenshot of ElvUI's default profile.
+	-- ElvUI has moved these tables over time, so every lookup is optional and the
+	-- self-contained fallback palette remains complete when an internal moves.
+	local _, E = elvSkins()
+	if not E then return base end
+	local general = E.db and E.db.general or {}
+	local media = E.media or {}
+	local accent = readRGB(general.valuecolor or media.rgbvaluecolor, base.accent)
+	local border = readRGB(general.bordercolor or media.bordercolor, base.border)
+	local bg = readRGB(general.backdropcolor or media.backdropcolor, base.bg)
+	return {
+		bg = { bg[1], bg[2], bg[3], base.bg[4] },
+		border = { border[1], border[2], border[3], base.border[4] },
+		accent = accent,
+		header = { accent[1], accent[2], accent[3], base.header[4] },
+		row = base.row,
+		text = base.text,
+		muted = base.muted,
+		info = accent,
+		danger = base.danger,
+	}
 end
 
 function T.Accent()
@@ -112,7 +145,13 @@ end
 -- may recolour it again; without remembering the original, returning to
 -- Blizzard leaves beige or blue labels inside otherwise stock controls.
 local function controlFont(frame)
-	return frame and frame.GetFontString and frame:GetFontString()
+	if not frame then return nil end
+	local fs = frame.GetFontString and frame:GetFontString()
+	if fs then return fs end
+	for _, key in ipairs({ "Text", "Label", "DefaultText" }) do
+		local candidate = frame[key]
+		if type(candidate) == "table" and candidate.SetTextColor then return candidate end
+	end
 end
 
 local function rememberControlFont(frame)
@@ -502,10 +541,14 @@ function flatSkin(frame, kind, c)
 		-- anything we add underneath, so it has to be hidden first.
 		hideArt(frame)
 		local fill = c.bg
-		if kind == "sidebar" then fill = { 0.045, 0.045, 0.045, 0.96 }
-		elseif kind == "utility" then fill = { 0.075, 0.075, 0.075, 0.96 }
-		elseif kind == "card" then fill = { 0.085, 0.085, 0.085, 0.90 }
-		elseif kind == "content" then fill = { 0.055, 0.055, 0.055, 0.96 } end
+		local shade = kind == "sidebar" and 0.82
+			or kind == "utility" and 1.22
+			or kind == "card" and 1.35
+			or kind == "content" and 0.95
+		if shade then
+			fill = { math.min(1, c.bg[1] * shade), math.min(1, c.bg[2] * shade),
+				math.min(1, c.bg[3] * shade), kind == "card" and 0.90 or 0.96 }
+		end
 		if frame.SetBackdrop and frame.mmBackdropOwned then
 			pcall(frame.SetBackdrop, frame, {
 				bgFile = SOLID, edgeFile = SOLID, edgeSize = 1,
@@ -545,7 +588,7 @@ function flatSkin(frame, kind, c)
 			pcall(hl.SetVertexColor, hl, c.accent[1], c.accent[2], c.accent[3], 0.45)
 			pcall(hl.SetAlpha, hl, 1)
 		end
-		local fs = frame.GetFontString and frame:GetFontString()
+		local fs = controlFont(frame)
 		if fs then fs:SetTextColor(c.text[1], c.text[2], c.text[3]) end
 		return
 	end
@@ -677,7 +720,7 @@ local function modernControlState(frame, kind, state)
 	end
 
 	local c = PALETTE.modern
-	local fs = frame.GetFontString and frame:GetFontString()
+	local fs = controlFont(frame)
 	if fs then
 		local tc = activeTab and c.accent or (disabled and c.muted or c.text)
 		fs:SetTextColor(tc[1], tc[2], tc[3])
@@ -834,7 +877,7 @@ local function skinElv(frame, kind)
 	end
 	if restoreArt then restoreArt(frame) end
 	local S = elvSkins()
-	local c = PALETTE.elvui
+	local c = T.Colors()
 
 	-- Prefer ElvUI's own handlers: they match the player's exact settings.
 	if S then
@@ -888,7 +931,8 @@ end
 local function skinText(fontString, spec)
 	if not (fontString and fontString.SetTextColor and spec) then return end
 	local active = T.Active()
-	local c = PALETTE[active] or PALETTE.blizzard
+	local c = active == "elvui" and T.Colors()
+		or PALETTE[active] or PALETTE.blizzard
 	local color
 	if active == "modern" then
 		color = spec.role == "accent" and c.accent
@@ -940,10 +984,13 @@ local function skinSurface(texture, role)
 			texture:SetVertexColor(0.70, 0.68, 0.64, 0.96)
 		end
 	elseif active == "elvui" then
-		local shade = role == "sidebar" and 0.045
-			or role == "utility" and 0.075
-			or role == "card" and 0.085 or 0.055
-		texture:SetColorTexture(shade, shade, shade, role == "card" and 0.88 or 0.96)
+		local c = T.Colors()
+		local scale = role == "sidebar" and 0.82
+			or role == "utility" and 1.22
+			or role == "card" and 1.35 or 0.95
+		texture:SetColorTexture(math.min(1, c.bg[1] * scale),
+			math.min(1, c.bg[2] * scale), math.min(1, c.bg[3] * scale),
+			role == "card" and 0.88 or 0.96)
 	else
 		-- Blizzard keeps its ornate outer frame, but a quiet pane tint still
 		-- distinguishes navigation/list/detail regions instead of one black void.
@@ -969,7 +1016,8 @@ end
 local function skinRule(texture, strength)
 	if not texture then return end
 	local active = T.Active()
-	local c = PALETTE[active] or PALETTE.blizzard
+	local c = active == "elvui" and T.Colors()
+		or PALETTE[active] or PALETTE.blizzard
 	local alpha = strength == "strong" and 0.78 or 0.38
 	-- ElvUI's actual frame border is black, which is correct around a light
 	-- panel and completely invisible as an internal divider on our dark panes.
@@ -1087,6 +1135,10 @@ local iconButtons = setmetatable({}, { __mode = "k" })
 
 local REST = { 0.62, 0.62, 0.62 }
 
+local function iconRest(button)
+	return button.mmRestRole and T.Color(button.mmRestRole) or button.mmRest or REST
+end
+
 -- Shared chassis for our own small icon buttons.
 --
 -- Blizzard's UIPanelCloseButton / UIPanelButtonTemplate both carry art sized
@@ -1099,6 +1151,7 @@ local function iconButton(parent, size, hover)
 	b.mmNoSkin = true  -- fully self-styled; the sweep must not touch it
 	b.mmHover = hover or { 1, 0.35, 0.35 }
 	b.mmRest = REST
+	b.mmRestRole = "muted"
 
 	b.art = b:CreateTexture(nil, "ARTWORK")
 	b.art:SetAllPoints()
@@ -1117,7 +1170,8 @@ local function iconButton(parent, size, hover)
 		end
 	end)
 	b:SetScript("OnLeave", function(self)
-		self:mmTint(self.mmRest[1], self.mmRest[2], self.mmRest[3])
+		local rest = iconRest(self)
+		self:mmTint(rest[1], rest[2], rest[3])
 		GameTooltip:Hide()
 	end)
 
@@ -1199,6 +1253,7 @@ end
 function T.CreateTitleCloseButton(parent, size)
 	local b = iconButton(parent, size, { 1.00, 0.88, 0.42 })
 	b.mmRest = { 1, 1, 1 }
+	b.mmRestRole = nil
 	b.art:SetTexture(MODERN_ASSET.titleClose)
 	b:mmTint(1, 1, 1)
 	return b
@@ -1240,7 +1295,7 @@ end
 local function retintIconButtons()
 	for b in pairs(iconButtons) do
 		if not b:IsMouseOver() then
-			local rest = b.mmRest or REST
+			local rest = iconRest(b)
 			b:mmTint(rest[1], rest[2], rest[3])
 		end
 	end
@@ -1260,6 +1315,8 @@ local function inferKind(child)
 
 	if objType == "CheckButton" then return "checkbox" end
 	if objType == "StatusBar" then return "statusbar" end
+	if objType == "EditBox" then return "editbox" end
+	if objType == "DropdownButton" then return "button" end
 	if objType == "Slider" then
 		local orientation = child.GetOrientation and child:GetOrientation()
 		return orientation == "HORIZONTAL" and "slider" or "scrollbar"

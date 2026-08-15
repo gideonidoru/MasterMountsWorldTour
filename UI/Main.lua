@@ -87,6 +87,7 @@ function UI.MakeSessionPicker(parent)
 	MM:On("MM_SESSION_CHANGED", function()
 		if drop.mmSetLabel then drop:mmSetLabel() end
 	end)
+	MM.Theme.Register(drop, "button")
 	return drop
 end
 
@@ -303,7 +304,7 @@ function UI.MakePicker(parent, prefix, values, labels, onChange, initial, allLab
 	-- The initial value is already applied by the caller's saved settings, so
 	-- this only publishes it -- it must NOT be treated as a change the player
 	-- just made, or opening the window would rewrite their filters.
-	return drop
+	return MM.Theme.Register(drop, "button")
 end
 
 function UI.MakeCycler(parent, prefix, values, labels, onChange, initial, allLabel)
