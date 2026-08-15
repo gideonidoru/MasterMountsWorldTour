@@ -49,6 +49,7 @@ local function build()
 	frame.step = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	frame.step:SetPoint("TOPLEFT", 10, -8)
 	frame.step:SetTextColor(1, 0.82, 0.2)
+	MM.Theme.RegisterText(frame.step, "accent")
 
 	local close = MM.Theme.CreateCloseButton(frame, 16)
 	close:SetPoint("TOPRIGHT", -6, -5)
@@ -87,12 +88,14 @@ local function build()
 	frame.goal:SetPoint("TOPLEFT", frame.icon, "BOTTOMLEFT", 0, -6)
 	frame.goal:SetPoint("RIGHT", -10, 0)
 	frame.goal:SetJustifyH("LEFT")
+	MM.Theme.RegisterText(frame.goal, "primary")
 
 	frame.est = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	frame.est:SetPoint("TOPLEFT", frame.goal, "BOTTOMLEFT", 0, -4)
 	frame.est:SetPoint("RIGHT", -10, 0)
 	frame.est:SetJustifyH("LEFT")
 	frame.est:SetTextColor(0.4, 0.8, 1)
+	MM.Theme.RegisterText(frame.est, "info")
 
 	-- Everything below the estimate FLOWS. The estimate wraps to two lines for
 	-- any long drop-rate string ("~1 in 100 — median 69 tries, 90% by 230…"),
@@ -101,6 +104,7 @@ local function build()
 	frame.status:SetPoint("TOPLEFT", frame.est, "BOTTOMLEFT", 0, -4)
 	frame.status:SetPoint("RIGHT", -10, 0)
 	frame.status:SetJustifyH("LEFT")
+	MM.Theme.RegisterText(frame.status, "primary")
 
 	-- The other mounts at this stop are most of the reason to be standing here,
 	-- so they get their own line rather than being crammed into the goal text.
@@ -108,6 +112,7 @@ local function build()
 	frame.also:SetPoint("TOPLEFT", frame.status, "BOTTOMLEFT", 0, -4)
 	frame.also:SetPoint("RIGHT", -10, 0)
 	frame.also:SetJustifyH("LEFT")
+	MM.Theme.RegisterText(frame.also, "primary")
 	-- A five-mount stop listed four names and clipped the last two, which is
 	-- the half of the list you have not memorised. It wraps.
 
@@ -117,6 +122,7 @@ local function build()
 	frame.nextUp:SetPoint("RIGHT", -10, 0)
 	frame.nextUp:SetJustifyH("LEFT")
 	frame.nextUp:SetTextColor(0.6, 0.6, 0.6)
+	MM.Theme.RegisterText(frame.nextUp, "muted")
 
 	local prev = UI.MakeButton(frame, "Back", 48)
 	prev:SetPoint("BOTTOMLEFT", 8, 8)

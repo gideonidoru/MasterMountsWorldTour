@@ -47,7 +47,12 @@ local function build()
 
 	frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	frame.title:SetPoint("TOPLEFT", 10, -7)
-	frame.title:SetText("|cff33c1ffMaster Mounts|r — Plan")
+	frame.title:SetText("Master Mounts")
+	MM.Theme.RegisterText(frame.title, "accent")
+	frame.mode = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	frame.mode:SetPoint("LEFT", frame.title, "RIGHT", 4, 0)
+	frame.mode:SetText("— Plan")
+	MM.Theme.RegisterText(frame.mode, "muted")
 
 	local close = MM.Theme.CreateCloseButton(frame, 16)
 	close:SetPoint("TOPRIGHT", -6, -4)
@@ -93,7 +98,7 @@ local function build()
 
 		row.hl = row:CreateTexture(nil, "HIGHLIGHT")
 		row.hl:SetAllPoints()
-		row.hl:SetColorTexture(1, 0.82, 0.2, 0.08)
+		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
 		row.icon = row:CreateTexture(nil, "ARTWORK")
 		row.icon:SetSize(18, 18)
@@ -106,6 +111,7 @@ local function build()
 		row.text:SetPoint("RIGHT", -20, 0)
 		row.text:SetJustifyH("LEFT")
 		row.text:SetWordWrap(false)
+		MM.Theme.RegisterText(row.text, "primary")
 
 		row.remove = MM.Theme.CreateCloseButton(row, 14)
 		row.remove:SetPoint("RIGHT", -2, 0)
@@ -122,6 +128,7 @@ local function build()
 		row:SetScript("OnClick", function(self, mouse)
 			if self.entry then MM.UI.RowClick(self.entry, mouse) end
 		end)
+		MM.Theme.Register(row, "row", false)
 		rows[i] = row
 	end
 
@@ -146,16 +153,21 @@ local function build()
 	track:SetWidth(8)
 	local trackTex = track:CreateTexture(nil, "BACKGROUND")
 	trackTex:SetAllPoints()
-	trackTex:SetColorTexture(1, 1, 1, 0.06)
+	MM.Theme.RegisterTint(trackTex, "muted", 0.12)
 
 	local thumb = CreateFrame("Button", nil, track)
 	thumb:SetWidth(8)
 	thumb:SetPoint("TOP", track, "TOP", 0, 0)
 	local thumbTex = thumb:CreateTexture(nil, "ARTWORK")
 	thumbTex:SetAllPoints()
-	thumbTex:SetColorTexture(0.55, 0.55, 0.65, 0.85)
-	thumb:SetScript("OnEnter", function() thumbTex:SetColorTexture(0.75, 0.75, 0.9, 0.95) end)
-	thumb:SetScript("OnLeave", function() thumbTex:SetColorTexture(0.55, 0.55, 0.65, 0.85) end)
+	local function tintThumb(hot)
+		local color = MM.Theme.Color(hot and "accent" or "muted")
+		thumbTex:SetColorTexture(color[1], color[2], color[3], hot and 0.95 or 0.82)
+	end
+	tintThumb(false)
+	thumb:SetScript("OnEnter", function() tintThumb(true) end)
+	thumb:SetScript("OnLeave", function() tintThumb(false) end)
+	MM:On("MM_THEME_CHANGED", function() tintThumb(thumb:IsMouseOver()) end)
 
 	local dragging
 	thumb:RegisterForDrag("LeftButton")

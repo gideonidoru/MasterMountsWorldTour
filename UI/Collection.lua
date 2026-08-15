@@ -24,7 +24,7 @@ local function initRow(row, entry)
 
 		row.hl = row:CreateTexture(nil, "HIGHLIGHT")
 		row.hl:SetAllPoints()
-		row.hl:SetColorTexture(1, 0.82, 0.2, 0.08)
+		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
 		-- status-colored edge bar
 		row.edge = row:CreateTexture(nil, "ARTWORK")
@@ -37,7 +37,7 @@ local function initRow(row, entry)
 		row.sep:SetHeight(1)
 		row.sep:SetPoint("BOTTOMLEFT", 8, 0)
 		row.sep:SetPoint("BOTTOMRIGHT", -8, 0)
-		row.sep:SetColorTexture(1, 1, 1, 0.05)
+		MM.Theme.RegisterTint(row.sep, "muted", 0.10)
 
 		-- dark plate behind the icon
 		row.iconPlate = row:CreateTexture(nil, "BORDER")
@@ -67,6 +67,7 @@ local function initRow(row, entry)
 		row.sub:SetJustifyH("LEFT")
 		row.sub:SetTextColor(0.65, 0.65, 0.65)
 		row.sub:SetWordWrap(false)
+		MM.Theme.RegisterText(row.sub, "muted")
 
 		row.add = UI.MakeRowAction(row)
 		row.add:SetPoint("RIGHT", -10, 0)
@@ -81,6 +82,7 @@ local function initRow(row, entry)
 		row.planned = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 		row.planned:SetPoint("RIGHT", -42, -10)
 		row.planned:SetTextColor(1, 0.82, 0.2)
+		MM.Theme.RegisterText(row.planned, "accent")
 
 		row:SetScript("OnEnter", function(self) UI.ShowMountTooltip(self, self.entry) end)
 		row:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -173,6 +175,7 @@ function UI.BuildCollection(panel)
 	search:SetSize(180, 22)
 	search:SetPoint("TOPLEFT", 8, -4)
 	search:SetAutoFocus(false)
+	MM.Theme.Register(search, "editbox")
 	search:HookScript("OnTextChanged", function(self)
 		filters.search = self:GetText() or ""
 		UI.RefreshCollection()
@@ -244,6 +247,7 @@ function UI.BuildCollection(panel)
 	panel.emptyText:SetPoint("CENTER", 0, 20)
 	panel.emptyText:SetText("No mounts match these filters.")
 	panel.emptyText:SetTextColor(0.55, 0.55, 0.6)
+	MM.Theme.RegisterText(panel.emptyText, "muted")
 	panel.emptyText:Hide()
 	MM.UI.collectionEmptyText = panel.emptyText
 
@@ -263,6 +267,7 @@ function UI.BuildCollection(panel)
 	local scrollBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	scrollBar:SetPoint("TOPLEFT", scrollBox, "TOPRIGHT", 6, 0)
 	scrollBar:SetPoint("BOTTOMLEFT", scrollBox, "BOTTOMRIGHT", 6, 0)
+	MM.Theme.Register(scrollBar, "scrollbar", false)
 
 	local view = CreateScrollBoxListLinearView()
 	view:SetElementExtent(46)

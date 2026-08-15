@@ -15,6 +15,14 @@ local A = MM.Availability
 local interfaceVersion = select(4, GetBuildInfo())
 if type(interfaceVersion) ~= "number" then interfaceVersion = 0 end
 
+-- The next patch that has NOT shipped, in the client's own interface encoding
+-- (major*10000 + minor*100 + patch: 12.0.7 is 120007, 12.1 is 120100).
+--
+-- BUMP THIS WHEN A PATCH SHIPS. It is the default for a record flagged
+-- `unreleased = true` -- see GetStatus. Left pointing at a build that has
+-- already arrived, that flag stops gating anything and does so silently.
+local NEXT_UNRELEASED_BUILD = 120200
+
 ------------------------------------------------------------
 -- Holiday detection (calendar scan)
 ------------------------------------------------------------
@@ -544,12 +552,24 @@ function A.ComputeStatus(entry)
 	-- arrived". Scanner.lua gates the 12.0 combat-log restriction on exactly
 	-- this call, for exactly this reason.
 	--
-	-- `true` means the current unreleased patch, and every record carrying it is
-	-- 12.1 Coiled Isle content from Data_15_Patch121.lua. A number is honoured
-	-- as-is, so 12.2 records can say which build they wait for without touching
-	-- this line again.
+	-- A BARE `true` HAS TO KEEP MEANING SOMETHING.
+	--
+	-- It used to resolve to 120100 -- 12.1, the patch that was pending when this
+	-- was written. 12.1 has shipped, so that default now sits in the past and a
+	-- record flagged `unreleased = true` for the NEXT patch would sail straight
+	-- through: a gate that silently stopped gating, which is worse than no gate,
+	-- because nothing about it looks wrong.
+	--
+	-- So the default names the next unreleased build instead of a fixed one, and
+	-- moves when a patch ships. The encoding is the client's own -- major*10000
+	-- + minor*100 + patch, which is how 12.0.7 reads 120007 and 12.1 reads
+	-- 120100 -- so this is derived, not guessed at.
+	--
+	-- Prefer the numeric form in data: `unreleased = 120200` says which build it
+	-- waits for and cannot be left behind by a bump here.
 	if rec.unreleased then
-		local arrives = rec.unreleased == true and 120100 or rec.unreleased
+		local arrives = rec.unreleased == true and NEXT_UNRELEASED_BUILD
+			or rec.unreleased
 		if (interfaceVersion or 0) < arrives then
 			return "PREREQ", "Not in the game yet — arrives with the next patch", nil
 		end

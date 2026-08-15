@@ -156,6 +156,10 @@ local function skinBlizzard(frame, kind)
 			end
 		end
 	end
+	if kind == "slider" then
+		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
+		if thumb and thumb.SetVertexColor then thumb:SetVertexColor(1, 1, 1, 1) end
+	end
 	-- restore native close geometry (its art needs the padded anchor)
 	local g = frame.mmCloseGeom
 	if g and g.p then
@@ -584,6 +588,12 @@ function flatSkin(frame, kind, c)
 		return
 	end
 
+	if kind == "slider" then
+		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
+		if thumb and thumb.SetVertexColor then thumb:SetVertexColor(1, 1, 1, 1) end
+		return
+	end
+
 	if kind == "scrollbar" then
 		hideArt(frame)
 		flatBackground(frame, { 0.10, 0.10, 0.10, 0.8 })
@@ -703,6 +713,14 @@ local function skinModern(frame, kind)
 	-- not native art, so hide it explicitly or it sits above the textured
 	-- Modern surface when switching themes live.
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
+	if kind == "slider" then
+		restoreArt(frame)
+		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
+		if thumb and thumb.SetVertexColor then
+			thumb:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
+		end
+		return
+	end
 	hideArt(frame)
 
 	if kind == "frame" or kind == "panel" or kind == "content"
@@ -718,9 +736,11 @@ local function skinModern(frame, kind)
 		-- The source plates are intentionally detailed, but the content must sit
 		-- above them. A restrained material tint prevents large stretched areas
 		-- from turning into visible noise while leaving controls crisp.
-		if kind == "frame" then
-			frame.mmModernBackground:SetVertexColor(0.76, 0.73, 0.68, 0.98)
-		elseif kind == "content" or kind == "sidebar" or kind == "utility"
+			if kind == "frame" then
+				frame.mmModernBackground:SetVertexColor(0.76, 0.73, 0.68, 0.98)
+			elseif kind == "panel" then
+				frame.mmModernBackground:SetVertexColor(0.74, 0.71, 0.66, 0.97)
+			elseif kind == "content" or kind == "sidebar" or kind == "utility"
 			or kind == "card" then
 			frame.mmModernBackground:SetVertexColor(0.70, 0.68, 0.64, 0.96)
 		end
@@ -820,31 +840,27 @@ local function skinElv(frame, kind)
 	if S then
 		local handler =
 			(kind == "button" and S.HandleButton)
-			or (kind == "row" and S.HandleButton)
 			or (kind == "tab" and S.HandleTab)
 			or (kind == "close" and S.HandleCloseButton)
 			or (kind == "checkbox" and S.HandleCheckBox)
 			or (kind == "editbox" and S.HandleEditBox)
 			or (kind == "scrollbar" and S.HandleScrollBar)
-			or ((kind == "frame" or kind == "panel" or kind == "content"
-				or kind == "sidebar" or kind == "utility" or kind == "card")
-				and S.HandleFrame)
+			or (kind == "statusbar" and S.HandleStatusBar)
+			or (kind == "slider" and S.HandleSlider)
+			or ((kind == "frame" or kind == "panel") and S.HandleFrame)
 		if handler then
 			local ok = pcall(handler, S, frame)
 			if ok then return end
 		end
 	end
 
-	local fallback = (kind == "tab" or kind == "row") and "button" or kind
-	if kind == "content" or kind == "sidebar" or kind == "utility" or kind == "card" then
-		fallback = "panel"
-	end
-	flatSkin(frame, fallback, c)
+	flatSkin(frame, kind == "tab" and "button" or kind, c)
 end
 
 -- Apply the active theme to one frame.
 function T.Skin(frame, kind)
 	if not frame then return end
+	rememberControlFont(frame)
 	local active = T.Active()
 	if active == "modern" then
 		skinModern(frame, kind)
@@ -876,14 +892,12 @@ local function skinText(fontString, spec)
 	local color
 	if active == "modern" then
 		color = spec.role == "accent" and c.accent
-			or spec.role == "muted" and c.muted
-			or spec.role == "info" and { 0.39, 0.84, 1.00 }
+			or c[spec.role]
 			or c.text
 	elseif active == "elvui" then
 		color = spec.role == "accent" and c.accent
-			or spec.role == "muted" and { 0.62, 0.62, 0.62 }
-			or spec.role == "info" and c.accent
-			or { 0.90, 0.90, 0.90 }
+			or c[spec.role]
+			or c.text
 	else
 		color = spec.original
 	end
@@ -919,17 +933,24 @@ local function skinSurface(texture, role)
 		if role == "utility" then
 			texture:SetVertexColor(0.78, 0.74, 0.68, 0.96)
 		elseif role == "card" then
-			texture:SetVertexColor(0.74, 0.71, 0.66, 0.96)
+			texture:SetVertexColor(0.78, 0.75, 0.69, 0.96)
+		elseif role == "sidebar" then
+			texture:SetVertexColor(0.72, 0.69, 0.64, 0.97)
 		else
 			texture:SetVertexColor(0.70, 0.68, 0.64, 0.96)
 		end
 	elseif active == "elvui" then
-		texture:SetColorTexture(0.055, 0.055, 0.055, role == "card" and 0.82 or 0.94)
+		local shade = role == "sidebar" and 0.045
+			or role == "utility" and 0.075
+			or role == "card" and 0.085 or 0.055
+		texture:SetColorTexture(shade, shade, shade, role == "card" and 0.88 or 0.96)
 	else
 		-- Blizzard keeps its ornate outer frame, but a quiet pane tint still
 		-- distinguishes navigation/list/detail regions instead of one black void.
-		local warm = role == "sidebar" and { 0.055, 0.045, 0.035, 0.62 }
-			or { 0.035, 0.035, 0.050, 0.52 }
+		local warm = role == "sidebar" and { 0.055, 0.045, 0.035, 0.90 }
+			or role == "utility" and { 0.085, 0.065, 0.025, 0.78 }
+			or role == "card" and { 0.055, 0.050, 0.055, 0.86 }
+			or { 0.035, 0.035, 0.050, 0.90 }
 		texture:SetColorTexture(warm[1], warm[2], warm[3], warm[4])
 	end
 	texture:SetAlpha(1)
@@ -950,7 +971,12 @@ local function skinRule(texture, strength)
 	local active = T.Active()
 	local c = PALETTE[active] or PALETTE.blizzard
 	local alpha = strength == "strong" and 0.78 or 0.38
-	texture:SetColorTexture(c.border[1], c.border[2], c.border[3], alpha)
+	-- ElvUI's actual frame border is black, which is correct around a light
+	-- panel and completely invisible as an internal divider on our dark panes.
+	-- Semantic rules use the profile accent there; the outer chrome remains the
+	-- native black hairline.
+	local color = active == "elvui" and c.accent or c.border
+	texture:SetColorTexture(color[1], color[2], color[3], alpha)
 	texture:SetAlpha(1)
 end
 
@@ -959,6 +985,39 @@ function T.RegisterRule(texture, strength)
 	ruleRegistry[texture] = strength or "subtle"
 	skinRule(texture, strength or "subtle")
 	return texture
+end
+
+-- Tint authored effects (row hover, glow, active markers) through the same
+-- semantic palette. A gold hover left inside an ElvUI-blue window is one of
+-- those tiny inconsistencies that makes the entire skin feel unfinished.
+local function skinTint(texture, spec)
+	if not (texture and spec) then return end
+	local color = T.Color(spec.role)
+	texture:SetColorTexture(color[1], color[2], color[3], spec.alpha or 1)
+	texture:SetAlpha(1)
+end
+
+function T.RegisterTint(texture, role, alpha)
+	if not texture then return texture end
+	local spec = { role = role or "accent", alpha = alpha or 1 }
+	tintRegistry[texture] = spec
+	skinTint(texture, spec)
+	return texture
+end
+
+local function skinBackdropBorder(frame, strength)
+	if not (frame and frame.SetBackdropBorderColor) then return end
+	local active, c = T.Active(), T.Colors()
+	local color = active == "elvui" and c.accent or c.border
+	local alpha = strength == "strong" and 0.92 or 0.58
+	frame:SetBackdropBorderColor(color[1], color[2], color[3], alpha)
+end
+
+function T.RegisterBackdropBorder(frame, strength)
+	if not frame then return frame end
+	backdropBorderRegistry[frame] = strength or "subtle"
+	skinBackdropBorder(frame, strength or "subtle")
+	return frame
 end
 
 -- Frame any semantic surface with the same four hairlines. Keeping the
@@ -1027,6 +1086,7 @@ local function iconButton(parent, size, hover)
 	b:SetSize(size or 16, size or 16)
 	b.mmNoSkin = true  -- fully self-styled; the sweep must not touch it
 	b.mmHover = hover or { 1, 0.35, 0.35 }
+	b.mmRest = REST
 
 	b.art = b:CreateTexture(nil, "ARTWORK")
 	b.art:SetAllPoints()
@@ -1045,7 +1105,7 @@ local function iconButton(parent, size, hover)
 		end
 	end)
 	b:SetScript("OnLeave", function(self)
-		self:mmTint(REST[1], REST[2], REST[3])
+		self:mmTint(self.mmRest[1], self.mmRest[2], self.mmRest[3])
 		GameTooltip:Hide()
 	end)
 
@@ -1121,6 +1181,17 @@ function T.CreateCloseButton(parent, size)
 	return b
 end
 
+-- The main Modern window has a purpose-built title control in the authorized
+-- art set. Keep the generic compact X for HUD panels, where a 64px ornamental
+-- title button would be visually too loud even when scaled down.
+function T.CreateTitleCloseButton(parent, size)
+	local b = iconButton(parent, size, { 1.00, 0.88, 0.42 })
+	b.mmRest = { 1, 1, 1 }
+	b.art:SetTexture(MODERN_ASSET.titleClose)
+	b:mmTint(1, 1, 1)
+	return b
+end
+
 -- Expand: a thin double-headed arrow running bottom-left to top-right -- the
 -- universal enlarge/maximise glyph.
 --
@@ -1156,7 +1227,10 @@ end
 
 local function retintIconButtons()
 	for b in pairs(iconButtons) do
-		if not b:IsMouseOver() then b:mmTint(REST[1], REST[2], REST[3]) end
+		if not b:IsMouseOver() then
+			local rest = b.mmRest or REST
+			b:mmTint(rest[1], rest[2], rest[3])
+		end
 	end
 end
 
@@ -1174,7 +1248,10 @@ local function inferKind(child)
 
 	if objType == "CheckButton" then return "checkbox" end
 	if objType == "StatusBar" then return "statusbar" end
-	if objType == "Slider" then return "scrollbar" end
+	if objType == "Slider" then
+		local orientation = child.GetOrientation and child:GetOrientation()
+		return orientation == "HORIZONTAL" and "slider" or "scrollbar"
+	end
 	if objType ~= "Button" then return nil end
 
 	-- A small square button with no label is a close/arrow glyph; giving it
@@ -1237,6 +1314,10 @@ function T.ReskinAll()
 	for fontString, spec in pairs(textRegistry) do skinText(fontString, spec) end
 	for texture, role in pairs(surfaceRegistry) do skinSurface(texture, role) end
 	for texture, strength in pairs(ruleRegistry) do skinRule(texture, strength) end
+	for texture, spec in pairs(tintRegistry) do skinTint(texture, spec) end
+	for frame, strength in pairs(backdropBorderRegistry) do
+		skinBackdropBorder(frame, strength)
+	end
 	-- re-sweep top-level windows: scroll rows are recycled and new ones may
 	-- have appeared since the last pass
 	local c = T.Colors()

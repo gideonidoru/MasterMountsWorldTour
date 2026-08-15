@@ -34497,7 +34497,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 3,
 		notes = "Exploration achievement — no lockout, just legwork.",
 		solo = true,
-		unreleased = true,
 	},
 	{
 		name = "Ruby Writhe",
@@ -34514,7 +34513,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		timePerAttempt = 8,
 		effort = 3,
 		notes = "12.1 content. Item id is from the PTR and should be re-checked against live when the patch ships.",
-		unreleased = true,
 	},
 	{
 		name = "Topaz Skyfang",
@@ -34531,7 +34529,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		timePerAttempt = 8,
 		effort = 3,
 		notes = "12.1 content. Item id is from the PTR and should be re-checked against live when the patch ships.",
-		unreleased = true,
 	},
 	{
 		name = "Caustic Venomfang",
@@ -34558,7 +34555,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 4,
 		notes = "12.1 content, not on live. Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. The mapID and coordinate cannot be recorded until the patch ships and the zone exists client-side.",
 		needsSource = true,
-		unreleased = true,
 	},
 	{
 		name = "Emerald Skyfang",
@@ -34594,7 +34590,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 5,
 		notes = "250 patrols is a long repeatable grind — expect weeks, not days.",
 		solo = true,
-		unreleased = true,
 	},
 	{
 		name = "Venomous Coiler",
@@ -34629,7 +34624,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 5,
 		notes = "Meta achievement — depends on everything else on the isle.",
 		solo = true,
-		unreleased = true,
 	},
 	{
 		name = "Indigo Coiled Horror",
@@ -34674,7 +34668,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 4,
-		unreleased = true,
 	},
 	{
 		name = "Violet-Backed Skyfang",
@@ -34719,7 +34712,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 4,
-		unreleased = true,
 	},
 	{
 		name = "Sea-Dwelling Isle Serpent",
@@ -34762,7 +34754,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 4,
-		unreleased = true,
 	},
 	{
 		name = "Spirit of Tok'jara",
@@ -34806,7 +34797,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		timePerAttempt = 25,
 		effort = 4,
 		notes = "One quest unlocks per week, so the chain takes at least six weeks from Renown 10.",
-		unreleased = true,
 	},
 	{
 		name = "The Writhing Brood",
@@ -34834,7 +34824,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		attempts = "DAILY",
 		timePerAttempt = 25,
 		effort = 3,
-		unreleased = true,
 	},
 	{
 		name = "Primeval Skyfriend",
@@ -34865,7 +34854,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 5,
 		notes = "Mythic raid — needs a full group.",
 		solo = false,
-		unreleased = true,
 	},
 	{
 		name = "Crimson Venomfang",
@@ -34899,7 +34887,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 4,
 		notes = "Raid meta — needs a group across several weeks.",
 		solo = false,
-		unreleased = true,
 	},
 	{
 		name = "Breath of Blight",
@@ -34931,7 +34918,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		notes = "Seasonal — the rating resets with the season.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 		solo = false,
-		unreleased = true,
 	},
 	{
 		name = "Breath of Ruin",
@@ -34963,7 +34949,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		notes = "Seasonal — the rating resets with the season.",
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 		solo = false,
-		unreleased = true,
 	},
 	{
 		name = "Apophic Soul Crusher",
@@ -34999,7 +34984,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 4,
 		notes = "Solo kill — the required tier was still unconfirmed in the guide.",
 		solo = true,
-		unreleased = true,
 	},
 	{
 		name = "Corroded Soul Crusher",
@@ -35036,7 +35020,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		effort = 2,
 		notes = "Cheap once Delver's Journey Rank 5 is unlocked.",
-		unreleased = true,
 	},
 	{
 		name = "Hexflame Reaver",
@@ -35069,7 +35052,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		attempts = "NONE",
 		timePerAttempt = 20,
 		effort = 4,
-		unreleased = true,
 	},
 	{
 		name = "Preyhunter's Fury",
@@ -35106,7 +35088,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		effort = 4,
 		notes = "Construct V'anore stands at Astalor's Sanctum in Silvermoon.",
-		unreleased = true,
 	},
 	{
 		name = "Venomous Gladiator's Goredrake",
@@ -35138,7 +35119,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		notes = "Win 50 3v3 games at Elite rank in the Midnight season. Seasonal: it leaves with the season and cannot be earned afterwards.",
 		noLocationReason = "Achievement reward (Elite rank) -- granted on completion, nowhere to travel",
 		solo = false,
-		unreleased = true,
 	},
 	{
 		name = "Vicious Lightbloom Boar",
@@ -35174,7 +35154,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		effort = 4,
 		solo = false,
-		unreleased = true,
 	},
 	{
 		name = "Vicious Lightbloom Boar (Alliance)",
@@ -35195,7 +35174,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 4,
 		notes = "Shares its name with the Horde version; the two are separate mounts with separate spellIDs.",
 		needsSource = true,
-		unreleased = true,
 	},
 	{
 		name = "White Kodo",

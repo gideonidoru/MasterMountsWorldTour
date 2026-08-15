@@ -66,7 +66,7 @@ local function initMissingRow(row, entry)
 		row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		row.hl = row:CreateTexture(nil, "HIGHLIGHT")
 		row.hl:SetAllPoints()
-		row.hl:SetColorTexture(1, 0.82, 0.2, 0.08)
+		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
 		-- ONE ICON SIZE ACROSS THE ADDON.
 		--
@@ -105,6 +105,7 @@ local function initMissingRow(row, entry)
 		row.sub:SetJustifyH("LEFT")
 		row.sub:SetTextColor(0.6, 0.6, 0.6)
 		row.sub:SetWordWrap(false)
+		MM.Theme.RegisterText(row.sub, "muted")
 
 		-- NO CHILD BUTTON HERE. THAT IS THE FIX.
 		--
@@ -217,14 +218,14 @@ local function initPlanRow(row, data)
 		row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		row.hl = row:CreateTexture(nil, "HIGHLIGHT")
 		row.hl:SetAllPoints()
-		row.hl:SetColorTexture(1, 0.82, 0.2, 0.08)
+		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
 		-- gold bar marking the active route goal
 		row.cur = row:CreateTexture(nil, "ARTWORK")
 		row.cur:SetWidth(4)
 		row.cur:SetPoint("TOPLEFT", 0, -2)
 		row.cur:SetPoint("BOTTOMLEFT", 0, 2)
-		row.cur:SetColorTexture(1, 0.82, 0.2, 0.9)
+		MM.Theme.RegisterRule(row.cur, "strong")
 
 		row.num = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		row.num:SetPoint("LEFT", 6, 0)
@@ -233,6 +234,7 @@ local function initPlanRow(row, data)
 		-- so the end of a long plan lost its numbering entirely.
 		row.num:SetWidth(30)
 		row.num:SetJustifyH("RIGHT")
+		MM.Theme.RegisterText(row.num, "primary")
 
 		row.icon = row:CreateTexture(nil, "ARTWORK")
 		row.icon:SetSize(32, 32)
@@ -255,6 +257,7 @@ local function initPlanRow(row, data)
 		row.est:SetJustifyH("LEFT")
 		row.est:SetTextColor(0.4, 0.8, 1)
 		row.est:SetWordWrap(false)
+		MM.Theme.RegisterText(row.est, "info")
 
 		-- The SAME control the missing list uses, so one gesture means one
 		-- thing everywhere: [+] puts a mount on the plan, [-] takes it off.
@@ -343,7 +346,10 @@ local function initPlanRow(row, data)
 	local step = MM.cdb.routeActive and MM.Router.route[MM.cdb.routeIndex]
 	local isCurrent = step and step.entry == entry
 	row.cur:SetShown(isCurrent or false)
-	row.num:SetTextColor(isCurrent and 1 or 1, isCurrent and 0.82 or 1, isCurrent and 0.2 or 1)
+	local accent = MM.Theme.Color("accent")
+	local primary = MM.Theme.Color("text")
+	local numberColor = isCurrent and accent or primary
+	row.num:SetTextColor(numberColor[1], numberColor[2], numberColor[3])
 end
 
 ------------------------------------------------------------
@@ -565,6 +571,7 @@ function UI.BuildPlanner(panel)
 	missingSearch:SetSize(210, 20)
 	missingSearch:SetPoint("RIGHT", leftHeader, "RIGHT", 0, 0)
 	missingSearch:SetAutoFocus(false)
+	MM.Theme.Register(missingSearch, "editbox")
 	missingSearch:HookScript("OnTextChanged", function(self)
 		MM.Planner.filters.search = self:GetText() or ""
 		UI.RefreshPlanner()
@@ -579,6 +586,7 @@ function UI.BuildPlanner(panel)
 	panel.missingEmpty:SetWidth(360)
 	panel.missingEmpty:SetText("No missing mounts match these filters.")
 	panel.missingEmpty:SetTextColor(0.55, 0.55, 0.6)
+	MM.Theme.RegisterText(panel.missingEmpty, "muted")
 	panel.missingEmpty:Hide()
 
 	-- TWO OPPOSITE CORNERS, LIKE EVERY OTHER LIST IN THE ADDON.
@@ -611,6 +619,7 @@ function UI.BuildPlanner(panel)
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	missingBar:SetPoint("TOPLEFT", missingBox, "TOPRIGHT", 4, 0)
 	missingBar:SetPoint("BOTTOMLEFT", missingBox, "BOTTOMRIGHT", 4, 0)
+	MM.Theme.Register(missingBar, "scrollbar", false)
 
 	local mview = CreateScrollBoxListLinearView()
 	-- Room for a 32px icon and a two-line block without either touching an
@@ -641,6 +650,7 @@ function UI.BuildPlanner(panel)
 		.. " or use Auto-Plan / Add 10 Easiest. The plan charts itself as soon as"
 		.. " you add something; then press Start Route.")
 	panel.planEmpty:SetTextColor(0.55, 0.55, 0.6)
+	MM.Theme.RegisterText(panel.planEmpty, "muted")
 	panel.planEmpty:Hide()
 	panel.planEmptyRef = panel.planEmpty
 
@@ -663,17 +673,19 @@ function UI.BuildPlanner(panel)
 
 	notice.bg = notice:CreateTexture(nil, "BACKGROUND")
 	notice.bg:SetAllPoints()
-	notice.bg:SetColorTexture(0.03, 0.03, 0.05, 0.88)
+	MM.Theme.RegisterSurface(notice.bg, "card")
 
 	notice.head = notice:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	notice.head:SetPoint("CENTER", 0, 22)
 	notice.head:SetTextColor(1, 0.82, 0.2)
+	MM.Theme.RegisterText(notice.head, "accent")
 
 	notice.body = notice:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	notice.body:SetPoint("TOP", notice.head, "BOTTOM", 0, -14)
 	notice.body:SetWidth(380)
 	notice.body:SetJustifyH("CENTER")
 	notice.body:SetTextColor(0.75, 0.75, 0.8)
+	MM.Theme.RegisterText(notice.body, "muted")
 	notice:Hide()
 	panel.notice = notice
 
@@ -746,7 +758,8 @@ function UI.BuildPlanner(panel)
 		for _, e in ipairs(self.mmEdges or {}) do e:SetColorTexture(r, g, b, 0.85) end
 		local fs = self:GetFontString()
 		if fs then
-			if active then fs:SetTextColor(0.85, 0.85, 0.85)
+			local muted = MM.Theme.Color("muted")
+			if active then fs:SetTextColor(muted[1], muted[2], muted[3])
 			else fs:SetTextColor(r, g, b) end
 		end
 	end
@@ -761,6 +774,7 @@ function UI.BuildPlanner(panel)
 	routeButton:ApplyAccent()
 	MM:On("MM_THEME_CHANGED", function()
 		if routeButton and routeButton.ApplyAccent then routeButton:ApplyAccent() end
+		if panel:IsShown() and UI.RefreshPlanner then UI.RefreshPlanner() end
 	end)
 	routeButton:SetRouteState(MM.cdb and MM.cdb.routeActive)
 
@@ -770,6 +784,7 @@ function UI.BuildPlanner(panel)
 	summaryText:SetPoint("RIGHT", rightHeader, "RIGHT", 0, 0)
 	summaryText:SetJustifyH("RIGHT")
 	summaryText:SetWordWrap(false)
+	MM.Theme.RegisterText(summaryText, "muted")
 
 	-- THE SUMMARY TRUNCATES, SO IT HAS TO BE READABLE SOME OTHER WAY.
 	--
@@ -806,6 +821,7 @@ function UI.BuildPlanner(panel)
 	local planBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	planBar:SetPoint("TOPLEFT", planBox, "TOPRIGHT", 6, 0)
 	planBar:SetPoint("BOTTOMLEFT", planBox, "BOTTOMRIGHT", 6, 0)
+	MM.Theme.Register(planBar, "scrollbar", false)
 
 	local pview = CreateScrollBoxListLinearView()
 	pview:SetElementExtent(46)

@@ -635,7 +635,7 @@ local function buildMain()
 	-- sweep. Modern owns an explicit close affordance; the native one is restored
 	-- automatically when switching to Blizzard or ElvUI.
 	frame.mmNativeClose = frame.CloseButton or frame.closeButton
-	local modernClose = MM.Theme.CreateCloseButton(frame, 18)
+	local modernClose = MM.Theme.CreateTitleCloseButton(frame, 18)
 	modernClose:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -7, -3)
 	modernClose:SetFrameLevel(frame:GetFrameLevel() + 30)
 	modernClose.mmTooltip = "Close Master Mounts"
@@ -686,8 +686,8 @@ local function buildMain()
 	local pframe = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 	pframe:SetPoint("TOPLEFT", progress, -3, 3)
 	pframe:SetPoint("BOTTOMRIGHT", progress, 3, -3)
-	pframe:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 10 })
-	pframe:SetBackdropBorderColor(0.85, 0.65, 0.25, 0.9)
+	pframe:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+	MM.Theme.RegisterBackdropBorder(pframe, "strong")
 	progress:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	progress:SetStatusBarColor(0.25, 0.85, 0.4)
 	local pbg = progress:CreateTexture(nil, "BACKGROUND")
@@ -695,10 +695,12 @@ local function buildMain()
 	pbg:SetColorTexture(0, 0, 0, 0.5)
 	local ptext = progress:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	ptext:SetPoint("CENTER")
+	MM.Theme.RegisterText(ptext, "primary")
 	local spark = progress:CreateTexture(nil, "OVERLAY")
 	spark:SetSize(20, 30)
 	spark:SetBlendMode("ADD")
 	spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+	progress.mmSpark = spark
 	frame.progress, frame.progressText, frame.progressSpark = progress, ptext, spark
 	MM.Theme.Register(progress, "statusbar")
 

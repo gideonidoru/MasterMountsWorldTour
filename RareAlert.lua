@@ -457,11 +457,13 @@ local function buildAlert()
 	alertFrame.title:SetPoint("TOPLEFT", model, "TOPRIGHT", 12, -4)
 	alertFrame.title:SetTextColor(1, 0.7, 0.15)
 	alertFrame.title:SetText("RARE IS UP")
+	MM.Theme.RegisterText(alertFrame.title, "accent")
 
 	alertFrame.body = alertFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	alertFrame.body:SetPoint("TOPLEFT", alertFrame.title, "BOTTOMLEFT", 0, -3)
 	alertFrame.body:SetPoint("RIGHT", -34, 0)
 	alertFrame.body:SetJustifyH("LEFT")
+	MM.Theme.RegisterText(alertFrame.body, "primary")
 
 	-- The mount is named in the body text; make it a real link so it can be
 	-- moused over. "drops Cartel Master's Gearglider" is a fact; a link is a

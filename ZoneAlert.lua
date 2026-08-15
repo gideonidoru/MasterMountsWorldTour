@@ -133,6 +133,7 @@ local function build()
 	frame.title:SetPoint("RIGHT", frame.close, "LEFT", -2, 0)
 	frame.title:SetJustifyH("LEFT")
 	frame.title:SetTextColor(0.45, 0.8, 1)
+	MM.Theme.RegisterText(frame.title, "info")
 
 	frame.rows = {}
 	for i = 1, MAX_ROWS do
@@ -148,7 +149,7 @@ local function build()
 
 		row.hl = row:CreateTexture(nil, "HIGHLIGHT")
 		row.hl:SetAllPoints()
-		row.hl:SetColorTexture(1, 1, 1, 0.08)
+		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
 		row:SetScript("OnClick", function(s, button)
 			if not s.entry then return end
@@ -176,6 +177,7 @@ local function build()
 		row.chance:SetPoint("RIGHT", 0, 0)
 		row.chance:SetJustifyH("RIGHT")
 
+		MM.Theme.Register(row, "row", false)
 		frame.rows[i] = row
 	end
 	-- Read by the report. A row that takes clicks is the whole fix, and the
@@ -184,6 +186,7 @@ local function build()
 
 	frame.more = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 	frame.more:SetPoint("BOTTOMLEFT", 10, 7)
+	MM.Theme.RegisterText(frame.more, "muted")
 
 	if MM.db.zoneAlertPos then
 		frame:ClearAllPoints()
