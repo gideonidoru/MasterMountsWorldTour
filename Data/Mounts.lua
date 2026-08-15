@@ -34828,6 +34828,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		attempts = "DAILY",
 		timePerAttempt = 25,
 		effort = 3,
+		noLocationReason = "Instance entrance not recorded yet -- queue or walk in",
 	},
 	{
 		name = "Primeval Skyfriend",
@@ -34860,6 +34861,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		timePerAttempt = 60,
 		effort = 5,
 		notes = "Mythic raid — needs a full group.",
+		noLocationReason = "Instance entrance not recorded yet -- queue or walk in",
 		solo = false,
 	},
 	{

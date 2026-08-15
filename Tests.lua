@@ -110,6 +110,12 @@ local BUILD_BOUND = {
 	["A swapped route is not mistaken for a cache hit"] = true,
 	["The router model gives the route back"] = true,
 	["Adding to the plan from any pane actually adds"] = true,
+	-- Changes the order cap and re-charts to measure what that costs. A weight
+	-- change moves the signature, so the stored chart cannot be restored and
+	-- every one of those builds is the full search. The time is the ROUTER's,
+	-- which is what this list is for -- and it is reported separately by the
+	-- route section rather than hidden.
+	["The cap costs travel, and says how much"] = true,
 }
 
 -- ONE ANSWER TO "WHICH CHECK IS SLOWEST", because there were two and they
@@ -1944,6 +1950,10 @@ local function runLogic()
 
 		local after = fingerprint()
 		local hereAfter = R.hereDebug
+		-- CAPTURED BEFORE THE ROUTER IS PUT BACK. The restore below publishes a
+		-- fresh chart quite legitimately, so comparing saved variables after it
+		-- was measuring the repair rather than the failure.
+		local chartAfter = MM.cdb and MM.cdb.chart
 		-- Put the router back before reporting, whatever happened above.
 		R:BuildSync(true)
 
@@ -1954,7 +1964,7 @@ local function runLogic()
 		if hereAfter ~= hereBefore then
 			return false, "a failed build replaced the here-now diagnostic"
 		end
-		if MM.cdb and MM.cdb.chart ~= chartBefore then
+		if chartAfter ~= chartBefore then
 			return false, "a failed build left a chart behind in saved variables"
 		end
 		return true, ok and "the failure was contained and nothing moved"
@@ -2259,8 +2269,12 @@ local function runLogic()
 		local free = build(0)
 		local capped, rep = build(8)
 		MM.db.weights = saved
-        MM:Fire("MM_WEIGHTS_CHANGED")
-		R:BuildSync()
+		MM:Fire("MM_WEIGHTS_CHANGED")
+		-- INVALIDATE, DO NOT REBUILD. Putting the weights back needs the next
+		-- build to use them, not a chart right now -- and this check already
+		-- pays for two full searches. The third was a third of its cost for
+		-- nothing anybody was waiting on.
+		R.Invalidate()
 		if capped < free * 0.999 then
 			return false, ("capping made the route FASTER (%d vs %d) — the cap is "
 				.. "not constraining anything"):format(capped, free)
@@ -2501,11 +2515,15 @@ local function runLogic()
 			return false, ("%d shared npcs out of %d"):format(shared, npcs)
 		end
 		-- Every watched mount must be planned and still missing.
+		-- COLLECTED MOUNTS ARE NOT WATCHED, so they must not be counted here
+		-- either. This counted every planned kill-source goal including the ones
+		-- already owned, and then called the watch list short by exactly those.
 		local planned = 0
 		for _, item in ipairs(MM.cdb and MM.cdb.plan or {}) do
 			local entry = S.bySpell and S.bySpell[item.spellID]
 			local rec = entry and entry.rec
-			if rec and rec.npc and rec.npc.id and MM.KILL_BASED[rec.category] then
+			if rec and rec.npc and rec.npc.id and MM.KILL_BASED[rec.category]
+				and not entry.collected then
 				planned = planned + 1
 			end
 		end
@@ -6181,10 +6199,15 @@ local function runLogic()
 		local savedGoal, savedIndex = MM.db.routeGoal, MM.cdb.routeIndex
 		MM.db.routeGoal = nil
 		MM.cdb.routeIndex = math.min(5, #R.route)
-		R.Invalidate(); R:Build()
+		-- SYNCHRONOUS, BOTH TIMES. This asked for a chunked build and read the
+		-- index on the very next line, so it read the index the PREVIOUS build
+		-- left -- the 5 it had just written itself -- and reported the router
+		-- for it. The index is published with the route, so the build has to be
+		-- waited for.
+		R.Invalidate(); R:BuildSync()
 		local landed = MM.cdb.routeIndex
 		MM.db.routeGoal, MM.cdb.routeIndex = savedGoal, savedIndex
-		R.Invalidate(); R:Build()
+		R.Invalidate(); R:BuildSync()
 		if landed ~= 1 then
 			return false, ("a rebuild with no anchor left the index at %d rather "
 				.. "than leading from the top"):format(landed)

@@ -1968,7 +1968,17 @@ local function rewritePlanFromRoute()
 			tinsert(order, spellID)
 		end
 	end
-	for _, step in ipairs(R.route) do push(step.entry.spellID) end
+	-- EVERY MOUNT AT A STOP, IN THE STOP'S ORDER.
+	--
+	-- This pushed `step.entry.spellID` only -- one id per stop -- so the other
+	-- four mounts at a five-mount stop fell through to the plan tail below and
+	-- were scattered to the end, far from the trip that collects them. The plan
+	-- claimed to be in route order and was not, wherever a stop is shared.
+	for _, step in ipairs(R.route) do
+		for _, m in ipairs(step.members or { step }) do
+			push(m.entry and m.entry.spellID)
+		end
+	end
 	for _, entry in ipairs(R.unrouted) do push(entry.spellID) end
 	for _, d in ipairs(R.deferred) do push(d.entry.spellID) end
 	for _, item in ipairs(MM.cdb.plan) do push(item.spellID) end
