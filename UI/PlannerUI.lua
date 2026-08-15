@@ -887,6 +887,40 @@ function UI.SummaryLines()
 	return summaryText and summaryText.mmLines
 end
 
+-- THE TIME ROWS, FROM A TOTALS TABLE AND NOTHING ELSE.
+--
+-- Extracted so the arithmetic can be checked against known numbers without a
+-- window, a route, or a build. The travel row was wrong for exactly as long as
+-- the only way to see it was to open the planner and read it.
+--
+-- "Of which travel" is `travelMinutes`, which Measure produces by walking the
+-- route and totalling the legs. It used to be `minutes - routeMinutes`, and
+-- those two totals do not differ by travel -- both contain all of it. `minutes`
+-- counts every attempt a mount is expected to need; `routeMinutes` counts
+-- travel plus ONE visit each. The remainder is the grind, so a plan of long
+-- farms reported nearly all its time as flying to someone using that figure to
+-- decide whether an evening was worth it.
+--
+-- That subtraction keeps its own row under the name it always deserved. Both
+-- totals it sits between are already on screen, so the gap between them was
+-- visible and unexplained.
+function UI.PlanTimeRows(t)
+	local rows = {}
+	local function add(k, v) rows[#rows + 1] = { k, v } end
+	if not (t and (t.stops or 0) > 0) then return rows end
+	add("On the route", U.FormatSeconds((t.routeMinutes or t.minutes or 0) * 60))
+	if (t.travelMinutes or 0) > 1 then
+		add("Of which travel", U.FormatSeconds(t.travelMinutes * 60))
+	end
+	local farming = (t.minutes or 0) - (t.routeMinutes or t.minutes or 0)
+	if farming > 1 then
+		add("Repeated farming", U.FormatSeconds(farming * 60))
+	end
+	add("Expected mounts", ("%.1f"):format(t.mounts or 0))
+	add("To finish everything", U.FormatSeconds((t.minutes or 0) * 60))
+	return rows
+end
+
 function UI.RefreshPlannerNow()
 	if not missingBox then return end
 
@@ -1047,31 +1081,7 @@ function UI.RefreshPlannerNow()
 	local lines = {}
 	local function add(k, v) lines[#lines + 1] = { k, v } end
 	if t and t.stops > 0 then
-		add("On the route", U.FormatSeconds((t.routeMinutes or t.minutes) * 60))
-		-- TRAVEL IS A NUMBER THE ROUTER ALREADY MEASURED.
-		--
-		-- This subtracted `routeMinutes` from `minutes` and called the remainder
-		-- travel. Those two totals do not differ by travel -- they both contain
-		-- all of it. `minutes` counts every attempt a mount is expected to need;
-		-- `routeMinutes` counts travel plus ONE visit each. What is left over is
-		-- the grind.
-		--
-		-- So a plan of long farms reported almost all of its time as flying, to
-		-- a collector using exactly that figure to decide whether an evening is
-		-- worth it. Measure walks the route spending teleports as it goes and
-		-- totals the legs; that total is what this line means.
-		if (t.travelMinutes or 0) > 1 then
-			add("Of which travel", U.FormatSeconds(t.travelMinutes * 60))
-		end
-		-- The old subtraction, under the name it always had. Worth keeping: both
-		-- totals it sits between are already on screen, so the gap between them
-		-- was visible and unexplained -- this says what it is.
-		local farming = (t.minutes or 0) - (t.routeMinutes or t.minutes or 0)
-		if farming > 1 then
-			add("Repeated farming", U.FormatSeconds(farming * 60))
-		end
-		add("Expected mounts", ("%.1f"):format(t.mounts or 0))
-		add("To finish everything", U.FormatSeconds((t.minutes or 0) * 60))
+		for _, row in ipairs(UI.PlanTimeRows(t)) do lines[#lines + 1] = row end
 	end
 	add("Mounts on this plan", tostring(goalCount))
 	add("Stops", tostring(stopCount))
@@ -1092,10 +1102,6 @@ function UI.RefreshPlannerNow()
 	if waiting > 0 then add("Waiting on something", tostring(waiting)) end
 	summaryText.mmLines = lines
 	routeButton:SetRouteState(MM.cdb.routeActive)
-	-- Exposed so a check can read the rows the tooltip will SHOW, rather than
-	-- re-deriving them and testing its own arithmetic. The travel line was wrong
-	-- for exactly as long as nothing could see it.
-	UI.PlannerSummaryLines = function() return summaryText and summaryText.mmLines end
 	-- NOTHING TO ROUTE, NOTHING TO START.
 	--
 	-- Start Route stayed pressable with an empty plan, which offered to walk a

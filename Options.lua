@@ -190,6 +190,7 @@ local function buildPanel()
 	-- asking you to close the panel and guess.
 	local scaleLabel = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	scaleLabel:SetPoint("TOPLEFT", content, "TOPLEFT", LEFT, y)
+	MM.Theme.RegisterText(scaleLabel, "primary")
 	y = y - 20
 	local scale = makeSlider(content)
 	scale:SetSize(300, 18)
@@ -200,9 +201,11 @@ local function buildPanel()
 	if scale.Low then scale.Low:SetText("Smaller") end
 	if scale.High then scale.High:SetText("Bigger") end
 	if scale.Text then scale.Text:SetText("") end
+	if scale.Low then MM.Theme.RegisterText(scale.Low, "muted") end
+	if scale.High then MM.Theme.RegisterText(scale.High, "muted") end
 	local function scaleText()
 		local v = MM.db.arrowScale or 1
-		scaleLabel:SetText(("Navigation arrow size: |cffffd84d%.2fx|r%s")
+		scaleLabel:SetText(("Navigation arrow size: %.2fx%s")
 			:format(v, math.abs(v - 1) < 0.001 and "  (default)" or ""))
 	end
 	-- SetValue fires OnValueChanged, so guard the refresh against recursing.
@@ -226,6 +229,7 @@ local function buildPanel()
 	local mmText = minimap:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	mmText:SetPoint("LEFT", minimap, "RIGHT", 4, 1)
 	mmText:SetText("Show the minimap button")
+	MM.Theme.RegisterText(mmText, "primary")
 	minimap:SetScript("OnShow", function(self)
 		self:SetChecked(not (MM.db.minimap and MM.db.minimap.hide))
 	end)
@@ -591,6 +595,9 @@ local function buildWeights()
 		if s.Low then s.Low:SetText(def.lowText or tostring(def.min)) end
 		if s.High then s.High:SetText(def.highText or tostring(def.max)) end
 		if s.Text then s.Text:SetText("") end
+		if s.Low then MM.Theme.RegisterText(s.Low, "muted") end
+		if s.High then MM.Theme.RegisterText(s.High, "muted") end
+		MM.Theme.RegisterText(value, "accent")
 
 		-- The low/high captions hang below the bar and are NOT part of the
 		-- slider's height, so the next widget has to clear them by hand. This is

@@ -642,6 +642,7 @@ function flatSkin(frame, kind, c)
 	end
 
 	if kind == "slider" then
+		hideArt(frame)
 		flatBackground(frame, { c.bg[1] * 1.18, c.bg[2] * 1.18,
 			c.bg[3] * 1.18, 0.92 })
 		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
@@ -773,6 +774,7 @@ local function skinModern(frame, kind)
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
 	if kind == "slider" then
 		restoreArt(frame)
+		borderAlpha(frame, 0)
 		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
 		if thumb and thumb.SetVertexColor then
 			thumb:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)

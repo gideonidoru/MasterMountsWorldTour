@@ -2352,45 +2352,60 @@ local function runLogic()
 	end)
 
 	check("The plan tooltip's travel figure is the travel figure", function()
-		-- It showed `minutes - routeMinutes` under the label "Of which travel".
-		-- Those two totals do not differ by travel -- both contain all of it.
-		-- `minutes` counts every attempt a mount is expected to need,
-		-- `routeMinutes` counts travel plus ONE visit each, so the remainder is
-		-- the grind. A plan of long farms therefore reported nearly all of its
-		-- time as flying, to someone using that exact number to decide whether
-		-- an evening was worth it.
-		local R, UI = MM.Router, MM.UI
-		if not (R and UI and UI.PlannerSummaryLines) then
-			return nil, "the planner has not been drawn yet this session"
-		end
-		local lines = UI.PlannerSummaryLines()
-		if not lines then return nil, "no summary rendered yet" end
-		R:BuildSync()
-		local t = R.totals
-		if not (t and t.stops and t.stops > 0) then return nil, "nothing routed" end
+		-- "Of which travel" showed `minutes - routeMinutes`. Those two totals do
+		-- not differ by travel -- both contain all of it. `minutes` counts every
+		-- attempt a mount is expected to need; `routeMinutes` counts travel plus
+		-- ONE visit each, so the remainder is the grind. A plan of long farms
+		-- reported nearly all its time as flying, to a collector using exactly
+		-- that number to decide whether an evening was worth it.
+		--
+		-- SYNTHETIC TOTALS, chosen so the right answer and the wrong one cannot
+		-- coincide: travel is 10, the grind remainder is 100, and neither equals
+		-- any other figure in the table. No route, no build, no window.
+		local UI = MM.UI
+		if not (UI and UI.PlanTimeRows) then return nil, "planner rows not available" end
+		local totals = {
+			stops = 4,
+			travelMinutes = 10,
+			routeMinutes = 70,     -- travel 10 + one visit each
+			minutes = 170,         -- travel 10 + the whole grind
+			mounts = 1.5,
+		}
+		local rows = UI.PlanTimeRows(totals)
+		local byLabel = {}
+		for _, row in ipairs(rows) do byLabel[row[1]] = row[2] end
 
-		local shown
-		for _, row in ipairs(lines) do
-			if row[1] == "Of which travel" then shown = row[2] end
+		local wantTravel = U.FormatSeconds(totals.travelMinutes * 60)
+		local wantFarming = U.FormatSeconds(
+			(totals.minutes - totals.routeMinutes) * 60)
+		if wantTravel == wantFarming then
+			return nil, "the fixture cannot tell the two figures apart"
 		end
-		if not shown then
-			-- Only omitted when travel rounds to nothing, which has to be true.
-			if (t.travelMinutes or 0) > 1 then
-				return false, ("travel is %.1f min but no travel row was shown")
-					:format(t.travelMinutes)
+		if byLabel["Of which travel"] ~= wantTravel then
+			local looksOld = byLabel["Of which travel"] == wantFarming
+			return false, ("travel row is %s, travelMinutes is %s%s")
+				:format(tostring(byLabel["Of which travel"]), wantTravel,
+					looksOld and " — it is showing repeated farming" or "")
+		end
+		if byLabel["Repeated farming"] ~= wantFarming then
+			return false, ("farming row is %s, expected %s")
+				:format(tostring(byLabel["Repeated farming"]), wantFarming)
+		end
+		-- The two rows must not be the same number, or neither assertion means
+		-- anything on a route where they happen to agree.
+		if byLabel["Of which travel"] == byLabel["Repeated farming"] then
+			return false, "travel and farming are reporting the same figure"
+		end
+		-- Travel below a minute is omitted rather than shown as nothing.
+		local quiet = UI.PlanTimeRows({ stops = 2, travelMinutes = 0.2,
+			routeMinutes = 30, minutes = 30, mounts = 0 })
+		for _, row in ipairs(quiet) do
+			if row[1] == "Of which travel" then
+				return false, "a travel figure under a minute was still shown"
 			end
-			return nil, "this route has no travel worth showing"
 		end
-
-		local wanted = U.FormatSeconds((t.travelMinutes or 0) * 60)
-		if shown ~= wanted then
-			local oldFormula = (t.minutes or 0) - (t.routeMinutes or t.minutes or 0)
-			local looksOld = shown == U.FormatSeconds(oldFormula * 60)
-			return false, ("the tooltip shows %s, travelMinutes is %s%s")
-				:format(tostring(shown), wanted,
-					looksOld and " — it is still showing repeated farming" or "")
-		end
-		return true, ("travel reads %s, from totals.travelMinutes"):format(shown)
+		return true, ("travel %s, farming %s, from separate totals")
+			:format(byLabel["Of which travel"], byLabel["Repeated farming"])
 	end)
 
 	check("One kill counts for every mount that source owes", function()
@@ -2410,30 +2425,56 @@ local function runLogic()
 		local a, b = -9001, -9002
 		local acct = MM.db.attempts or {}
 		local wasA, wasB = acct[a], acct[b]
+		-- EVERY STORE Record TOUCHES, not just the counter.
+		--
+		-- Record also stamps MM.db.attemptTimes, and this check restored the
+		-- tally but not the timestamps -- so a self-test left two sentinel
+		-- entries behind in the player's saved variables, growing by two on
+		-- every run. A check that measures the statistics must not be able to
+		-- change them.
+		--
+		-- Captured by VALUE and restored by assignment, so a key that was
+		-- absent goes back to absent rather than to an empty table.
+		local times = MM.db.attemptTimes
+		local wasTimeA = times and times[a]
+		local wasTimeB = times and times[b]
+		local hadTimes = times ~= nil
 		local restore = function()
 			acct[a], acct[b] = wasA, wasB
 			if MM.cdb and MM.cdb.attempts then
 				MM.cdb.attempts[a], MM.cdb.attempts[b] = nil, nil
 			end
+			if MM.db.attemptTimes then
+				MM.db.attemptTimes[a] = wasTimeA
+				MM.db.attemptTimes[b] = wasTimeB
+				-- Record creates the table on first use. If it did not exist
+				-- before this check ran, it must not exist after.
+				if not hadTimes then MM.db.attemptTimes = nil end
+			end
 			A.ForgetSources()
 		end
 		A.ForgetSources()
+		-- The tokens say what these attempts CONCERN, which is how the two
+		-- signals for one kill find each other.
+		local link = { "npc:-9000", "spell:" .. a, "spell:" .. b }
 		local ok, err = pcall(function()
-			local both = A.RecordMany({ a, b }, "selftest:corpse-1", "loot")
+			local both = A.RecordMany({ a, b }, "selftest:corpse-1", "loot", link)
 			if both ~= 2 then
 				error(("one source paid %d of 2 mounts"):format(both), 0)
 			end
 			-- The same corpse opened again is not a second attempt.
-			if A.RecordMany({ a, b }, "selftest:corpse-1", "loot") ~= 0 then
+			if A.RecordMany({ a, b }, "selftest:corpse-1", "loot", link) ~= 0 then
 				error("re-opening one corpse counted again", 0)
 			end
-			-- A different corpse of the same rare is.
-			if A.RecordMany({ a, b }, "selftest:corpse-2", "loot") ~= 2 then
-				error("a second corpse did not count", 0)
-			end
-			-- The same kill arriving down the other pipe is not.
-			if A.RecordMany({ a, b }, "selftest:encounter-1", "kill") ~= 0 then
+			-- The same kill arriving down the other pipe is not either -- it
+			-- adopts the source the loot already paid under.
+			if A.RecordMany({ a, b }, "selftest:encounter-1", "kill", link) ~= 0 then
 				error("the encounter signal counted a kill the loot already had", 0)
+			end
+			-- A DIFFERENT corpse of the same creature still is. Two loots are
+			-- two attempts however alike they look.
+			if A.RecordMany({ a, b }, "selftest:corpse-2", "loot", link) ~= 2 then
+				error("a second corpse did not count", 0)
 			end
 		end)
 		restore()

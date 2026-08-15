@@ -96,72 +96,108 @@ end
 -- the earlier one and only ever counted the survivor. On a Brewfest kill one
 -- mount's odds moved and the other's did not.
 --
--- The dedupe lives HERE rather than at each call site, because there are two
--- call sites and they see the same kill through different signals.
---
---   sourceKey  identifies the thing that produced the attempt: a corpse GUID
---              for a loot, an encounter name and time bucket for a boss. A
---              source credits each mount at most once, which is what makes
---              re-opening a half-looted corpse free.
---   path       "loot" or "kill" -- which signal saw it. Two DIFFERENT corpses
---              are two attempts even with the same npc id, but one corpse seen
---              through both signals is still one.
+-- The dedupe lives HERE rather than at each call site, because there are four
+-- call sites and several of them see the same kill through different signals.
 local SOURCE_MEMORY = 900        -- how long a source is remembered, seconds
--- A boss kill and the loot from that same boss arrive seconds apart through two
--- unrelated events with no shared id, so the only thing linking them is that
--- they concern the same mount at almost the same moment. Generous, because you
--- cannot kill one instance boss twice inside it -- and rares never raise the
--- encounter signal at all, so a genuine second rare kill is unaffected.
-local CROSS_PATH_SECONDS = 120
 
+-- A KILL SEEN THROUGH TWO SIGNALS IS STILL ONE KILL.
+--
+-- ENCOUNTER_END knows the boss NAME. LOOT_OPENED knows the corpse GUID, and so
+-- the creature id. Nothing links those two directly, and the first attempt at
+-- this compared spellIDs inside a two-minute window -- so looting the corpse at
+-- 121 seconds counted the kill twice, and the number 120 was doing the work.
+--
+-- The link is modelled instead. Whichever signal arrives first CLAIMS a source
+-- against the creature it concerns; the second finds that claim and files
+-- itself under the same source, which has already paid. Nothing about elapsed
+-- time decides it -- the claim is consumed by the counterpart that matches it,
+-- so a corpse looted twenty seconds after the kill and one looted five minutes
+-- after behave identically.
+--
+-- CLAIMS ARE ONLY EVER HONOURED ACROSS PATHS. Two corpses of one rare are two
+-- loots of the same creature and must stay two attempts, so a loot never
+-- inherits another loot's source.
+local claims = {}       -- token -> { key = sourceKey, path = path, at = seconds }
 local creditedBy = {}   -- sourceKey -> { at = seconds, [spellID] = true }
-local lastCredit = {}   -- spellID   -> { at = seconds, path = "loot"|"kill" }
 
 local function nowSeconds()
 	return (GetTime and GetTime()) or (time and time()) or 0
 end
 
+-- Cleanup, NOT correlation. Correlation is the claim being consumed; this only
+-- stops a kill nobody ever looted from holding a claim for the rest of the
+-- session. Long enough that no real pairing is torn apart by it.
+local function sweep(now)
+	for k, v in pairs(creditedBy) do
+		if now - (v.at or 0) > SOURCE_MEMORY then creditedBy[k] = nil end
+	end
+	for k, v in pairs(claims) do
+		if now - (v.at or 0) > SOURCE_MEMORY then claims[k] = nil end
+	end
+end
+
 -- Exposed so a check can prove the dedupe without waiting out its memory.
 function A.ForgetSources()
 	wipe(creditedBy)
-	wipe(lastCredit)
+	wipe(claims)
 end
 
+-- Record one attempt per mount for a single source.
+--
+-- THIS IS THE OWNER OF SOURCE DEDUPLICATION. Callers say what happened and
+-- where; whether it counts is decided here and nowhere else. A caller keeping
+-- its own "have I seen this corpse" table may skip work, but it must not be
+-- what makes the answer right.
+--
+--   sourceKey  the thing that produced the attempt: a corpse GUID, an encounter
+--              identity, a quest id. A source pays each mount at most once.
+--   path       "loot" | "kill" | "quest" -- which signal saw it.
+--   link       correlation tokens ("npc:1234", "spell:5678") naming what this
+--              concerns, so the other signal for the same kill can find it.
+--
 -- Returns how many attempts were actually recorded, which is not always how
 -- many were offered -- that difference IS the dedupe working.
-function A.RecordMany(spellIDs, sourceKey, path)
+function A.RecordMany(spellIDs, sourceKey, path, link)
 	if type(spellIDs) ~= "table" then return 0 end
 	local now = nowSeconds()
-	for key, seen in pairs(creditedBy) do
-		if now - (seen.at or 0) > SOURCE_MEMORY then creditedBy[key] = nil end
+	sweep(now)
+
+	-- The same kill arriving down the other pipe: adopt the source it has
+	-- already paid under rather than opening a second one.
+	local key, adopted = sourceKey, false
+	if link then
+		for _, token in ipairs(link) do
+			local c = claims[token]
+			if c and c.path ~= path then
+				key, adopted = c.key, true
+				claims[token] = nil   -- a claim links two signals, not three
+				break
+			end
+		end
 	end
 
 	local seen
-	if sourceKey then
-		seen = creditedBy[sourceKey]
-		if not seen then seen = { at = now } creditedBy[sourceKey] = seen end
+	if key then
+		seen = creditedBy[key]
+		if not seen then seen = { at = now } creditedBy[key] = seen end
+		seen.at = now
 	end
 
 	local recorded = 0
 	for _, spellID in ipairs(spellIDs) do
-		local skip = false
-		if seen and seen[spellID] then
-			-- This exact source has already paid for this mount.
-			skip = true
-		elseif path then
-			local last = lastCredit[spellID]
-			-- The same kill reaching us down the other pipe. Only across
-			-- paths: two corpses on the loot path are two real attempts.
-			if last and last.path and last.path ~= path
-				and now - last.at < CROSS_PATH_SECONDS then
-				skip = true
-			end
-		end
-		if not skip then
+		if not (seen and seen[spellID]) then
 			if seen then seen[spellID] = true end
-			lastCredit[spellID] = { at = now, path = path }
 			A.Record(spellID)
 			recorded = recorded + 1
+		end
+	end
+
+	-- Leave a claim for a counterpart that has not arrived yet. Not after
+	-- adopting one: that pairing is complete, and re-claiming would let a third
+	-- signal chain onto it.
+	if link and key and not adopted then
+		for _, token in ipairs(link) do
+			claims[token] = { key = key, path = path, at = now }
 		end
 	end
 	return recorded

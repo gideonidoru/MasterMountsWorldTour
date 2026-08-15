@@ -186,7 +186,14 @@ local function rebuildWatched()
 		-- KILL_BASED is what keeps a vendor or a quest turn-in out of the watch
 		-- list even when it shares an npc id with something you kill -- one
 		-- record in the database does exactly that.
-		if rec and rec.npc and rec.npc.id and MM.KILL_BASED[rec.category] then
+		--
+		-- COLLECTED MOUNTS ARE NOT WATCHED. They were, so the reported counts
+		-- described a watch list larger than the one that can ever fire, and a
+		-- shared source read as owing two mounts when it owed one. claimsOn
+		-- checks `collected` again at record time -- that catches a mount learned
+		-- between rebuilds, and this stops the counts lying in the meantime.
+		if rec and rec.npc and rec.npc.id and MM.KILL_BASED[rec.category]
+			and not entry.collected then
 			local set = watchedNPCs[rec.npc.id]
 			if not set then
 				set = {}
@@ -235,11 +242,14 @@ local onEncounterEnd -- forward-declared; defined below
 local function onCombatLog()
 	local _, subevent, _, _, _, _, _, destGUID = CombatLogGetCurrentEventInfo()
 	if subevent ~= "UNIT_DIED" and subevent ~= "PARTY_KILL" then return end
-	local claims = claimsOn(npcIDFromGUID(destGUID))
+	local npcID = npcIDFromGUID(destGUID)
+	local claims = claimsOn(npcID)
 	if not claims then return end
 	-- The corpse is the source, so one death cannot be counted twice -- and
 	-- every mount that npc owes is counted once.
-	MM.Attempts.RecordMany(claims, "guid:" .. tostring(destGUID), "loot")
+	local link = { "npc:" .. tostring(npcID) }
+	for _, spellID in ipairs(claims) do link[#link + 1] = "spell:" .. spellID end
+	MM.Attempts.RecordMany(claims, "guid:" .. tostring(destGUID), "loot", link)
 end
 
 -- 12.0 HANDS OUT SECRET VALUES, AND A SECRET IS NOT A STRING.
@@ -284,6 +294,38 @@ local function readableName(name)
 	return nil
 end
 
+-- ONE IDENTITY PER KILL, SHARED BY BOTH SIGNALS.
+--
+-- The source key was the boss name plus floor(GetTime() / 5). BOSS_KILL and
+-- ENCOUNTER_END arrive a moment apart for one kill, so whenever that moment
+-- straddled a five-second boundary they landed in different buckets, opened two
+-- sources and counted the kill twice. The bucket was arbitrary and the bug was
+-- a coin flip on timing.
+--
+-- A kill now mints an identity against the boss's name and keeps it, so either
+-- event order and any gap between them resolve to the same source. It is
+-- refreshed on use and expires after a quiet spell, because a genuinely later
+-- kill of the same boss is a different attempt -- and lockouts and respawns mean
+-- that is never within a minute.
+local ENCOUNTER_IDENTITY_SECONDS = 60
+local encounterSources, encounterSerial = {}, 0
+
+local function encounterSourceFor(wanted)
+	local now = GetTime and GetTime() or 0
+	for name, e in pairs(encounterSources) do
+		if now - e.at > ENCOUNTER_IDENTITY_SECONDS then encounterSources[name] = nil end
+	end
+	local existing = encounterSources[wanted]
+	if existing then
+		existing.at = now
+		return existing.key
+	end
+	encounterSerial = encounterSerial + 1
+	local key = ("kill:%s:%d"):format(wanted, encounterSerial)
+	encounterSources[wanted] = { key = key, at = now }
+	return key
+end
+
 -- Encounter kills (instance bosses) matched by npc name, since encounter IDs
 -- aren't in the database.
 function onEncounterEnd(_, encounterName, _, _, success)
@@ -291,7 +333,7 @@ function onEncounterEnd(_, encounterName, _, _, success)
 	local wanted = readableName(encounterName)
 	if not wanted then return end
 	if not (MM.cdb and MM.cdb.plan) then return end
-	local claims
+	local claims, link, seenNpc
 	for _, item in ipairs(MM.cdb.plan) do
 		local entry = S.bySpell[item.spellID]
 		local rec = entry and entry.rec
@@ -299,14 +341,23 @@ function onEncounterEnd(_, encounterName, _, _, success)
 			and rec.npc.name:lower() == wanted then
 			claims = claims or {}
 			claims[#claims + 1] = item.spellID
+			link = link or {}
+			link[#link + 1] = "spell:" .. item.spellID
+			local id = rec.npc.id
+			if id and not (seenNpc and seenNpc[id]) then
+				seenNpc = seenNpc or {}
+				seenNpc[id] = true
+				link[#link + 1] = "npc:" .. id
+			end
 		end
 	end
 	if not claims then return end
-	-- ONE SOURCE PER KILL. The name alone would be remembered for the rest of
-	-- the session and refuse the next kill of the same boss; the five-second
-	-- bucket matches the debounce BOSS_KILL already applies to that same name.
-	local bucket = math.floor(((GetTime and GetTime()) or 0) / 5)
-	MM.Attempts.RecordMany(claims, ("kill:%s:%d"):format(wanted, bucket), "kill")
+	-- The link tokens say what this kill CONCERNS, so the loot from the same
+	-- corpse can find it and file itself under the same source instead of
+	-- opening a second one. Creature id where a record has one, and the mount
+	-- itself either way -- one of the twelve shared sources names the creature
+	-- on only one of its two records.
+	MM.Attempts.RecordMany(claims, encounterSourceFor(wanted), "kill", link)
 end
 
 ------------------------------------------------------------
@@ -364,29 +415,45 @@ end)
 --
 -- Looting is arguably the better question anyway: a kill you never looted is
 -- not an attempt at the drop, and this counts the moment you actually looked.
+-- AN OPTIMISATION, NOT A RULE.
+--
+-- One corpse can be opened several times -- partial loot, a full bag, a second
+-- pass -- and each is one attempt, not several. That guarantee belongs to
+-- Attempts.RecordMany, which keys on the corpse GUID and refuses to pay the
+-- same source twice. This table only skips rebuilding the claim list for a
+-- corpse we just handled.
+--
+-- It matters that this is not load-bearing: it forgets a corpse after ten
+-- minutes and RecordMany remembers a source for fifteen, so between those two
+-- numbers this misses and RecordMany still says no. If the lifetimes here ever
+-- decided the answer, the shorter one would silently become the rule.
 local lootSeen = {}
+local LOOT_SEEN_MEMORY = 600
 
 local function onLootOpened()
 	if not (GetNumLootItems and GetLootSourceInfo) then return end
 	local now = GetTime()
-	-- One corpse can be opened more than once -- partial loot, a full bag, a
-	-- second pass -- and each is one attempt, not several.
 	for guid, at in pairs(lootSeen) do
-		if now - at > 600 then lootSeen[guid] = nil end
+		if now - at > LOOT_SEEN_MEMORY then lootSeen[guid] = nil end
 	end
 	for slot = 1, (GetNumLootItems() or 0) do
 		local ok, a, _, b = pcall(GetLootSourceInfo, slot)
 		if ok then
 			for _, guid in ipairs({ a, b }) do
 				if type(guid) == "string" and not lootSeen[guid] then
-					local claims = claimsOn(npcIDFromGUID(guid))
+					local npcID = npcIDFromGUID(guid)
+					local claims = claimsOn(npcID)
 					if claims then
 						lootSeen[guid] = now
 						-- The GUID is the source, so two corpses of the same
 						-- rare are two attempts and one corpse opened twice is
-						-- one -- while `path` stops a boss whose kill was
-						-- already counted from paying again here.
-						MM.Attempts.RecordMany(claims, "guid:" .. guid, "loot")
+						-- one. The link tokens let a boss kill already counted
+						-- through ENCOUNTER_END claim this loot as its own.
+						local link = { "npc:" .. tostring(npcID) }
+						for _, spellID in ipairs(claims) do
+							link[#link + 1] = "spell:" .. spellID
+						end
+						MM.Attempts.RecordMany(claims, "guid:" .. guid, "loot", link)
 					end
 				end
 			end
@@ -424,7 +491,8 @@ local function pollTracked()
 				-- counted. The quest id is the source -- it flips once -- and
 				-- the path lets the dedupe collapse it with the loot that
 				-- almost certainly arrived moments earlier.
-				MM.Attempts.RecordMany({ spellID }, "quest:" .. tostring(questID), "quest")
+				MM.Attempts.RecordMany({ spellID }, "quest:" .. tostring(questID),
+					"quest", { "spell:" .. spellID })
 			end
 		end
 	end
