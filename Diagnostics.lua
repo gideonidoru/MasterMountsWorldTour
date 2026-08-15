@@ -860,8 +860,8 @@ MM:On("MM_GAPS_DEBUG", function()
 	else
 		MM:Print("   - Traveler's Log: not read yet — open the Trading Post once.")
 	end
-	MM:Print("   - 12.1 records are provisional: achievement and npc ids could not")
-	MM:Print("     be verified because that content is not on live.")
+	MM:Print("   - 12.1 records were catalogued before that content shipped, so their")
+	MM:Print("     achievement and npc ids are still awaiting confirmation in-game.")
 	MM:Print("   - Records with `needsSource = true` have a verified identity but no")
 	MM:Print("     confirmed source; Wowhead has no source table for them.")
 	local needsSource = 0

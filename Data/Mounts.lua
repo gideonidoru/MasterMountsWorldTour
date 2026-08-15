@@ -34512,7 +34512,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		attempts = "NONE",
 		timePerAttempt = 8,
 		effort = 3,
-		notes = "12.1 content. Item id is from the PTR and should be re-checked against live when the patch ships.",
+		notes = "Coiled Isle drop. The item id was recorded ahead of the patch and is still awaiting confirmation, so treat the listing as provisional.",
 	},
 	{
 		name = "Topaz Skyfang",
@@ -34528,7 +34528,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		attempts = "NONE",
 		timePerAttempt = 8,
 		effort = 3,
-		notes = "12.1 content. Item id is from the PTR and should be re-checked against live when the patch ships.",
+		notes = "Coiled Isle drop. The item id was recorded ahead of the patch and is still awaiting confirmation, so treat the listing as provisional.",
 	},
 	{
 		name = "Caustic Venomfang",
@@ -34537,7 +34537,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		expansion = 11,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. 12.1 content -- not yet on live, so the zone cannot be resolved.",
+		source = "Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. The zone name does not resolve on this client, so this cannot be routed to a point on the map yet.",
 		vendor = "Skull of Er'inye",
 		npc = {
 			name = "Skull of Erinye",
@@ -34554,7 +34554,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 4,
-		notes = "12.1 content, not on live. Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. The mapID and coordinate cannot be recorded until the patch ships and the zone exists client-side.",
+		notes = "Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. The exact vendor coordinate has not been recorded yet, so this points at the zone rather than at a spot within it.",
 		needsSource = true,
 	},
 	{
