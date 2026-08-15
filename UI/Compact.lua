@@ -294,9 +294,19 @@ function MM.UI.RefreshCompact()
 		end
 	end
 
-	if frame.title then
-		frame.title:SetText(("|cff33c1ffMaster Mounts|r — Plan  |cff9a9a9a%d-%d of %d|r")
-			:format(math.min(offset + 1, #plan), math.min(offset + ROWS_SHOWN, #plan), #plan))
+	-- THE TITLE IS ALREADY TWO THEMED FONTSTRINGS. Rewriting it here as one
+	-- string of colour escapes undid both: the accent and muted registrations
+	-- stopped deciding anything, so the header kept its old branding blue in
+	-- every theme -- and because this string carried "— Plan" while `mode` was
+	-- still showing its own, the window read "Master Mounts — Plan 1-12 of 105
+	-- — Plan".
+	--
+	-- The name never changes, so it is set once at build time and left alone.
+	-- Only the range moves, and it moves in the FontString that owns it.
+	if frame.mode then
+		frame.mode:SetText(("— Plan  %d-%d of %d"):format(
+			math.min(offset + 1, #plan),
+			math.min(offset + ROWS_SHOWN, #plan), #plan))
 	end
 
 	for i = 1, ROWS_SHOWN do

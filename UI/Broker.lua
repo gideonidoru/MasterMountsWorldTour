@@ -10,7 +10,15 @@ local U = MM.Util
 local ICON = MM.MEDIA .. "icon-minimap"
 
 local function summaryTooltip(tt)
-	tt:AddLine("|cff33c1ffMaster Mounts|r")
+	-- THE ACCENT COMES FROM THE THEME, not from a literal.
+	--
+	-- This was the branding blue written inline, so the tooltip stayed that
+	-- colour under Blizzard and under ElvUI -- which reads its accent from the
+	-- user's own value colour. AddLine takes r,g,b, so no escape is needed at
+	-- all here.
+	local accent = (MM.Theme and MM.Theme.Colors and MM.Theme.Colors().accent)
+		or { 0.2, 0.76, 1 }
+	tt:AddLine("Master Mounts", accent[1], accent[2], accent[3])
 	local c, t = MM.Scanner.collectedCount, MM.Scanner.totalCount
 	tt:AddLine(("Collected: |cffffffff%d / %d|r (%d%%)"):format(c, t, t > 0 and (c * 100 / t) or 0), 1, 0.82, 0.2)
 
