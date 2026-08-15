@@ -6,6 +6,17 @@
 -- bottom once the list grows.
 local _, MM = ...
 
+-- Settings owns the outer window, but every canvas inside it is ours. Theme
+-- the canvas and its controls while leaving Blizzard's category tree, search,
+-- breadcrumbs and navigation untouched. Hooking OnShow catches rows that a
+-- data-driven page creates after its first build.
+local function finishThemedPanel(panel, backing)
+	MM.Theme.RegisterSurface(backing, "content")
+	MM.Theme.SkinTree(panel)
+	panel:HookScript("OnShow", function() MM.Theme.SkinTree(panel) end)
+	return panel
+end
+
 -- Slider templates have churned across expansions, so probe rather than assume;
 -- the manual build at the end always works.
 local function makeSlider(parent)
@@ -62,7 +73,11 @@ local function buildPanel()
 		y = y - (gap or 10)
 		local fs = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		fs:SetPoint("TOPLEFT", content, "TOPLEFT", LEFT, y)
+		-- Old headings carried their own gold escape sequence, which stayed gold
+		-- inside an ElvUI-blue page. The role now owns the colour.
+		text = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
 		fs:SetText(text)
+		MM.Theme.RegisterText(fs, "accent")
 		y = y - 22
 		return fs
 	end
@@ -73,6 +88,7 @@ local function buildPanel()
 		fs:SetWidth(560)
 		fs:SetJustifyH("LEFT")
 		fs:SetText(text)
+		MM.Theme.RegisterText(fs, "muted")
 		y = y - (fs:GetStringHeight() + 8)
 		return fs
 	end
@@ -83,6 +99,7 @@ local function buildPanel()
 		local t = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 		t:SetPoint("LEFT", c, "RIGHT", 4, 1)
 		t:SetText(text)
+		MM.Theme.RegisterText(t, "primary")
 		c.tooltipText = tip
 		c:SetScript("OnShow", function(self) self:SetChecked(MM.db[key] and true or false) end)
 		c:SetScript("OnClick", function(self)
@@ -107,6 +124,7 @@ local function buildPanel()
 		local t = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 		t:SetPoint("LEFT", c, "RIGHT", 4, 1)
 		t:SetText(text)
+		MM.Theme.RegisterText(t, "primary")
 		c.tooltipText = tip
 		c:SetScript("OnShow", function(self)
 			self:SetChecked(MM.db.announce and MM.db.announce[key] and true or false)
@@ -121,7 +139,8 @@ local function buildPanel()
 	------------------------------------------------------------
 	local title = content:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", content, "TOPLEFT", LEFT, y)
-	title:SetText("|cff33c1ffMaster Mounts|r  " .. MM.VERSION)
+	title:SetText("Master Mounts  " .. MM.VERSION)
+	MM.Theme.RegisterText(title, "accent")
 	y = y - 24
 	label("/mm  —  show | plan | monitor | compact | route | easiest | audit | zone | compare")
 
@@ -388,7 +407,7 @@ local function buildPanel()
 	content:SetHeight(math.abs(y) + 20)
 	content:SetWidth(580)
 
-	return panel
+	return finishThemedPanel(panel, backing)
 end
 
 ------------------------------------------------------------
@@ -448,6 +467,9 @@ local function buildWeights()
 		fs:SetWidth(WIDTH - (indent or 0))
 		fs:SetJustifyH("LEFT")
 		fs:SetText(text)
+		local role = font and font:find("Normal") and "accent"
+			or font and font:find("Disable") and "muted" or "primary"
+		MM.Theme.RegisterText(fs, role)
 		return attach(fs, gap, indent)
 	end
 
@@ -493,8 +515,9 @@ local function buildWeights()
 	resetBtn:SetText("Reset to defaults")
 	attach(resetBtn, 14)
 
-	local dirty = content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		local dirty = content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	dirty:SetPoint("LEFT", resetBtn, "RIGHT", 10, 0)
+	MM.Theme.RegisterText(dirty, "muted")
 
 	------------------------------------------------------------
 	-- Priority order
@@ -516,6 +539,7 @@ local function buildWeights()
 		num:SetWidth(18)
 		num:SetJustifyH("RIGHT")
 		num:SetText(i .. ".")
+		MM.Theme.RegisterText(num, "accent")
 
 		local up = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
 		up:SetSize(22, 20)
@@ -530,11 +554,13 @@ local function buildWeights()
 		name:SetPoint("LEFT", down, "RIGHT", 10, 0)
 		name:SetWidth(150)
 		name:SetJustifyH("LEFT")
+		MM.Theme.RegisterText(name, "primary")
 
 		local hint = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 		hint:SetPoint("LEFT", name, "RIGHT", 6, 0)
 		hint:SetWidth(320)
 		hint:SetJustifyH("LEFT")
+		MM.Theme.RegisterText(hint, "muted")
 
 		up:SetScript("OnClick", function() if W.Move(i, -1) then refresh() end end)
 		down:SetScript("OnClick", function() if W.Move(i, 1) then refresh() end end)
@@ -705,7 +731,7 @@ local function buildWeights()
 	-- quietly contradicts the plan window.
 	MM:On("MM_PLAN_CHANGED", function() if panel:IsShown() then refresh() end end)
 
-	return panel
+	return finishThemedPanel(panel, backing)
 end
 
 ------------------------------------------------------------
@@ -732,6 +758,7 @@ local function buildTravel()
 	local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
 	title:SetText("Teleports the route may use")
+	MM.Theme.RegisterText(title, "accent")
 
 	local blurb = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	blurb:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
@@ -740,6 +767,7 @@ local function buildTravel()
 	blurb:SetText("Unticked teleports are never suggested and never priced into a "
 		.. "route. Only what this character can use is listed. The plan redraws "
 		.. "as you change them.")
+	MM.Theme.RegisterText(blurb, "muted")
 
 	-- BUILT THE WAY THE TWO PANELS THAT WORK ARE BUILT.
 	--
@@ -780,9 +808,10 @@ local function buildTravel()
 			empty:SetPoint("TOPLEFT", content, "TOPLEFT", 6, -6)
 			empty:SetWidth(WIDTH - 20)
 			empty:SetJustifyH("LEFT")
-			empty:SetText("This character has no teleports to switch yet. "
+				empty:SetText("This character has no teleports to switch yet. "
 				.. "Hearthstones, class portals, wormholes and dungeon teleports "
-				.. "appear here as you earn them.")
+					.. "appear here as you earn them.")
+				MM.Theme.RegisterText(empty, "muted")
 		end
 		empty:SetShown(#list == 0)
 
@@ -797,19 +826,22 @@ local function buildTravel()
 				row:SetSize(26, 26)
 				row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 				row.label:SetPoint("LEFT", row, "RIGHT", 4, 1)
-				row.label:SetWidth(WIDTH - 60)
-				row.label:SetJustifyH("LEFT")
+					row.label:SetWidth(WIDTH - 60)
+					row.label:SetJustifyH("LEFT")
+					MM.Theme.RegisterText(row.label, "primary")
 				-- ANCHORED TO THE LIST, NOT TO ITS ROW.
 				--
 				-- Hanging the heading off the row it precedes meant its position
 				-- was whatever was left after the group button had taken its
 				-- space, and the two drew on top of each other. A heading
 				-- occupies its own line in the cursor like everything else.
-				row.head = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-				row:SetScript("OnClick", function(self)
+					row.head = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+					MM.Theme.RegisterText(row.head, "accent")
+					row:SetScript("OnClick", function(self)
 					MM.Teleports.SetOff(self.mmKey, not self:GetChecked())
 					layout()
-				end)
+					end)
+					MM.Theme.Register(row, "checkbox")
 				rows[i] = row
 			end
 
@@ -826,12 +858,13 @@ local function buildTravel()
 					if not group then
 						group = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
 						group:SetSize(230, 22)
-						group:SetScript("OnClick", function(self)
+							group:SetScript("OnClick", function(self)
 							for _, key in ipairs(MM.Teleports.DungeonKeys()) do
 								MM.Teleports.SetOff(key, self.turnOff)
 							end
 							layout()
-						end)
+							end)
+							MM.Theme.Register(group, "button")
 					end
 					local anyOn = false
 					for _, it in ipairs(list) do
@@ -866,7 +899,7 @@ local function buildTravel()
 	panel.OnRefresh = layout
 	panel:SetScript("OnShow", layout)
 	MM:On("MM_SCANNED", function() if panel:IsShown() then layout() end end)
-	return panel
+	return finishThemedPanel(panel, backing)
 end
 
 ------------------------------------------------------------
@@ -887,6 +920,7 @@ local function buildDiagnostics()
 	local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
 	title:SetText("Diagnostics report")
+	MM.Theme.RegisterText(title, "accent")
 
 	local blurb = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	blurb:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
@@ -894,6 +928,7 @@ local function buildDiagnostics()
 	blurb:SetJustifyH("LEFT")
 	blurb:SetText("Runs every check and collects the output here as plain text. "
 		.. "Click Generate, wait a moment, then Select All and press Ctrl+C.")
+	MM.Theme.RegisterText(blurb, "muted")
 
 	local generate = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
 	generate:SetSize(150, 24)
@@ -921,6 +956,7 @@ local function buildDiagnostics()
 	local status = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	status:SetPoint("TOPLEFT", generate, "BOTTOMLEFT", 0, -2)
 	status:SetTextColor(0.6, 0.6, 0.6)
+	MM.Theme.RegisterText(status, "muted")
 
 	-- Wrap instead of chaining forever. Four buttons in one row ran off the
 	-- right edge of the settings panel, which is a fixed width -- the last one
@@ -957,6 +993,7 @@ local function buildDiagnostics()
 		insets = { left = 4, right = 4, top = 4, bottom = 4 },
 	})
 	box:SetBackdropColor(0.03, 0.03, 0.05, 0.9)
+	MM.Theme.Register(box, "card")
 
 	local scroll = CreateFrame("ScrollFrame", "MasterMountsDiagScroll", box,
 		"UIPanelScrollFrameTemplate")
@@ -974,6 +1011,7 @@ local function buildDiagnostics()
 	edit:SetScript("OnTextChanged", function(self, userInput)
 		if userInput and self.mmText then self:SetText(self.mmText) end
 	end)
+	MM.Theme.Register(edit, "editbox")
 	scroll:SetScrollChild(edit)
 	edit:SetText("Click Generate report.")
 
@@ -1002,7 +1040,7 @@ local function buildDiagnostics()
 		edit:HighlightText()
 	end)
 
-	return panel
+	return finishThemedPanel(panel, backing)
 end
 
 MM:On("MM_LOGIN", function()

@@ -1299,6 +1299,19 @@ MM:On("MM_FIXES_DEBUG", function()
 				st.minimapRadiusAPI == false
 					and " (THIS CLIENT HAS NO MINIMAP VIEW RADIUS API -- minimap pins cannot be placed)"
 					or "")
+		-- WHAT THE MINIMAP DRIVER ACTUALLY COSTS.
+		--
+		-- It runs an OnUpdate, which is the one shape that is expensive by
+		-- default and invisible by default: it fires every frame whether or not
+		-- there is anything to do. Reported so "the addon feels heavy" can be
+		-- answered with a count rather than a guess, and so parking can be seen
+		-- to be working rather than assumed.
+		local ds = MP.driverStats
+		if ds then
+			detail = detail .. ("; driver %d tick(s), %d full, %d move, %d park(s), "
+				.. "%.0f ms%s"):format(ds.ticks, ds.fulls, ds.moves, ds.parked, ds.ms,
+					MP.driverParked and (" — parked: " .. MP.driverParked) or "")
+		end
 		return st.indexed > 0 and st.scannerReady and st.installed, detail
 	end)
 

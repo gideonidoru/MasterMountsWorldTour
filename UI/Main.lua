@@ -752,6 +752,20 @@ local function buildMain()
 		MM.Theme.Register(tab, "tab")
 		frame.Tabs[i] = tab
 	end
+	-- Blizzard's restored portrait occupies the first ~64px of this rail. Modern
+	-- uses a smaller badge and ElvUI removes the portrait chrome, so forcing one
+	-- x-coordinate on all three either overlaps Blizzard or leaves a conspicuous
+	-- hole in the flat themes.
+	local function applyThemeLayout()
+		local first = frame.Tabs and frame.Tabs[1]
+		if not first then return end
+		first:ClearAllPoints()
+		first:SetPoint("TOPLEFT", frame, "TOPLEFT",
+			MM.Theme.Active() == "blizzard" and 74 or 46, -31)
+	end
+	frame.ApplyThemeLayout = applyThemeLayout
+	MM:On("MM_THEME_CHANGED", applyThemeLayout)
+	applyThemeLayout()
 	pcall(PanelTemplates_SetNumTabs, frame, 2)
 
 	frame:SetScript("OnShow", function() UI:Refresh() end)

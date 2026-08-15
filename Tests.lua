@@ -2271,6 +2271,86 @@ local function runLogic()
 			rep and rep.worst or -1)
 	end)
 
+	check("A plan edit does not re-chart on the frame", function()
+		-- Editing the plan while a route ran called BuildSync purely so the
+		-- next line could ask whether the route still existed -- a full
+		-- re-chart, about 1.6 s, on every click of [+] or [-]. The question is
+		-- about plan membership and the plan can just be read; the optimised
+		-- order now lands asynchronously.
+		local R = MM.Router
+		if not (R and R.DropUnplanned and R.BuildSync) then return nil, "no router" end
+		R:BuildSync()
+		if #(R.route or {}) < 2 then return nil, "route too short to test" end
+
+		-- Trimming to the plan the route was built from must change nothing:
+		-- an edit that adds a goal must not disturb the visible route at all.
+		local planned = {}
+		for _, item in ipairs(MM.cdb and MM.cdb.plan or {}) do
+			if item.spellID then planned[item.spellID] = true end
+		end
+		local before = #R.route
+		local goals, stops = R.DropUnplanned(planned)
+		if goals ~= 0 or stops ~= 0 then
+			return false, ("trimming to the current plan removed %d goal(s) in %d stop(s)")
+				:format(goals, stops)
+		end
+		if #R.route ~= before then
+			return false, "trimming to the current plan changed the route"
+		end
+
+		-- And the recorded cost of the last real edit, if there has been one.
+		local m = R.lastPlanEditMs
+		if m and m.build and m.build > 250 then
+			return false, ("a plan edit still spent %.0f ms on the frame"):format(m.build)
+		end
+		return true, m and ("last edit cost %.0f ms on the frame, %d goal(s) removed")
+			:format(m.build or 0, m.dropped or 0)
+			or "no plan edit measured yet this session"
+	end)
+
+	check("The origin search is cached for more than one place", function()
+		-- "From where I stand, how far is everything" is one search over the
+		-- whole travel graph. It was cached for a SINGLE origin, so anything
+		-- walking a chain -- the route builder, the session fitter -- evicted
+		-- the previous answer at every step and paid for it again.
+		local J = MM.Journey
+		if not (J and J.fromStats) then return nil, "no journey stats" end
+		local s = J.fromStats
+		local asked = (s.hits or 0) + (s.misses or 0)
+		if asked == 0 then return nil, "nothing has asked for a travel origin yet" end
+		if (s.searches or 0) > asked then
+			return false, ("%d searches for %d questions"):format(s.searches, asked)
+		end
+		-- The bound has to actually bound. Evictions above the number of
+		-- searches would mean it is thrashing rather than caching.
+		if (s.evictions or 0) > (s.searches or 0) then
+			return false, ("%d evictions against %d searches — the cache is thrashing")
+				:format(s.evictions, s.searches)
+		end
+		return true, ("%d searches, %d of %d questions reused, %d evicted")
+			:format(s.searches or 0, s.hits or 0, asked, s.evictions or 0)
+	end)
+
+	check("The minimap driver stops ticking when there is nothing to draw", function()
+		-- An OnUpdate is the one shape that is expensive by default and
+		-- invisible by default: it fires every frame whether or not there is
+		-- anything to do. This one ran for the whole session once installed,
+		-- including in zones with nothing indexed at all.
+		local MP = MM.MapPins
+		if not (MP and MP.driverStats) then return nil, "the pin layer is not loaded" end
+		local ds = MP.driverStats
+		if ds.ticks == 0 then return nil, "the driver has not run yet" end
+		-- A full pass every second and moves at 20 Hz: moves should dominate
+		-- fulls whenever pins are actually up, and neither may exceed ticks.
+		if ds.fulls > ds.ticks or ds.moves > ds.ticks then
+			return false, ("%d full and %d move against %d tick(s)")
+				:format(ds.fulls, ds.moves, ds.ticks)
+		end
+		return true, ("%d tick(s), %d full, %d move, %d park(s), %.0f ms%s")
+			:format(ds.ticks, ds.fulls, ds.moves, ds.parked, ds.ms,
+				MP.driverParked and (" — parked: " .. MP.driverParked) or "")
+	end)
+
 	check("The plan tooltip's travel figure is the travel figure", function()
 		-- It showed `minutes - routeMinutes` under the label "Of which travel".
 		-- Those two totals do not differ by travel -- both contain all of it.

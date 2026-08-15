@@ -993,6 +993,27 @@ MM:On("MM_TRAVEL_DEBUG", function()
 		MM:Print("  |cffff4444No travel network loaded.|r")
 	end
 
+	-- WHETHER THE ORIGIN CACHE IS EARNING ITS MEMORY.
+	--
+	-- "From where I stand, how far is everything" is one Dijkstra over the whole
+	-- graph, and it was cached for a single origin -- so anything walking a
+	-- chain evicted the previous answer at every step and paid for it again.
+	-- A hit rate is the only way to tell a cache that helps from one that is
+	-- just a table, so it is reported rather than assumed.
+	local fs = MM.Journey and MM.Journey.fromStats
+	if fs then
+		local asked = fs.hits + fs.misses
+		MM:Print("  Origin searches: %d run, %d reused of %d asked (%s), %d evicted.",
+			fs.searches, fs.hits, asked,
+			asked > 0 and ("%.0f%%"):format(fs.hits / asked * 100) or "n/a",
+			fs.evictions)
+	end
+	if MM.Journey and MM.Journey.planCacheFlushes then
+		MM:Print("  Journey answers: cache emptied %d time%s this session.",
+			MM.Journey.planCacheFlushes,
+			MM.Journey.planCacheFlushes == 1 and "" or "s")
+	end
+
 	local cur = MM.Router and MM.Router:Current()
 	if not (cur and cur.world) then
 		MM:Print("No active route goal to evaluate travel for.")

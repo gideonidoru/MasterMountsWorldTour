@@ -947,10 +947,46 @@ end
 -- Dijkstra with no goal -- the same cost as one route leg -- and every node's
 -- distance falls out of it at once. This is that search, cached until you
 -- move, so the ease score can use real minutes.
-local fromCache, fromCacheKey = nil, nil
+-- ONE ORIGIN WAS NOT ENOUGH ONCE ANYTHING WALKED A CHAIN.
+--
+-- This held a single origin, so a caller that moves -- the greedy chain builder
+-- pricing candidates from each stop in turn, the session fitter choosing what
+-- fits in an evening -- evicted the previous answer on every step and paid a
+-- fresh Dijkstra for it. Four session lengths across a dozen rounds is fifty
+-- searches over a 755-node graph, for a handful of distinct places.
+--
+-- Bounded, because this is a table of every node's distance and there is no
+-- upper limit on how many origins a session might ask about. Sixteen is
+-- deliberately conservative: it covers a routing pass comfortably and cannot
+-- become a memory leak in a process that never restarts.
+--
+-- The key already carries the travel fingerprint, so an entry cannot outlive
+-- the capabilities it was computed under.
+local FROM_CACHE_MAX = 16
+local fromCache = {}        -- key -> { dist = table, used = tick }
+local fromCacheN = 0
+local fromTick = 0
+
+-- Measured rather than assumed. "Is the cache helping" is not answerable from
+-- the code, and a cache that never hits is a memory cost with no benefit.
+J.fromStats = { hits = 0, misses = 0, evictions = 0, searches = 0 }
 
 function J.ForgetTravelFrom()
-	fromCache, fromCacheKey = nil, nil
+	fromCache, fromCacheN = {}, 0
+end
+
+-- Drop the least recently used entry. Linear, over at most FROM_CACHE_MAX
+-- entries -- a heap for sixteen items costs more than it saves.
+local function evictOldestOrigin()
+	local oldestKey, oldestUsed
+	for k, v in pairs(fromCache) do
+		if not oldestUsed or v.used < oldestUsed then oldestKey, oldestUsed = k, v.used end
+	end
+	if oldestKey then
+		fromCache[oldestKey] = nil
+		fromCacheN = fromCacheN - 1
+		J.fromStats.evictions = J.fromStats.evictions + 1
+	end
 end
 
 -- seconds-from-here for every node, or nil if we cannot stand anywhere known.
@@ -963,7 +999,14 @@ local function travelFrom(zone, x, y, mapID)
 	-- to be wrong about.
 	local key = ("%s#%s#%.1f#%.1f#%s"):format(zone:lower(), tostring(mapID or "?"),
 		x or -1, y or -1, MM.TravelFingerprint and MM.TravelFingerprint() or "?")
-	if fromCacheKey == key and fromCache then return fromCache end
+	local hit = fromCache[key]
+	if hit then
+		fromTick = fromTick + 1
+		hit.used = fromTick
+		J.fromStats.hits = J.fromStats.hits + 1
+		return hit.dist
+	end
+	J.fromStats.misses = J.fromStats.misses + 1
 	build()
 
 	local ypm = J.SpeedFor(nil)
@@ -1021,7 +1064,11 @@ local function travelFrom(zone, x, y, mapID)
 	end
 	edges[SRC] = nil
 	dist[SRC] = nil
-	fromCache, fromCacheKey = dist, key
+	J.fromStats.searches = J.fromStats.searches + 1
+	if fromCacheN >= FROM_CACHE_MAX then evictOldestOrigin() end
+	fromTick = fromTick + 1
+	if fromCache[key] == nil then fromCacheN = fromCacheN + 1 end
+	fromCache[key] = { dist = dist, used = fromTick }
 	return dist
 end
 

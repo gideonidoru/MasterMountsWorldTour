@@ -374,7 +374,7 @@ local function borderAlpha(frame, alpha)
 	for _, edge in pairs(frame.mmBorder) do edge:SetAlpha(alpha) end
 end
 
-local function skinModernBar(frame, c)
+local function rememberStatusTexture(frame)
 	if frame.GetStatusBarTexture and not frame.mmOriginalStatusTexture then
 		local texture = frame:GetStatusBarTexture()
 		if texture and texture.GetTexture then
@@ -382,6 +382,10 @@ local function skinModernBar(frame, c)
 			if ok then frame.mmOriginalStatusTexture = path end
 		end
 	end
+end
+
+local function skinModernBar(frame, c)
+	rememberStatusTexture(frame)
 	if frame.SetStatusBarTexture then
 		pcall(frame.SetStatusBarTexture, frame, MODERN_ASSET.barFill)
 	end
@@ -394,7 +398,9 @@ local function skinModernBar(frame, c)
 	frame.mmModernBarBackground:SetVertexColor(1, 1, 1, 0.96)
 	frame.mmModernBarBackground:SetAlpha(1)
 	if not frame.mmModernBarOverlay then
-		local overlay = frame:CreateTexture(nil, "OVERLAY", nil, 1)
+		-- Below the label and spark, above the fill. A positive OVERLAY sublevel
+		-- put the gloss on top of the progress text and softened its legibility.
+		local overlay = frame:CreateTexture(nil, "OVERLAY", nil, -1)
 		overlay:SetAllPoints()
 		frame.mmModernBarOverlay = overlay
 	end
@@ -627,13 +633,22 @@ function flatSkin(frame, kind, c)
 
 	if kind == "statusbar" then
 		-- Fill colour communicates data (collection progress), not chrome. The
-		-- owner controls it; a theme only changes the bar's material.
+		-- owner controls it; the fallback supplies only a clean flat material.
+		if frame.SetStatusBarTexture then frame:SetStatusBarTexture(SOLID) end
+		flatBackground(frame, { c.bg[1] * 0.70, c.bg[2] * 0.70,
+			c.bg[3] * 0.70, 0.96 })
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
 		return
 	end
 
 	if kind == "slider" then
+		flatBackground(frame, { c.bg[1] * 1.18, c.bg[2] * 1.18,
+			c.bg[3] * 1.18, 0.92 })
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
 		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
-		if thumb and thumb.SetVertexColor then thumb:SetVertexColor(1, 1, 1, 1) end
+		if thumb and thumb.SetVertexColor then
+			thumb:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
+		end
 		return
 	end
 
@@ -904,6 +919,7 @@ end
 function T.Skin(frame, kind)
 	if not frame then return end
 	rememberControlFont(frame)
+	if kind == "statusbar" then rememberStatusTexture(frame) end
 	local active = T.Active()
 	if active == "modern" then
 		skinModern(frame, kind)

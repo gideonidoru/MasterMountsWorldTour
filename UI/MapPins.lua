@@ -758,26 +758,80 @@ local FULL_EVERY, MOVE_EVERY = 1.0, 0.05
 local sinceFull, sinceMove = FULL_EVERY, 0
 local driver
 
+-- MEASURED BEFORE IT WAS CHANGED, and left in place so it stays measurable.
+--
+-- This ran an OnUpdate every frame for the whole session once installed, and a
+-- full pass over the candidate list every second, whether or not this map has a
+-- single pin on it. "It feels fine" is not evidence on a fast machine standing
+-- somewhere with pins; a count is.
+MP.driverStats = {
+	ticks = 0,        -- OnUpdate calls
+	fulls = 0,        -- full passes over the candidates
+	moves = 0,        -- offset-only repositions
+	parked = 0,       -- times it stopped ticking entirely
+	ms = 0,           -- time inside the handler
+}
+
+local function armDriver()
+	if not driver then return end
+	if driver:GetScript("OnUpdate") then return end
+	driver:SetScript("OnUpdate", driver.mmTick)
+end
+
+-- STOP TICKING, rather than tick and return early.
+--
+-- An OnUpdate that leaves immediately is still an OnUpdate: the client calls it
+-- every frame forever. Parking removes the script, so a character standing in a
+-- zone with nothing indexed pays nothing at all until something says the answer
+-- may have changed.
+local function parkDriver(why)
+	if not (driver and driver:GetScript("OnUpdate")) then return end
+	driver:SetScript("OnUpdate", nil)
+	MP.driverStats.parked = MP.driverStats.parked + 1
+	MP.driverParked = why or "parked"
+end
+
 local function ensureDriver()
-	if driver then return end
+	if driver then armDriver() return end
 	driver = CreateFrame("Frame")
-	driver:SetScript("OnUpdate", function(_, elapsed)
+	driver.mmTick = function(_, elapsed)
+		local stats = MP.driverStats
+		stats.ticks = stats.ticks + 1
+		local started = debugprofilestop and debugprofilestop() or nil
 		if not minimapEnabled() then
 			if activeCount > 0 then hideMinimapPins() end
+			-- The setting is off. Nothing will turn it back on but the setting,
+			-- and that calls Refresh.
+			parkDriver("minimap pins are switched off")
+			if started then stats.ms = stats.ms + (debugprofilestop() - started) end
 			return
 		end
 		-- nothing to do while the minimap is not on screen
-		if not (Minimap and Minimap:IsVisible()) then return end
+		if not (Minimap and Minimap:IsVisible()) then
+			if started then stats.ms = stats.ms + (debugprofilestop() - started) end
+			return
+		end
 		sinceFull = sinceFull + elapsed
 		sinceMove = sinceMove + elapsed
 		if sinceFull >= FULL_EVERY then
 			sinceFull, sinceMove = 0, 0
 			fullMinimapUpdate()
+			stats.fulls = stats.fulls + 1
+			-- NOTHING INDEXED HERE AT ALL is different from everything being out
+			-- of range. Out of range resolves by walking, so it has to keep
+			-- ticking; nothing indexed cannot resolve without a new map, a new
+			-- scan or a plan edit, and each of those re-arms this.
+			if activeCount == 0 and (MP.minimapCandidates or 0) == 0 then
+				parkDriver(MP.minimapWhy or "nothing indexed here")
+			end
 		elseif sinceMove >= MOVE_EVERY then
 			sinceMove = 0
 			moveMinimapPins()
+			stats.moves = stats.moves + 1
 		end
-	end)
+		if started then stats.ms = stats.ms + (debugprofilestop() - started) end
+	end
+	armDriver()
 end
 
 ------------------------------------------------------------
@@ -795,6 +849,19 @@ function MP.Clear()
 	hideMinimapPins()
 end
 
+-- Start the minimap driver ticking again after it parked itself.
+--
+-- Safe to call when it is already running, and safe before the driver exists at
+-- all -- Install creates it. Everything that could change "is there anything to
+-- draw here" calls this rather than each caller knowing how the driver works.
+function MP.Wake()
+	sinceFull = FULL_EVERY   -- and do a full pass on the very next tick
+	if driver and minimapEnabled() then
+		MP.driverParked = nil
+		armDriver()
+	end
+end
+
 function MP.Refresh()
 	MP.Install()
 	if not indexBuilt then indexLocations() end
@@ -803,8 +870,10 @@ function MP.Refresh()
 	end
 	if not minimapEnabled() then
 		hideMinimapPins()
+		-- The setting turning off is itself a reason to stop ticking.
+		parkDriver("minimap pins are switched off")
 	else
-		sinceFull = FULL_EVERY -- redo the minimap on the next tick
+		MP.Wake()   -- redo the minimap on the next tick, ticking if parked
 	end
 end
 
@@ -862,7 +931,17 @@ local function invalidate()
 	wipe(projected)
 	candidateKey = nil
 	sinceFull = FULL_EVERY
+	-- WAKE IT. The driver parks itself when this map has nothing indexed, and
+	-- every caller here is a reason that answer may have changed: a rescan, a
+	-- plan edit, a new zone. Without this, parking once would be parking for
+	-- good and the minimap would quietly stop showing pins.
+	MP.Wake()
 	if WorldMapFrame and WorldMapFrame:IsShown() then MP.Refresh() end
 end
 MM:On("MM_SCANNED", invalidate)
 MM:On("MM_PLAN_CHANGED", invalidate)
+
+-- A new map is the commonest reason a parked driver has something to do again,
+-- and it raises none of the events above.
+MM:RegisterGameEvent("ZONE_CHANGED_NEW_AREA", invalidate)
+MM:RegisterGameEvent("PLAYER_ENTERING_WORLD", invalidate)

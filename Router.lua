@@ -3044,6 +3044,55 @@ function R.Reindex(S)
 	end
 end
 
+-- Take everything no longer planned out of the VISIBLE route, immediately.
+--
+-- A plan edit while a route is running used to re-chart synchronously, so the
+-- very next line could ask whether the route still existed -- about 1.6 seconds
+-- of frozen client for every click of [+] or [-]. The question that could not
+-- wait is narrow: the arrow must never point at a goal you have just unplanned.
+-- That is answerable from plan membership alone, and this is the answer.
+--
+-- Returns how many GOALS it removed, and how many whole stops went with them.
+-- Counting only the stops was wrong: unplanning one mount from a stop shared by
+-- three leaves every stop standing, so the caller saw zero, skipped its repaint
+-- and left the goal index still pointing the removed mount at that stop.
+--
+-- What it leaves is the previous chart minus what is gone -- not a re-optimised
+-- one. The replacement chart follows asynchronously and lands atomically.
+--
+-- AGGREGATE NUMBERS ON A PARTIALLY-EMPTIED STOP ARE LEFT ALONE. `mounts`,
+-- `workMinutes` and the rest are combined by groupStops under rules that are
+-- genuinely subtle -- independent drop rates add, a shared grind takes the max,
+-- handicap takes the min -- and re-deriving them here would be a second copy of
+-- that rule, drifting from the first. They are briefly high for a stop that has
+-- lost one of several mounts, and correct again when the chart lands.
+function R.DropUnplanned(planned)
+	if not planned then return 0, 0 end
+	local kept, removedStops, removedGoals = {}, 0, 0
+	for _, stop in ipairs(R.route) do
+		local members = stop.members or { stop }
+		local live = {}
+		for _, m in ipairs(members) do
+			local id = m.entry and m.entry.spellID
+			if id and planned[id] then live[#live + 1] = m end
+		end
+		removedGoals = removedGoals + (#members - #live)
+		if #live == 0 then
+			removedStops = removedStops + 1
+		else
+			-- Filtered so the pane stops listing a mount that is off the plan,
+			-- even where the stop itself survives for the others.
+			if #live ~= #members then stop.members = live end
+			kept[#kept + 1] = stop
+		end
+	end
+	if removedStops > 0 then
+		wipe(R.route)
+		for i = 1, #kept do R.route[i] = kept[i] end
+	end
+	return removedGoals, removedStops
+end
+
 -- The stop a goal currently sits in, or nil if the route has not been built.
 function R.StopFor(spellID)
 	return spellID and R.stopBySpell[spellID] or nil
@@ -3833,20 +3882,70 @@ MM:On("MM_PLAN_CHANGED", function()
 	if MM.cdb.routeActive then
 		local clock = debugprofilestop
 		local t0 = clock and clock() or nil
-		-- SYNCHRONOUS: the next line decides whether the route still exists.
-		-- Chunked, this read the PREVIOUS route -- so clearing the plan while a
-		-- route was running left it running, and pointed the arrow at a goal
-		-- that had just been removed. A plan edit is not a hot path; the frame
-		-- it costs is worth an answer that is about the plan you now have.
-		R:BuildSync()
+
+		-- ASKED OF THE PLAN, NOT OF A RE-CHART.
+		--
+		-- This called BuildSync purely so the next line could ask whether the
+		-- route still existed -- a full re-chart on every click of [+] or [-]
+		-- while a route was running, about 1.6 seconds of frozen client for a
+		-- question about plan membership. The plan can simply be read.
+		local planned, n = {}, 0
+		for _, item in ipairs(MM.cdb.plan or {}) do
+			if item.spellID then planned[item.spellID] = true n = n + 1 end
+		end
+		if n == 0 then R:Stop() return end
+
+		-- The one thing that cannot wait for the chart: a goal you have just
+		-- unplanned must stop being somewhere the arrow can send you.
+		local dropped = R.DropUnplanned(planned)
 		local t1 = clock and clock() or nil
-		if #R.route == 0 then R:Stop() return end
-		MM.Nav.SetWaypoint(R:Current())
+		-- Any goal leaving is enough. A mount removed from a stop shared with
+		-- two others changes what the pane lists and what the goal index maps,
+		-- even though every stop is still standing.
+		if dropped > 0 then
+			if #R.route == 0 then R:Stop() return end
+			-- The route on screen changed, so what describes it has to change
+			-- with it. Both are O(n) over the stops -- the expensive part of a
+			-- build is choosing the ORDER, and that is what moves off-frame.
+			R.Measure()
+			R.Reindex()
+			-- The current goal may have been the thing removed. Land on
+			-- something real before anything reads the index.
+			local goal = MM.db and MM.db.routeGoal
+			local found
+			if goal then
+				for i, stop in ipairs(R.route) do
+					if stopHolds(stop, goal) then found = i break end
+				end
+			end
+			R.SetIndex(found or math.min(MM.cdb.routeIndex or 1, #R.route))
+			MM.Nav.SetWaypoint(R:Current())
+			MM:Fire("MM_ROUTE_ADVANCED")
+		end
 		local t2 = clock and clock() or nil
-		MM:Fire("MM_ROUTE_ADVANCED")
+
+		-- The OPTIMISED order is recomputed off-frame. Until it lands the
+		-- previous chart stays on screen, minus whatever left the plan -- one
+		-- build stale, which is a far better thing to show than a frozen client.
+		R.AfterBuild(false, function(stops)
+			if not (MM.cdb and MM.cdb.routeActive) then return end
+			if stops == 0 then R:Stop() return end
+			local goal = MM.db and MM.db.routeGoal
+			if goal then
+				for i, stop in ipairs(R.route) do
+					if stopHolds(stop, goal) then R.SetIndex(i) break end
+				end
+			end
+			MM.Nav.SetWaypoint(R:Current())
+			MM:Fire("MM_ROUTE_ADVANCED")
+		end)
 		if t0 then
 			R.lastPlanEditMs = {
+				-- `build` is what the frame actually pays now: reading the plan
+				-- and trimming it. The chart is off-frame and is not counted
+				-- here, because nobody is waiting for it.
 				build = t1 - t0, waypoint = t2 - t1, advanced = clock() - t2,
+				dropped = dropped,
 			}
 		end
 	end
