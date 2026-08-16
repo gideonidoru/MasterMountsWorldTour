@@ -557,6 +557,19 @@ local COST_SIGNALS = {
 	-- it is measuring the signals it happens to enumerate.
 	{ key = "gold",     label = "a stated gold price",
 		test = function(rec) return rec.goldCost ~= nil end },
+	-- A QUEST CHAIN IS A COST, and the same oversight as the gold price above.
+	--
+	-- QuestGate reads `questChain` to say where you are in it, and the estimate
+	-- prices the steps that remain. Eleven QUEST records carried one and were
+	-- still counted bare, so the report asked for work that was already done --
+	-- exactly what the gold entry was added to stop.
+	{ key = "chainquest", label = "a quest chain",
+		test = function(rec) return rec.questChain ~= nil end },
+	-- So is a stated time per attempt. The router uses it directly as the visit
+	-- cost -- `(rec.timePerAttempt) or 15` -- so a record carrying one is priced
+	-- from evidence rather than from the category's effort rating.
+	{ key = "pervisit", label = "a measured time per attempt",
+		test = function(rec) return rec.timePerAttempt ~= nil end },
 }
 
 function CO.CostCoverage()
