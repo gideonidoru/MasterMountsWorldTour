@@ -70,8 +70,14 @@ function QG.ChainState(rec)
 		return "DONE", "Quest chain complete"
 	end
 
-	-- Any step in your log means the chain is live for you right now.
-	for _, id in ipairs({ ch.start, ch.final }) do
+	-- Any step in your log means the chain is live for you right now. Build the
+	-- list rather than writing it inline: a chain recorded with only a final
+	-- quest leaves a hole at the first slot, and ipairs stops there -- so being
+	-- on that quest would never have counted as being on the chain.
+	local steps = {}
+	if ch.start then steps[#steps + 1] = ch.start end
+	if ch.final then steps[#steps + 1] = ch.final end
+	for _, id in ipairs(steps) do
 		if onQuest(id) then
 			return "IN_PROGRESS", ("On the chain now — %s"):format(title(id, ch.name))
 		end

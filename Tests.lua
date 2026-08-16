@@ -1744,6 +1744,47 @@ local function runLogic()
 		return true, "repaint is a cache hit"
 	end)
 
+	check("Native chrome nested inside a container is hidden with it", function()
+		-- The window inherits BasicFrameTemplateWithInset, whose sunken inset
+		-- keeps its border in a nine-slice CHILD FRAME rather than in its own
+		-- regions -- so a collector that stopped at the outer container left
+		-- that border drawn: a grey metal rectangle up both sides and along
+		-- the bottom of the window, behind the panes.
+		--
+		-- The probe below carries an Inset and nothing else, which also stands
+		-- in for the second half of that fault: the old collector listed its
+		-- containers inline, and ipairs over a list with an absent key halts
+		-- at the hole, so the Inset was never reached in the first place.
+		-- Neither half is visible to a static rule, so assert against a frame.
+		local T = MM.Theme
+		if not (T and T.HideTemplateArt and T.RestoreTemplateArt) then
+			return nil, "no theme seam"
+		end
+		local probe = CreateFrame("Frame", nil, UIParent)
+		probe:Hide()
+		probe.Inset = CreateFrame("Frame", nil, probe)
+		local own = probe.Inset:CreateTexture(nil, "BACKGROUND")
+		probe.Inset.NineSlice = CreateFrame("Frame", nil, probe.Inset)
+		local nested = probe.Inset.NineSlice:CreateTexture(nil, "BORDER")
+		own:SetAlpha(1)
+		nested:SetAlpha(1)
+
+		T.HideTemplateArt(probe)
+		if own:GetAlpha() > 0 then
+			return false, "the container's own texture was left drawn"
+		end
+		if nested:GetAlpha() > 0 then
+			return false, "a texture one level down was left drawn"
+		end
+
+		T.RestoreTemplateArt(probe)
+		if nested:GetAlpha() < 1 then
+			return false, "the nested texture was not restored, so Blizzard "
+				.. "theme would lose its inset border"
+		end
+		return true, "chrome is collected and restored at both levels"
+	end)
+
 	check("A one-use teleport is spent at most once on the route", function()
 		-- Journey.Plan could put a teleport in as the FIRST LEG of a multi-leg
 		-- trip, and the router wrapped the whole journey as `taxi = true` --
@@ -6424,7 +6465,17 @@ local function runLogic()
 			if type(def.reading) ~= "function" then
 				return false, def.key .. " has no reading"
 			end
-			for _, v in ipairs({ def.min, def.default, def.max }) do
+			-- Collected, not written inline: a slider missing `min` would leave
+			-- a hole that ends the walk, and this check would pass by never
+			-- reading `default` or `max` at all.
+			local marks = {}
+			for _, v in ipairs({ "min", "default", "max" }) do
+				if def[v] ~= nil then marks[#marks + 1] = def[v] end
+			end
+			if #marks < 3 then
+				return false, ("%s does not state min, default and max"):format(def.key)
+			end
+			for _, v in ipairs(marks) do
 				local text = def.reading(v)
 				if type(text) ~= "string" or text == "" then
 					return false, ("%s reads nothing at %s"):format(def.key, tostring(v))

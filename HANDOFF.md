@@ -132,7 +132,7 @@ around, and a reload does not invalidate it the way a counter would.
   `noLocationReason` does for a place. It is a sentence, not a boolean, it is
   listed in `/mm known` so it cannot become a comment that only satisfies a
   checker, and it is NOT a way to silence a gate that could be modelled.
-- Gates before any release: `python3 tools/audit.py` (**23 rules**), `luac -p` on every
+- Gates before any release: `python3 tools/audit.py` (**24 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
@@ -152,6 +152,11 @@ around, and a reload does not invalidate it the way a counter would.
   zero proves nothing until you have seen it report one. The tenth rule was wrong
   **three times** before it was right and reported a clean zero on the bug it was
   written for; only injection found that.
+- **Some faults are runtime-shaped and no static rule can see them.** Whether a
+  window's native chrome is fully collected depends on the template it inherits,
+  so that is asserted in `Tests.lua` against a real frame, and mirrored offline
+  in `chrome.lua`. Reach for the release gate or a harness when the property
+  lives in the widget tree rather than in the text of the file.
 
 ## Where things live
 

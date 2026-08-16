@@ -365,6 +365,66 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def ipairs_over_a_holed_list():
+    """ipairs over a table constructor that can contain a nil.
+
+    Shipped one: the theme's chrome collector walked
+    `ipairs({ frame.NineSlice, frame.PortraitContainer, frame.TitleContainer,
+    frame.Inset })`. Our window has no PortraitContainer, so the constructor
+    was a list with a hole at index 2 -- and ipairs halts at the first hole.
+    TitleContainer and Inset were never examined at all, which is why the
+    native inset border survived every theme change and drew a grey metal
+    rectangle behind the planner panes.
+
+    A field lookup is only safe in that position if it cannot be nil, and
+    nothing in the constructor says so. Elements written with an `or` fallback
+    are fine, as are literals and calls, which is why they are skipped.
+    """
+    out = []
+    for path in sorted(glob.glob("UI/*.lua") + glob.glob("*.lua")):
+        if path.startswith(("Libs/", "tools/")):
+            continue
+        text = open(path, encoding="utf-8", errors="replace").read()
+        for m in re.finditer(r"\bipairs\s*\(\s*\{", text):
+            depth, j = 0, m.end() - 1
+            while j < len(text):
+                if text[j] == "{":
+                    depth += 1
+                elif text[j] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                j += 1
+            if depth != 0:
+                continue
+            body = text[m.end():j]
+            # split on top-level commas only
+            parts, d, cur = [], 0, ""
+            for ch in body:
+                if ch in "{([":
+                    d += 1
+                elif ch in "})]":
+                    d -= 1
+                if ch == "," and d == 0:
+                    parts.append(cur)
+                    cur = ""
+                else:
+                    cur += ch
+            parts.append(cur)
+            parts = [x.strip() for x in parts if x.strip()]
+            if len(parts) < 2:
+                continue
+            for k, part in enumerate(parts):
+                if " or " in part:
+                    continue
+                # a bare field or index lookup, nothing else
+                if not re.fullmatch(r"[A-Za-z_][\w]*(?:[.:]\w+|\[[^\]]+\])+", part):
+                    continue
+                line = text[:m.start()].count("\n") + 1
+                out.append((path, line, part, k + 1, len(parts)))
+    return out
+
+
 def over_constrained_anchors():
     """A frame given more SetPoints than its geometry has freedom for.
 
@@ -1169,6 +1229,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    holed = ipairs_over_a_holed_list()
+    print(f"ipairs over a holed list  : {len(holed)}")
+    for f, ih, part, k, n in holed:
+        print(f"   {f}:{ih}  `{part}` sits at {k} of {n}; nil there ends the walk")
     anch = over_constrained_anchors()
     print(f"a frame anchored twice over: {len(anch)}")
     for f, ia, name, extra, allpts in anch:

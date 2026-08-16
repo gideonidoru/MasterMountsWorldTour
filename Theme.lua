@@ -557,8 +557,44 @@ local function templateRegions(frame)
 	-- NineSlice and friends are frames of textures. Collect the TEXTURES
 	-- inside them, never the container itself — hiding the container would
 	-- also hide its FontStrings, i.e. the window title.
-	for _, container in ipairs({ frame.NineSlice, frame.PortraitContainer,
-		frame.TitleContainer, frame.Inset }) do
+	--
+	-- A container may hold its border in a NESTED frame rather than in its own
+	-- regions. BasicFrameTemplateWithInset builds its sunken inset that way:
+	-- the corner and edge pieces belong to frame.Inset's own nine-slice, so a
+	-- walk that stopped at the outer level took the inset's backing texture and
+	-- left its border standing — a grey metal rectangle up both sides and
+	-- across the bottom of the window, behind the panes, surviving every theme
+	-- change because nothing had ever collected it.
+	--
+	-- Descend one level into each container's child frames instead of naming
+	-- the nested key, so this holds for whichever template a window inherits.
+	-- Frames of ours are skipped; the containers themselves are never hidden,
+	-- only the textures within them, which is what keeps the title readable.
+	--
+	-- Append one at a time. A table constructor holding absent keys is a list
+	-- with holes, and ipairs halts at the first one -- so listing these inline
+	-- meant a window without a PortraitContainer stopped being walked at the
+	-- second slot, and its TitleContainer and Inset were never examined.
+	local containers = {}
+	local function consider(container)
+		if type(container) ~= "table" then return end
+		containers[#containers + 1] = container
+		if container.GetChildren and not ours(container) then
+			local ok, kids = pcall(function() return { container:GetChildren() } end)
+			if ok then
+				for _, kid in ipairs(kids) do
+					if type(kid) == "table" and not ours(kid) then
+						containers[#containers + 1] = kid
+					end
+				end
+			end
+		end
+	end
+	consider(frame.NineSlice)
+	consider(frame.PortraitContainer)
+	consider(frame.TitleContainer)
+	consider(frame.Inset)
+	for _, container in ipairs(containers) do
 		if type(container) == "table" and container.GetRegions then
 			local ok, regions = pcall(function() return { container:GetRegions() } end)
 			if ok then
@@ -595,6 +631,12 @@ function restoreArt(frame)
 		pcall(t.SetAlpha, t, original ~= nil and original or 1)
 	end
 end
+
+-- Test seams. Whether a window's native chrome is fully collected is a runtime
+-- property of whatever template it inherits, so the release gate exercises
+-- these directly rather than trusting a reading of the template.
+T.HideTemplateArt = hideArt
+T.RestoreTemplateArt = restoreArt
 
 -- Any Modern control that borrows a native texture records it first. Theme
 -- switching then restores the exact path and geometry instead of relying on a
