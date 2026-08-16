@@ -1926,7 +1926,30 @@ function P:Easiest(n)
 	local pool = {}
 	for _, entry in ipairs(MM.Scanner.mounts) do
 		if not entry.collected and plannable(entry) and not P:InPlan(entry.spellID) then
-			tinsert(pool, { entry = entry, score = easeScore(entry) })
+			-- EASIEST MEANS EASIEST TO GO AND DO, NOT CHEAPEST TO SCORE.
+			--
+			-- This ranked on ease alone and never asked whether the work could
+			-- be started, so a Timewalking mount whose badges were already paid
+			-- for scored as an easy pickup and was offered every time -- with no
+			-- Timewalking week running, which is the one thing no amount of
+			-- effort changes. Reported from play twice: first as the week being
+			-- misdetected, then, once that was right, as the mount still being
+			-- recommended.
+			--
+			-- BLOCKED is the definition already used for this, in Urgency: a
+			-- lockout, an event that is not on, a rotation that has moved, a
+			-- prerequisite, or something unobtainable. Reusing it means the
+			-- button and the route cannot disagree about what "can't act on
+			-- this" means.
+			--
+			-- Deliberately NOT the "Available now" filter. That admits only
+			-- AVAILABLE, which would also drop every currency grind you have not
+			-- finished -- and those are real goals: you can go and progress one
+			-- today. An event window is not something you can progress.
+			local urgency = P.Urgency(entry)
+			if urgency ~= P.URGENCY.BLOCKED then
+				tinsert(pool, { entry = entry, score = easeScore(entry) })
+			end
 		end
 	end
 	table.sort(pool, function(a, b) return (a.score or 0) < (b.score or 0) end)

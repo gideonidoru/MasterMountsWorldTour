@@ -205,6 +205,15 @@ around, and a reload does not invalidate it the way a counter would.
   over a level somebody chose was both a stall on every alert and a rudeness --
   and the model is requested on the next frame, since the verify/retry path
   already existed for a model that arrives late. Keep new work off this path.
+- **"Add 10 Easiest" is a RECOMMENDATION; "Auto-Plan All" is not.** Easiest now
+  skips anything Urgency calls BLOCKED -- a lockout, an event that is not on, a
+  rotation that has moved, a prerequisite, something unobtainable -- because
+  offering work nobody can start is the bug that was reported twice about
+  Timewalking. It deliberately does NOT use the "Available now" filter, which
+  admits only AVAILABLE and would drop every unfinished currency grind; those
+  are real goals you can progress today, and an event window is not. AutoPlanAll
+  is untouched: planning everything is its job, and the router parks what cannot
+  be done.
 - **A currency that returns a value is not thereby the right currency.** Id 3130
   was picked for Midnight's Delver's Journey rank because it answered while the
   other candidates read 0 of 0 -- but an unstarted track reads zero PRECISELY

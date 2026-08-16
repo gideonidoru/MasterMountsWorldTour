@@ -4617,6 +4617,39 @@ local function runLogic()
 		return true, "a thrown handler is reported in chat, naming the command"
 	end)
 
+	check("The easiest ten are ten you could start today", function()
+		-- Reported from play twice. First the Timewalking week was misdetected,
+		-- so mounts whose badges were already paid for read as ready. Once that
+		-- was right they were STILL offered, because the easiest list ranked on
+		-- ease alone and never asked whether the work could be started -- and a
+		-- paid-for badge mount scores as an easy pickup whether or not there is
+		-- a Timewalking week to spend it in.
+		--
+		-- BLOCKED is the definition Urgency already uses: a lockout, an event
+		-- that is not on, a rotation that has moved, a prerequisite, something
+		-- unobtainable. A currency grind is NOT blocked and must stay eligible,
+		-- because you can go and progress one today.
+		local P = MM.Planner
+		if not (P and P.Easiest and P.Urgency and P.URGENCY) then
+			return nil, "planner not loaded"
+		end
+		local picks = P:Easiest(10)
+		if #picks == 0 then return nil, "nothing plannable outside the plan" end
+		local offered = {}
+		for _, entry in ipairs(picks) do
+			local urgency, why = P.Urgency(entry)
+			if urgency == P.URGENCY.BLOCKED then
+				offered[#offered + 1] = ("%s (%s)"):format(
+					tostring(entry.name), tostring(why))
+			end
+		end
+		if #offered > 0 then
+			return false, ("%d of %d offered goals cannot be acted on: %s")
+				:format(#offered, #picks, table.concat(offered, "; "))
+		end
+		return true, ("%d offered, every one of them startable now"):format(#picks)
+	end)
+
 	check("Easiest means easiest, not whatever you put first", function()
 		-- The easiest list ranked tiers by the player's OWN priority order, so it
 		-- returned "the highest in the order you already set" and called it
