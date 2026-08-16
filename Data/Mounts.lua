@@ -7124,14 +7124,14 @@ MM.AddMounts({
 		expansion = 3,
 		category = "ACHIEVEMENT",
 		obtainable = true,
-		source = "Reward for Veteran of the Molten Front (complete all Molten Front daily-quest achievements)",
+		source = "Reward for The Molten Front Offensive (unlock each stage of the attack on the Molten Front)",
 		zone = {
 			name = "Molten Front (Mount Hyjal)",
 		},
 		conditions = {
 			{
-				name = "Veteran of the Molten Front",
-				id = 5879,
+				name = "The Molten Front Offensive",
+				id = 5866,
 				type = "ACHIEVEMENT",
 			},
 		},
@@ -16016,9 +16016,16 @@ MM.AddMounts({
 		category = "QUEST",
 		obtainable = true,
 		faction = "Alliance",
-		source = "Reward for completing the Alliance War Campaign epilogue",
+		source = "Reward for Battle for Azeroth Pathfinder, Part Two",
+		conditions = {
+			{
+				name = "Battle for Azeroth Pathfinder, Part Two",
+				id = 13250,
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
-		notes = "Completes with the Alliance War Campaign epilogue. Alliance only.",
+		notes = "Mechanical parrot. Awarded by BfA Pathfinder Part Two, which also unlocks BfA flying.",
 		noLocationReason = "granted by an achievement, not collected anywhere",
 	},
 	{
@@ -23296,22 +23303,17 @@ MM.AddMounts({
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
-		source = "Achievement: Glory of the Vault Raider (Vault of the Incarnates)",
-		zone = {
-			name = "Thaldraszus",
-			mapID = 2025,
-			x = 73.1,
-			y = 55.6,
-		},
+		source = "Achievement: Thanks for the Carry! (obtain 500 mounts on one character)",
 		conditions = {
 			{
-				name = "Glory of the Vault Raider",
-				id = 16355,
+				name = "Thanks for the Carry!",
+				idAlliance = 15834,
+				idHorde = 15833,
 				type = "ACHIEVEMENT",
 			},
 		},
-		timePerAttempt = 90,
 		effort = 3,
+		noLocationReason = "Collection milestone -- granted the moment the 500th mount lands, nowhere to travel",
 	},
 	{
 		name = "Shadowflame Shalewing",
