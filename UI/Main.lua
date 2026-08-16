@@ -625,26 +625,23 @@ local function buildMain()
 	-- and navigation rails by a few pixels, echoing a small wax seal rather than
 	-- a second panel. Theme.lua owns its visibility so Blizzard can restore the
 	-- native portrait and ElvUI can keep its own chrome.
-	local badgeRing = frame:CreateTexture(nil, "ARTWORK", nil, 5)
+	-- THE RING DRAWS OVER THE ICON, not behind it. At sublevel 5 under an icon
+	-- at 6 the stroke was buried, which is why the only way to see the ring at
+	-- all was to shrink the icon until it fitted inside -- solving the symptom
+	-- by making the badge small. The icon is ring-sized and the circular mask
+	-- decides its silhouette; the ring then sits on top as the stroke around it.
+	local badgeRing = frame:CreateTexture(nil, "ARTWORK", nil, 6)
 	badgeRing:SetSize(46, 46)
 	badgeRing:SetPoint("CENTER", frame, "TOPLEFT", 10, -18)
 	badgeRing:SetTexture(MM.MEDIA .. "Modern\\class_ring_reskin.tga")
 	frame.mmModernLogoRing = badgeRing
 
-	-- THE ICON SITS INSIDE THE RING, AND IS MASKED BEFORE IT IS CROPPED.
-	--
-	-- At 38 against a 46px ring the square art reached past the ring's opening,
-	-- so the corners showed outside the circle and the whole badge read as a
-	-- square with a ring behind it rather than an icon in a ring. 30 leaves the
-	-- stroke its own width on every side.
-	--
-	-- SetTexCoord is gone. The reference interface masks its icons and does not
-	-- crop them, and cropping first means the mask is applied to an already
-	-- re-mapped coordinate space -- the two operations fight, and the mask is
-	-- the one that decides the silhouette. The mask is a circle, so the icon's
-	-- own border is outside it and there is nothing left for the crop to do.
-	local badge = frame:CreateTexture(nil, "ARTWORK", nil, 6)
-	badge:SetSize(30, 30)
+	-- Ring-sized, and clipped to a circle by the mask rather than sized down to
+	-- avoid the stroke. SetTexCoord stays gone: the reference masks its icons
+	-- and does not crop them, and cropping first lands the mask on an already
+	-- re-mapped coordinate space. The mask decides the silhouette.
+	local badge = frame:CreateTexture(nil, "ARTWORK", nil, 5)
+	badge:SetSize(46, 46)
 	badge:SetPoint("CENTER", badgeRing, "CENTER")
 	badge:SetTexture(PORTRAIT)
 	MM.Theme.RoundIcon(frame, badge)

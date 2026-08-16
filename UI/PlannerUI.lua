@@ -477,7 +477,13 @@ function UI.BuildPlanner(panel)
 	-- column and the well belongs to the heading.
 	local leftWell = CreateFrame("Frame", nil, leftPane, "BackdropTemplate")
 	leftWell:SetPoint("TOPLEFT", 10, -10)
-	leftWell:SetPoint("BOTTOMRIGHT", -10, 10)
+	-- 44, THE SAME AS THE RIGHT WELL, and not because this column needs the
+	-- room. The right one stops short to leave its action button standing on
+	-- the column plate; this one had no button and stopped at 10, so the two
+	-- wells ended 34px apart while their columns ended level. What showed
+	-- between them was a strip of column plate and its bottom edge, at two
+	-- different heights -- the stray line running behind the lists.
+	leftWell:SetPoint("BOTTOMRIGHT", -10, 44)
 	leftWell:SetFrameLevel(leftPane:GetFrameLevel() + 1)
 	MM.Theme.Register(leftWell, "inset", true)
 	panel.mmLeftWell = leftWell
