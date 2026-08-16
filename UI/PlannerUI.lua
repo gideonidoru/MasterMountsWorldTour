@@ -4,7 +4,10 @@ local _, MM = ...
 local U = MM.Util
 local UI = MM.UI
 
-local missingBox, planBox, summaryText, routeButton
+-- The widgets the refresh has to reach, held at file scope for the same reason
+-- the others are: `panel` belongs to the builder, so anything the refresh
+-- touches through it is a nil global the moment the list rebuilds.
+local missingBox, planBox, summaryText, routeButton, leftCount
 
 ------------------------------------------------------------
 -- Missing-list rows (left pane)
@@ -487,6 +490,19 @@ function UI.BuildPlanner(panel)
 	leftWell:SetFrameLevel(leftPane:GetFrameLevel() + 1)
 	MM.Theme.Register(leftWell, "inset", true)
 	panel.mmLeftWell = leftWell
+
+	-- WHAT THE STRIP UNDER THE WELL IS FOR.
+	--
+	-- Both wells stop 44px short of the bottom of their column, because the
+	-- right one has to leave its action button standing on the plate. That left
+	-- the same gap on this side holding nothing, and matched dead space is
+	-- still dead space. A count belongs there: it is the one fact about this
+	-- list that the list itself cannot show you once it is scrolled.
+	leftCount = leftPane:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	leftCount:SetPoint("BOTTOM", leftPane, "BOTTOM", 0, 14)
+	leftCount:SetJustifyH("CENTER")
+	MM.Theme.RegisterText(leftCount, "accent")
+
 
 	local rightWell = CreateFrame("Frame", nil, rightPane, "BackdropTemplate")
 	rightWell:SetPoint("TOPLEFT", 10, -10)
@@ -1115,6 +1131,14 @@ function UI.RefreshPlannerNow()
 	end
 	missingBox:SetDataProvider(CreateDataProvider(missing),
 		ScrollBoxConstants.RetainScrollPosition)
+	if leftCount then
+		-- Both numbers, because they answer different questions: how much is
+		-- left to choose from, and how much of the collection is still out
+		-- there. One without the other reads as a filter result with no scale.
+		leftCount:SetText(#missing == #all
+			and ("%d to choose from"):format(#missing)
+			or ("%d of %d to choose from"):format(#missing, #all))
+	end
 	if missingBox.emptyText then
 		missingBox.emptyText:SetShown(#missing == 0)
 		-- An empty list here means something GOOD -- everything reachable is

@@ -291,7 +291,6 @@ hideModern = function(frame)
 		for _, rule in pairs(frame.mmModernTitleRules) do rule:SetAlpha(0) end
 	end
 	if frame.mmModernLogo then frame.mmModernLogo:SetAlpha(0) end
-	if frame.mmModernLogoRing then frame.mmModernLogoRing:SetAlpha(0) end
 	if frame.mmModernTitleText then frame.mmModernTitleText:SetAlpha(0) end
 	if frame.mmModernClose then frame.mmModernClose:Hide() end
 	if frame.mmNativeClose then
@@ -1163,7 +1162,6 @@ local function skinModern(frame, kind)
 		if kind == "frame" then
 			modernTitle(frame)
 			if frame.mmModernLogo then frame.mmModernLogo:SetAlpha(1) end
-			if frame.mmModernLogoRing then frame.mmModernLogoRing:SetAlpha(1) end
 			if frame.mmModernTitleText then frame.mmModernTitleText:SetAlpha(1) end
 			if frame.mmModernClose then frame.mmModernClose:Show() end
 			if frame.mmNativeClose then frame.mmNativeClose:Hide() end

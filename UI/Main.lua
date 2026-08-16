@@ -625,24 +625,18 @@ local function buildMain()
 	-- and navigation rails by a few pixels, echoing a small wax seal rather than
 	-- a second panel. Theme.lua owns its visibility so Blizzard can restore the
 	-- native portrait and ElvUI can keep its own chrome.
-	-- THE RING DRAWS OVER THE ICON, not behind it. At sublevel 5 under an icon
-	-- at 6 the stroke was buried, which is why the only way to see the ring at
-	-- all was to shrink the icon until it fitted inside -- solving the symptom
-	-- by making the badge small. The icon is ring-sized and the circular mask
-	-- decides its silhouette; the ring then sits on top as the stroke around it.
-	local badgeRing = frame:CreateTexture(nil, "ARTWORK", nil, 6)
-	badgeRing:SetSize(46, 46)
-	badgeRing:SetPoint("CENTER", frame, "TOPLEFT", 10, -18)
-	badgeRing:SetTexture(MM.MEDIA .. "Modern\\class_ring_reskin.tga")
-	frame.mmModernLogoRing = badgeRing
-
-	-- Ring-sized, and clipped to a circle by the mask rather than sized down to
-	-- avoid the stroke. SetTexCoord stays gone: the reference masks its icons
-	-- and does not crop them, and cropping first lands the mask on an already
-	-- re-mapped coordinate space. The mask decides the silhouette.
+	-- NO RING. It was a class-ring texture borrowed for a logo it was never cut
+	-- for, and every attempt to make it sit right traded one flaw for another:
+	-- behind the icon its stroke was buried, in front of it the icon had to
+	-- shrink to fit. The mask already gives a clean circular silhouette, which
+	-- is the whole of what the ring was there to suggest.
+	--
+	-- SetTexCoord stays gone with it: the reference masks its icons and does
+	-- not crop them, and cropping first lands the mask on an already re-mapped
+	-- coordinate space. The mask decides the shape.
 	local badge = frame:CreateTexture(nil, "ARTWORK", nil, 5)
-	badge:SetSize(46, 46)
-	badge:SetPoint("CENTER", badgeRing, "CENTER")
+	badge:SetSize(44, 44)
+	badge:SetPoint("CENTER", frame, "TOPLEFT", 10, -18)
 	badge:SetTexture(PORTRAIT)
 	MM.Theme.RoundIcon(frame, badge)
 	frame.mmModernLogo = badge
