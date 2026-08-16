@@ -1355,14 +1355,27 @@ local function skinSurface(texture, role)
 			or role == "card" and MODERN_ASSET.cardInset
 			or MODERN_ASSET.content
 		texture:SetTexture(path)
+		-- A LADDER, NOT A WOBBLE.
+		--
+		-- These were 0.72 and 0.70. Two percent apart is not a boundary the eye
+		-- can find, so the planner's two columns -- correctly separated,
+		-- correctly bordered, each carrying its own surface art -- rendered as
+		-- one flat brown field, and every band and rule drawn on top of them
+		-- had nothing to sit against.
+		--
+		-- Four steps far enough apart to read as depth: the toolbar strip and
+		-- the side column sit BACK, the main reading surface comes forward, and
+		-- a card lifts off it. That is the arrangement the source art was cut
+		-- for -- side panels recessed, centre raised -- and it was being
+		-- flattened by the tints rather than by the textures.
 		if role == "utility" then
-			texture:SetVertexColor(0.78, 0.74, 0.68, 0.96)
+			texture:SetVertexColor(0.58, 0.55, 0.51, 0.96)
 		elseif role == "card" then
-			texture:SetVertexColor(0.78, 0.75, 0.69, 0.96)
+			texture:SetVertexColor(0.92, 0.88, 0.82, 0.96)
 		elseif role == "sidebar" then
-			texture:SetVertexColor(0.72, 0.69, 0.64, 0.97)
+			texture:SetVertexColor(0.56, 0.53, 0.49, 0.97)
 		else
-			texture:SetVertexColor(0.70, 0.68, 0.64, 0.96)
+			texture:SetVertexColor(0.80, 0.77, 0.72, 0.96)
 		end
 	elseif active == "elvui" then
 		local c = T.Colors()

@@ -232,7 +232,9 @@ local function makeEmptyState(parent, headline, hint)
 	glyph:SetSize(56, 56)
 	glyph:SetPoint("TOP")
 	glyph:SetTexture(MM.MEDIA .. "icon.tga")
-	glyph:SetAlpha(0.16)
+	-- 0.16 was a smudge -- present enough to notice, too faint to read as
+	-- anything. Either it is part of the composition or it should not be drawn.
+	glyph:SetAlpha(0.34)
 
 	local head = block:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	head:SetPoint("TOP", glyph, "BOTTOM", 0, -14)
@@ -680,7 +682,6 @@ function UI.BuildPlanner(panel)
 		"Nothing left to choose",
 		"Every mount this filter can see is already on your plan. "
 		.. "Widen the filters above to look further.")
-	panel.missingEmpty:SetPoint("CENTER", panel, "TOPLEFT", 219, -390)
 
 	-- TWO OPPOSITE CORNERS, LIKE EVERY OTHER LIST IN THE ADDON.
 	--
@@ -739,6 +740,13 @@ function UI.BuildPlanner(panel)
 	if ScrollUtil.AddManagedScrollBarVisibilityBehavior then
 		pcall(ScrollUtil.AddManagedScrollBarVisibilityBehavior, missingBox, missingBar)
 	end
+	-- ANCHORED TO THE LIST IT SPEAKS FOR, not to arithmetic against the panel.
+	-- The first version centred it on hand-computed offsets from the panel's
+	-- top-left corner, which put both blocks low in their columns -- and could
+	-- not have been right, because the box it belongs to is not even built
+	-- until this line. Anchoring to the box is correct by construction and
+	-- survives every future change to the pane's bounds.
+	panel.missingEmpty:SetPoint("CENTER", missingBox, "CENTER", 0, 0)
 	missingBox.emptyText = panel.missingEmpty
 
 	-- right pane: the plan
@@ -765,7 +773,6 @@ function UI.BuildPlanner(panel)
 		"No plan yet",
 		"Add mounts with [+], or use Auto-Plan All. The plan charts itself as "
 		.. "soon as you add something, then Start Route follows it.")
-	panel.planEmpty:SetPoint("CENTER", panel, "TOPLEFT", 810, -390)
 	panel.planEmptyRef = panel.planEmpty
 
 	-- WORKING NOTICE, in the middle of the plan pane.
@@ -950,6 +957,7 @@ function UI.BuildPlanner(panel)
 	if ScrollUtil.AddManagedScrollBarVisibilityBehavior then
 		pcall(ScrollUtil.AddManagedScrollBarVisibilityBehavior, planBox, planBar)
 	end
+	panel.planEmpty:SetPoint("CENTER", planBox, "CENTER", 0, 0)
 	planBox.emptyText = panel.planEmpty
 
 	-- Anchored HERE, not where the button is created. planBox is an upvalue
