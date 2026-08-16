@@ -2445,14 +2445,40 @@ local function runLogic()
 			-- disagree, and that is a defect rather than an absent feature.
 			local known = C.KnownProfessions and C.KnownProfessions() or {}
 			if #known > 0 then
+				-- WHETHER IT COSTS ANYTHING, not merely whether it is missing.
+				--
+				-- The client will not report expansion skill levels here, and
+				-- no amount of code makes it. What can be asked is whether that
+				-- silence is still WITHHOLDING something: an option refused
+				-- because a level could not be read is a capability taken away
+				-- from a character who may have earned it, and that is a
+				-- failure. The same silence, routed around by asking the client
+				-- whether the item is usable, costs nothing and is a platform
+				-- limit like any other.
+				local blocked = {}
+				local TP = MM.Teleports
+				if TP and TP.Gates then
+					for _, o in ipairs(TP.Gates()) do
+						if not o.usable and type(o.why) == "string"
+							and o.why:find("not readable", 1, true) then
+							blocked[#blocked + 1] = o.name
+						end
+					end
+				end
 				local names = {}
 				for _, p in ipairs(known) do
 					names[#names + 1] = ("%s %d"):format(p.name, p.level or 0)
 				end
-				return false, ("GetProfessions reports %s, and all %d skill "
-					.. "lines read 0 -- expansion gates refuse for a character "
-					.. "who has the profession"):format(
-						table.concat(names, ", "), #lines)
+				if #blocked > 0 then
+					return false, ("%d travel option(s) refused because a skill "
+						.. "level could not be read -- %s -- on a character "
+						.. "GetProfessions reports as %s"):format(#blocked,
+							table.concat(blocked, ", "), table.concat(names, ", "))
+				end
+				return nil, ("all %d skill lines read 0 while GetProfessions "
+					.. "reports %s -- the level is unreadable here, and nothing "
+					.. "is being withheld for it"):format(#lines,
+						table.concat(names, ", "))
 			end
 			return nil, ("%d skill lines in the catalogue, and GetProfessions "
 				.. "names none either -- both readers agree"):format(#lines)

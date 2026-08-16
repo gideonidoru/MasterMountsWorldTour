@@ -397,6 +397,20 @@ end
 -- Checked BEFORE ownership, because "you don't have Engineering" is a more
 -- useful rejection than "you don't have it" for something you could never use
 -- anyway.
+-- Can this character use this item right now, as the client sees it?
+-- true / false / nil when the question cannot be put. Guarded because the call
+-- moved namespace between expansions and a missing one must not throw inside a
+-- gate that decides whether a route exists.
+function TP.ItemUsable(itemID)
+	if not itemID then return nil end
+	local fn = (C_Item and C_Item.IsUsableItem) or IsUsableItem
+	if type(fn) ~= "function" then return nil end
+	local ok, usable = pcall(fn, itemID)
+	if not ok then return nil end
+	if usable == nil then return nil end
+	return usable and true or false
+end
+
 local function meetsRequirements(option)
 	local req = option.requires
 	if not req then return true end
@@ -442,6 +456,31 @@ local function meetsRequirements(option)
 			if base and C2 and C2.HasProfession and C2.HasProfession(base) then
 				if (req.level or 1) <= 1 then
 					return true
+				end
+				-- ASK THE CLIENT ABOUT THE ITEM INSTEAD OF THE SKILL.
+				--
+				-- "Northrend Engineering 40" is unanswerable here -- every
+				-- expansion line reads 0. But the requirement exists to decide
+				-- one thing: can this character press this item. The client
+				-- knows that outright, and IsUsableItem accounts for the skill
+				-- requirement that cannot be read directly.
+				--
+				-- Only for an item ALREADY IN THE BAGS. IsUsableItem answers
+				-- about an item you hold; asking about one you do not own is a
+				-- different question with a similar-looking answer, and the
+				-- possession check below is what settles that.
+				if option.item and TP.ItemUsable then
+					local owned = (C_Item and C_Item.GetItemCount
+						and (C_Item.GetItemCount(option.item) or 0) > 0)
+					if owned then
+						local usable = TP.ItemUsable(option.item)
+						if usable == true then return true end
+						if usable == false then
+							return false, ("%s %d needed; the client says you "
+								.. "cannot use it"):format(bestName or wanted[1],
+									req.level)
+						end
+					end
 				end
 				return false, ("%s %d needed; your skill level is not readable on this client")
 					:format(bestName or wanted[1], req.level)
