@@ -5864,6 +5864,49 @@ local function runLogic()
 		return true, "murloc leads the list and the client accepts the file"
 	end)
 
+	check("A volume somebody chose is not raised to maximum", function()
+		-- Every audio CVar written costs a stall, and the alert fires the frame
+		-- a vignette appears -- reported from play as the game hitching as the
+		-- alert pops. Master volume was forced to 1 whenever it was not already
+		-- 1, so anyone playing at any other level paid a write on every alert
+		-- and another three seconds later.
+		--
+		-- It is also not what the option is for. Making an alert audible means
+		-- not letting it be SILENT; it does not mean playing it at full volume
+		-- over a level somebody set deliberately.
+		local RA = MM.RareAlert
+		if not (RA and RA.ForceAudible and RA.RestoreSound) then
+			return false, "force/restore not present"
+		end
+		if not (GetCVar and SetCVar) then return nil, "no CVar API on this client" end
+		local was = GetCVar("Sound_MasterVolume")
+		local pending = MM.db.rareAlertCVarRestore
+		MM.db.rareAlertCVarRestore = nil
+
+		-- Quiet, but plainly audible: a level a person picked.
+		pcall(SetCVar, "Sound_MasterVolume", "0.6")
+		local staged = tonumber(GetCVar("Sound_MasterVolume"))
+		RA.ForceAudible()
+		local after = tonumber(GetCVar("Sound_MasterVolume"))
+		local touched = MM.db.rareAlertCVarRestore
+			and MM.db.rareAlertCVarRestore.Sound_MasterVolume ~= nil
+
+		RA.RestoreSound()
+		pcall(SetCVar, "Sound_MasterVolume", was)
+		MM.db.rareAlertCVarRestore = pending
+
+		if staged and math.abs(staged - 0.6) > 0.01 then
+			return nil, "this client would not accept 0.6 as a volume"
+		end
+		if touched then
+			return false, "an audible volume was saved for restore, so it was forced"
+		end
+		if after and math.abs(after - 0.6) > 0.01 then
+			return false, ("0.6 was changed to %s"):format(tostring(after))
+		end
+		return true, "0.6 left alone; only a muted client is raised"
+	end)
+
 	check("Forcing the alert audible restores every setting it changed", function()
 		-- This one is worth a test because the failure is invisible and lasting:
 		-- a master volume left at 1.0 does not announce itself, and the player

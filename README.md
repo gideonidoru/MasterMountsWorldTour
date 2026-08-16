@@ -79,7 +79,7 @@ less.
 | `/mm gaps` | what's missing, and whether anyone could supply it |
 | `/mm whynot` | why a planned mount isn't in the route |
 | `/mm compare` | mounts someone in your group has that you don't |
-| `/mm selftest` | run the checks (209 of them) against live state |
+| `/mm selftest` | run the checks (210 of them) against live state |
 
 `/mm` on its own opens the window; `/mm report` bundles every diagnostic into
 one copyable dump.

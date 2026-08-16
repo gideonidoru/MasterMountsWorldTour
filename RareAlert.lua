@@ -123,6 +123,11 @@ local FORCE_TO = {
 -- mid-cry, which is worse than holding the volume up a moment too long.
 local FORCE_SECONDS = 3
 
+-- Below this the client is effectively muted and raising it is the whole point
+-- of the option. At or above it the player can hear the game, so their level is
+-- left exactly as they set it.
+local AUDIBLE_ENOUGH = 0.05
+
 local restoreTimer
 
 -- THE SAVED VALUES LIVE IN SAVEDVARIABLES, NOT IN A LOCAL.
@@ -153,12 +158,30 @@ local function forceAudible()
 		restoreTimer = C_Timer.NewTimer(FORCE_SECONDS, restoreSound)
 		return true
 	end
+	-- FORCE WHAT IS SILENT, NOT WHAT IS QUIET.
+	--
+	-- Every audio CVar written here costs a stall -- Sound_EnableAllSound
+	-- restarts the sound engine -- and the alert fires the frame a vignette
+	-- appears, so the cost lands exactly where it is most visible. Reported as
+	-- the game hitching for a frame as the alert pops.
+	--
+	-- Master volume was forced to 1 whenever it was not already 1, so anyone
+	-- playing at any other level paid a CVar write on every alert and another
+	-- three seconds later. That is also not what this option is for: the job is
+	-- to stop an alert being SILENT, not to play it at full volume over a level
+	-- somebody chose. A muted client still gets raised; 0.6 is left alone.
 	local saved, changed = {}, false
 	for _, cv in ipairs(FORCED) do
 		local ok, cur = pcall(GetCVar, cv)
 		if ok and cur ~= nil and cur ~= FORCE_TO[cv] then
-			saved[cv] = cur
-			changed = true
+			local silent = true
+			if cv == "Sound_MasterVolume" then
+				silent = (tonumber(cur) or 0) < AUDIBLE_ENOUGH
+			end
+			if silent then
+				saved[cv] = cur
+				changed = true
+			end
 		end
 	end
 	if not changed then return false end
@@ -627,14 +650,18 @@ function RA.Alert(npcName, hit, mapPos, force)
 	-- So ask, then VERIFY, then retry briefly. GetModelFileID() returns nil until
 	-- the model is really there. If it never arrives we fall back to the icon,
 	-- which is the honest outcome rather than a blank square.
-	local shown = false
+	-- THE WINDOW DOES NOT WAIT FOR THE PORTRAIT.
+	--
+	-- ClearModel/SetCreature is model work on the frame the alert pops, and it
+	-- was being done before the frame was shown -- so the pop-up was paying for
+	-- it even though the code below already copes with a model that arrives
+	-- late. The pre-warmer usually has it cached, but "usually" is not the frame
+	-- budget. Asked for on the NEXT frame instead: the alert appears with its
+	-- icon, and verify swaps the portrait in when it is ready, which is the path
+	-- an uncached model already took.
 	if npcID and alertFrame.model then
 		local model = alertFrame.model
-		shown = pcall(function()
-			model:ClearModel()
-			model:SetCreature(npcID)
-		end)
-		if shown then
+		do
 			local tries = 0
 			local function verify()
 				-- Frame may have been reused for a different rare while we waited.
@@ -653,11 +680,25 @@ function RA.Alert(npcName, hit, mapPos, force)
 				C_Timer.After(0.2, verify)
 			end
 			model.mmNpcID = npcID
-			C_Timer.After(0.05, verify)
+			-- Off this frame. C_Timer.After(0) runs on the next one.
+			C_Timer.After(0, function()
+				if model.mmNpcID ~= npcID then return end
+				local okSet = pcall(function()
+					model:ClearModel()
+					model:SetCreature(npcID)
+				end)
+				if not okSet then
+					model:Hide(); alertFrame.icon:Show()
+					return
+				end
+				C_Timer.After(0.05, verify)
+			end)
 		end
 	end
-	alertFrame.model:SetShown(shown)
-	alertFrame.icon:SetShown(not shown)
+	-- Open on the icon either way. `verify` shows the model once the client
+	-- actually has it, and hides it for good if it never comes.
+	alertFrame.model:Hide()
+	alertFrame.icon:Show()
 	-- Prefer a real link for the mount so the tooltip works; fall back to plain
 	-- text rather than showing a broken link when the spell is not cached yet.
 	local mountText = entry.name

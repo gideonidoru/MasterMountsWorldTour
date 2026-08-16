@@ -198,6 +198,13 @@ around, and a reload does not invalidate it the way a counter would.
   claimed that matched the main arrow -- measured offline at up to 179 degrees
   wrong, an arrow pointing the other way. Use `MM.Arrow.WorldBearing`; rule 30
   reports any other `atan2` outside Broker's screen-space minimap angle.
+- **The rare alert fires on the frame a vignette appears, so everything on that
+  path is a visible hitch.** Two costs were sitting there: an audio CVar write
+  (`Sound_EnableAllSound` restarts the sound engine) and `SetCreature`. Master
+  volume is now raised only when the client is effectively MUTED -- forcing 1
+  over a level somebody chose was both a stall on every alert and a rudeness --
+  and the model is requested on the next frame, since the verify/retry path
+  already existed for a model that arrives late. Keep new work off this path.
 - **A currency that returns a value is not thereby the right currency.** Id 3130
   was picked for Midnight's Delver's Journey rank because it answered while the
   other candidates read 0 of 0 -- but an unstarted track reads zero PRECISELY
