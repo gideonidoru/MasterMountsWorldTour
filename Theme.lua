@@ -201,8 +201,29 @@ local function skinBlizzard(frame, kind)
 		frame:SetPoint(g.p, g.rel, g.relP, g.x, g.y)
 	end
 
-	if kind == "panel" or kind == "frame" then
+	-- The columns, wells and cards are frames the addon creates itself. They
+	-- carry no template art, so a theme that does not name them leaves them
+	-- drawing nothing at all -- which is what the Blizzard look did for nine
+	-- of the thirteen kinds the interface registers. Native controls (tabs,
+	-- checkboxes, edit boxes, scroll bars, status bars) are a different case
+	-- and are deliberately left to their own art: keeping it IS this theme.
+	--
+	-- Depth is carried the way the stock UI carries it, by how much light a
+	-- surface holds against the same tooltip backdrop, so the ladder stays
+	-- recognisably Blizzard rather than becoming a second flat skin.
+	local SHADE = {
+		frame = 1.00, panel = 1.00,
+		content = 0.95,   -- the centre column, the reference surface
+		sidebar = 0.82,   -- flanking columns sit back from it
+		utility = 1.22,   -- an action rail sits forward
+		card    = 1.35,   -- and a card forward of that
+		inset   = 0.62,   -- a well reads as cut INTO whatever holds it
+	}
+	if SHADE[kind or ""] then
 		local c = PALETTE.blizzard
+		local shade = SHADE[kind]
+		local bg = { math.min(1, c.bg[1] * shade), math.min(1, c.bg[2] * shade),
+			math.min(1, c.bg[3] * shade), c.bg[4] }
 		if frame.SetBackdrop and frame.mmBackdropOwned then
 			frame:SetBackdrop({
 				bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -210,9 +231,22 @@ local function skinBlizzard(frame, kind)
 				tile = true, tileSize = 16, edgeSize = 14,
 				insets = { left = 4, right = 4, top = 4, bottom = 4 },
 			})
-			frame:SetBackdropColor(unpack(c.bg))
-			frame:SetBackdropBorderColor(unpack(c.border))
+			frame:SetBackdropColor(unpack(bg))
+			-- Gold at full strength belongs to the window. Interior edges take
+			-- a quieter share of it, or every pane competes with the frame.
+			local edge = (kind == "frame" or kind == "panel") and c.border[4]
+				or (kind == "card" and 0.42 or 0.30)
+			frame:SetBackdropBorderColor(c.border[1], c.border[2], c.border[3], edge)
+		else
+			flatBackground(frame, bg)
+			flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.30)
 		end
+	elseif kind == "row" then
+		-- Rows are read as a column of text, not as a stack of containers. The
+		-- palette states the banding strength in its own alpha; a border here
+		-- would draw a grid over the one thing that must stay scannable.
+		local c = PALETTE.blizzard
+		flatBackground(frame, c.row)
 	elseif kind == "button" then
 		-- Retail's current generic button template is saturated red. That is a
 		-- useful danger colour, but it made every harmless planner command read
@@ -583,7 +617,15 @@ local function templateRegions(frame)
 			local ok, kids = pcall(function() return { container:GetChildren() } end)
 			if ok then
 				for _, kid in ipairs(kids) do
-					if type(kid) == "table" and not ours(kid) then
+					-- Descend into plain Frames ONLY. A Button's textures are
+					-- its control surface, not window chrome: hiding them
+					-- leaves a live but invisible control. The close button is
+					-- reachable this way, and blanking it cost ElvUI its X --
+					-- invisible there alone, because Blizzard restores template
+					-- art rather than hiding it and Modern draws its own close.
+					local kind = type(kid) == "table" and kid.GetObjectType
+						and select(2, pcall(kid.GetObjectType, kid))
+					if kind == "Frame" and not ours(kid) then
 						containers[#containers + 1] = kid
 					end
 				end
@@ -689,7 +731,8 @@ end
 function flatSkin(frame, kind, c)
 	hideModern(frame)
 	if kind == "frame" or kind == "panel" or kind == "content"
-		or kind == "sidebar" or kind == "utility" or kind == "card" then
+		or kind == "sidebar" or kind == "utility" or kind == "card"
+		or kind == "inset" then
 		-- A Blizzard template frame keeps drawing its gold chrome over
 		-- anything we add underneath, so it has to be hidden first.
 		hideArt(frame)

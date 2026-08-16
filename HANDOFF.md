@@ -132,7 +132,7 @@ around, and a reload does not invalidate it the way a counter would.
   `noLocationReason` does for a place. It is a sentence, not a boolean, it is
   listed in `/mm known` so it cannot become a comment that only satisfies a
   checker, and it is NOT a way to silence a gate that could be modelled.
-- Gates before any release: `python3 tools/audit.py` (**24 rules**), `luac -p` on every
+- Gates before any release: `python3 tools/audit.py` (**25 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
@@ -157,6 +157,19 @@ around, and a reload does not invalidate it the way a counter would.
   so that is asserted in `Tests.lua` against a real frame, and mirrored offline
   in `chrome.lua`. Reach for the release gate or a harness when the property
   lives in the widget tree rather than in the text of the file.
+- **Three themes, and only the active one ever gets looked at.** Modern, Blizzard
+  and ElvUI reach the same control by different routes -- Modern draws its own
+  close and hides the native one, Blizzard restores template art it never hid,
+  ElvUI hides template art and then relies on the native button anyway. A change
+  to shared code can be correct on the theme in front of you and broken on the
+  other two, which is how an invisible-but-clickable close button shipped. The
+  release gate now walks all three; keep it that way when adding chrome.
+- **A kind no theme names renders as nothing.** The columns, wells and cards are
+  frames the addon creates, with no template art to fall back on, so a skin
+  function that does not handle a kind leaves it blank rather than plain. Native
+  controls are the opposite case -- leaving tabs, checkboxes, edit boxes and
+  scroll bars to their own art IS the Blizzard theme. Rule 25 tells the two
+  apart by reporting only styling written for a kind that cannot be reached.
 
 ## Where things live
 

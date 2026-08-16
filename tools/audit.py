@@ -365,6 +365,51 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def kind_styled_but_never_matched():
+    """A theme computes styling for a kind whose branch never admits it.
+
+    Shipped one: the flat skin carried `kind == "inset" and 0.68` in its shade
+    ladder, but the branch guarding that ladder listed frame/panel/content/
+    sidebar/utility/card and NOT inset. Every well in the planner fell straight
+    through to the end of the function unstyled under ElvUI, and the shade sat
+    there reading like proof the case was handled.
+
+    Deliberate omissions do not fire: a kind a theme never mentions at all is
+    a theme leaving a native control alone, which is a choice. This reports
+    only the contradiction -- styling written for a kind that cannot be reached.
+    """
+    out = []
+    text = open("Theme.lua", encoding="utf-8", errors="replace").read()
+    lines = text.split("\n")
+    starts = [(i, m.group(1)) for i, ln in enumerate(lines)
+              for m in [re.match(r"(?:local )?function (skin\w+|flatSkin)\(", ln)] if m]
+    for idx, (start, fname) in enumerate(starts):
+        end = starts[idx + 1][0] if idx + 1 < len(starts) else len(lines)
+        body = lines[start:end]
+        matched, mentioned = set(), set()
+        # A function may dispatch on a table keyed by kind instead of on a
+        # chain of comparisons. Those keys match just as surely as an `if`.
+        joined = "\n".join(body)
+        if re.search(r"\[\s*kind\b", joined):
+            matched |= set(re.findall(r"(\w+)\s*=\s*[\d.]", joined))
+        in_cond = False
+        for ln in body:
+            if ln.lstrip().startswith("--"):
+                continue
+            here = set(re.findall(r'kind\s*==\s*"(\w+)"', ln))
+            mentioned |= here
+            if re.match(r"\s*(?:else)?if\b", ln):
+                in_cond = True
+            if in_cond:
+                matched |= here
+                if re.search(r"\bthen\b", ln):
+                    in_cond = False
+        for k in sorted(mentioned - matched):
+            line = start + 1 + next(i for i, ln in enumerate(body)
+                                    if f'kind == "{k}"' in ln)
+            out.append(("Theme.lua", line, fname, k))
+    return out
+
 def ipairs_over_a_holed_list():
     """ipairs over a table constructor that can contain a nil.
 
@@ -1229,6 +1274,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    dead = kind_styled_but_never_matched()
+    print(f"a kind styled, never matched: {len(dead)}")
+    for f, il, fn, k in dead:
+        print(f"   {f}:{il}  {fn} styles \"{k}\" but no branch there admits it")
     holed = ipairs_over_a_holed_list()
     print(f"ipairs over a holed list  : {len(holed)}")
     for f, ih, part, k, n in holed:

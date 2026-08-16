@@ -1744,6 +1744,60 @@ local function runLogic()
 		return true, "repaint is a cache hit"
 	end)
 
+	check("Every theme leaves a close button you can actually see", function()
+		-- Each theme reaches the close differently: Modern draws its own and
+		-- hides the native one, Blizzard restores the template art it never
+		-- hid, and ElvUI hides template art and then relies on the native
+		-- button anyway. That last combination is how a live but INVISIBLE X
+		-- shipped -- clickable, drawn at zero alpha, and visible on neither
+		-- of the other two themes. Nothing static sees it, and until now no
+		-- gate ran on any theme but the active one.
+		local T = MM.Theme
+		local frame = _G.MasterMountsFrame
+		if not (T and T.ReskinAll and frame) then return nil, "no window" end
+
+		local was = MM.db.theme
+		local broken = {}
+		for _, name in ipairs({ "modern", "blizzard", "elvui" }) do
+			MM.db.theme = name
+			local ok = pcall(T.ReskinAll)
+			if not ok then
+				broken[#broken + 1] = name .. " could not be applied"
+			else
+				-- Whichever button this theme is showing must be the one that
+				-- is drawn. A hidden button is fine; a shown one with no art
+				-- is the fault.
+				local shown
+				local candidates = {}
+				if frame.mmModernClose then candidates[#candidates + 1] = frame.mmModernClose end
+				if frame.mmNativeClose then candidates[#candidates + 1] = frame.mmNativeClose end
+				for _, b in ipairs(candidates) do
+					if b.IsShown and b:IsShown() then shown = b end
+				end
+				if not shown then
+					broken[#broken + 1] = name .. " shows no close button at all"
+				else
+					local alpha = shown.GetAlpha and shown:GetAlpha() or 1
+					local art = shown.GetNormalTexture
+						and select(2, pcall(shown.GetNormalTexture, shown))
+					local artAlpha = art and art.GetAlpha and art:GetAlpha() or 1
+					if alpha <= 0 then
+						broken[#broken + 1] = name .. "'s close button is transparent"
+					elseif artAlpha <= 0 then
+						broken[#broken + 1] = name .. "'s close button has no visible art"
+					end
+				end
+			end
+		end
+		MM.db.theme = was
+		pcall(T.ReskinAll)
+
+		if #broken > 0 then
+			return false, table.concat(broken, "; ")
+		end
+		return true, "modern, blizzard and elvui each show a drawn close"
+	end)
+
 	check("Native chrome nested inside a container is hidden with it", function()
 		-- The window inherits BasicFrameTemplateWithInset, whose sunken inset
 		-- keeps its border in a nine-slice CHILD FRAME rather than in its own

@@ -579,6 +579,15 @@ local function buildMain()
 	if not ok or not frame then
 		frame = CreateFrame("Frame", "MasterMountsFrame", UIParent, "BasicFrameTemplateWithInset")
 	end
+	-- The template's sunken Inset is Blizzard's own content well, and this
+	-- window does not use it: the planner and collection draw their own panes
+	-- over the top, parented to the frame rather than to the inset. Left
+	-- showing, its border ran up both sides and along the bottom BEHIND those
+	-- panes -- a grey metal line crossing the lists. Modern and ElvUI hid it
+	-- as template art; Blizzard restores template art by design, so the line
+	-- came back there. Retire the well itself instead, in every theme. The
+	-- outer NineSlice is untouched, so the Blizzard look keeps its gold frame.
+	if frame.Inset then frame.Inset:Hide() end
 	frame:SetSize(1000, 640)
 	frame:SetPoint("CENTER")
 	frame:SetMovable(true)
