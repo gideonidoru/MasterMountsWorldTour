@@ -22,11 +22,26 @@ local PROTOCOL = 1
 local CHUNK = 200
 local ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-"
 local MAX_MOUNT_ID = 4000  -- generous headroom over the live journal range
+-- A full collection encodes to MAX_MOUNT_ID/6 characters, which is four chunks
+-- at CHUNK=200. These are the bounds a message must fit inside to be worth
+-- assembling at all -- headroom over the real figures, and small enough that
+-- the worst case a stranger can ask for is arithmetic rather than a freeze.
+local MAX_CHUNKS = 16
+-- RAID-SIZED, NOT SMALL. The first draft capped this at 8, and the harness
+-- caught what that means: `/mm compare` asks the whole group at once, so a
+-- 40-player raid answering together would have had its ninth member onward
+-- silently dropped. The roster gate already bounds who can occupy a slot to
+-- people actually in the group, so this cap is a backstop, not the defence --
+-- and a backstop must not be tighter than legitimate use.
+local MAX_PENDING = 40
+local PARTIAL_TTL = 20     -- seconds a half-delivered collection is held
+local ANSWER_EVERY = 10    -- seconds between answering the same requester
 
 -- [fullName] = { set = {[mountID]=true}, at = time, count = n, class = "MAGE" }
 GS.collections = {}
 
 local incoming = {}   -- [sender] = { parts = {}, total = n, at = time }
+local answeredAt = {} -- [sender] = time we last answered a request
 
 ------------------------------------------------------------
 -- Bitfield codec (6 bits per character)
@@ -87,6 +102,44 @@ local function sharingAllowed()
 	return cfg and cfg.share and cfg.share ~= "none"
 end
 
+-- WHO IS ACTUALLY IN THE GROUP, as full Name-Realm strings.
+--
+-- CHAT_MSG_ADDON is not group-scoped. It fires for WHISPER too, so "the
+-- addon only talks to your group" was true of what this file SENT and never
+-- of what it ACCEPTED: any stranger who knew a character name reached the
+-- receive path directly. Every inbound message is now measured against this
+-- set, which is the only thing that makes the privacy note at the top of the
+-- file true.
+--
+-- Built per message rather than cached: a roster is small, and a cache here
+-- would need invalidating on exactly the events an attacker controls the
+-- timing of.
+local function groupRoster()
+	local roster, n = {}, GetNumGroupMembers and GetNumGroupMembers() or 0
+	if n == 0 then return roster end
+	local prefix = IsInRaid() and "raid" or "party"
+	for i = 1, n do
+		-- Read through Util: inside an instance a unit's name is a secret
+		-- value, and concatenating one throws. A roster that errored in a
+		-- dungeon would take the whole receive path down with it -- in exactly
+		-- the content where a group is most likely to be comparing mounts.
+		local unit = prefix .. i
+		local name = MM.Util.ReadableString(UnitName(unit))
+		local realm = MM.Util.ReadableString(select(2, UnitName(unit)))
+		if name then
+			realm = (realm and realm ~= "" and realm) or (GetRealmName() or "?")
+			roster[("%s-%s"):format(name, realm:gsub("%s", ""))] = true
+		end
+	end
+	return roster
+end
+
+local function inMyGroup(sender)
+	if not sender or sender == "" then return false end
+	if not groupChannel() then return false end
+	return groupRoster()[sender] == true
+end
+
 ------------------------------------------------------------
 -- Send
 ------------------------------------------------------------
@@ -139,9 +192,12 @@ local function store(sender, payload, class)
 	MM:Fire("MM_GROUPSYNC", sender, count)
 end
 
-local function onMessage(prefix, message, _, sender)
+local function onMessage(prefix, message, channel, sender)
 	if prefix ~= PREFIX or not message then return end
 	if sender == fullName() then return end
+	-- THE ONLY GATE THAT MATTERS. Everything below trusts the payload's shape
+	-- but never its origin, so origin is settled first and once.
+	if not inMyGroup(sender) then return end
 
 	local kind, rest = message:match("^(%a)|(.*)$")
 	if not kind then return end
@@ -150,18 +206,50 @@ local function onMessage(prefix, message, _, sender)
 		-- a request: answer only if we've opted in, and only by whisper
 		local ver = tonumber(rest)
 		if ver ~= PROTOCOL then return end
+		-- A REQUEST IS A GROUP BROADCAST, so it must arrive as one. Accepting a
+		-- whispered "Q" let one player ask privately and repeatedly, which is a
+		-- different thing from asking the group.
+		if channel ~= "PARTY" and channel ~= "RAID" and channel ~= "INSTANCE_CHAT" then
+			return
+		end
+		-- Answering costs several whispers and a full journal walk. Once per
+		-- sender per interval, so a repeated ask cannot be turned into work.
+		local last = answeredAt[sender]
+		if last and (GetTime() - last) < ANSWER_EVERY then return end
+		answeredAt[sender] = GetTime()
 		if sharingAllowed() then GS.SendCollection(sender) end
 		return
 	end
 
 	if kind == "D" then
+		-- Data is whispered by SendCollection, so it may only arrive that way.
+		if channel ~= "WHISPER" then return end
 		local ver, seq, total, class, part =
 			rest:match("^(%d+)|(%d+)|(%d+)|([^|]*)|(.*)$")
 		ver, seq, total = tonumber(ver), tonumber(seq), tonumber(total)
 		if ver ~= PROTOCOL or not seq or not total then return end
+		-- BOUNDS BEFORE THE LOOP. `total` was read off the wire and then
+		-- counted to, so one message claiming a total of a billion was a
+		-- client freeze. A full collection is MAX_MOUNT_ID/6 characters, which
+		-- is four chunks; MAX_CHUNKS is generous headroom over that and still
+		-- a number worth iterating.
+		if seq < 1 or total < 1 or total > MAX_CHUNKS or seq > total then return end
+		if #part > CHUNK then return end
 
 		local buf = incoming[sender]
-		if not buf or buf.total ~= total or (GetTime() - buf.at) > 20 then
+		if not buf or buf.total ~= total or (GetTime() - buf.at) > PARTIAL_TTL then
+			-- One partial assembly per sender, and a bounded number of senders.
+			-- The sweep is the point: an abandoned buffer used to expire only
+			-- when the SAME sender sent again, so senders who started and
+			-- stopped held their slot for the session and the cap filled up
+			-- permanently. Nothing here is trusted to come back.
+			if not buf then
+				local n, cutoff = 0, GetTime() - PARTIAL_TTL
+				for who, held in pairs(incoming) do
+					if held.at < cutoff then incoming[who] = nil else n = n + 1 end
+				end
+				if n >= MAX_PENDING then return end
+			end
 			buf = { parts = {}, total = total, at = GetTime() }
 			incoming[sender] = buf
 		end
@@ -221,11 +309,38 @@ MM:On("MM_LOGIN", function()
 	end
 end)
 
+-- THE RECEIVE PATH, REACHABLE WITHOUT A GAME. This is the one function in the
+-- addon a stranger can call directly, so it is the one that most needs proving
+-- against hostile input -- and an in-client check cannot conjure a second
+-- player, let alone a malicious one. Exposed as a seam, not as API: production
+-- reaches it through the event below and nothing else calls it.
+GS.HandleMessage = onMessage
+
 MM:RegisterGameEvent("CHAT_MSG_ADDON", onMessage)
 
--- Leaving a group makes cached collections meaningless.
+-- Leaving a group makes cached collections meaningless -- and so does one
+-- person leaving. This cleared only when the WHOLE group vanished, so someone
+-- who left stayed in the comparison for the rest of the session, credited to a
+-- group they were no longer part of. Reconciled against the roster instead, on
+-- every update, which covers both cases with one rule.
 MM:RegisterGameEvent("GROUP_ROSTER_UPDATE", function()
-	if not groupChannel() then wipe(GS.collections) end
+	if not groupChannel() then
+		wipe(GS.collections)
+		wipe(incoming)
+		wipe(answeredAt)
+		return
+	end
+	local roster = groupRoster()
+	for name in pairs(GS.collections) do
+		if not roster[name] then GS.collections[name] = nil end
+	end
+	-- Partial assemblies and rate-limit stamps belong to the same people.
+	for name in pairs(incoming) do
+		if not roster[name] then incoming[name] = nil end
+	end
+	for name in pairs(answeredAt) do
+		if not roster[name] then answeredAt[name] = nil end
+	end
 end)
 
 MM:On("MM_GROUPSYNC_DEBUG", function()
