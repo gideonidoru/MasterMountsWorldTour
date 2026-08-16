@@ -805,6 +805,19 @@ function R.Lookup(needle)
 				if i > 12 then capped = true break end
 				hits = hits + 1
 				local label = kind == "factions" and "FACTION" or "CURRENCY"
+				-- WHAT THE PLAYER ACTUALLY HAS, on every currency line and not
+				-- only the ambiguous ones. The first version showed it only
+				-- where two ids shared a name, which is exactly backwards: a
+				-- uniquely-named track is just as unidentifiable from its name,
+				-- and "you have 4 of 20" is what says which one is live.
+				local function held(probe)
+					if kind ~= "currencies" then return "" end
+					if not (C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo) then return "" end
+					local okQ, info = pcall(C_CurrencyInfo.GetCurrencyInfo, probe)
+					if not (okQ and info) then return "" end
+					return ("  you have %s of %s"):format(
+						tostring(info.quantity or 0), tostring(info.maxQuantity or 0))
+				end
 				local id = index[name]
 				-- No colour: the window that carries this strips it, and the
 				-- line is going to be pasted back rather than admired. Shaped
@@ -830,17 +843,7 @@ function R.Lookup(needle)
 							-- seasons of it; which one is live is not knowable
 							-- from the name, and is obvious from which one has
 							-- a quantity.
-							local q
-							if kind == "currencies" and C_CurrencyInfo
-								and C_CurrencyInfo.GetCurrencyInfo then
-								local okQ, info = pcall(C_CurrencyInfo.GetCurrencyInfo, probe)
-								if okQ and info then
-									q = ("  you have %s of %s"):format(
-										tostring(info.quantity or 0),
-										tostring(info.maxQuantity or 0))
-								end
-							end
-							MM:Print("      id %d%s", probe, q or "")
+							MM:Print("      id %d%s", probe, held(probe))
 							if shown >= 12 then break end
 						end
 					end
@@ -848,7 +851,7 @@ function R.Lookup(needle)
 						MM:Print("      (none found on a re-scan -- the id space may have moved)")
 					end
 				else
-					MM:Print("  %-8s  %-40s id %s", label, name, tostring(id))
+					MM:Print("  %-8s  %-40s id %s%s", label, name, tostring(id), held(id))
 				end
 			end
 		end
