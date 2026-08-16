@@ -825,7 +825,22 @@ function R.Lookup(needle)
 							kind == "factions" and factionName or currencyName, probe)
 						if okP and pname and pname:lower() == name then
 							shown = shown + 1
-							MM:Print("      id %d", probe)
+							-- THE PLAYER'S OWN VALUE IS THE TIE-BREAKER. Two
+							-- currencies called "Delver's Journey" are two
+							-- seasons of it; which one is live is not knowable
+							-- from the name, and is obvious from which one has
+							-- a quantity.
+							local q
+							if kind == "currencies" and C_CurrencyInfo
+								and C_CurrencyInfo.GetCurrencyInfo then
+								local okQ, info = pcall(C_CurrencyInfo.GetCurrencyInfo, probe)
+								if okQ and info then
+									q = ("  you have %s of %s"):format(
+										tostring(info.quantity or 0),
+										tostring(info.maxQuantity or 0))
+								end
+							end
+							MM:Print("      id %d%s", probe, q or "")
 							if shown >= 12 then break end
 						end
 					end

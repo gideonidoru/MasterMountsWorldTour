@@ -433,9 +433,22 @@ def requirement_stated_not_modelled():
         name = re.search(r'name = "([^"]+)"', body)
         if not name:
             continue
+        # AN UNOBTAINABLE MOUNT'S GATE CHANGES NOTHING. The three Plunderstorm
+        # mounts state a Renown rank and are already obtainable = false because
+        # the Plunderstore is dormant; the router never offers them, so a
+        # missing condition costs nobody anything.
+        if re.search(r'obtainable = false', body):
+            continue
         prose = " ".join(re.findall(r'(?:source|notes|access) = "([^"]*)"', body))
+        # A DISCOUNT IS NOT A GATE. Boulder Hauler is "cheaper at Loamm Niffen
+        # Renown 12" -- buyable at full price without it. Reporting a price
+        # break as a requirement is the same error as reading a treasure named
+        # "Honored Warrior's Cache" as a standing.
         m = gate.search(prose)
         if not m:
+            continue
+        before = prose[max(0, m.start() - 40):m.start()]
+        if re.search(r'\b(cheaper|discount|discounted|reduced)\b', before):
             continue
         # Does ANY condition model a standing or a rank? A currency alone does
         # not: you can hold the currency and still be refused the purchase.
