@@ -1,8 +1,85 @@
 # Changelog
 
-## 1.2.1 — unreleased
+## 1.2.1 — 2026-08-16
 
-Housekeeping after 1.2.0, all of it invisible except for what it stops costing.
+Mostly player reports, and the things they turned out to be hiding. Several of
+these were one wrong answer feeding half a dozen visible symptoms.
+
+### The planner was telling you to buy things you could not buy
+
+- **A finished Timewalking week read as one still running.** The calendar lists
+  a holiday on EVERY day it covers, not only on its start and end Tuesdays, so
+  scanning back a week and finding any entry meant last week's event kept the
+  vendor open for days after it closed. That single wrong answer produced
+  everything reported: badge mounts passed the availability gate, their rows
+  were tagged "ending soon" with nothing to end, and the badge line advertised
+  a purchase that could not be made. The newest calendar marker now decides.
+
+- **A full purse no longer promises a purchase with no event running.** The
+  "you have enough badges" branch returned before the event check below it ever
+  ran, so it always said to go and buy. It now says what it is waiting for.
+
+- **Rank gates measured the wrong season.** Renown ids are minted per season,
+  and both the Delver's Journey and Preyseeker's Journey gates pointed at a
+  previous expansion's track — so a character carrying last season's rank 10
+  was told it had met a requirement it had never started, and the mount was
+  offered as ready to collect. Both now name this season's track.
+
+- **A mount's row named the requirement blocking it.** With several conditions
+  on one mount it reported whichever was written first: a player holding
+  thousands of Voidlight Marl saw the marl, and nothing about the rank that
+  actually barred the purchase.
+
+- **Four currency ids were wrong.** Two covenant mounts charged Reservoir Anima
+  under the name Grateful Offering, and a Dragonflight mount measured Dream
+  Infusion against the Dragon Isles Supplies id from the line beneath it.
+
+- **The two Magisters' Terrace dungeons are told apart**, and a dungeon remake
+  no longer erases the original when ids are harvested. Reported from play as
+  a route that confused the two.
+
+### The route
+
+- **Work you cannot finish by turning up no longer leads.** "You are already
+  here" is meant to save travel on something you can act on now, and it
+  measures the visit rather than the grind — a one-in-a-thousand rare is a
+  whole attempt every time you show up. But a tier shortcut skipped that
+  measurement entirely, so a treasure still wanting a thousand items was pinned
+  to position five against a thirteen-day estimate.
+
+- **A tooltip no longer says "guaranteed this visit" above a thirteen-day
+  estimate.** Certainty there is about the reward, not about today.
+
+- **Vile Essence is counted.** The client can now read how many you hold
+  instead of charging everyone the full thousand.
+
+### The window
+
+- **A grey metal border no longer runs behind the planner's lists.** It was
+  Blizzard chrome from the window's own template that no theme had ever
+  collected, because it lives one level deeper than the sweep was looking.
+
+- **The close button works on every theme.** ElvUI is the only theme that shows
+  the native button rather than drawing its own, so two separate faults in the
+  shared theme code were visible there and nowhere else: one hid it, the other
+  dropped its atlas and drew the entire icon sheet in its place.
+
+- **Blizzard and ElvUI reach the same standard as Modern.** The Blizzard look
+  handled four of the thirteen surfaces the interface registers — the columns,
+  wells and cards are frames the addon creates, with no native art to fall back
+  on, so an unhandled one rendered as nothing at all. ElvUI's inset styling was
+  written but unreachable.
+
+- **The collection bar's figures are readable.** Near-white text on the fill was
+  about 1.4:1, and ElvUI took its colour from the player's own profile, so it
+  could be dimmer still.
+
+- **The planner window was rebuilt** around the material set it borrows: real
+  panes, wells that sit inside them, scroll bars in line with every other one
+  in the addon, a proper empty state, and a count of what is left to choose
+  from.
+
+### Housekeeping
 
 - **The addon stops hoarding its own diagnostics.** Running the id export wrote
   about 53 KB into saved variables every time and nothing ever read it back;
@@ -15,6 +92,15 @@ Housekeeping after 1.2.0, all of it invisible except for what it stops costing.
 - **The kill-debounce table is swept.** It held a name for every boss killed in
   a session to suppress duplicate counting for five seconds, and then kept it
   for the rest of the session.
+
+- **The theme artwork is credited**, and the licence no longer overclaims it.
+
+- **A price that lands on nothing now stops the build.** Prices are attached by
+  matching a condition's name, and a rename matched nothing, priced nothing and
+  said nothing — the shipped addon cannot see this, because those are resolved
+  when the database is built. Turning the check on found one that had been
+  wrong for some time: Soaring Meaderbee's 900 Sizzling Cinderpollen was
+  outranked by an older, emptier record of the same name.
 
 ## 1.2.0 — 2026-08-15
 
