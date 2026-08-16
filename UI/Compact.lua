@@ -150,31 +150,27 @@ local function build()
 	local track = CreateFrame("Frame", nil, frame)
 	track:SetPoint("TOPRIGHT", -5, -24)
 	track:SetPoint("BOTTOMRIGHT", -5, 6)
-	track:SetWidth(8)
+	track:SetWidth(6)
 	local trackTex = track:CreateTexture(nil, "BACKGROUND")
 	trackTex:SetAllPoints()
-	MM.Theme.RegisterTint(trackTex, "muted", 0.12)
+	MM.Theme.RegisterTint(trackTex, "muted", 0.08)
 
 	local thumb = CreateFrame("Button", nil, track)
-	thumb:SetWidth(8)
+	thumb:SetWidth(6)
 	thumb:SetPoint("TOP", track, "TOP", 0, 0)
 	local thumbTex = thumb:CreateTexture(nil, "ARTWORK")
 	thumbTex:SetAllPoints()
 	local function tintThumb(hot)
 		local color = MM.Theme.Color(hot and "accent" or "muted")
-		thumbTex:SetColorTexture(color[1], color[2], color[3], hot and 0.95 or 0.82)
+		thumbTex:SetColorTexture(color[1], color[2], color[3], hot and 0.88 or 0.62)
 	end
 	tintThumb(false)
 	thumb:SetScript("OnEnter", function() tintThumb(true) end)
 	thumb:SetScript("OnLeave", function() tintThumb(false) end)
 	MM:On("MM_THEME_CHANGED", function() tintThumb(thumb:IsMouseOver()) end)
 
-	local dragging
 	thumb:RegisterForDrag("LeftButton")
-	thumb:SetScript("OnDragStart", function() dragging = true end)
-	thumb:SetScript("OnDragStop", function() dragging = nil end)
-	thumb:SetScript("OnUpdate", function(self)
-		if not dragging then return end
+	local function updateDrag(self)
 		local total = frame.mmTotal or 0
 		local maxOffset = math.max(0, total - ROWS_SHOWN)
 		if maxOffset == 0 then return end
@@ -189,6 +185,12 @@ local function build()
 			offset = want
 			MM.UI.RefreshCompact()
 		end
+	end
+	thumb:SetScript("OnDragStart", function(self)
+		self:SetScript("OnUpdate", updateDrag)
+	end)
+	thumb:SetScript("OnDragStop", function(self)
+		self:SetScript("OnUpdate", nil)
 	end)
 
 	-- click the empty track to page toward the click

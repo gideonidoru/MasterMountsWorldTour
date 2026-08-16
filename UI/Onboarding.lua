@@ -68,17 +68,20 @@ local function clearCards()
 end
 
 local function styleCard(card, selected)
+	card.mmSelected = selected and true or false
+	local c = MM.Theme.Colors()
 	if selected then
-		card.bg:SetColorTexture(1, 0.82, 0.2, 0.14)
-		card.border:SetBackdropBorderColor(1, 0.82, 0.2, 1)
-		card.title:SetTextColor(1, 0.86, 0.35)
+		card.bg:SetColorTexture(c.accent[1], c.accent[2], c.accent[3], 0.12)
+		card.border:SetBackdropBorderColor(c.accent[1], c.accent[2], c.accent[3], 0.86)
+		card.title:SetTextColor(c.accent[1], c.accent[2], c.accent[3])
 		card.tick:Show()
 	else
-		card.bg:SetColorTexture(1, 1, 1, 0.035)
-		card.border:SetBackdropBorderColor(0.35, 0.35, 0.4, 0.9)
-		card.title:SetTextColor(0.92, 0.92, 0.92)
+		card.bg:SetColorTexture(c.text[1], c.text[2], c.text[3], 0.025)
+		card.border:SetBackdropBorderColor(c.border[1], c.border[2], c.border[3], 0.34)
+		card.title:SetTextColor(c.text[1], c.text[2], c.text[3])
 		card.tick:Hide()
 	end
+	card.tick:SetTextColor(c.accent[1], c.accent[2], c.accent[3])
 end
 
 local function selectCard(group, chosen)
@@ -119,12 +122,13 @@ local function makeCard(parent, group, value, title, desc, y, selected)
 
 	card.tick = card:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	card.tick:SetPoint("RIGHT", card, "RIGHT", -14, 0)
-	card.tick:SetText("|cffffd24dv|r")
+	card.tick:SetText("v")
 	card.tick:Hide()
 
 	card.title = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	card.title:SetPoint("TOPLEFT", card, "TOPLEFT", 14, -10)
 	card.title:SetText(title)
+	MM.Theme.RegisterText(card.title, "primary")
 
 	if desc then
 		card.desc = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -133,6 +137,7 @@ local function makeCard(parent, group, value, title, desc, y, selected)
 		card.desc:SetJustifyH("LEFT")
 		card.desc:SetTextColor(0.72, 0.72, 0.75)
 		card.desc:SetText(desc)
+		MM.Theme.RegisterText(card.desc, "muted")
 	end
 
 	-- Height is derived, never assumed.
@@ -145,10 +150,13 @@ local function makeCard(parent, group, value, title, desc, y, selected)
 
 	card:SetScript("OnClick", function(self) selectCard(group, self) end)
 	card:SetScript("OnEnter", function(self)
-		if not self.tick:IsShown() then self.bg:SetColorTexture(1, 1, 1, 0.07) end
+		if not self.mmSelected then
+			local c = MM.Theme.Colors()
+			self.bg:SetColorTexture(c.accent[1], c.accent[2], c.accent[3], 0.065)
+		end
 	end)
 	card:SetScript("OnLeave", function(self)
-		if not self.tick:IsShown() then self.bg:SetColorTexture(1, 1, 1, 0.035) end
+		styleCard(self, self.mmSelected)
 	end)
 
 	styleCard(card, selected)
@@ -175,7 +183,7 @@ end
 -- A plain on/off row, for the yes/no questions where two cards would be silly.
 local function makeToggle(parent, key, title, desc, y)
 	local card = makeCard(parent, "toggle:" .. key, key, title, desc, y, MM.db[key] and true)
-	card.tick:SetText("|cffffd24dv|r")
+	card.tick:SetText("v")
 	card:SetScript("OnClick", function(self)
 		MM.db[key] = not MM.db[key]
 		styleCard(self, MM.db[key] and true or false)
@@ -219,7 +227,7 @@ local function buildSteps()
 				end
 				local push, used = stacker(host)
 				push(function(y) return makeCard(host, "theme", nil,
-					"Automatic  |cff8a8a8a(recommended)|r",
+					"Automatic (recommended)",
 					hasElv and "ElvUI is installed, so it will use the ElvUI look."
 						or "Uses the Modern look. Switches itself if you install ElvUI later.",
 					y, set == nil) end).onPick = apply
@@ -230,7 +238,7 @@ local function buildSteps()
 					"Gold borders and the parchment feel of the default UI.",
 					y, set == "blizzard") end).onPick = apply
 				push(function(y) return makeCard(host, "theme", "elvui",
-					hasElv and "ElvUI" or "ElvUI  |cff8a8a8a(not installed)|r",
+					hasElv and "ElvUI" or "ElvUI (not installed)",
 					"Flat dark panels with a hairline border.",
 					y, set == "elvui") end).onPick = apply
 				return used()
@@ -283,13 +291,13 @@ local function buildSteps()
 		{
 			key = "done",
 			title = "You are set up",
-			body = "Open Master Mounts with |cffffd24d/mm|r. It opens on your Planner "
+			body = "Open Master Mounts with /mm. It opens on your Planner "
 				.. "-- what to do next, in order.\n\n"
-				.. "There is a great deal more under |cffffd24dOptions > Master Mounts|r: "
+				.. "There is a great deal more under Options > Master Mounts: "
 				.. "waypoint arrows, map pins, rare alerts, chat announcements, "
 				.. "and the full Weights & Priorities panel where every dial "
 				.. "behind that preset can be tuned by hand.\n\n"
-				.. "|cff8a8a8aRun this again any time with /mm welcome.|r",
+				.. "Run this again any time with /mm welcome.",
 			draw = function() end,
 		},
 	}
@@ -340,10 +348,11 @@ local function showStep(index)
 	frame:SetScale(scale)
 
 	for i, dot in ipairs(dots) do
+		local c = MM.Theme.Colors()
 		if i == current then
-			dot:SetColorTexture(1, 0.82, 0.2, 1)
+			dot:SetColorTexture(c.accent[1], c.accent[2], c.accent[3], 1)
 		else
-			dot:SetColorTexture(1, 1, 1, 0.18)
+			dot:SetColorTexture(c.muted[1], c.muted[2], c.muted[3], 0.24)
 		end
 	end
 
@@ -395,13 +404,15 @@ local function build()
 
 	local brand = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	brand:SetPoint("TOPLEFT", PAD, -20)
-	brand:SetText("|cff8a8a8aMASTER MOUNTS|r")
+	brand:SetText("MASTER MOUNTS")
+	MM.Theme.RegisterText(brand, "muted")
 
 	titleFS = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
 	titleFS:SetPoint("TOPLEFT", PAD, -TOP_INSET)
 	titleFS:SetWidth(W - PAD * 2)
 	titleFS:SetJustifyH("LEFT")
 	titleFS:SetTextColor(1, 0.86, 0.35)
+	MM.Theme.RegisterText(titleFS, "accent")
 
 	-- Everything below is anchored to what precedes it, never to a fixed
 	-- offset, so the window can grow to whatever the step actually needs.
@@ -411,6 +422,7 @@ local function build()
 	bodyFS:SetJustifyH("LEFT")
 	bodyFS:SetSpacing(3)
 	bodyFS:SetTextColor(0.78, 0.78, 0.8)
+	MM.Theme.RegisterText(bodyFS, "muted")
 
 	-- Cards live in their own host so a step can lay out from y = 0 without
 	-- knowing how tall the copy above it happened to be.
@@ -447,19 +459,24 @@ local function build()
 	skipBtn:SetText("Skip")
 	skipBtn:SetScript("OnClick", function() finish(true) end)
 
-	-- NOT THEME-REGISTERED, AND THE STATED REASON WAS NOT TRUE.
-	--
-	-- This claimed the cards preview the theme while the chrome stays put, so
-	-- that reskinning mid-choice would be disorienting. The cards preview
-	-- nothing -- they are plain rows of text and a check mark, and no code here
-	-- draws a sample of any theme. The justification described a feature that
-	-- does not exist, which made a gap look like a decision.
-	--
-	-- Registering this frame is outstanding work, not a settled choice: every
-	-- other window follows the active theme and this one does not, so picking
-	-- Modern on the theme step leaves the screen you picked it on unchanged.
+	-- The picker itself previews the selection. Register the canvas and all
+	-- controls once; card state is repainted by MM_THEME_CHANGED below.
+	MM.Theme.Register(frame, "panel", true)
+	MM.Theme.SkinTree(frame)
 	return frame
 end
+
+MM:On("MM_THEME_CHANGED", function()
+	for _, card in ipairs(cards) do styleCard(card, card.mmSelected) end
+	if frame and dots and current then
+		local c = MM.Theme.Colors()
+		for i, dot in ipairs(dots) do
+			dot:SetColorTexture(i == current and c.accent[1] or c.muted[1],
+				i == current and c.accent[2] or c.muted[2],
+				i == current and c.accent[3] or c.muted[3], i == current and 1 or 0.24)
+		end
+	end
+end)
 
 function O.Show()
 	build()

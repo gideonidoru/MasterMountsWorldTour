@@ -193,21 +193,6 @@ local function skinBlizzard(frame, kind)
 	if frame.mmCloseX then frame.mmCloseX:SetAlpha(0) end
 	if restoreArt then restoreArt(frame) end
 	restoreControlFont(frame)
-	-- undo glyph tinting
-	for _, get in ipairs({ "GetNormalTexture", "GetPushedTexture",
-		"GetDisabledTexture", "GetHighlightTexture" }) do
-		if frame[get] then
-			local okT, t = pcall(frame[get], frame)
-			if okT and t and t.SetVertexColor then
-				pcall(t.SetVertexColor, t, 1, 1, 1)
-				pcall(t.SetDesaturated, t, false)
-			end
-		end
-	end
-	if kind == "slider" then
-		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
-		if thumb and thumb.SetVertexColor then thumb:SetVertexColor(1, 1, 1, 1) end
-	end
 	-- restore native close geometry (its art needs the padded anchor)
 	local g = frame.mmCloseGeom
 	if g and g.p then
@@ -739,6 +724,7 @@ function flatSkin(frame, kind, c)
 		-- block behind after switching back to the Blizzard theme.
 		local hl = frame.GetHighlightTexture and frame:GetHighlightTexture()
 		if hl and hl.SetVertexColor then
+			modernTexture(frame, hl, hl:GetTexture())
 			pcall(hl.SetVertexColor, hl, c.accent[1], c.accent[2], c.accent[3], 0.45)
 			pcall(hl.SetAlpha, hl, 1)
 		end
@@ -763,6 +749,7 @@ function flatSkin(frame, kind, c)
 		-- keep the tick, tint it to the accent so state is still obvious
 		local checked = frame.GetCheckedTexture and frame:GetCheckedTexture()
 		if checked then
+			modernTexture(frame, checked, checked:GetTexture())
 			checked:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
 		end
 		return
@@ -776,6 +763,7 @@ function flatSkin(frame, kind, c)
 			if frame[get] then
 				local okT, t = pcall(frame[get], frame)
 				if okT and t and t.SetVertexColor then
+					modernTexture(frame, t, t:GetTexture())
 					pcall(t.SetVertexColor, t, dimmed[1], dimmed[2], dimmed[3])
 					pcall(t.SetDesaturated, t, true)
 				end
@@ -783,6 +771,7 @@ function flatSkin(frame, kind, c)
 		end
 		local hl = frame.GetHighlightTexture and frame:GetHighlightTexture()
 		if hl and hl.SetVertexColor then
+			modernTexture(frame, hl, hl:GetTexture())
 			pcall(hl.SetVertexColor, hl, c.accent[1], c.accent[2], c.accent[3])
 		end
 		return
@@ -805,6 +794,7 @@ function flatSkin(frame, kind, c)
 		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
 		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
 		if thumb and thumb.SetVertexColor then
+			modernTexture(frame, thumb, thumb:GetTexture())
 			thumb:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
 		end
 		return
@@ -893,7 +883,8 @@ local function modernControlState(frame, kind, state)
 			-- The source texture carries a theatrical yellow bloom. A restrained
 			-- warm tint keeps the selected state clear without turning the tab into
 			-- the brightest object in the entire window.
-			frame.mmModernBackground:SetVertexColor(0.78, 0.72, 0.58, 0.88)
+			frame.mmModernBackground:SetVertexColor(0.62, 0.58, 0.50, 0.72)
+			frame.mmModernBackground:SetAlpha(0.88)
 		else
 			frame.mmModernBackground:SetVertexColor(1, 1, 1, 1)
 		end
@@ -1033,19 +1024,19 @@ end
 local function skinModernScrollbar(frame, c)
 	modernBackground(frame, MODERN_ASSET.scrollTrack)
 	frame.mmModernBackground:SetVertexColor(0.58, 0.55, 0.49, 0.62)
-	flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.22)
-	borderAlpha(frame, 0.22)
+	flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.16)
+	borderAlpha(frame, 0.16)
 	local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
 	if thumb then
 		modernTexture(frame, thumb, MODERN_ASSET.scrollThumb)
-		thumb:SetVertexColor(0.82, 0.70, 0.45, 0.78)
-		thumb:SetAlpha(0.86)
+		thumb:SetVertexColor(0.76, 0.66, 0.46, 0.70)
+		thumb:SetAlpha(0.74)
 	end
 
 	local function arrow(button, path)
 		if not button then return end
 		local states = {
-			{ "GetNormalTexture",   { 0.82, 0.72, 0.52, 0.88 }, 0.92 },
+			{ "GetNormalTexture",   { 0.72, 0.65, 0.50, 0.72 }, 0.70 },
 			{ "GetPushedTexture",   { 1.00, 0.82, 0.34, 1.00 }, 1.00 },
 			{ "GetDisabledTexture", { 0.46, 0.43, 0.38, 0.46 }, 0.42 },
 		}
@@ -1137,8 +1128,8 @@ local function skinModern(frame, kind)
 
 	if kind == "button" or kind == "tab" or kind == "row" then
 		if kind == "row" then
-			flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.32)
-			borderAlpha(frame, 0.32)
+			flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.22)
+			borderAlpha(frame, 0.22)
 		else
 			-- The shaped control artwork already contains its own frame.
 			-- A second rectangular edge is what made every control shout gold.
@@ -1189,7 +1180,6 @@ local function skinElv(frame, kind)
 		for _, edge in pairs(frame.mmBorder) do edge:SetAlpha(0) end
 	end
 	if restoreArt then restoreArt(frame) end
-	local S = elvSkins()
 	local c = T.Colors()
 	-- Tabs and checkboxes are stateful compound controls. ElvUI's public
 	-- handlers are intentionally one-way and may preserve a prior selected
@@ -1200,24 +1190,11 @@ local function skinElv(frame, kind)
 		return
 	end
 
-	-- Prefer ElvUI's own handlers: they match the player's exact settings.
-	if S then
-		local handler =
-			(kind == "button" and S.HandleButton)
-			or (kind == "tab" and S.HandleTab)
-			or (kind == "close" and S.HandleCloseButton)
-			or (kind == "checkbox" and S.HandleCheckBox)
-			or (kind == "editbox" and S.HandleEditBox)
-			or (kind == "scrollbar" and S.HandleScrollBar)
-			or (kind == "statusbar" and S.HandleStatusBar)
-			or (kind == "slider" and S.HandleSlider)
-			or ((kind == "frame" or kind == "panel") and S.HandleFrame)
-		if handler then
-			local ok = pcall(handler, S, frame)
-			if ok then return end
-		end
-	end
-
+	-- ElvUI's handler API is intentionally one-way: handlers strip and replace
+	-- template art and do not expose an undo operation. Live theme switching is
+	-- a first-class feature here, so the addon uses ElvUI's active profile
+	-- colours (T.Colors above) with its own reversible flat primitives instead
+	-- of allowing a handler to permanently mutate Blizzard controls.
 	flatSkin(frame, kind, c)
 end
 
@@ -1282,7 +1259,10 @@ function T.SyncWindowIdentity(frame)
 	local active = T.Active()
 	if modern and modern.SetAlpha then modern:SetAlpha(active == "modern" and 1 or 0) end
 	local chosen = nativeA or nativeB
-	for _, title in ipairs({ nativeA, nativeB }) do
+	local titles = {}
+	if nativeA then titles[#titles + 1] = nativeA end
+	if nativeB and nativeB ~= nativeA then titles[#titles + 1] = nativeB end
+	for _, title in ipairs(titles) do
 		if title and title.SetAlpha then
 			title:SetAlpha(active ~= "modern" and title == chosen and 1 or 0)
 		end
@@ -1388,7 +1368,7 @@ local function skinRule(texture, strength)
 	local active = T.Active()
 	local c = active == "elvui" and T.Colors()
 		or PALETTE[active] or PALETTE.blizzard
-	local alpha = strength == "strong" and 0.78 or 0.38
+	local alpha = strength == "strong" and 0.72 or 0.26
 	-- ElvUI's actual frame border is black, which is correct around a light
 	-- panel and completely invisible as an internal divider on our dark panes.
 	-- Semantic rules use the profile accent there; the outer chrome remains the
@@ -1443,7 +1423,7 @@ local function skinBackdropBorder(frame, strength)
 	-- the generic frame border around it created the doubled, overlapping track
 	-- visible in the first pass.
 	local alpha = active == "modern" and frame.mmStatusFrame and 0
-		or strength == "strong" and 0.92 or 0.58
+		or strength == "strong" and 0.86 or 0.40
 	frame:SetBackdropBorderColor(color[1], color[2], color[3], alpha)
 end
 

@@ -133,7 +133,7 @@ local function build()
 	frame.title:SetPoint("RIGHT", frame.close, "LEFT", -2, 0)
 	frame.title:SetJustifyH("LEFT")
 	frame.title:SetTextColor(0.45, 0.8, 1)
-	MM.Theme.RegisterText(frame.title, "info")
+	MM.Theme.RegisterText(frame.title, "accent")
 
 	frame.rows = {}
 	for i = 1, MAX_ROWS do

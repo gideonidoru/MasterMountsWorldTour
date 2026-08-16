@@ -18,21 +18,30 @@ local function summaryTooltip(tt)
 	-- all here.
 	local accent = (MM.Theme and MM.Theme.Colors and MM.Theme.Colors().accent)
 		or { 0.2, 0.76, 1 }
+	local palette = MM.Theme and MM.Theme.Colors and MM.Theme.Colors() or {}
+	local text = palette.text or { 1, 1, 1 }
+	local muted = palette.muted or { 0.65, 0.65, 0.68 }
+	local info = palette.info or accent
 	tt:AddLine("Master Mounts", accent[1], accent[2], accent[3])
 	local c, t = MM.Scanner.collectedCount, MM.Scanner.totalCount
-	tt:AddLine(("Collected: |cffffffff%d / %d|r (%d%%)"):format(c, t, t > 0 and (c * 100 / t) or 0), 1, 0.82, 0.2)
+	t:AddDoubleLine("Collected", ("%d / %d (%d%%)"):format(c, t,
+		t > 0 and (c * 100 / t) or 0), muted[1], muted[2], muted[3],
+		text[1], text[2], text[3])
 
 	local plan = MM.Planner:GetPlan()
-	tt:AddLine(("Farm plan: |cffffffff%d|r goals"):format(#plan), 1, 0.82, 0.2)
+	t:AddDoubleLine("Farm plan", ("%d goals"):format(#plan),
+		muted[1], muted[2], muted[3], text[1], text[2], text[3])
 
 	local cur = MM.Router:Current()
 	if cur then
-		tt:AddLine(("Route: goal %d/%d — %s"):format(MM.cdb.routeIndex, #MM.Router.route, cur.label), 0.4, 0.8, 1)
+		tt:AddLine(("Route: goal %d/%d — %s"):format(MM.cdb.routeIndex,
+			#MM.Router.route, cur.label), info[1], info[2], info[3])
 		-- what the rest of the route is worth, in the same terms as the planner
 		local totals = MM.Router.totals
 		if totals and totals.stops > 0 then
 			tt:AddLine(("Remaining: about %s · ~%.1f mounts"):format(
-				U.FormatSeconds(totals.minutes * 60), totals.mounts), 0.6, 0.6, 0.7)
+				U.FormatSeconds(totals.minutes * 60), totals.mounts),
+				muted[1], muted[2], muted[3])
 		end
 	end
 
@@ -42,8 +51,8 @@ local function summaryTooltip(tt)
 	end
 
 	tt:AddLine(" ")
-	tt:AddLine("Left-click: open Master Mounts", 0.7, 0.7, 0.7)
-	tt:AddLine("Right-click: quick menu", 0.7, 0.7, 0.7)
+	tt:AddLine("Left-click: open Master Mounts", muted[1], muted[2], muted[3])
+	tt:AddLine("Right-click: quick menu", muted[1], muted[2], muted[3])
 end
 
 -- `anchor` is accepted and deliberately unused: both call sites pass their

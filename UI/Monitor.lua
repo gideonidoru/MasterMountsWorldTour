@@ -133,6 +133,7 @@ local function build()
 	skip:SetScript("OnClick", function() MM.Router:Advance(1) end)
 
 	local stop = UI.MakeButton(frame, "Stop Route", 90)
+	MM.Theme.SetIntent(stop, "danger")
 	stop:SetPoint("BOTTOMRIGHT", -8, 8)
 	stop:SetScript("OnClick", function() MM.Router:Stop() end)
 

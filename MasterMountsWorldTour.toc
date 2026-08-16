@@ -8,6 +8,7 @@
 ## IconTexture: Interface\AddOns\MasterMountsWorldTour\Media\icon
 ## Category-enUS: Collections
 ## X-Category: Information
+## X-Donate: https://ko-fi.com/gideonidoru
 ## OptionalDeps: TomTom, Titan, MountsRarity, ElvUI
 
 Libs\LibStub.lua

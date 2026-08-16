@@ -492,12 +492,6 @@ local function buildWeights()
 	local content = CreateFrame("Frame", nil, scroll)
 	content:SetSize(1, 1)
 	scroll:SetScrollChild(content)
-	local contentCard = content:CreateTexture(nil, "BACKGROUND", nil, 1)
-	contentCard:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -4)
-	contentCard:SetSize(552, 1168)
-	MM.Theme.RegisterSurface(contentCard, "card")
-	MM.Theme.BorderSurface(content, contentCard, "subtle")
-
 	local LEFT, WIDTH, ROW_H = 16, 560, 30
 
 	-- Anchor-chained layout, NOT a manual y cursor.
@@ -539,7 +533,7 @@ local function buildWeights()
 	-- Seven sliders and a reorderable list is a good tool and a poor starting
 	-- point. A preset is a sentence about how you play; the numbers behind it
 	-- are the addon's problem.
-	para("Start from how you play", "GameFontNormal", 12)
+	local presetHeading = para("Start from how you play", "GameFontNormal", 12)
 	local presetRow = CreateFrame("Frame", nil, content)
 	presetRow:SetSize(WIDTH, 26)
 	attach(presetRow, 6)
@@ -578,7 +572,7 @@ local function buildWeights()
 	------------------------------------------------------------
 	-- Priority order
 	------------------------------------------------------------
-	para("Priority order", "GameFontNormal", 18)
+	local priorityHeading = para("Priority order", "GameFontNormal", 18)
 	para("Top of the list is offered first. This beats everything below it — "
 		.. "a rare above achievements means no achievement outranks a rare, however easy.",
 		"GameFontDisableSmall", 6)
@@ -627,12 +621,12 @@ local function buildWeights()
 	------------------------------------------------------------
 	-- Sliders
 	------------------------------------------------------------
-	para("Emphasis", "GameFontNormal", 20)
+	local emphasisHeading = para("Emphasis", "GameFontNormal", 20)
 	para(W.SCALE_HINT .. " Every default below is the number the addon "
 		.. "was already using, so leaving them alone changes nothing.",
 		"GameFontDisableSmall", 6)
 
-	local sliders = {}
+	local sliders, lastReading = {}, nil
 	for _, def in ipairs(W.SLIDERS) do
 		local caption = para(def.label, "GameFontHighlight", 16, 4)
 		local value = content:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -660,6 +654,7 @@ local function buildWeights()
 		-- raw coefficient is honest but not yet informative; this is the half
 		-- that makes it a decision rather than a guess.
 		local reading = para("", "GameFontHighlightSmall", 4, 8)
+		lastReading = reading
 
 		-- Guard the write: SetValue() during a refresh fires OnValueChanged, which
 		-- would call Changed() and refresh again. Left unguarded that recurses.
@@ -681,9 +676,25 @@ local function buildWeights()
 	------------------------------------------------------------
 	-- Live preview
 	------------------------------------------------------------
-	para("With these settings, next up", "GameFontNormal", 22)
+	local previewHeading = para("With these settings, next up", "GameFontNormal", 22)
 	local preview = para("", "GameFontHighlightSmall", 6, 8)
 	preview:SetSpacing(3)
+
+	-- The settings page is a sequence of decisions, not one continuous wall.
+	-- Four quiet cards make that hierarchy visible while the shared semantic
+	-- material lets Modern, Blizzard and ElvUI render it in their own language.
+	local function sectionCard(first, last)
+		if not (first and last) then return end
+		local surface = content:CreateTexture(nil, "BACKGROUND", nil, 1)
+		surface:SetPoint("TOPLEFT", first, "TOPLEFT", -8, 8)
+		surface:SetPoint("BOTTOMRIGHT", last, "BOTTOMRIGHT", 8, -8)
+		MM.Theme.RegisterSurface(surface, "card")
+		MM.Theme.BorderSurface(content, surface, "subtle")
+	end
+	sectionCard(presetHeading, resetBtn)
+	sectionCard(priorityHeading, rows[#rows] and rows[#rows].frame)
+	sectionCard(emphasisHeading, lastReading)
+	sectionCard(previewHeading, preview)
 
 	-- Scroll height. Anchor chaining does not give us a total, and asking the
 	-- frame before it has laid out returns nothing useful, so measure on the
@@ -1046,6 +1057,11 @@ local function buildDiagnostics()
 		b:SetScript("OnClick", function() MM:Fire(e[2]) end)
 		prev = b
 	end
+	local headerCard = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
+	headerCard:SetPoint("TOPLEFT", panel, "TOPLEFT", 8, -8)
+	headerCard:SetPoint("BOTTOMRIGHT", prev or status, "BOTTOMRIGHT", 8, -8)
+	MM.Theme.RegisterSurface(headerCard, "card")
+	MM.Theme.BorderSurface(panel, headerCard, "subtle")
 
 	local box = CreateFrame("Frame", nil, panel, "BackdropTemplate")
 	-- below whatever the last row turned out to be, so adding a button never

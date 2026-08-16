@@ -791,7 +791,7 @@ function UI.BuildPlanner(panel)
 	summaryText:SetPoint("RIGHT", rightHeader, "RIGHT", 0, 0)
 	summaryText:SetJustifyH("RIGHT")
 	summaryText:SetWordWrap(false)
-	MM.Theme.RegisterText(summaryText, "muted")
+	MM.Theme.RegisterText(summaryText, "accent")
 
 	-- THE SUMMARY TRUNCATES, SO IT HAS TO BE READABLE SOME OTHER WAY.
 	--
@@ -1074,7 +1074,7 @@ function UI.RefreshPlannerNow()
 			and ("~%.1f mounts"):format(t.mounts)
 			or ("~%d%% chance of a mount"):format(
 				math.min(99, math.floor(t.mounts * 100 + 0.5)))
-		summaryText:SetText(("|cffffd84d%s · %s|r"):format(
+		summaryText:SetText(("%s · %s"):format(
 			U.FormatSeconds((t.routeMinutes or t.minutes) * 60), mountText))
 	else
 		summaryText:SetText("")
