@@ -365,6 +365,49 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def over_constrained_anchors():
+    """A frame given more SetPoints than its geometry has freedom for.
+
+    Shipped one: a scroll box anchored TOPLEFT and BOTTOMLEFT to its well and
+    then RIGHT to its scroll bar. A RIGHT anchor states a vertical CENTRE as
+    well as an edge, so with top and bottom already fixed the frame is
+    over-determined -- and the client is free to resolve that however it likes.
+    What it chose was a list taller than the container holding it, content
+    spilling past a border, and no error anywhere.
+
+    Two opposite corners fully determine a frame. A third point that also
+    carries a vertical component is the reportable case; TOP/BOTTOM/LEFT/RIGHT
+    pairs that only add one axis are how anchoring normally works and are left
+    alone.
+    """
+    bad = []
+    VERT = {"TOP", "BOTTOM", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT",
+            "LEFT", "RIGHT", "CENTER"}
+    OPPOSITE = {("TOPLEFT", "BOTTOMRIGHT"), ("TOPRIGHT", "BOTTOMLEFT"),
+                ("TOPLEFT", "BOTTOMLEFT"), ("TOPRIGHT", "BOTTOMRIGHT")}
+    for f in sorted(glob.glob("UI/*.lua") + glob.glob("*.lua")):
+        if f.startswith(("Libs/", "tools/")):
+            continue
+        points = collections.defaultdict(list)
+        for i, line in enumerate(open(f, encoding="utf-8", errors="replace"), 1):
+            if line.lstrip().startswith("--"):
+                continue
+            m = re.search(r'\b(\w+):SetPoint\("(\w+)"', line)
+            if m:
+                points[m.group(1)].append((m.group(2), i))
+        for name, pts in points.items():
+            kinds = [k for k, _i in pts]
+            if len(kinds) < 3:
+                continue
+            # a vertical pair already fixes the height
+            pairs = {(a, b) for a in kinds for b in kinds if a != b}
+            if not (pairs & OPPOSITE):
+                continue
+            for k, i in pts:
+                if k in ("LEFT", "RIGHT", "CENTER"):
+                    bad.append((f, i, name, k, ", ".join(kinds)))
+    return bad
+
 def row_field_built_where_used():
     """A `row.field` indexed in one initializer and created in another.
 
@@ -1126,6 +1169,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    anch = over_constrained_anchors()
+    print(f"a frame anchored twice over: {len(anch)}")
+    for f, ia, name, extra, allpts in anch:
+        print(f"   {f}:{ia}  {name} already has its height; {extra} adds another ({allpts})")
     rowf = row_field_built_where_used()
     print(f"a row field built elsewhere: {len(rowf)}")
     for f, ir, name, fn in rowf:
@@ -1164,7 +1211,7 @@ def main():
         print(f"   {f}:{i7}  defers SetAttribute in combat and never re-applies it "
               f"-- flush on PLAYER_REGEN_ENABLED")
     return 1 if (bad or fwd or gone or early or btr or retval or secret or guids
-                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf) else 0
+                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf or anch) else 0
 
 if __name__ == "__main__":
     sys.exit(main())

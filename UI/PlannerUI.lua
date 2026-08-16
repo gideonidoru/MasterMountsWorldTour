@@ -765,7 +765,16 @@ function UI.BuildPlanner(panel)
 	-- and the two scroll bars on them -- ended forty-two pixels apart with
 	-- nothing in the gap to explain why. The strip now reads as a full-width
 	-- footer under both columns rather than a notch cut out of one.
-	missingBox:SetPoint("BOTTOMLEFT", leftWell, "BOTTOMLEFT", 6, 6)
+	-- TWO ANCHORS, FULLY DETERMINED. This had three -- TOPLEFT and BOTTOMLEFT
+	-- to the well, plus RIGHT to the scroll bar -- and a RIGHT anchor sets a
+	-- vertical CENTRE as well as an edge. With top and bottom already fixed the
+	-- frame is over-constrained, and the client is free to resolve that however
+	-- it likes; what it chose was a list taller than the well holding it, which
+	-- is the content spilling past the border below.
+	--
+	-- The bar owns the right side of the well, so anchoring the box's far
+	-- corner to the bar states the width and the height in one point and there
+	-- is nothing left to conflict.
 
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	-- SIX, LIKE EVERY OTHER SCROLLBAR HERE. This one sat at 4 and nothing else
@@ -776,7 +785,7 @@ function UI.BuildPlanner(panel)
 	missingBar:SetFrameLevel(leftWell:GetFrameLevel() + 4)
 	missingBar:SetPoint("TOPRIGHT", leftWell, "TOPRIGHT", -6, -6)
 	missingBar:SetPoint("BOTTOMRIGHT", leftWell, "BOTTOMRIGHT", -6, 6)
-	missingBox:SetPoint("RIGHT", missingBar, "LEFT", -6, 0)
+	missingBox:SetPoint("BOTTOMRIGHT", missingBar, "BOTTOMLEFT", -6, 0)
 	MM.Theme.Register(missingBar, "scrollbar", false)
 
 	local mview = CreateScrollBoxListLinearView()
@@ -999,13 +1008,13 @@ function UI.BuildPlanner(panel)
 	planBox:SetFrameLevel(rightWell:GetFrameLevel() + 4)
 	planBox:SetPoint("TOPLEFT", rightWell, "TOPLEFT", 6, -6)
 	-- 44 clears the action button, which lives inside this pane.
-	planBox:SetPoint("BOTTOMLEFT", rightWell, "BOTTOMLEFT", 6, 6)
+	-- Same as the left column: the bar states this corner.
 
 	local planBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	planBar:SetFrameLevel(rightWell:GetFrameLevel() + 4)
 	planBar:SetPoint("TOPRIGHT", rightWell, "TOPRIGHT", -6, -6)
 	planBar:SetPoint("BOTTOMRIGHT", rightWell, "BOTTOMRIGHT", -6, 6)
-	planBox:SetPoint("RIGHT", planBar, "LEFT", -6, 0)
+	planBox:SetPoint("BOTTOMRIGHT", planBar, "BOTTOMLEFT", -6, 0)
 	MM.Theme.Register(planBar, "scrollbar", false)
 
 	local pview = CreateScrollBoxListLinearView()
