@@ -469,18 +469,26 @@ local function meetsRequirements(option)
 				-- about an item you hold; asking about one you do not own is a
 				-- different question with a similar-looking answer, and the
 				-- possession check below is what settles that.
-				if option.item and TP.ItemUsable then
+				if option.item then
+					-- NOT OWNING IT IS THE PLAINER ANSWER, and it is checked
+					-- here rather than below because requirements are tested
+					-- before possession: an item you do not have was reporting
+					-- a skill problem, which reads as a capability withheld
+					-- when nothing was withheld at all.
 					local owned = (C_Item and C_Item.GetItemCount
 						and (C_Item.GetItemCount(option.item) or 0) > 0)
-					if owned then
-						local usable = TP.ItemUsable(option.item)
-						if usable == true then return true end
-						if usable == false then
-							return false, ("%s %d needed; the client says you "
-								.. "cannot use it"):format(bestName or wanted[1],
-									req.level)
-						end
+					if not owned then return false, "you don't have it" end
+					local can = TP.ItemUsable and TP.ItemUsable(option.item)
+					if can == true then return true end
+					if can == false then
+						return false, ("%s %d needed; you have the item and the "
+							.. "client says you cannot use it"):format(
+								bestName or wanted[1], req.level)
 					end
+					-- Owned, and the client will not answer either question.
+					return false, ("%s %d needed; the skill level is not "
+						.. "readable and neither is whether the item is usable")
+						:format(bestName or wanted[1], req.level)
 				end
 				return false, ("%s %d needed; your skill level is not readable on this client")
 					:format(bestName or wanted[1], req.level)
