@@ -310,6 +310,14 @@ local planCacheSize = 0
 -- rebuild that left them standing would answer for nodes that no longer exist.
 function J.Forget()
 	graph = nil
+	-- WHICH MAPS HOLD A NODE, recomputed rather than kept.
+	--
+	-- This is built once on first use and was not being cleared here, so a
+	-- portal learned from the map after login joined the network and stayed
+	-- invisible to every reader that asks whether a zone is on it: the gap
+	-- report went on naming Voidstorm as unreachable while the route was
+	-- already travelling through its portal.
+	onNetwork = nil
 	planCache = {}
 	planCacheSize = 0
 	nodeWorldCache = {}
