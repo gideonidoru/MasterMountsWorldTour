@@ -889,7 +889,7 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Fire("MM_WEIGHTS_MATRIX_EXPORT")
 	elseif input == "bags" then
 		MM:Fire("MM_CARRIED_DEBUG")
-	elseif input == "welcome" then
+	elseif input == "onboard" or input == "welcome" then
 		MM:Fire("MM_ONBOARDING")
 	elseif input:match("^session") then
 		MM:Fire("MM_SESSION", strtrim(input:sub(8)))
@@ -1025,7 +1025,7 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Print("          |cff40d860/mm check|r — run every diagnostic and report")
 		MM:Print("          |cff40d860/mm report|r — full copyable log (also Options > Diagnostics)")
 		MM:Print("          |cff40d860/mm fixes|r — is everything this build claims to fix still fixed?")
-		MM:Print("          /mm audit | events | callings | post | travel | bags | gates | assaults | weights | routeinfo | layers | whynot | matrix | zone | zone show | welcome | onboarding | crafting | known | release | score | sources")
+		MM:Print("          /mm audit | events | callings | post | travel | bags | gates | assaults | weights | routeinfo | layers | whynot | matrix | zone | zone show | onboard | welcome | onboarding | crafting | known | release | score | sources")
 		MM:Print("          /mm contribute [import|clear] — fill the data gaps")
 		MM:Print("          /mm session [20|45|90|180|stop] — a plan that fits the time you have")
 		MM:Print("          /mm ids | resolve | export | stubs | spells | selftest")

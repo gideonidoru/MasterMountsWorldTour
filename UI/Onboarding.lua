@@ -20,7 +20,7 @@
 --   SHOW, DO NOT PROMISE.  The theme applies as it is picked, and the preset
 --     step names the mount that would go first. The setting is visible before
 --     it is committed.
---   IT IS SKIPPABLE AND REPEATABLE.  `/mm welcome` reopens it. Anything that
+--   IT IS SKIPPABLE AND REPEATABLE.  `/mm onboard` reopens it. Anything that
 --     shows once and can never be seen again is a trap, not an introduction.
 --
 -- Nothing here is a new setting. Every control writes the SAME saved variable
@@ -298,7 +298,7 @@ local function buildSteps()
 				.. "waypoint arrows, map pins, rare alerts, chat announcements, "
 				.. "and the full Weights & Priorities panel where every dial "
 				.. "behind that preset can be tuned by hand.\n\n"
-				.. "Run this again any time with /mm welcome.",
+				.. "Run this again any time with /mm onboard.",
 			draw = function() end,
 		},
 	}
@@ -373,12 +373,12 @@ local function finish(skipped)
 		-- Defaults are all sensible; say where to find things and get out of
 		-- the way.
 		MM:Print("No problem — sensible defaults are in place. "
-			.. "|cffffd24d/mm|r opens your planner, |cffffd24d/mm welcome|r "
+			.. "|cffffd24d/mm|r opens your planner, |cffffd24d/mm onboard|r "
 			.. "runs setup whenever you want it.")
 		return
 	end
 	MM:Print("Setup complete. |cffffd24d/mm|r opens your planner; "
-		.. "|cffffd24d/mm welcome|r runs this again.")
+		.. "|cffffd24d/mm onboard|r runs this again.")
 	-- Land them where the work is, which is the whole point of the addon.
 	MM:Fire("MM_TOGGLE_MAIN", 2)
 end
@@ -535,7 +535,7 @@ MM:On("MM_ONBOARDING_DEBUG", function()
 	local db = MM.db
 	if not db.onboarded then
 		MM:Print("Onboarding: |cffff9a3cnot completed|r — it opens 2s after the "
-			.. "first collection scan, or run |cffffd24d/mm welcome|r.")
+			.. "first collection scan, or run |cffffd24d/mm onboard|r.")
 	else
 		MM:Print("Onboarding: completed (schema %s of %s) on %s%s",
 			tostring(db.onboarded), tostring(O.SCHEMA),
