@@ -282,26 +282,7 @@ local function initPlanRow(row, data)
 		row.hl:SetAllPoints()
 		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
-		-- BANDED BY STOP, NOT STRIPED BY ROW.
-		--
-		-- The row surface sits at 20% over a pane of nearly the same brown, so
-		-- ninety rows ran together into one field of texture: the structure was
-		-- all there and none of it was visible. A band fixes the contrast, and
-		-- banding on the STOP rather than the row does something a zebra
-		-- cannot -- the five mounts that share the Dazar'alor trip get one
-		-- band between them, so a shared stop reads as one block instead of
-		-- five separate lines that happen to be adjacent.
-		--
-		-- Tinted through the theme rather than coloured here, so it follows a
-		-- theme change like everything else.
-		row.band = row:CreateTexture(nil, "BACKGROUND", nil, 2)
-		row.band:SetPoint("TOPLEFT", 1, 0)
-		row.band:SetPoint("BOTTOMRIGHT", -1, 0)
-		-- No alpha: the `row` colour states its own in every palette, and those
-		-- three numbers are not interchangeable -- a brown at 0.20 on modern, a
-		-- white at 0.03 on Blizzard, a white at 0.02 on ElvUI. Naming one here
-		-- would be picking a theme.
-		MM.Theme.RegisterTint(row.band, "row")
+
 
 		-- gold bar marking the active route goal
 		row.cur = row:CreateTexture(nil, "ARTWORK")
@@ -388,9 +369,6 @@ local function initPlanRow(row, data)
 	-- Only the first row of a group is numbered; the rest sit blank beneath it,
 	-- which is what "these are one stop" looks like.
 	row.num:SetText(data.sameStopAsPrevious and "" or (index .. "."))
-	-- Every row of a stop shares its band, which is what makes the group read
-	-- as one trip rather than as neighbours.
-	row.band:SetShown((index or 0) % 2 == 0)
 	row.icon:SetTexture(entry.icon or 134400)
 	row.icon:SetDesaturated(data.waiting and true or false)
 	row.name:SetText(entry.name)
@@ -455,34 +433,36 @@ function UI.BuildPlanner(panel)
 	-- while Theme maps them to Vaultloom stone, Blizzard pane tint, or ElvUI
 	-- flat surfaces. This also gives a short list a deliberate resting surface
 	-- instead of the large accidental black void visible in the first pass.
-	local leftSurface = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
-	-- EQUAL AIR ON BOTH SIDES. The left pane sat 4px from the window edge while
-	-- the right sat 24 -- six times the margin on one side, and the 4px sliver
-	-- of window surface left showing past the pane reads as a stripe down the
-	-- edge of the frame. It became obvious the moment the sidebar tint darkened
-	-- away from the window behind it. Both margins are 24 now, both panes inset
-	-- their content by 8, and the 26px channel between them is unchanged.
-	leftSurface:SetPoint("TOPLEFT", 24, -62)
-	leftSurface:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 444, 4)
-	MM.Theme.RegisterSurface(leftSurface, "sidebar")
-	local rightSurface = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
-	rightSurface:SetPoint("TOPLEFT", 470, -62)
-	rightSurface:SetPoint("BOTTOMRIGHT", -24, 4)
-	MM.Theme.RegisterSurface(rightSurface, "content")
+	-- PANES ARE FRAMES WITH A BACKDROP, NOT TEXTURES WITH HAIRLINES.
+	--
+	-- This is the difference between the reference interface and what we had,
+	-- and it is structural rather than a matter of colour. There, every region
+	-- is a Frame carrying SetBackdrop{ bgFile = plate, edgeFile = the rounded
+	-- 9-slice border, edgeSize = 2 for structural regions and 4 for cards },
+	-- the plate drawn at full brightness and only the EDGE tinted gold.
+	--
+	-- These two panes were bare textures: the plate stretched, pushed through a
+	-- vertex tint that walked it away from how it was authored, and then ringed
+	-- with four one-pixel lines. So the window frame spoke one visual language
+	-- -- rounded, lit, gold-edged, because it does own a backdrop -- and the
+	-- regions inside it spoke another. Four flat rectangles stacked on a
+	-- rounded frame, which is exactly what it looked like.
+	--
+	-- As frames they take the same path as every other themed region, and the
+	-- rounded border comes with it rather than being drawn alongside.
+	local leftPane = CreateFrame("Frame", nil, panel, "BackdropTemplate")
+	leftPane:SetPoint("TOPLEFT", 24, -62)
+	leftPane:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 444, 4)
+	leftPane:SetFrameLevel(panel:GetFrameLevel() + 1)
+	MM.Theme.Register(leftPane, "sidebar", true)
+	panel.mmLeftPane = leftPane
 
-	-- Each pane is a real visual region, not merely a differently coloured half
-	-- of the same canvas. Hairline edges provide the nested structure seen in
-	-- polished Warcraft interfaces without building heavy boxes around every
-	-- control. Because the rules are semantic, ElvUI and Blizzard inherit the
-	-- same hierarchy with their own accent colour.
-	-- DRAWN, NOT HINTED. These were "subtle", a 0.26 hairline, which on a
-	-- surface only slightly different from the window behind it is no edge at
-	-- all -- the panes read as tinted areas that bleed into the frame rather
-	-- than as regions with a boundary. The reference interface this theme
-	-- follows draws every panel edge plainly, and that single line around each
-	-- region is most of what makes it look composed rather than washed.
-	panel.mmLeftPaneRules = MM.Theme.BorderSurface(panel, leftSurface, "strong")
-	panel.mmRightPaneRules = MM.Theme.BorderSurface(panel, rightSurface, "strong")
+	local rightPane = CreateFrame("Frame", nil, panel, "BackdropTemplate")
+	rightPane:SetPoint("TOPLEFT", 470, -62)
+	rightPane:SetPoint("BOTTOMRIGHT", -24, 4)
+	rightPane:SetFrameLevel(panel:GetFrameLevel() + 1)
+	MM.Theme.Register(rightPane, "content", true)
+	panel.mmRightPane = rightPane
 
 	-- toolbar band behind the button row
 	local band = panel:CreateTexture(nil, "BORDER")
@@ -723,13 +703,20 @@ function UI.BuildPlanner(panel)
 	-- top -66, bottom 6. Full height on this side -- only the plan column gives
 	-- up space for the action strip below it.
 	missingBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
-	missingBox:SetPoint("TOPLEFT", 32, -66)
+	-- ABOVE THE PANE, AND INSIDE IT. The pane is a frame now, one level above
+	-- the panel, so a list left on the panel's own level would be drawn behind
+	-- it. And the bar is anchored to the PANE rather than to a number, which is
+	-- what stops it hanging over the edge -- it did, because the box was placed
+	-- by arithmetic and the bar by an offset from the box, so nothing in the
+	-- chain knew where the pane actually ended.
+	missingBox:SetFrameLevel(leftPane:GetFrameLevel() + 4)
+	missingBox:SetPoint("TOPLEFT", leftPane, "TOPLEFT", 8, -8)
 	-- BOTTOM 48, THE SAME AS THE PLAN COLUMN. This sat at 6 while the column
 	-- beside it stopped at 48 to clear the action strip, so the two panes --
 	-- and the two scroll bars on them -- ended forty-two pixels apart with
 	-- nothing in the gap to explain why. The strip now reads as a full-width
 	-- footer under both columns rather than a notch cut out of one.
-	missingBox:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 436, 48)
+	missingBox:SetPoint("BOTTOMLEFT", leftPane, "BOTTOMLEFT", 8, 8)
 
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	-- SIX, LIKE EVERY OTHER SCROLLBAR HERE. This one sat at 4 and nothing else
@@ -737,8 +724,10 @@ function UI.BuildPlanner(panel)
 	-- are both 6. Two pixels is not much on its own, and it is plenty when the
 	-- two bars are side by side in the same window with nothing between them to
 	-- explain the difference.
-	missingBar:SetPoint("TOPLEFT", missingBox, "TOPRIGHT", 6, 0)
-	missingBar:SetPoint("BOTTOMLEFT", missingBox, "BOTTOMRIGHT", 6, 0)
+	missingBar:SetFrameLevel(leftPane:GetFrameLevel() + 4)
+	missingBar:SetPoint("TOPRIGHT", leftPane, "TOPRIGHT", -8, -8)
+	missingBar:SetPoint("BOTTOMRIGHT", leftPane, "BOTTOMRIGHT", -8, 8)
+	missingBox:SetPoint("RIGHT", missingBar, "LEFT", -6, 0)
 	MM.Theme.Register(missingBar, "scrollbar", false)
 
 	local mview = CreateScrollBoxListLinearView()
@@ -958,12 +947,16 @@ function UI.BuildPlanner(panel)
 	summaryHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 	planBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
-	planBox:SetPoint("TOPLEFT", 478, -66)
-	planBox:SetPoint("BOTTOMRIGHT", -32, 48)
+	planBox:SetFrameLevel(rightPane:GetFrameLevel() + 4)
+	planBox:SetPoint("TOPLEFT", rightPane, "TOPLEFT", 8, -8)
+	-- 44 clears the action button, which lives inside this pane.
+	planBox:SetPoint("BOTTOMLEFT", rightPane, "BOTTOMLEFT", 8, 44)
 
 	local planBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
-	planBar:SetPoint("TOPLEFT", planBox, "TOPRIGHT", 6, 0)
-	planBar:SetPoint("BOTTOMLEFT", planBox, "BOTTOMRIGHT", 6, 0)
+	planBar:SetFrameLevel(rightPane:GetFrameLevel() + 4)
+	planBar:SetPoint("TOPRIGHT", rightPane, "TOPRIGHT", -8, -8)
+	planBar:SetPoint("BOTTOMRIGHT", rightPane, "BOTTOMRIGHT", -8, 44)
+	planBox:SetPoint("RIGHT", planBar, "LEFT", -6, 0)
 	MM.Theme.Register(planBar, "scrollbar", false)
 
 	local pview = CreateScrollBoxListLinearView()
@@ -985,7 +978,7 @@ function UI.BuildPlanner(panel)
 	-- quieter than the start state; a wide disabled-looking footer made stopping
 	-- the route more visually important than the route being followed.
 	routeButton:ClearAllPoints()
-	routeButton:SetPoint("BOTTOM", planBox, "BOTTOM", 0, -39)
+	routeButton:SetPoint("BOTTOM", rightPane, "BOTTOM", 0, 8)
 end
 
 -- ONE REFRESH PER FRAME, AND NEVER INSIDE ANOTHER.

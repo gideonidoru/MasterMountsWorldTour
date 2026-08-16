@@ -1112,16 +1112,23 @@ local function skinModern(frame, kind)
 			or kind == "panel" and MODERN_ASSET.panel
 			or MODERN_ASSET.inset
 		modernBackground(frame, path)
-		-- The source plates are intentionally detailed, but the content must sit
-		-- above them. A restrained material tint prevents large stretched areas
-		-- from turning into visible noise while leaving controls crisp.
-			if kind == "frame" then
-				frame.mmModernBackground:SetVertexColor(0.76, 0.73, 0.68, 0.98)
-			elseif kind == "panel" then
-				frame.mmModernBackground:SetVertexColor(0.74, 0.71, 0.66, 0.97)
-			elseif kind == "content" or kind == "sidebar" or kind == "utility"
-			or kind == "card" then
-			frame.mmModernBackground:SetVertexColor(0.70, 0.68, 0.64, 0.96)
+		-- THE PLATES CARRY THE HIERARCHY. LET THEM.
+		--
+		-- Six distinct plates are selected above -- window, content, sidebar,
+		-- utility, card inset, panel -- each authored to sit at a different
+		-- depth. Four of them were then tinted to the SAME 0.70, which
+		-- collapsed exactly the difference they exist to express. Picking the
+		-- right material and then averaging them together is how a window with
+		-- six surfaces renders as one flat field.
+		--
+		-- The interface these came from draws every plate at full brightness
+		-- and tints only the border. The one concession kept here is a small
+		-- knock-back on the window plate, which is the largest stretched area
+		-- and the only one where the detail reads as noise rather than grain.
+		if kind == "frame" then
+			frame.mmModernBackground:SetVertexColor(0.92, 0.90, 0.87, 0.98)
+		else
+			frame.mmModernBackground:SetVertexColor(1, 1, 1, 1)
 		end
 		if frame.SetBackdrop and frame.mmBackdropOwned then
 			pcall(frame.SetBackdrop, frame, {
@@ -1368,15 +1375,12 @@ local function skinSurface(texture, role)
 		-- a card lifts off it. That is the arrangement the source art was cut
 		-- for -- side panels recessed, centre raised -- and it was being
 		-- flattened by the tints rather than by the textures.
-		if role == "utility" then
-			texture:SetVertexColor(0.58, 0.55, 0.51, 0.96)
-		elseif role == "card" then
-			texture:SetVertexColor(0.92, 0.88, 0.82, 0.96)
-		elseif role == "sidebar" then
-			texture:SetVertexColor(0.56, 0.53, 0.49, 0.97)
-		else
-			texture:SetVertexColor(0.80, 0.77, 0.72, 0.96)
-		end
+		-- Same reasoning as the frame path above, and this is where the tonal
+		-- ladder I added a few commits ago was working against the art rather
+		-- than with it: the plates already differ, so spreading vertex colours
+		-- across them was correcting a flatness that came from tinting in the
+		-- first place. Drawn as authored.
+		texture:SetVertexColor(1, 1, 1, 1)
 	elseif active == "elvui" then
 		local c = T.Colors()
 		local scale = role == "sidebar" and 0.82
