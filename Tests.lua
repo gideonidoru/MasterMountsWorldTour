@@ -4371,6 +4371,47 @@ local function runLogic()
 			:format(learned, PL.mapsAsked or 0, table.concat(names, ", "))
 	end)
 
+	check("A teleport you own as a toy counts as owned", function()
+		-- EVERY ENGINEERING TELEPORT IS A TOY. They live in the toybox, not in
+		-- the bags, so a possession check that counts bag stacks reports a
+		-- maxed engineer as owning none of them -- and the option is then
+		-- refused with a reason about something else entirely.
+		--
+		-- That is exactly what happened: the rule existed correctly in one
+		-- place and was written a second time without the toybox. This asks
+		-- the client which options it holds as toys and requires the addon's
+		-- own answer to agree.
+		local TP = MM.Teleports
+		if not (TP and TP.Owned and TP.Options) then return false, "no teleports" end
+		if not PlayerHasToy then
+			return nil, "this client has no toybox API to cross-check against"
+		end
+		local toys, disagreed = 0, {}
+		for _, o in ipairs(TP.All and TP.All() or {}) do
+			if o.item then
+				local isToy = false
+				local ok, held = pcall(PlayerHasToy, o.item)
+				if ok and held then isToy = true end
+				if isToy then
+					toys = toys + 1
+					if not TP.Owned(o.item) then
+						disagreed[#disagreed + 1] = o.name
+					end
+				end
+			end
+		end
+		if #disagreed > 0 then
+			return false, ("the client says you hold %d of these as toys, and "
+				.. "%d are reported as not owned: %s"):format(toys, #disagreed,
+					table.concat(disagreed, ", "))
+		end
+		if toys == 0 then
+			return nil, "no teleport option is held as a toy on this character"
+		end
+		return true, ("%d teleport(s) held as toys, all counted as owned")
+			:format(toys)
+	end)
+
 	check("Travel data is loaded and routable", function()
 		-- Two datasets now decide most of the route's cost, and both fail the
 		-- same silent way: a file left out of the .toc loads nothing, errors

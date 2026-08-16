@@ -27,6 +27,26 @@ Player reports, and a zone that had been quietly costing more than it should.
   Detection was fixed in 1.2.1; the recommendation never asked. "Add 10
   easiest" now skips work that cannot be started today.
 
+### Saying what is actually true
+
+- **Engineering teleports are looked for in the toybox, where they live.**
+  Every one of them is a toy, not an item in your bags, and the rule that knew
+  that existed in one place and was written a second time without it. Five
+  devices were reported first as blocked by an unreadable skill and then as not
+  owned, on a character holding all of them. Possession is now one rule, asked
+  in one place, and the self-test cross-checks it against the client's own
+  toybox so the two cannot drift apart again.
+
+- **"You don't have it" is said before a skill level is blamed.** Requirements
+  were tested before possession, so something you did not have reported a skill
+  problem -- which reads as a capability withheld from somebody who earned it.
+
+- **An unreadable skill level is no longer called zero.** This client reports
+  every expansion skill line as 0 while naming five professions through another
+  reader. The report printed "nothing levelled, which is correct on a character
+  with no professions" three lines below the list of professions. It now prints
+  both readers and says the level is unreadable, which is what it is.
+
 ### Travel
 
 - **A zone joins the travel network from its own map.** Portals are published

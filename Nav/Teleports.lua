@@ -397,12 +397,41 @@ end
 -- Checked BEFORE ownership, because "you don't have Engineering" is a more
 -- useful rejection than "you don't have it" for something you could never use
 -- anyway.
--- Can this character use this item right now, as the client sees it?
--- true / false / nil when the question cannot be put. Guarded because the call
--- moved namespace between expansions and a missing one must not throw inside a
--- gate that decides whether a route exists.
-function TP.ItemUsable(itemID)
+-- Every option as declared, for readers that need the item id rather than the
+-- gate's verdict. Returned as-is; callers read, they do not rearrange.
+function TP.All() return OPTIONS end
+
+-- DOES THIS CHARACTER HAVE IT, wherever the client keeps it.
+--
+-- ONE RULE, in one place. Every engineering teleport is a TOY -- they live in
+-- the toybox, not in your bags -- so a possession check that counts bag stacks
+-- reports a maxed engineer as owning none of them. This existed correctly in
+-- the gate below and was written a second time, without the toybox, a few
+-- lines above it; the second copy then reported "you don't have it" about
+-- devices sitting in the toybox all along.
+--
+-- Returns owned, isToy.
+function TP.Owned(itemID)
+	if not itemID then return false, false end
+	local bags = (C_Item and C_Item.GetItemCount and C_Item.GetItemCount(itemID)) or 0
+	if bags > 0 then return true, false end
+	local toy = PlayerHasToy and PlayerHasToy(itemID)
+	if toy then return true, true end
+	return false, false
+end
+
+-- Can this character use it right now, as the client sees it?
+-- true / false / nil when the question cannot be put. Guarded because these
+-- calls moved namespace between expansions and a missing one must not throw
+-- inside a gate that decides whether a route exists.
+function TP.ItemUsable(itemID, isToy)
 	if not itemID then return nil end
+	-- A TOY IS NOT AN ITEM IN YOUR BAGS, and IsUsableItem answers about the
+	-- latter. C_ToyBox is the reader that knows about the former.
+	if isToy and C_ToyBox and C_ToyBox.IsToyUsable then
+		local ok, usable = pcall(C_ToyBox.IsToyUsable, itemID)
+		if ok and usable ~= nil then return usable and true or false end
+	end
 	local fn = (C_Item and C_Item.IsUsableItem) or IsUsableItem
 	if type(fn) ~= "function" then return nil end
 	local ok, usable = pcall(fn, itemID)
@@ -472,13 +501,12 @@ local function meetsRequirements(option)
 				if option.item then
 					-- NOT OWNING IT IS THE PLAINER ANSWER, and it is checked
 					-- here rather than below because requirements are tested
-					-- before possession: an item you do not have was reporting
-					-- a skill problem, which reads as a capability withheld
-					-- when nothing was withheld at all.
-					local owned = (C_Item and C_Item.GetItemCount
-						and (C_Item.GetItemCount(option.item) or 0) > 0)
+					-- before possession: something you do not have was
+					-- reporting a skill problem, which reads as a capability
+					-- withheld when nothing was withheld at all.
+					local owned, isToy = TP.Owned(option.item)
 					if not owned then return false, "you don't have it" end
-					local can = TP.ItemUsable and TP.ItemUsable(option.item)
+					local can = TP.ItemUsable and TP.ItemUsable(option.item, isToy)
 					if can == true then return true end
 					if can == false then
 						return false, ("%s %d needed; you have the item and the "
@@ -556,9 +584,7 @@ local function usable(option, ignoreOff)
 	if not allowed then return false, why end
 
 	if option.item then
-		local have = (C_Item.GetItemCount(option.item) or 0) > 0
-		if not have and PlayerHasToy then have = PlayerHasToy(option.item) end
-		if not have then return false, "you don't have it" end
+		if not TP.Owned(option.item) then return false, "you don't have it" end
 	end
 	if option.spell then
 		local known = IsPlayerSpell and IsPlayerSpell(option.spell)
