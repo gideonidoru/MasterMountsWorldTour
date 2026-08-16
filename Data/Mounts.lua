@@ -5291,6 +5291,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Argent Warhorse",
+		spellID = 67466,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -5936,6 +5937,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Flying Carpet",
+		spellID = 61451,
 		expansion = 2,
 		category = "PROFESSION",
 		obtainable = true,
@@ -5977,6 +5979,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Magnificent Flying Carpet",
+		spellID = 61309,
 		expansion = 2,
 		category = "PROFESSION",
 		obtainable = true,
@@ -6024,6 +6027,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Frosty Flying Carpet",
+		spellID = 75596,
 		expansion = 2,
 		category = "PROFESSION",
 		obtainable = true,
@@ -6182,6 +6186,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Big Blizzard Bear",
+		spellID = 58983,
 		expansion = 2,
 		category = "PROMOTION",
 		obtainable = false,
@@ -6228,6 +6233,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blazing Hippogryph",
+		spellID = 74856,
 		expansion = 2,
 		category = "TCG",
 		obtainable = false,
@@ -9295,6 +9301,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jade Panther",
+		spellID = 121837,
 		expansion = 4,
 		category = "PROFESSION",
 		obtainable = true,
@@ -9337,6 +9344,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ruby Panther",
+		spellID = 121838,
 		expansion = 4,
 		category = "PROFESSION",
 		obtainable = true,
@@ -9379,6 +9387,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sapphire Panther",
+		spellID = 121836,
 		expansion = 4,
 		category = "PROFESSION",
 		obtainable = true,
@@ -9421,6 +9430,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sunstone Panther",
+		spellID = 121839,
 		expansion = 4,
 		category = "PROFESSION",
 		obtainable = true,
@@ -9463,6 +9473,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jeweled Onyx Panther",
+		spellID = 120043,
 		expansion = 4,
 		category = "PROFESSION",
 		obtainable = true,
@@ -9959,7 +9970,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Feldrake",
-		spellID = 97501,
+		spellID = 113120,
 		itemID = 69226,
 		expansion = 4,
 		category = "TCG",
@@ -11611,6 +11622,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Warforged Nightmare",
+		spellID = 163024,
 		expansion = 5,
 		category = "STORE",
 		obtainable = true,
@@ -14686,6 +14698,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Mecha-Mogul Mk2",
+		spellID = 261437,
 		expansion = 7,
 		category = "PROFESSION",
 		obtainable = true,
@@ -22956,6 +22969,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Snowstorm",
+		spellID = 341821,
 		expansion = 8,
 		category = "STORE",
 		obtainable = false,
@@ -24971,6 +24985,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 	},
 	{
 		name = "Crowd Pummeler 2-30",
+		spellID = 448186,
 		expansion = 10,
 		category = "PROFESSION",
 		obtainable = true,
@@ -27516,6 +27531,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Crimson Shreddertank",
+		spellID = 1217235,
 		expansion = 10,
 		category = "REMOVED",
 		obtainable = false,
@@ -27525,6 +27541,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Enterprising Shreddertank",
+		spellID = 1221694,
 		expansion = 10,
 		category = "REMOVED",
 		obtainable = false,
@@ -27533,6 +27550,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blue-Chip Shreddertank",
+		spellID = 1296756,
 		expansion = 10,
 		category = "REMOVED",
 		obtainable = false,
@@ -27570,6 +27588,7 @@ MM.AddMounts({
 	},
 	{
 		name = "High-Yield Shreddertank",
+		spellID = 1296759,
 		expansion = 10,
 		category = "REMOVED",
 		obtainable = false,
@@ -27607,6 +27626,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Profit-Green Shreddertank",
+		spellID = 1296758,
 		expansion = 10,
 		category = "REMOVED",
 		obtainable = false,
@@ -27644,6 +27664,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Speculative Shreddertank",
+		spellID = 1296760,
 		expansion = 10,
 		category = "REMOVED",
 		obtainable = false,
@@ -27759,6 +27780,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Meeksi Teatuft",
+		spellID = 473744,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -27768,6 +27790,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Meeksi Brewthief",
+		spellID = 473745,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -27777,6 +27800,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Meeksi Rollingpaw",
+		spellID = 473743,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -27786,6 +27810,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Meeksi Rufflefur",
+		spellID = 473739,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -27795,6 +27820,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Meeksi Softpaw",
+		spellID = 473741,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -27804,6 +27830,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ny'alothan Shadow Worm",
+		spellID = 1218314,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -27827,6 +27854,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Void-Crystal Panther",
+		spellID = 1218317,
 		expansion = 10,
 		category = "PROFESSION",
 		obtainable = true,
@@ -27873,6 +27901,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Tyrannotort",
+		spellID = 1227076,
 		expansion = 10,
 		category = "QUEST",
 		obtainable = true,
@@ -27888,6 +27917,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Corruption of the Aspects",
+		spellID = 1218316,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -28036,6 +28066,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Nesting Swarmite",
+		spellID = 447189,
 		expansion = 10,
 		category = "DROP",
 		obtainable = true,
@@ -28087,6 +28118,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Voidfire Deathcycle",
+		spellID = 428068,
 		expansion = 10,
 		category = "PUZZLE",
 		obtainable = true,
@@ -28161,6 +28193,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felborn Cormaera",
+		spellID = 1226851,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -28170,6 +28203,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Archmage's Great Raven",
+		spellID = 1226983,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -28179,6 +28213,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Prophet's Great Raven",
+		spellID = 1226760,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -28188,6 +28223,7 @@ MM.AddMounts({
 	},
 	{
 		name = "OC91 Chariot",
+		spellID = 1241263,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -28211,6 +28247,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Chrono Corsair",
+		spellID = 1226144,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -28251,6 +28288,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ivory Savagemane",
+		spellID = 1237703,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -28303,6 +28341,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Moonlit Nightsaber",
+		spellID = 1237631,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -28355,6 +28394,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Inarius' Charger",
+		spellID = 1241429,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = false,
@@ -28364,6 +28404,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Herald of Sa'bak",
+		spellID = 1227192,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = false,
@@ -28373,6 +28414,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Kickin' Kezan Waveshredder",
+		spellID = 446352,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -28392,6 +28434,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Terror of the Night",
+		spellID = 1223191,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -28413,6 +28456,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Phase-Lost Slateback",
+		spellID = 1250578,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -28574,6 +28618,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Acidic Void Creeper",
+		spellID = 1233547,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -28598,6 +28643,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Lavender K'arroc",
+		spellID = 1233518,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -28622,6 +28668,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blue Barry",
+		spellID = 1233559,
 		expansion = 10,
 		category = "QUEST",
 		obtainable = true,
@@ -28642,6 +28689,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Resplendent K'arroc",
+		spellID = 1221132,
 		expansion = 10,
 		category = "QUEST",
 		obtainable = true,
@@ -28654,6 +28702,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Delver's Mana-Skimmer",
+		spellID = 1224048,
 		expansion = 10,
 		category = "QUEST",
 		obtainable = true,
@@ -28669,6 +28718,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Vandal's Gearglider",
+		spellID = 353265,
 		expansion = 10,
 		category = "REP",
 		obtainable = true,
@@ -28692,6 +28742,7 @@ MM.AddMounts({
 	},
 	{
 		name = "The Bone Freezer",
+		spellID = 1233542,
 		expansion = 10,
 		category = "REP",
 		obtainable = true,
@@ -28715,6 +28766,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ruby Void Creeper",
+		spellID = 1233546,
 		expansion = 10,
 		category = "REP",
 		obtainable = true,
@@ -28751,6 +28803,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Terror of the Wastes",
+		spellID = 1223187,
 		expansion = 10,
 		category = "REP",
 		obtainable = true,
@@ -28787,6 +28840,7 @@ MM.AddMounts({
 	},
 	{
 		name = "K'arroc Swiftwing",
+		spellID = 1233516,
 		expansion = 10,
 		category = "QUEST",
 		obtainable = true,
@@ -28826,6 +28880,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Royal Voidwing",
+		spellID = 1242272,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -28854,6 +28909,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Umbral K'arroc",
+		spellID = 1233511,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -28881,6 +28937,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Xy Trustee's Gearglider",
+		spellID = 353264,
 		expansion = 10,
 		category = "TREASURE",
 		obtainable = true,
@@ -28900,6 +28957,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Azure Void Flyer",
+		spellID = 1246781,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -28923,6 +28981,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Scarlet Void Flyer",
+		spellID = 1245517,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -29019,6 +29078,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Algarian Stormrider",
+		spellID = 417888,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = true,
@@ -29029,6 +29089,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Voidlight Surger",
+		spellID = 1239138,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = true,
@@ -29049,6 +29110,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Voidwing Dragonhawk",
+		spellID = 1234303,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = true,
@@ -29069,6 +29131,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Lightwing Dragonhawk",
+		spellID = 1234305,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = true,
@@ -29089,6 +29152,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Void-Razed Elekk",
+		spellID = 1244260,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -29109,6 +29173,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Coldflame Infernal",
+		spellID = 171840,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29191,6 +29256,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Violet Darkmoon Charger",
+		spellID = 1217342,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29341,6 +29407,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Pearlescent Butterfly",
+		spellID = 1217994,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29377,6 +29444,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ruby Butterfly",
+		spellID = 1218012,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29413,6 +29481,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Spotted Black Riding Goat",
+		spellID = 1219705,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29449,6 +29518,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Molten Cormaera",
+		spellID = 1226855,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29486,6 +29556,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Grandmaster's Prophetic Board",
+		spellID = 1235756,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29560,6 +29631,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Grandmaster's Royal Board",
+		spellID = 1235803,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29710,6 +29782,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Wailing Banshee's Charger",
+		spellID = 1235819,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29746,6 +29819,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Forsaken's Grotesque Charger",
+		spellID = 1235817,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29782,6 +29856,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Unarmored Deathtusk Felboar",
+		spellID = 1240003,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -29894,6 +29969,7 @@ MM.AddMounts({
 	},
 	{
 		name = "The Headless Horseman's Hallowed Charger",
+		spellID = 1245205,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -30006,6 +30082,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cinder-Plumed Highland Gryphon",
+		spellID = 1245359,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -30080,6 +30157,7 @@ MM.AddMounts({
 	},
 	{
 		name = "High Shaman's Aerie Gryphon",
+		spellID = 1245358,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -30116,6 +30194,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ornery Breezestrider",
+		spellID = 1245370,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -30152,6 +30231,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Legion-Forged Elekk",
+		spellID = 1244261,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -30210,6 +30290,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Eclipse Dragonhawk",
+		spellID = 194464,
 		expansion = 1,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30239,6 +30320,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ironbound Wraithcharger",
+		spellID = 142910,
 		expansion = 2,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30266,6 +30348,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Beastlord's Irontusk",
+		spellID = 294568,
 		expansion = 5,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30320,6 +30403,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Beastlord's Warwolf",
+		spellID = 294569,
 		expansion = 5,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30384,6 +30468,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Crimson Lupine",
+		spellID = 1263387,
 		expansion = 8,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30421,6 +30506,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Snowpaw Glimmerfur Prowler",
+		spellID = 1264988,
 		expansion = 8,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30488,6 +30574,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Liquid Hot Magma Slug",
+		spellID = 350220,
 		expansion = 9,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30546,6 +30633,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Black-Furred Bakar",
+		spellID = 404018,
 		expansion = 9,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30604,6 +30692,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bronze Wilderling",
+		spellID = 1261668,
 		expansion = 10,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30624,6 +30713,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bronze Corpsefly",
+		spellID = 1261677,
 		expansion = 10,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30644,6 +30734,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bronze Gravewing",
+		spellID = 1261681,
 		expansion = 10,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30664,6 +30755,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bronze Aquilon",
+		spellID = 1261671,
 		expansion = 10,
 		category = "TIMEWALKING",
 		obtainable = true,
@@ -30735,6 +30827,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Fantastical Goblin Waveshredder",
+		spellID = 1268809,
 		expansion = 11,
 		category = "PROMOTION",
 		obtainable = true,
@@ -30754,6 +30847,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Rabbit'ath",
+		spellID = 1293456,
 		expansion = 11,
 		category = "PROMOTION",
 		obtainable = true,
@@ -30774,6 +30868,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sunflare Driftmoth",
+		spellID = 1292356,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30794,6 +30889,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Amberback Arboon",
+		spellID = 1282453,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30813,6 +30909,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blossomback Arboon",
+		spellID = 1282450,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30832,6 +30929,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Stoneforged Sentinel",
+		spellID = 1279352,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30851,6 +30949,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Frostfall Groveglider",
+		spellID = 1251697,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30861,6 +30960,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cindertuft Groveglider",
+		spellID = 1251762,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30871,6 +30971,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gloombough Groveglider",
+		spellID = 1251764,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30881,6 +30982,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blossombranch Groveglider",
+		spellID = 1251765,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -30891,6 +30993,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Badlands Buzzard",
+		spellID = 1294767,
 		expansion = 11,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -30947,6 +31050,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blackwater X-TREME Firework Rocket",
+		spellID = 1292102,
 		expansion = 11,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -31040,6 +31144,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Light-Forged Mechsuit",
+		spellID = 1243003,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = false,
@@ -31069,6 +31174,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Retrained Skyrazor",
+		spellID = 451487,
 		expansion = 11,
 		category = "VENDOR",
 		obtainable = false,
@@ -31100,6 +31206,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Anu'shalla, Shadow's Guidance",
+		spellID = 1276650,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32317,6 +32424,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Insatiable Shredclaw",
+		spellID = 1261583,
 		expansion = 11,
 		category = "TREASURE",
 		obtainable = true,
@@ -32346,6 +32454,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Relinquished Scarlet Charger",
+		spellID = 1261391,
 		expansion = 11,
 		category = "QUEST",
 		obtainable = true,
@@ -32370,6 +32479,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Emerald Hawkstrider",
+		spellID = 1265785,
 		expansion = 11,
 		category = "QUEST",
 		obtainable = true,
@@ -32392,6 +32502,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Peridot Dragonhawk",
+		spellID = 1261293,
 		expansion = 11,
 		category = "QUEST",
 		obtainable = true,
@@ -32416,6 +32527,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Dusk Grimlynx",
+		spellID = 1243582,
 		expansion = 11,
 		category = "QUEST",
 		obtainable = true,
@@ -32468,6 +32580,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Brilliant Petalwing",
+		spellID = 1253924,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32500,6 +32613,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Crimson Dragonhawk",
+		spellID = 1261298,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32532,6 +32646,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Vivacious Chloroceros",
+		spellID = 1270673,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32564,6 +32679,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Lab-Grown Stormray",
+		spellID = 1266703,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32594,6 +32710,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ivory Grimlynx",
+		spellID = 1243598,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32626,6 +32743,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Umbral Dragonhawk",
+		spellID = 1261296,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32782,6 +32900,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Arcanovoid Construct",
+		spellID = 1268949,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32814,6 +32933,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Giganto Manis",
+		spellID = 1261349,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -32846,6 +32966,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Elven Arcane Guardian",
+		spellID = 1268926,
 		expansion = 11,
 		category = "CURRENCY",
 		obtainable = true,
@@ -32882,6 +33003,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Silvermoon's Arcane Defender",
+		spellID = 1268924,
 		expansion = 11,
 		category = "CURRENCY",
 		obtainable = true,
@@ -32926,6 +33048,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Preyseeker's Hubris",
+		spellID = 1261336,
 		expansion = 11,
 		category = "CURRENCY",
 		obtainable = true,
@@ -32969,6 +33092,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Preyseeker's Wrath",
+		spellID = 1261337,
 		expansion = 11,
 		category = "CURRENCY",
 		obtainable = true,
@@ -33012,6 +33136,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Preyseeker's Nightmare",
+		spellID = 1261338,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -33160,6 +33285,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Calamitous Carrion",
+		spellID = 1257058,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -33188,6 +33314,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Convalescent Carrion",
+		spellID = 1257081,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -33216,6 +33343,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cerulean Deathwalker",
+		spellID = 1296731,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -33255,6 +33383,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Amethyst Mechsuit",
+		spellID = 1296734,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -33329,6 +33458,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Tenebrous Harrower",
+		spellID = 1266980,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -33795,6 +33925,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Vivid Chloroceros",
+		spellID = 1270675,
 		expansion = 11,
 		category = "VENDOR",
 		obtainable = true,
@@ -33839,6 +33970,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Elder Glowmite",
+		spellID = 447173,
 		expansion = 11,
 		category = "VENDOR",
 		obtainable = true,
@@ -33883,6 +34015,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Frenzied Shredclaw",
+		spellID = 1261585,
 		expansion = 11,
 		category = "REP",
 		obtainable = true,
@@ -33920,6 +34053,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Prowling Shredclaw",
+		spellID = 1261584,
 		expansion = 11,
 		category = "REP",
 		obtainable = true,
@@ -33984,6 +34118,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Amani Sunfeather",
+		spellID = 1251433,
 		expansion = 11,
 		category = "VENDOR",
 		obtainable = true,
@@ -34020,6 +34155,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blessed Amani Burrower",
+		spellID = 1261348,
 		expansion = 11,
 		category = "VENDOR",
 		obtainable = true,
@@ -34123,6 +34259,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Unbound Manawyrm",
+		spellID = 1271698,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -34178,6 +34315,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Void-Corrupted Hex Eagle",
+		spellID = 1286606,
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
@@ -34217,6 +34355,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Witherbark Warbear Mother",
+		spellID = 1261362,
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
@@ -34264,6 +34403,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Void-Touched Snapdragon",
+		spellID = 1287357,
 		expansion = 11,
 		category = "DROP",
 		obtainable = true,
@@ -34300,6 +34440,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Void-Touched Hawkstrider",
+		spellID = 1282936,
 		expansion = 11,
 		category = "REP",
 		obtainable = true,
@@ -34333,6 +34474,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Void-Corrupted Lynx",
+		spellID = 1287359,
 		itemID = 270058,
 		expansion = 11,
 		category = "PROFESSION",
@@ -34401,6 +34543,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Nether-Swept Drake",
+		spellID = 3363,
 		itemID = 260916,
 		expansion = 11,
 		category = "PROFESSION",
@@ -35313,6 +35456,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Felsaber",
+		spellID = 200175,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = true,
@@ -35429,6 +35573,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Grimhowl",
+		spellID = 369666,
 		expansion = 8,
 		category = "QUEST",
 		obtainable = true,
@@ -35513,6 +35658,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Elusive Emerald Hawkstrider",
+		spellID = 370620,
 		expansion = 8,
 		category = "QUEST",
 		obtainable = true,
@@ -35569,6 +35715,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Great Red Elekk",
+		spellID = 65637,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35608,6 +35755,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Swift Burgundy Wolf",
+		spellID = 65646,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35647,6 +35795,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Swift Gray Steed",
+		spellID = 65640,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35686,6 +35835,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Swift Moonsaber",
+		spellID = 65638,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35725,6 +35875,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Swift Purple Raptor",
+		spellID = 65644,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35764,6 +35915,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Swift Red Hawkstrider",
+		spellID = 65639,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35803,6 +35955,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Swift Violet Ram",
+		spellID = 65643,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35842,6 +35995,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "Turbostrider",
+		spellID = 65642,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -35881,6 +36035,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 	},
 	{
 		name = "White Skeletal Warhorse",
+		spellID = 65645,
 		expansion = 2,
 		category = "CURRENCY",
 		obtainable = true,
@@ -36155,6 +36310,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Emerald Drake",
+		spellID = 175700,
 		expansion = 2,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -36171,6 +36327,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Swift Lovebird",
+		spellID = 102350,
 		expansion = 3,
 		category = "HOLIDAY",
 		obtainable = true,
@@ -36195,6 +36352,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Swift Springstrider",
+		spellID = 102349,
 		expansion = 3,
 		category = "HOLIDAY",
 		obtainable = true,
@@ -36219,6 +36377,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Obsidian Nightwing",
+		spellID = 121820,
 		expansion = 3,
 		category = "PROMOTION",
 		obtainable = false,
@@ -36420,6 +36579,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jade Pandaren Kite",
+		spellID = 133023,
 		expansion = 4,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -36530,6 +36690,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Depleted-Kyparium Rocket",
+		spellID = 126507,
 		expansion = 4,
 		category = "PROFESSION",
 		obtainable = true,
@@ -36581,6 +36742,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Geosynchronous World Spinner",
+		spellID = 126508,
 		expansion = 4,
 		category = "PROFESSION",
 		obtainable = true,
@@ -36626,6 +36788,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Brawler's Burly Mushan Beast",
+		spellID = 142641,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36660,6 +36823,7 @@ MM.AddMounts({
 	},
 	{
 		name = "August Phoenix",
+		spellID = 446017,
 		expansion = 4,
 		category = "ACHIEVEMENT",
 		obtainable = false,
@@ -36676,6 +36840,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Feathered Windsurfer",
+		spellID = 435109,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36685,6 +36850,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Black Riding Yak",
+		spellID = 127209,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36694,6 +36860,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Kafa Yak",
+		spellID = 123182,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36703,6 +36870,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Modest Expedition Yak",
+		spellID = 127213,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36712,6 +36880,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Little Red Riding Goat",
+		spellID = 435133,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36721,6 +36890,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Snowy Riding Goat",
+		spellID = 435131,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36730,6 +36900,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gilded Riding Crane",
+		spellID = 435123,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36739,6 +36910,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jungle Riding Crane",
+		spellID = 127178,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36748,6 +36920,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Luxurious Riding Crane",
+		spellID = 435124,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36757,6 +36930,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Pale Riding Crane",
+		spellID = 435128,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36766,6 +36940,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Rose Riding Crane",
+		spellID = 435127,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36775,6 +36950,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Silver Riding Crane",
+		spellID = 435126,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36784,6 +36960,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Tropical Riding Crane",
+		spellID = 435125,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36793,6 +36970,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Marble Quilen",
+		spellID = 435118,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36802,6 +36980,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Guardian Quilen",
+		spellID = 435115,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36811,6 +36990,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Palehide Mushan Beast",
+		spellID = 435161,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36820,6 +37000,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Riverwalker Mushan",
+		spellID = 435160,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36829,6 +37010,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Purple Shado-Pan Riding Tiger",
+		spellID = 435153,
 		expansion = 4,
 		category = "REMOVED",
 		obtainable = false,
@@ -36849,6 +37031,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Dashing Windsteed",
+		spellID = 435103,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36858,6 +37041,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Daystorm Windsteed",
+		spellID = 435108,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36867,6 +37051,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Forest Windsteed",
+		spellID = 435107,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36876,6 +37061,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Amber Pterrordax",
+		spellID = 441794,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36885,6 +37071,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jade Pterrordax",
+		spellID = 435147,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36894,6 +37081,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Night Pterrorwing",
+		spellID = 435146,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36903,6 +37091,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bloody Skyscreamer",
+		spellID = 435145,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36912,6 +37101,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cobalt Juggernaut",
+		spellID = 435149,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36921,6 +37111,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Fel Iron Juggernaut",
+		spellID = 435150,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36930,6 +37121,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Golden Discus",
+		spellID = 435044,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36939,6 +37131,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sky Surfer",
+		spellID = 435084,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36948,6 +37141,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Mogu Hazeblazer",
+		spellID = 435082,
 		expansion = 4,
 		category = "VENDOR",
 		obtainable = false,
@@ -36957,6 +37151,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Champion's Treadblade",
+		spellID = 171846,
 		expansion = 5,
 		category = "VENDOR",
 		obtainable = true,
@@ -36973,6 +37168,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Warlord's Deathwheel",
+		spellID = 171845,
 		expansion = 5,
 		category = "PROMOTION",
 		obtainable = false,
@@ -37016,6 +37212,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Blacksteel Battleboar",
+		spellID = 171627,
 		expansion = 5,
 		category = "VENDOR",
 		obtainable = true,
@@ -37313,6 +37510,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Challenger's War Yeti",
+		spellID = 171848,
 		expansion = 5,
 		category = "REMOVED",
 		obtainable = false,
@@ -37330,6 +37528,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Creeping Carpet",
+		spellID = 169952,
 		expansion = 5,
 		category = "PROFESSION",
 		obtainable = true,
@@ -37398,6 +37597,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Minion of Grumpus",
+		spellID = 191314,
 		expansion = 5,
 		category = "HOLIDAY",
 		obtainable = true,
@@ -37417,6 +37617,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cindermane Charger",
+		spellID = 171847,
 		expansion = 5,
 		category = "REMOVED",
 		obtainable = false,
@@ -37453,6 +37654,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Emerald Hippogryph",
+		spellID = 149801,
 		expansion = 4,
 		category = "PROMOTION",
 		obtainable = false,
@@ -37506,6 +37708,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Grove Defiler",
+		spellID = 193007,
 		expansion = 6,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -37528,6 +37731,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Steelbound Devourer",
+		spellID = 213209,
 		itemID = 137686,
 		expansion = 6,
 		category = "PROFESSION",
@@ -37609,6 +37813,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bleakhoof Ruinstrider",
+		spellID = 254260,
 		expansion = 6,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -37627,6 +37832,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Pond Nettle",
+		spellID = 253711,
 		expansion = 6,
 		category = "PROFESSION",
 		obtainable = true,
@@ -37695,6 +37901,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Primal Flamesaber",
+		spellID = 232405,
 		expansion = 6,
 		category = "PROMOTION",
 		obtainable = false,
@@ -37725,6 +37932,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felscorned Highlord's Charger",
+		spellID = 1255471,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37734,6 +37942,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felscorned Netherlord's Dreadsteed",
+		spellID = 1255480,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37743,6 +37952,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felscorned Vilebrood Vanquisher",
+		spellID = 1255264,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37752,6 +37962,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felscorned War Wyrm",
+		spellID = 1255482,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37761,6 +37972,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felscorned Wolfhawk",
+		spellID = 1255456,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37770,6 +37982,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felscorned Grandmaster's Companion",
+		spellID = 1255467,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37779,6 +37992,7 @@ MM.AddMounts({
 	},
 	{
 		name = "High Priest's Felscorned Seeker",
+		spellID = 1255475,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37788,6 +38002,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Shadowblade's Felscorned Omen",
+		spellID = 1255477,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37797,6 +38012,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Slayer's Felscorned Shrieker",
+		spellID = 1255431,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37806,6 +38022,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Farseer's Felscorned Tempest",
+		spellID = 1255478,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37815,6 +38032,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Archmage's Felscorned Disc",
+		spellID = 1255463,
 		expansion = 6,
 		category = "CLASS",
 		obtainable = false,
@@ -37824,6 +38042,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Albino Mana Ray",
+		spellID = 1251283,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37833,6 +38052,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Aquamarine Basilisk",
+		spellID = 1250881,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37842,6 +38062,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Arcberry Manasaber",
+		spellID = 1251265,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37851,6 +38072,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ashplague Fel Bat",
+		spellID = 1229283,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37860,6 +38082,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bilebound Ur'zul",
+		spellID = 1250481,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37869,6 +38092,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bloodhunter Fel Bat",
+		spellID = 1229276,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37878,6 +38102,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bloodtooth Mana Ray",
+		spellID = 1251281,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37887,6 +38112,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bonesteed of Bloodshed",
+		spellID = 1251307,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37896,6 +38122,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bonesteed of Oblivion",
+		spellID = 1251311,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37905,6 +38132,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bonesteed of Plague",
+		spellID = 1251309,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37914,6 +38142,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bonesteed of Triumph",
+		spellID = 1251305,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37923,6 +38152,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Brimstone Courser",
+		spellID = 1253130,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37932,6 +38162,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Chestnut Courser",
+		spellID = 1253129,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37941,6 +38172,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Turquoise Courser",
+		spellID = 1251298,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37950,6 +38182,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Twilight Courser",
+		spellID = 1251295,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37959,6 +38192,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Fel-Scarred Mana Ray",
+		spellID = 1251279,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37968,6 +38202,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felslate Basilisk",
+		spellID = 1250880,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37977,6 +38212,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Leystone Basilisk",
+		spellID = 1250879,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37986,6 +38222,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Slag Basilisk",
+		spellID = 1238729,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -37995,6 +38232,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ghastly Ur'zul",
+		spellID = 1250482,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38004,6 +38242,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gloomdark Nightmare",
+		spellID = 1251300,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38013,6 +38252,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Golden Sunrunner",
+		spellID = 1251297,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38022,6 +38262,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Highland Elderhorn",
+		spellID = 1250886,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38031,6 +38272,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Illidari Blightstalker",
+		spellID = 1250884,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38040,6 +38282,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Illidari Dreadstalker",
+		spellID = 1250882,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38049,6 +38292,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Luminous Mana Ray",
+		spellID = 1251284,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38058,6 +38302,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Snowy Highmountain Eagle",
+		spellID = 1235513,
 		expansion = 6,
 		category = "REMOVED",
 		obtainable = false,
@@ -38078,6 +38323,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Treetop Highmountain Eagle",
+		spellID = 1251255,
 		expansion = 6,
 		category = "REMOVED",
 		obtainable = false,
@@ -38098,6 +38344,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Longhorned Argussian Talbuk",
+		spellID = 1251399,
 		expansion = 6,
 		category = "REMOVED",
 		obtainable = false,
@@ -38118,6 +38365,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Longhorned Beryl Talbuk",
+		spellID = 1251400,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38127,6 +38375,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Longhorned Sable Talbuk",
+		spellID = 1251396,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38136,6 +38385,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Longhorned Bleakhoof Talbuk",
+		spellID = 1251398,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38145,6 +38395,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Garnet Ruinstrider",
+		spellID = 1251397,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38154,6 +38405,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Wretched Fel Bat",
+		spellID = 1229288,
 		expansion = 6,
 		category = "VENDOR",
 		obtainable = false,
@@ -38764,6 +39016,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Xiwyllag ATV",
+		spellID = 256123,
 		expansion = 7,
 		category = "PROFESSION",
 		obtainable = true,
@@ -38823,6 +39076,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Mechanized Lumber Extractor",
+		spellID = 223814,
 		expansion = 7,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -38839,6 +39093,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Frostshard Infernal",
+		spellID = 213350,
 		expansion = 7,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -38856,6 +39111,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Frenzied Feltalon",
+		spellID = 280729,
 		expansion = 7,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -38873,6 +39129,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felfire Hawk",
+		spellID = 97501,
 		expansion = 7,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -38911,6 +39168,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Pureheart Courser",
+		spellID = 280730,
 		expansion = 7,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39164,6 +39422,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sintouched Deathwalker",
+		spellID = 340068,
 		expansion = 8,
 		category = "ACHIEVEMENT",
 		obtainable = false,
@@ -39180,6 +39439,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Soultwisted Deathwalker",
+		spellID = 358319,
 		expansion = 8,
 		category = "ACHIEVEMENT",
 		obtainable = false,
@@ -39196,6 +39456,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Wastewarped Deathwalker",
+		spellID = 359407,
 		expansion = 8,
 		category = "ACHIEVEMENT",
 		obtainable = false,
@@ -39212,6 +39473,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Restoration Deathwalker",
+		spellID = 334482,
 		expansion = 8,
 		category = "ACHIEVEMENT",
 		obtainable = false,
@@ -39248,6 +39510,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ensorcelled Everwyrm",
+		spellID = 307932,
 		expansion = 8,
 		category = "STORE",
 		obtainable = true,
@@ -39496,6 +39759,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Iskaara Trader's Ottuk",
+		spellID = 359409,
 		expansion = 9,
 		category = "VENDOR",
 		obtainable = true,
@@ -39546,6 +39810,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Skyskin Hornstrider",
+		spellID = 352926,
 		itemID = 192800,
 		expansion = 9,
 		category = "CURRENCY",
@@ -39602,6 +39867,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gooey Snailemental",
+		spellID = 374157,
 		itemID = 192785,
 		expansion = 9,
 		category = "DROP",
@@ -39793,6 +40059,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cataloged Shalewing",
+		spellID = 408651,
 		expansion = 9,
 		category = "DROP",
 		obtainable = true,
@@ -39831,6 +40098,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Shellack",
+		spellID = 374155,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39850,6 +40118,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Stormtouched Bruffalon",
+		spellID = 373967,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39869,6 +40138,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bestowed Ohuna Spotter",
+		spellID = 385260,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39890,6 +40160,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bestowed Ottuk Vanguard",
+		spellID = 376898,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39909,6 +40180,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bestowed Sandskimmer",
+		spellID = 374071,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39928,6 +40200,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bestowed Thunderspine Packleader",
+		spellID = 351408,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39947,6 +40220,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bestowed Trawling Mammoth",
+		spellID = 374172,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -39968,6 +40242,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Taivan",
+		spellID = 424607,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -40180,6 +40455,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Valiance",
+		spellID = 413922,
 		expansion = 9,
 		category = "PUZZLE",
 		obtainable = true,
@@ -40220,6 +40496,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Renewed Magmammoth",
+		spellID = 374278,
 		expansion = 9,
 		category = "DROP",
 		obtainable = true,
@@ -40519,6 +40796,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Shadow Dusk Dreamsaber",
+		spellID = 424474,
 		expansion = 9,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -40540,6 +40818,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gilnean Prowler",
+		spellID = 430225,
 		expansion = 9,
 		category = "QUEST",
 		obtainable = true,
@@ -41035,6 +41314,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Geargrinder Mk. 11",
+		spellID = 1262886,
 		expansion = 10,
 		category = "ACHIEVEMENT",
 		obtainable = true,
@@ -41057,6 +41337,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ballistic Bronco",
+		spellID = 1264643,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -41073,6 +41354,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Brawlin' Bruno",
+		spellID = 1264621,
 		expansion = 10,
 		category = "VENDOR",
 		obtainable = true,
@@ -41172,6 +41454,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Heartseeker Mana Ray",
+		spellID = 427777,
 		expansion = 9,
 		category = "HOLIDAY",
 		obtainable = true,
@@ -41220,6 +41503,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bound Blizzard",
+		spellID = 358072,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41228,6 +41512,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Amalgam of Rage",
+		spellID = 369476,
 		expansion = 9,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41236,6 +41521,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Compass Rose",
+		spellID = 431992,
 		expansion = 9,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41244,6 +41530,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Fiery Hearthsteed",
+		spellID = 278966,
 		expansion = 9,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41260,6 +41547,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gargantuan Grrloc",
+		spellID = 315132,
 		expansion = 9,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41278,6 +41566,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ginormous Grrloc",
+		spellID = 419567,
 		expansion = 9,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41286,6 +41575,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gleaming Moonbeast",
+		spellID = 400976,
 		expansion = 9,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41294,6 +41584,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Gigantic Grrloc",
+		spellID = 463025,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = false,
@@ -41302,6 +41593,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Grandiose Grrloc",
+		spellID = 1234971,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = true,
@@ -41311,6 +41603,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Astral Aurochs",
+		spellID = 1245604,
 		expansion = 10,
 		category = "PROMOTION",
 		obtainable = true,
@@ -41331,6 +41624,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jade, Bright Foreseer",
+		spellID = 369451,
 		expansion = 9,
 		category = "STORE",
 		obtainable = true,
@@ -41340,6 +41634,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Crusty Crawler",
+		spellID = 366789,
 		expansion = 9,
 		category = "STORE",
 		obtainable = false,
@@ -41348,6 +41643,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Charming Courier",
+		spellID = 443660,
 		expansion = 9,
 		category = "STORE",
 		obtainable = true,
@@ -41357,6 +41653,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Eve's Ghastly Rider",
+		spellID = 419345,
 		expansion = 9,
 		category = "STORE",
 		obtainable = false,
@@ -41365,6 +41662,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Runebound Firelord",
+		spellID = 424009,
 		expansion = 9,
 		category = "STORE",
 		obtainable = true,
@@ -41374,6 +41672,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Armored Siege Kodo",
+		spellID = 367875,
 		expansion = 9,
 		category = "STORE",
 		obtainable = true,
@@ -41392,6 +41691,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cobalt Phase-Hunter",
+		spellID = 1256677,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -41401,6 +41701,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Starspark Netherdrake",
+		spellID = 1255246,
 		expansion = 10,
 		category = "STORE",
 		obtainable = true,
@@ -41410,6 +41711,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cragstepper Crest-Horn",
+		spellID = 1250288,
 		expansion = 10,
 		category = "STORE",
 		obtainable = false,
@@ -41419,6 +41721,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Lana'thel's Crimson Cascade",
+		spellID = 1233925,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -41437,6 +41740,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Scorching Valor",
+		spellID = 1247422,
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -41486,6 +41790,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Amber Skitterfly",
+		spellID = 349943,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41522,6 +41827,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Ancestral Clefthoof",
+		spellID = 417245,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41558,6 +41864,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Armored Golden Pterrordax",
+		spellID = 368126,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41594,6 +41901,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Brown-Furred Spiky Bakar",
+		spellID = 424601,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41630,6 +41938,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Crimson Glimmerfur",
+		spellID = 427435,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41666,6 +41975,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Depthstalker",
+		spellID = 359380,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41702,6 +42012,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Emerald Snail",
+		spellID = 1218069,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41738,6 +42049,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Fur-endship Fox",
+		spellID = 431357,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41774,6 +42086,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Twilight Sky Prowler",
+		spellID = 431360,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41810,6 +42123,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Soaring Sky Fox",
+		spellID = 431359,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41846,6 +42160,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Hand of Reshkigaal",
+		spellID = 459193,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41885,6 +42200,7 @@ MM.AddMounts({
 MM.AddMounts({
 	{
 		name = "Hateforged Blazecycle",
+		spellID = 428067,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41921,6 +42237,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Kalu'ak Crest-Horn",
+		spellID = 1248309,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41957,6 +42274,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Keg Leg's Radiant Crocolisk",
+		spellID = 457654,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -41993,6 +42311,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Plunderlord's Golden Crocolisk",
+		spellID = 457650,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42067,6 +42386,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Kor'kron Warsaber",
+		spellID = 449126,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42103,6 +42423,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sentinel War Wolf",
+		spellID = 449140,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42139,6 +42460,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Majestic Azure Peafowl",
+		spellID = 432558,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42175,6 +42497,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Brilliant Sunburst Peafowl",
+		spellID = 432562,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42211,6 +42534,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Magenta Cloud Serpent",
+		spellID = 366647,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42247,6 +42571,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Pearlescent Goblin Wave Shredder",
+		spellID = 447413,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42283,6 +42608,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Royal Swarmer",
+		spellID = 414986,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42319,6 +42645,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Felcrystal Scorpion",
+		spellID = 411565,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42355,6 +42682,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Savage Blue Battle Turtle",
+		spellID = 433281,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42429,6 +42757,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Savage Alabaster Battle Turtle",
+		spellID = 473861,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42465,6 +42794,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Savage Crimson Battle Turtle",
+		spellID = 1266248,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42501,6 +42831,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Shimmermist Free Runner",
+		spellID = 1217965,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42537,6 +42868,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Silvermoon Sweeper",
+		spellID = 472487,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42573,6 +42905,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Underlight Corrupted Behemoth",
+		spellID = 448851,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42609,6 +42942,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Coldflame Cormaera",
+		spellID = 1226740,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42721,6 +43055,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Spring Harvesthog",
+		spellID = 1226511,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42833,6 +43168,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Highlands Gobbler",
+		spellID = 1251680,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42869,6 +43205,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Prized Turkey",
+		spellID = 1251690,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42905,6 +43242,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Cloudborn Razorwing",
+		spellID = 1266579,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42941,6 +43279,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jeweled Copper Scarab",
+		spellID = 428005,
 		expansion = 9,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -42977,6 +43316,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Jeweled Sapphire Scarab",
+		spellID = 428062,
 		expansion = 10,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -43013,6 +43353,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Golden Regal Scarab",
+		spellID = 428060,
 		expansion = 9,
 		category = "VENDOR",
 		obtainable = false,
@@ -43022,6 +43363,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Vicious Snapvine",
+		spellID = 1269273,
 		expansion = 11,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -43058,6 +43400,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Crested Ember Leafmimic",
+		spellID = 1305204,
 		expansion = 11,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -43094,6 +43437,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Comfy Silvermoon Flying Quilt",
+		spellID = 1270523,
 		expansion = 11,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -43168,6 +43512,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Bilgewater X-TREME Firework Rocket",
+		spellID = 1292344,
 		expansion = 11,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -43204,6 +43549,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Dusk-Painted Sun Roc",
+		spellID = 1283908,
 		expansion = 11,
 		category = "TRADINGPOST",
 		obtainable = true,
@@ -43366,6 +43712,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Umbral Ashes",
+		spellID = 1301775,
 		expansion = 11,
 		category = "ACHIEVEMENT",
 		obtainable = false,
@@ -43426,6 +43773,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Scarlet Lady",
+		spellID = 1267077,
 		expansion = 11,
 		category = "PROMOTION",
 		obtainable = false,
@@ -43435,6 +43783,7 @@ MM.AddMounts({
 	},
 	{
 		name = "The Sire's Palanquin",
+		spellID = 1266982,
 		expansion = 11,
 		category = "PROMOTION",
 		obtainable = false,
@@ -43454,6 +43803,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Spring Panda",
+		spellID = 1291315,
 		expansion = 11,
 		category = "STORE",
 		obtainable = false,
@@ -43463,6 +43813,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sha-Warped Owl",
+		spellID = 1285897,
 		expansion = 11,
 		category = "PROMOTION",
 		obtainable = false,
@@ -43472,6 +43823,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Sha-Warped Riding Wolf",
+		spellID = 1284679,
 		expansion = 11,
 		category = "PROMOTION",
 		obtainable = false,
@@ -43503,6 +43855,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Swift Shorestrider",
+		spellID = 101573,
 		expansion = 3,
 		category = "TCG",
 		obtainable = true,
@@ -44286,7 +44639,7 @@ MM.AddMounts({
 	},
 	{
 		name = "Nether Drake",
-		spellID = 3363,
+		spellID = 28828,
 		itemID = 21736,
 		expansion = 1,
 		category = "REP",

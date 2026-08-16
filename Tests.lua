@@ -4412,6 +4412,50 @@ local function runLogic()
 			:format(toys)
 	end)
 
+	check("Every spellID names the mount that carries it", function()
+		-- 353 spell ids came out of Mount.db2, matched on NAME. That is a good
+		-- source and a fallible join: two mounts can share a name, a name can
+		-- be renamed between patches, and a wrong id here would quietly point
+		-- the journal, the celebration and the plan at another mount.
+		--
+		-- The client can settle every one of them. GetMountFromSpell answers
+		-- what a spell actually summons, so each id is asked to name itself.
+		if not (C_MountJournal and C_MountJournal.GetMountFromSpell
+			and C_MountJournal.GetMountInfoByID) then
+			return nil, "this client cannot resolve a spell to a mount"
+		end
+		local checked, wrong, unresolved = 0, {}, 0
+		for _, rec in pairs(MM.DBByName or {}) do
+			if rec.spellID and not rec.stub then
+				local ok, mountID = pcall(C_MountJournal.GetMountFromSpell, rec.spellID)
+				if not (ok and mountID) then
+					unresolved = unresolved + 1
+				else
+					local name = C_MountJournal.GetMountInfoByID(mountID)
+					name = MM.Util.ReadableString(name)
+					if name then
+						checked = checked + 1
+						if rec.name and name:lower() ~= rec.name:lower() then
+							wrong[#wrong + 1] = ("%s carries %d, which summons %s")
+								:format(rec.name, rec.spellID, name)
+						end
+					end
+				end
+			end
+		end
+		if #wrong > 0 then
+			table.sort(wrong)
+			return false, ("%d of %d spell ids summon a different mount: %s")
+				:format(#wrong, checked, table.concat(wrong, "; ", 1,
+					math.min(4, #wrong)))
+		end
+		if checked == 0 then
+			return nil, "no spell id could be resolved on this client"
+		end
+		return true, ("%d spell ids checked against the client, every one names "
+			.. "its own mount; %d not resolvable here"):format(checked, unresolved)
+	end)
+
 	check("Travel data is loaded and routable", function()
 		-- Two datasets now decide most of the route's cost, and both fail the
 		-- same silent way: a file left out of the .toc loads nothing, errors
