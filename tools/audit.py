@@ -455,6 +455,14 @@ def requirement_stated_not_modelled():
         conds = re.findall(r'type = "(\w+)"', body)
         if any(c in ("REP", "ACHIEVEMENT", "QUEST", "COVENANT") for c in conds):
             continue
+        # A CURRENCY CONDITION COUNTS WHEN ITS AMOUNT IS THE RANK. A currency
+        # alone does not model a gate -- you can hold the coin and still be
+        # refused -- but a renown TRACK is a currency, and "Rank 5" modelled as
+        # five of the rank currency is the gate itself rather than the price.
+        # Matching on the number keeps that narrow: any other amount is a cost.
+        rank = re.search(r'(?:Rank|Renown) (\d+)', m.group(1) or m.group(2) or "")
+        if rank and re.search(r'amount = %s\b' % rank.group(1), body):
+            continue
         line = text[:text.find(body)].count("\n") + 1
         bad.append((flat, line, name.group(1),
                     m.group(1) or m.group(2)))

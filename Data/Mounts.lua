@@ -32908,6 +32908,12 @@ MM.AddMounts({
 				id = 2803,
 				type = "CURRENCY",
 			},
+			{
+				name = "Delver's Journey rank",
+				amount = 5,
+				id = 3130,
+				type = "CURRENCY",
+			},
 		},
 		altSources = {
 			{
@@ -35021,6 +35027,12 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 				name = "Voidlight Marl",
 				amount = 10,
 				id = 3316,
+				type = "CURRENCY",
+			},
+			{
+				name = "Delver's Journey rank",
+				amount = 5,
+				id = 3130,
 				type = "CURRENCY",
 			},
 		},
