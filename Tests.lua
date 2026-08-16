@@ -1766,7 +1766,7 @@ local function runLogic()
 			return out
 		end
 		local odd, checked = {}, 0
-		for _, rec in ipairs(MM.Data.Mounts or {}) do
+		for _, rec in ipairs(MM.DBList or {}) do
 			for _, cond in ipairs(rec.conditions or {}) do
 				if cond.type == "CURRENCY" and cond.id and cond.name then
 					local info = select(2, pcall(C_CurrencyInfo.GetCurrencyInfo, cond.id))
@@ -1802,7 +1802,7 @@ local function runLogic()
 			return nil, "a Timewalking week is running; nothing to assert"
 		end
 		local offered = {}
-		for _, rec in ipairs(MM.Data.Mounts or {}) do
+		for _, rec in ipairs(MM.DBList or {}) do
 			if rec.category == "TIMEWALKING" and rec.conditions then
 				local _, _, text = TW.Estimate(rec)
 				if text and text:find("buy it", 1, true) then

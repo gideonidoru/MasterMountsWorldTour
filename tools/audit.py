@@ -43,6 +43,11 @@ def resolve(clean):
                 defined[mod].add(m.group(1))
         for m in re.finditer(r'MM\.(\w+)\s*=\s*\{', s):
             defined.setdefault(m.group(1), set())
+        # A module does not have to be a table literal. `MM.optionsCategory =
+        # category` names one just as surely, and without this the name reads
+        # as a module nothing defines.
+        for m in re.finditer(r'MM\.(\w+)\s*=[^=]', s):
+            defined.setdefault(m.group(1), set())
     return defined
 
 # Fields that are data rather than functions, set up elsewhere or by the client.
@@ -51,7 +56,10 @@ ALLOW = {"lastRun", "SECTIONS", "route", "totals", "PRESETS", "TIER", "URGENCY",
          "collectedCount", "totalCount", "active", "scanned", "deferred",
          "unrouted", "capReport", "weaveReport", "rejections", "considered",
          "LENGTHS", "SCHEMA", "KINDS", "blocksSkipped", "lastBuildMs",
-         "playerFaction", "PREFIX", "Handlers", "inReport", "lastHarvest"}
+         "playerFaction", "PREFIX", "Handlers", "inReport", "lastHarvest",
+         # Fields of a Blizzard Settings category object, which is handed to us
+         # rather than declared here.
+         "GetID", "ID"}
 
 def unresolved(clean, defined):
     bad = []
@@ -59,7 +67,14 @@ def unresolved(clean, defined):
         for i, line in enumerate(s.split("\n"), 1):
             for m in re.finditer(r'MM\.(\w+)\.(\w+)', line):
                 mod, fn = m.group(1), m.group(2)
-                if mod not in defined or fn in defined[mod] or fn in ALLOW:
+                # AN UNKNOWN MODULE IS THE STRONGEST SIGNAL, and it used to
+                # be the one case waved through. `MM.Data.Mounts` -- a name
+                # invented while writing a check -- passed every static gate
+                # and threw in the client, failing the release gate itself.
+                if mod not in defined:
+                    bad.append((f, i, f"MM.{mod} -- no such module"))
+                    continue
+                if fn in defined[mod] or fn in ALLOW:
                     continue
                 if fn[0].isupper() or fn.startswith("last"):
                     bad.append((f, i, f"MM.{mod}.{fn}"))

@@ -197,6 +197,12 @@ around, and a reload does not invalidate it the way a counter would.
   every such condition at a season rollover -- the id changing is expected, not
   a defect. Rule 28 catches a rollover that updated some records and missed
   others by reporting one named track measured as two different ids.
+- **A NEW CHECK CAN BREAK THE RELEASE GATE.** Two checks referenced `MM.Data`,
+  a namespace nothing defines, and threw in the client -- the gate's own
+  verdict went to "not shippable" because of the tests, not the addon. The
+  `unresolved MM.*` rule waved it through: an unknown MODULE was the one case
+  it skipped. It now reports that, which is the strongest signal it has. Run
+  the audit after writing a check, not only after changing shipped code.
 
 ## Where things live
 
