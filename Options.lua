@@ -172,6 +172,33 @@ local function buildPanel()
 	y = y - 24
 	label("/mm  —  show | plan | monitor | compact | route | easiest | audit | zone | compare")
 
+	-- A tip jar, said once, in the one place someone has already chosen to
+	-- open. Deliberately not on the main window, not in the minimap menu and
+	-- not at login: a reminder that arrives while somebody is planning a route
+	-- is an interruption, and this addon does not interrupt.
+	--
+	-- The client cannot open a browser, so the address is copyable rather than
+	-- clickable. Focusing selects the whole thing, which makes it one click and
+	-- Ctrl-C rather than a drag.
+	local KOFI = "https://ko-fi.com/gideonidoru"
+	label("Free, and staying that way. If it has saved you some flying:")
+	local kofi = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
+	kofi:SetSize(240, 20)
+	kofi:SetAutoFocus(false)
+	kofi:SetFontObject("ChatFontNormal")
+	kofi:SetText(KOFI)
+	kofi:SetCursorPosition(0)
+	-- Read-only in effect: the only edit anyone could make here is one that
+	-- makes the address wrong.
+	kofi:SetScript("OnTextChanged", function(self, userInput)
+		if userInput then self:SetText(KOFI); self:HighlightText() end
+	end)
+	kofi:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
+	kofi:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	kofi:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	MM.Theme.Register(kofi, "editbox")
+	place(kofi, 30, 4)
+
 	heading("|cffffd84dCollecting|r", 4)
 	check("Celebration splash when a hunted mount drops", "celebration",
 		"Full-screen fanfare with the mount's model.")
