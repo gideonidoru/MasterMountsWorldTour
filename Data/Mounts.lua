@@ -18433,8 +18433,6 @@ MM.AddMounts({
 			},
 			{
 				name = "Grateful Offering",
-				amount = 5000,
-				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -20055,8 +20053,6 @@ MM.AddMounts({
 			},
 			{
 				name = "Grateful Offering",
-				amount = 2500,
-				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -32225,6 +32221,7 @@ MM.AddMounts({
 		acquire = {
 			name = "Vile Essence",
 			count = 1000,
+			item = 259361,
 			note = "Then open the Abandoned Ritual Skull at 44.72, 44.10",
 		},
 		altSources = {
@@ -34569,7 +34566,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "Coiled Isle currency",
+				name = "Corrosive Coin",
 				amount = 10000,
 				id = 3448,
 				type = "CURRENCY",
@@ -34760,7 +34757,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 				type = "REP",
 			},
 			{
-				name = "Bloodsworn currency",
+				name = "Coiled Filament",
 				amount = 2500,
 				id = 3546,
 				type = "CURRENCY",

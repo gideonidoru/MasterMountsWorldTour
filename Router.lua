@@ -2355,7 +2355,33 @@ function R.RunBuild(sig)
 	-- visit -- NOT the whole grind. Taivan fails on hours. An island run passes
 	-- on fifteen no matter how many runs the odds imply. Tier no
 	-- longer has to mean two different things at once.
+	--
+	-- An ACCUMULATION cannot be finished by turning up, and that is a different
+	-- thing from a long grind. A one-in-a-thousand rare has an enormous total
+	-- too, but each visit is a whole attempt that might succeed -- which is why
+	-- the rule above measures the visit and not the grind. Needing a thousand
+	-- more Vile Essence is not that: this visit yields a fraction of it and the
+	-- goal cannot complete today however lucky you are.
+	--
+	-- Reported from play, and the tier line above was why: both Zul'Aman
+	-- treasures are FIELD, so they returned true on the first line and the
+	-- visit measurement never ran. That line reintroduced the tier test this
+	-- comment block exists to replace.
+	local function outstanding(stop)
+		if not (MM.Acquire and MM.Acquire.ChainProgress) then return false end
+		for _, m in ipairs(stop.members or {}) do
+			local rec = m.rec
+			local acq = rec and rec.acquire
+			if acq and (acq.count or 0) > 1 then
+				local _, remaining = MM.Acquire.ChainProgress(rec)
+				if (remaining or 0) > 0 then return true end
+			end
+		end
+		return false
+	end
+
 	local function shortWork(stop)
+		if outstanding(stop) then return false end
 		if stop.tier <= MM.Planner.TIER.FIELD then return true end
 		return (stop.visitMinutes or 15) <= 30
 	end

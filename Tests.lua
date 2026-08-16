@@ -1773,9 +1773,16 @@ local function runLogic()
 					local client = info and info.name
 					if client then
 						checked = checked + 1
+						-- An exact match needs no word comparison, and MUST be
+						-- taken first: the filter below drops words of three
+						-- letters or fewer, so "Kej" reduces to nothing on both
+						-- sides and two identical names shared nothing at all.
+						local same = cond.name:lower() == client:lower()
 						local mine, theirs, shared = words(cond.name), words(client), false
 						for w in pairs(mine) do if theirs[w] then shared = true end end
-						if not shared then
+						-- Neither name offering a long word is not disagreement.
+						if not next(mine) or not next(theirs) then shared = true end
+						if not (same or shared) then
 							odd[#odd + 1] = ("%s: id %d is \"%s\" here, \"%s\" in the client")
 								:format(rec.name, cond.id, cond.name, client)
 						end

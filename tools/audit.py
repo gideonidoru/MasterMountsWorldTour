@@ -380,6 +380,55 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def currency_name_id_pairs():
+    """Every (currency name -> {id: places}) the source data states.
+
+    Both spellings count. A condition table carries `type = "CURRENCY"` with
+    an id and a name in either order, and SetConditionAmount states the same
+    pair positionally -- which rule 28 originally missed, so the two mounts
+    naming Reservoir Anima's id "Grateful Offering" were invisible to it.
+    """
+    seen = {}
+    def note(cname, cid, path, i):
+        seen.setdefault(cname.strip().lower(), {}).setdefault(cid, []).append((path, i))
+    for path in sorted(glob.glob("Data/_source/*.lua")):
+        text = open(path, encoding="utf-8", errors="replace").read()
+        for i, line in enumerate(text.split("\n"), 1):
+            if line.lstrip().startswith("--"):
+                continue
+            m = re.search(r'type\s*=\s*"CURRENCY"[^}]*?id\s*=\s*(\d+)[^}]*?name\s*=\s*"([^"]+)"', line)
+            if m:
+                note(m.group(2), m.group(1), path, i)
+                continue
+            m = re.search(r'type\s*=\s*"CURRENCY"[^}]*?name\s*=\s*"([^"]+)"[^}]*?id\s*=\s*(\d+)', line)
+            if m:
+                note(m.group(1), m.group(2), path, i)
+                continue
+            m = re.search(r'SetConditionAmount\(\s*"[^"]*"\s*,\s*"CURRENCY"\s*,\s*"([^"]+)"\s*,\s*[\d.]+\s*,\s*(\d+)', line)
+            if m:
+                note(m.group(1), m.group(2), path, i)
+    return seen
+
+def one_id_two_names():
+    """One currency id given two different names.
+
+    The mirror of rule 28, and the cheaper half of the same question. Id 1813
+    is Reservoir Anima; two records called it "Grateful Offering" while
+    carrying its id and its amount, so the row named a currency the player
+    does not actually spend. Only the client can say what an id is really
+    called -- but the database disagreeing WITH ITSELF is visible from here.
+    """
+    by_id = {}
+    for name, ids in currency_name_id_pairs().items():
+        for cid, spots in ids.items():
+            by_id.setdefault(cid, {})[name] = spots[0]
+    out = []
+    for cid, names in sorted(by_id.items()):
+        if len(names) > 1:
+            where = ", ".join(f'"{n}" at {p}:{i}' for n, (p, i) in sorted(names.items()))
+            out.append((cid, where))
+    return out
+
 def one_track_two_ids():
     """The same named currency track carrying more than one id.
 
@@ -392,23 +441,7 @@ def one_track_two_ids():
     Names are the anchor because they are what a person reads while editing.
     """
     out = []
-    seen = {}
-    for path in sorted(glob.glob("Data/_source/*.lua")):
-        text = open(path, encoding="utf-8", errors="replace").read()
-        for i, line in enumerate(text.split("\n"), 1):
-            if line.lstrip().startswith("--"):
-                continue
-            m = re.search(r'type\s*=\s*"CURRENCY"[^}]*?id\s*=\s*(\d+)[^}]*?name\s*=\s*"([^"]+)"', line)
-            if not m:
-                m = re.search(r'type\s*=\s*"CURRENCY"[^}]*?name\s*=\s*"([^"]+)"[^}]*?id\s*=\s*(\d+)', line)
-                if not m:
-                    continue
-                cid, cname = m.group(2), m.group(1)
-            else:
-                cid, cname = m.group(1), m.group(2)
-            key = cname.strip().lower()
-            seen.setdefault(key, {}).setdefault(cid, []).append((path, i))
-    for name, ids in sorted(seen.items()):
+    for name, ids in sorted(currency_name_id_pairs().items()):
         if len(ids) > 1:
             where = []
             for cid, spots in sorted(ids.items()):
@@ -1386,6 +1419,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    onename = one_id_two_names()
+    print(f"one currency id, two names: {len(onename)}")
+    for cid, where in onename:
+        print(f"   id {cid} is called {where}")
     twoid = one_track_two_ids()
     print(f"one track, two currency ids: {len(twoid)}")
     for name, where in twoid:

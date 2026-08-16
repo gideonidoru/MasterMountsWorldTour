@@ -132,7 +132,7 @@ around, and a reload does not invalidate it the way a counter would.
   `noLocationReason` does for a place. It is a sentence, not a boolean, it is
   listed in `/mm known` so it cannot become a comment that only satisfies a
   checker, and it is NOT a way to silence a gate that could be modelled.
-- Gates before any release: `python3 tools/audit.py` (**28 rules**), `luac -p` on every
+- Gates before any release: `python3 tools/audit.py` (**29 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
@@ -203,6 +203,13 @@ around, and a reload does not invalidate it the way a counter would.
   `unresolved MM.*` rule waved it through: an unknown MODULE was the one case
   it skipped. It now reports that, which is the strongest signal it has. Run
   the audit after writing a check, not only after changing shipped code.
+- **"You are already here" must not promote work this visit cannot finish.**
+  `shortWork` measures the VISIT, deliberately: a one-in-a-thousand rare has a
+  huge total but each visit is a whole attempt that might succeed. An
+  accumulation is different -- a thousand more Vile Essence cannot complete
+  today however lucky you are. A tier fast-path was short-circuiting the visit
+  measurement for everything at FIELD or below, which is how two Zul'Aman
+  treasures reached positions 3 and 5 with 13-day estimates.
 
 ## Where things live
 

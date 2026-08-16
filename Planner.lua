@@ -1859,7 +1859,18 @@ function P.Explain(entry)
 	local chance = P.ExpectedMounts(entry)
 	local vpm = P.ValuePerMinute(entry)
 	if chance > 0 then
-		local perVisit = chance >= 1 and "guaranteed this visit"
+		-- "Guaranteed this visit" is true of a treasure you can simply open,
+		-- and false of one still wanting a thousand items -- the same tooltip
+		-- was saying that directly above a 13-day estimate. Certainty is about
+		-- the reward, not about today, so say which.
+		local outstanding = 0
+		if MM.Acquire and MM.Acquire.ChainProgress and rec and rec.acquire
+			and (rec.acquire.count or 0) > 1 then
+			outstanding = select(2, MM.Acquire.ChainProgress(rec)) or 0
+		end
+		local perVisit = chance >= 1
+			and (outstanding > 0 and "guaranteed once you have collected them"
+				or "guaranteed this visit")
 			or ("%.3g%% per attempt"):format(chance * 100)
 		local rate = vpm >= 1 and ("%.1f/hour"):format(vpm)
 			or ("about 1 per %d hours"):format(math.max(1, math.floor(1 / math.max(vpm, 1e-6) + 0.5)))
