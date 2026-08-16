@@ -182,7 +182,14 @@ local function buildPanel()
 	-- Ctrl-C rather than a drag.
 	local KOFI = "https://ko-fi.com/gideonidoru"
 	label("Free, and staying that way. If it has saved you some flying:")
-	local kofi = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
+	-- NO TEMPLATE, deliberately. `InputBoxTemplate` would look tidier and is
+	-- almost certainly present, but "almost certainly" is not a standard this
+	-- file holds anything else to: every other template used here has prior
+	-- proof somewhere in the addon, and a template that fails to resolve takes
+	-- CreateFrame down with it -- which would cost the whole options panel for
+	-- the sake of a border. The report copy box below is built exactly this
+	-- way, and the theme owns the appearance either way.
+	local kofi = CreateFrame("EditBox", nil, content)
 	kofi:SetSize(240, 20)
 	kofi:SetAutoFocus(false)
 	kofi:SetFontObject("ChatFontNormal")
