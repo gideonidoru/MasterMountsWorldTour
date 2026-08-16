@@ -4435,7 +4435,26 @@ local function runLogic()
 					name = MM.Util.ReadableString(name)
 					if name then
 						checked = checked + 1
-						if rec.name and name:lower() ~= rec.name:lower() then
+						-- TWO NAMING CONVENTIONS THIS DATABASE USES ON PURPOSE,
+						-- and a spell id is not wrong for meeting either.
+						--
+						-- A faction qualifier: three records read "... (Alliance)"
+						-- or "(Horde)" to tell a pair apart that the journal
+						-- shows under one name.
+						--
+						-- A faction-neutral umbrella: "Chauffeured Chopper" is
+						-- one record for a mount the journal lists per faction
+						-- as the Mechano-Hog and the Mekgineer's Chopper. Its
+						-- own notes say so -- "the spellID is what identifies
+						-- it, not the name" -- which is exactly right and
+						-- exactly what a name comparison cannot see.
+						local ours = rec.name and rec.name:lower() or ""
+						local theirs = name:lower()
+						local bare = ours:gsub("%s*%((alliance|horde)%)$", "")
+						bare = ours:gsub("%s*%(alliance%)$", ""):gsub("%s*%(horde%)$", "")
+						local umbrella = rec.notes and rec.notes:find(
+							"the spellID is what identifies it", 1, true) ~= nil
+						if ours ~= theirs and bare ~= theirs and not umbrella then
 							wrong[#wrong + 1] = ("%s carries %d, which summons %s")
 								:format(rec.name, rec.spellID, name)
 						end
@@ -5343,9 +5362,33 @@ local function runLogic()
 		-- promises one thing and routes another.
 		local S = MM.Session
 		if not (S and S.Fit) then return false, "session mode missing" end
+		-- EACH LENGTH FITTED ONCE.
+		--
+		-- This asked S.Fit for the same four lengths twice over and then twice
+		-- more for the numbers it prints -- ten packs of an 86-stop route to
+		-- answer four questions. Nothing about a fit changes between those
+		-- calls, and it made this the slowest check in the suite until one
+		-- extra routable goal pushed it past its own 1,200 ms bar. The bar was
+		-- right; the check was doing the work two and a half times.
+		local fits = {}
+		for _, len in ipairs(S.LENGTHS) do
+			local chosen, mounts, used = S.Fit(len.minutes)
+			fits[len.minutes] = { chosen = chosen, mounts = mounts, used = used }
+		end
+		local function fitFor(minutes)
+			local f = fits[minutes]
+			if not f then
+				local chosen, mounts, used = S.Fit(minutes)
+				f = { chosen = chosen, mounts = mounts, used = used }
+				fits[minutes] = f
+			end
+			return f
+		end
+
 		local worst
 		for _, len in ipairs(S.LENGTHS) do
-			local chosen, _, used = S.Fit(len.minutes)
+			local f = fitFor(len.minutes)
+			local chosen, used = f.chosen, f.used
 			if used > len.minutes + 0.001 then
 				worst = ("%d min session planned %.1f min of work"):format(len.minutes, used)
 			end
@@ -5363,7 +5406,8 @@ local function runLogic()
 		-- feature report PASS.
 		local prevStops, prevMounts = -1, -1
 		for _, len in ipairs(S.LENGTHS) do
-			local chosen, mounts = S.Fit(len.minutes)
+			local f = fitFor(len.minutes)
+			local chosen, mounts = f.chosen, f.mounts
 			if #chosen < prevStops then
 				return false, ("%d min offered fewer stops than a shorter session")
 					:format(len.minutes)
@@ -5374,12 +5418,12 @@ local function runLogic()
 			end
 			prevStops, prevMounts = #chosen, mounts
 		end
-		local twenty, tMounts = S.Fit(20)
-		local longest, lMounts = S.Fit(S.LENGTHS[#S.LENGTHS].minutes)
+		local twenty = fitFor(20)
+		local longest = fitFor(S.LENGTHS[#S.LENGTHS].minutes)
 		return true, ("%d lengths, all inside their clock; 20 min -> %d stops "
 			.. "(~%.2f mounts), %d min -> %d stops (~%.2f mounts)"):format(
-			#S.LENGTHS, #twenty, tMounts, S.LENGTHS[#S.LENGTHS].minutes,
-			#longest, lMounts)
+			#S.LENGTHS, #twenty.chosen, twenty.mounts,
+			S.LENGTHS[#S.LENGTHS].minutes, #longest.chosen, longest.mounts)
 	end)
 
 	check("The contribution file is a template, not a guess", function()
