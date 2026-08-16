@@ -2034,8 +2034,10 @@ local function runLogic()
 		-- zone used to fail this check with "opposite corners got one identical
 		-- answer", which blames the journey planner for missing map data and
 		-- blocks a release for a gap that is listed under REMAINING GAPS.
-		local group = MM.MapTraversalGroup and MM.MapTraversalGroup[mapID]
-		if not group then
+		--
+		-- Presence means a travel NODE on this map. MapTraversalGroup is not
+		-- that -- it holds 48 zones and Orgrimmar, with 28 nodes, is not one.
+		if J.ZoneOnNetwork and not J.ZoneOnNetwork(mapID) then
 			return nil, ("%s is not on the travel network, so every journey "
 				.. "leaves and returns -- see REMAINING GAPS"):format(info.name)
 		end

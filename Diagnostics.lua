@@ -661,12 +661,19 @@ MM:On("MM_GAPS_DEBUG", function()
 	-- Named here because it is not derivable from the client: it needs the two
 	-- ends of a portal, and nothing exposes those but standing at them.
 	local offNetwork = {}
-	for _, rec in pairs(MM.DBByName or {}) do
+	local onNet = MM.Journey and MM.Journey.ZoneOnNetwork
+	for _, rec in pairs(onNet and MM.DBByName or {}) do
 		if rec.obtainable and rec.zone and rec.zone.mapID
-			and not (MM.MapTraversalGroup and MM.MapTraversalGroup[rec.zone.mapID]) then
+			and not onNet(rec.zone.mapID) then
 			local z = offNetwork[rec.zone.mapID]
 			if not z then
-				z = { name = rec.zone.name or ("map " .. rec.zone.mapID), n = 0 }
+				-- THE CLIENT'S NAME FOR THE MAP, not the record's zone name.
+				-- A record may name a place that is not a map -- "Trading Post"
+				-- sits on Silvermoon's id -- and whichever record was reached
+				-- first then named the whole zone.
+				local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(rec.zone.mapID)
+				z = { name = (info and info.name) or rec.zone.name
+					or ("map " .. rec.zone.mapID), n = 0 }
 				offNetwork[rec.zone.mapID] = z
 			end
 			z.n = z.n + 1

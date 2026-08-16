@@ -22,6 +22,29 @@ local _, MM = ...
 MM.Journey = {}
 local J = MM.Journey
 
+-- IS THIS ZONE ON THE TRAVEL GRAPH AT ALL?
+--
+-- The honest test is whether any travel NODE sits on the map. A zone with none
+-- cannot be routed through or within: the planner can only leave it and come
+-- back by teleport, so every journey to a goal there costs the same whatever
+-- the origin, and its stops cannot be grouped by geography.
+--
+-- NOT MapTraversalGroup, which is the trap. That table has 48 entries and
+-- groups certain zones for traversal; it is not an index of what is on the
+-- network. Orgrimmar carries 28 nodes and appears in it nowhere, so testing it
+-- reported Orgrimmar, Icecrown and a hundred others as off-network.
+local onNetwork
+function J.ZoneOnNetwork(mapID)
+	if not mapID then return false end
+	if not onNetwork then
+		onNetwork = {}
+		for _, node in pairs(MM.TravelNodes or {}) do
+			if node.mapID then onNetwork[node.mapID] = true end
+		end
+	end
+	return onNetwork[mapID] == true
+end
+
 local graph, byZone      -- node name -> { mapID, x, y, zone }, and zone -> {names}
 local edges              -- from -> { to -> {secs, mode} }
 -- Suffixed spellings ("beastwatch, gorgrond") that point at an EXISTING node

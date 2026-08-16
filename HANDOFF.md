@@ -224,6 +224,12 @@ around, and a reload does not invalidate it the way a counter would.
   `Nav/FlightPointData` already holds real coordinates for its flight masters;
   what is missing is the two ends of the portal, and nothing exposes those but
   standing at them. Reported under REMAINING GAPS rather than guessed.
+- **"On the travel network" means a NODE ON THAT MAP -- `J.ZoneOnNetwork`.**
+  `MapTraversalGroup` looks like it answers this and does not: it holds 48
+  zones, and Orgrimmar carries 28 nodes while appearing in it nowhere. Using it
+  reported Orgrimmar, Icecrown, Dazar'alor and a hundred others as unreachable.
+  Node coverage is 184 maps, which is the figure the travel diagnostic prints.
+  The `offnet` harness pins all of that down.
 - **A currency that returns a value is not thereby the right currency.** Id 3130
   was picked for Midnight's Delver's Journey rank because it answered while the
   other candidates read 0 of 0 -- but an unstarted track reads zero PRECISELY
