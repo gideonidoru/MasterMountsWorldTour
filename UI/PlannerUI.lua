@@ -68,6 +68,23 @@ local function initMissingRow(row, entry)
 		row.hl:SetAllPoints()
 		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
+		-- BANDED BY STOP, NOT STRIPED BY ROW.
+		--
+		-- The row surface sits at 20% over a pane of nearly the same brown, so
+		-- ninety rows ran together into one field of texture: the structure was
+		-- all there and none of it was visible. A band fixes the contrast, and
+		-- banding on the STOP rather than the row does something a zebra
+		-- cannot -- the five mounts that share the Dazar'alor trip get one
+		-- band between them, so a shared stop reads as one block instead of
+		-- five separate lines that happen to be adjacent.
+		--
+		-- Tinted through the theme rather than coloured here, so it follows a
+		-- theme change like everything else.
+		row.band = row:CreateTexture(nil, "BACKGROUND", nil, 2)
+		row.band:SetPoint("TOPLEFT", 1, 0)
+		row.band:SetPoint("BOTTOMRIGHT", -1, 0)
+		MM.Theme.RegisterTint(row.band, "row", 0.55)
+
 		-- ONE ICON SIZE ACROSS THE ADDON.
 		--
 		-- The missing list drew 28, the plan drew 30 and the collection window
@@ -211,6 +228,65 @@ end
 ------------------------------------------------------------
 -- Plan rows (right pane)
 ------------------------------------------------------------
+-- AN EMPTY LIST IS A PLACE, NOT A MISSING ONE.
+--
+-- Both panes said their piece in a single grey sentence pinned 140px from the
+-- top-left of a column six hundred pixels wide, so a planner with everything
+-- already planned showed one line adrift in a large brown void. That reads as
+-- something failing to load rather than as a finished job.
+--
+-- Built as a block that centres itself in the list it belongs to: a quiet
+-- glyph, a headline in the theme's own accent, and a line underneath saying
+-- what to do next. Nothing here is coloured directly -- every part registers
+-- with the theme so it follows a theme change like the rest of the window.
+local function makeEmptyState(parent, headline, hint)
+	local block = CreateFrame("Frame", nil, parent)
+	block:SetSize(320, 132)
+	block:Hide()
+
+	local glyph = block:CreateTexture(nil, "ARTWORK")
+	glyph:SetSize(56, 56)
+	glyph:SetPoint("TOP")
+	glyph:SetTexture(MM.MEDIA .. "icon.tga")
+	glyph:SetAlpha(0.16)
+
+	local head = block:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	head:SetPoint("TOP", glyph, "BOTTOM", 0, -14)
+	head:SetText(headline)
+	MM.Theme.RegisterText(head, "accent")
+
+	local sub = block:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	sub:SetPoint("TOP", head, "BOTTOM", 0, -8)
+	sub:SetWidth(300)
+	sub:SetJustifyH("CENTER")
+	sub:SetText(hint)
+	MM.Theme.RegisterText(sub, "muted")
+
+	block.head, block.sub = head, sub
+
+	-- TWO LINES, BECAUSE THE DIFFERENCE BETWEEN THEM MATTERS.
+	--
+	-- The plan pane distinguishes three empty states -- charting, nothing
+	-- routable from here, and genuinely nothing planned -- and the note at that
+	-- call site is emphatic that confusing them makes a working addon read as a
+	-- broken one. A block with a fixed headline would have flattened all three
+	-- into one, so the headline is settable too.
+	function block:SetMessage(headline, hint)
+		self.head:SetText(headline or "")
+		self.sub:SetText(hint or "")
+	end
+
+	-- Compatibility with the plain font string this replaced: anything still
+	-- calling SetText gets its words, and the headline steps out of the way
+	-- rather than contradicting them.
+	function block:SetText(text)
+		self.head:SetText("")
+		self.sub:SetText(text or "")
+	end
+
+	return block
+end
+
 local function initPlanRow(row, data)
 	local entry, index = data.entry, data.index
 	if not row.built then
@@ -305,6 +381,9 @@ local function initPlanRow(row, data)
 	-- Only the first row of a group is numbered; the rest sit blank beneath it,
 	-- which is what "these are one stop" looks like.
 	row.num:SetText(data.sameStopAsPrevious and "" or (index .. "."))
+	-- Every row of a stop shares its band, which is what makes the group read
+	-- as one trip rather than as neighbours.
+	row.band:SetShown((index or 0) % 2 == 0)
 	row.icon:SetTexture(entry.icon or 134400)
 	row.icon:SetDesaturated(data.waiting and true or false)
 	row.name:SetText(entry.name)
@@ -568,6 +647,20 @@ function UI.BuildPlanner(panel)
 	-- label's text width, so it read as shoved in: it had no relationship to
 	-- the column it filters. Aligning it to the column edge gives it a margin
 	-- on both sides and lets the header breathe.
+	-- A HAIRLINE UNDER EACH COLUMN HEADING.
+	--
+	-- Both headings floated over their lists with nothing tying them to the
+	-- column they name, so the eye had to infer where one column stopped and
+	-- the next began from the gap alone. A rule is the cheapest possible way to
+	-- say "this heading owns everything below it", and it is the device the
+	-- theme already ships for exactly this -- `RegisterRule`, the same one the
+	-- active-goal marker uses, so it follows a theme change too.
+	local leftRule = panel:CreateTexture(nil, "ARTWORK")
+	leftRule:SetPoint("TOPLEFT", leftHeader, "BOTTOMLEFT", 0, -2)
+	leftRule:SetPoint("TOPRIGHT", leftHeader, "BOTTOMRIGHT", 0, -2)
+	leftRule:SetHeight(1)
+	MM.Theme.RegisterRule(leftRule, "subtle")
+
 	local missingSearch = CreateFrame("EditBox", nil, panel, "SearchBoxTemplate")
 	missingSearch:SetSize(210, 20)
 	missingSearch:SetPoint("RIGHT", leftHeader, "RIGHT", 0, 0)
@@ -582,13 +675,11 @@ function UI.BuildPlanner(panel)
 	-- box, which reads as lost mounts rather than an active filter.
 	MM.Planner.filters.search = ""
 
-	panel.missingEmpty = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	panel.missingEmpty:SetPoint("TOPLEFT", 40, -140)
-	panel.missingEmpty:SetWidth(360)
-	panel.missingEmpty:SetText("No missing mounts match these filters.")
-	panel.missingEmpty:SetTextColor(0.55, 0.55, 0.6)
-	MM.Theme.RegisterText(panel.missingEmpty, "muted")
-	panel.missingEmpty:Hide()
+	panel.missingEmpty = makeEmptyState(panel,
+		"Nothing left to choose",
+		"Every mount this filter can see is already on your plan. "
+		.. "Widen the filters above to look further.")
+	panel.missingEmpty:SetPoint("CENTER", panel, "TOPLEFT", 219, -390)
 
 	-- TWO OPPOSITE CORNERS, LIKE EVERY OTHER LIST IN THE ADDON.
 	--
@@ -660,17 +751,20 @@ function UI.BuildPlanner(panel)
 	rightLabel:SetText("Farm Plan (route order)")
 	MM.Theme.RegisterText(rightLabel, "accent")
 
-	panel.planEmpty = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	panel.planEmpty:SetPoint("TOPLEFT", 540, -140)
-	panel.planEmpty:SetWidth(360)
+	-- The matching rule for the right column. See the note on the left one.
+	local rightRule = panel:CreateTexture(nil, "ARTWORK")
+	rightRule:SetPoint("TOPLEFT", rightHeader, "BOTTOMLEFT", 0, -2)
+	rightRule:SetPoint("TOPRIGHT", rightHeader, "BOTTOMRIGHT", 0, -2)
+	rightRule:SetHeight(1)
+	MM.Theme.RegisterRule(rightRule, "subtle")
+
 	-- There is no Optimize button any more -- the plan charts itself the moment
 	-- you change it -- and this line was still telling people to press one.
-	panel.planEmpty:SetText("Your farm plan is empty.\n\nAdd mounts with the [+] buttons,"
-		.. " or use Auto-Plan / Add 10 Easiest. The plan charts itself as soon as"
-		.. " you add something; then press Start Route.")
-	panel.planEmpty:SetTextColor(0.55, 0.55, 0.6)
-	MM.Theme.RegisterText(panel.planEmpty, "muted")
-	panel.planEmpty:Hide()
+	panel.planEmpty = makeEmptyState(panel,
+		"No plan yet",
+		"Add mounts with [+], or use Auto-Plan All. The plan charts itself as "
+		.. "soon as you add something, then Start Route follows it.")
+	panel.planEmpty:SetPoint("CENTER", panel, "TOPLEFT", 810, -390)
 	panel.planEmptyRef = panel.planEmpty
 
 	-- WORKING NOTICE, in the middle of the plan pane.
@@ -974,10 +1068,14 @@ function UI.RefreshPlannerNow()
 		missingBox.emptyText:SetShown(#missing == 0)
 		-- An empty list here means something GOOD -- everything reachable is
 		-- planned -- and it has to say so, or it reads as a filter that broke.
-		if #missing == 0 and missingBox.emptyText.SetText then
-			missingBox.emptyText:SetText(#all > 0
-				and "Everything here is already on your plan."
-				or "Nothing matches those filters.")
+		if #missing == 0 and missingBox.emptyText.SetMessage then
+			if #all > 0 then
+				missingBox.emptyText:SetMessage("Nothing left to choose",
+					"Every mount this filter can see is already on your plan.")
+			else
+				missingBox.emptyText:SetMessage("No matches",
+					"Nothing matches those filters. Widen them above to look further.")
+			end
 		end
 	end
 
@@ -1034,18 +1132,19 @@ function UI.RefreshPlannerNow()
 		-- "Empty" and "not charted yet" look identical and mean opposite
 		-- things. Saying the wrong one over a plan of 286 goals is how a
 		-- working addon reads as a broken one.
-		if #items == 0 and planBox.emptyText.SetText then
+		if #items == 0 and planBox.emptyText.SetMessage then
 			local planned = MM.cdb and MM.cdb.plan and #MM.cdb.plan or 0
 			if planned > 0 and MM.Router.IsBuilding and MM.Router.IsBuilding() then
-				planBox.emptyText:SetText(
-					("Charting %d mounts into a route\226\128\166"):format(planned))
+				planBox.emptyText:SetMessage("Charting your route",
+					("Working %d mounts into an order\226\128\166"):format(planned))
 			elseif planned > 0 then
-				planBox.emptyText:SetText("Nothing in your plan can be routed from here"
-					.. " right now.\n\nSee /mm whynot for what is holding each one back.")
+				planBox.emptyText:SetMessage("Nothing routable from here",
+					"Your plan is full, but none of it can be reached right now. "
+					.. "/mm whynot says what is holding each one back.")
 			else
-				planBox.emptyText:SetText("Your farm plan is empty.\n\nAdd mounts with the"
-					.. " [+] buttons, or use Auto-Plan / Add 10 Easiest. The plan charts"
-					.. " itself as soon as you add something; then press Start Route.")
+				planBox.emptyText:SetMessage("No plan yet",
+					"Add mounts with [+], or use Auto-Plan All. The plan charts itself "
+					.. "as soon as you add something, then Start Route follows it.")
 			end
 		end
 	end
