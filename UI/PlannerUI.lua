@@ -615,7 +615,12 @@ function UI.BuildPlanner(panel)
 	-- up space for the action strip below it.
 	missingBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
 	missingBox:SetPoint("TOPLEFT", 4, -66)
-	missingBox:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 434, 6)
+	-- BOTTOM 48, THE SAME AS THE PLAN COLUMN. This sat at 6 while the column
+	-- beside it stopped at 48 to clear the action strip, so the two panes --
+	-- and the two scroll bars on them -- ended forty-two pixels apart with
+	-- nothing in the gap to explain why. The strip now reads as a full-width
+	-- footer under both columns rather than a notch cut out of one.
+	missingBox:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 434, 48)
 
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	-- SIX, LIKE EVERY OTHER SCROLLBAR HERE. This one sat at 4 and nothing else
@@ -634,6 +639,14 @@ function UI.BuildPlanner(panel)
 	mview:SetElementExtent(46)
 	mview:SetElementInitializer("Button", initMissingRow)
 	ScrollUtil.InitScrollBoxListWithScrollBar(missingBox, missingBar, mview)
+	-- A BAR ON A LIST THAT CANNOT SCROLL IS FURNITURE. The Missing Mounts pane
+	-- is empty for anyone who has planned everything -- it says so in the
+	-- middle of it -- and it still drew a full track with both arrows beside
+	-- the sentence. Guarded because the helper is a Blizzard convenience that
+	-- has moved before, and a missing one must not cost the whole panel.
+	if ScrollUtil.AddManagedScrollBarVisibilityBehavior then
+		pcall(ScrollUtil.AddManagedScrollBarVisibilityBehavior, missingBox, missingBar)
+	end
 	missingBox.emptyText = panel.missingEmpty
 
 	-- right pane: the plan
@@ -839,6 +852,9 @@ function UI.BuildPlanner(panel)
 	pview:SetElementExtent(46)
 	pview:SetElementInitializer("Button", initPlanRow)
 	ScrollUtil.InitScrollBoxListWithScrollBar(planBox, planBar, pview)
+	if ScrollUtil.AddManagedScrollBarVisibilityBehavior then
+		pcall(ScrollUtil.AddManagedScrollBarVisibilityBehavior, planBox, planBar)
+	end
 	planBox.emptyText = panel.planEmpty
 
 	-- Anchored HERE, not where the button is created. planBox is an upvalue
