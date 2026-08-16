@@ -649,6 +649,48 @@ MM:On("MM_GAPS_DEBUG", function()
 		MM:Print("   on the npc page carries the zone and coordinates.")
 	end
 
+	-- 3b. Zones that hold goals but are not on the travel network.
+	--
+	-- A zone with no traversal group cannot be routed THROUGH or WITHIN: the
+	-- planner can only leave it and come back by teleport, so every journey to
+	-- a goal there costs the same whatever else is nearby, and grouping stops
+	-- by geography stops working for the whole zone. Voidstorm was found this
+	-- way -- thirteen farmable mounts in it, four taxi nodes in FlightSeconds
+	-- that connect only to each other, and no way in on the graph.
+	--
+	-- Named here because it is not derivable from the client: it needs the two
+	-- ends of a portal, and nothing exposes those but standing at them.
+	local offNetwork = {}
+	for _, rec in pairs(MM.DBByName or {}) do
+		if rec.obtainable and rec.zone and rec.zone.mapID
+			and not (MM.MapTraversalGroup and MM.MapTraversalGroup[rec.zone.mapID]) then
+			local z = offNetwork[rec.zone.mapID]
+			if not z then
+				z = { name = rec.zone.name or ("map " .. rec.zone.mapID), n = 0 }
+				offNetwork[rec.zone.mapID] = z
+			end
+			z.n = z.n + 1
+		end
+	end
+	local offList = {}
+	for mapID, z in pairs(offNetwork) do
+		offList[#offList + 1] = { mapID = mapID, name = z.name, n = z.n }
+	end
+	table.sort(offList, function(a, b) return a.n > b.n end)
+	if #offList > 0 then
+		MM:Print("|cffffd84dZones off the travel network:|r %d, holding goals.", #offList)
+		for i = 1, math.min(#offList, 8) do
+			local z = offList[i]
+			MM:Print("     %s (map %d) -- %d goal(s)", z.name, z.mapID, z.n)
+		end
+		MM:Print("   The planner can only reach these by teleporting out and back,")
+		MM:Print("   so travel to everything in them is priced the same and stops")
+		MM:Print("   there cannot be grouped by geography.")
+		MM:Print("   NEEDS YOU -> stand at each end of a portal into the zone and")
+		MM:Print("   note the coordinates. A zone joins the graph the way Harandar")
+		MM:Print("   did: an endpoint each side, and one portal edge between them.")
+	end
+
 	-- 4. Trading Post rotation
 	if not MM.TradingPost.HasLiveData() then
 		MM:Print("|cffffd84dTrading Post:|r no rotation data.")

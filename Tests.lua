@@ -2023,6 +2023,22 @@ local function runLogic()
 		local mapID = C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
 		local info = mapID and C_Map.GetMapInfo(mapID)
 		if not (info and info.name) then return nil, "cannot name this map" end
+		-- A ZONE OFF THE NETWORK CANNOT ANSWER THIS QUESTION.
+		--
+		-- Two corners only get different journeys when there is something IN
+		-- the zone to travel between. Where a zone has no traversal group, the
+		-- planner can only leave it and come back by teleport -- and a teleport
+		-- is the same from anywhere, so both corners correctly get one answer.
+		--
+		-- Reported as itself rather than as a planner defect. Standing in such a
+		-- zone used to fail this check with "opposite corners got one identical
+		-- answer", which blames the journey planner for missing map data and
+		-- blocks a release for a gap that is listed under REMAINING GAPS.
+		local group = MM.MapTraversalGroup and MM.MapTraversalGroup[mapID]
+		if not group then
+			return nil, ("%s is not on the travel network, so every journey "
+				.. "leaves and returns -- see REMAINING GAPS"):format(info.name)
+		end
 		-- Two corners of wherever we are standing, to the same destination.
 		local aMin, aLegs = J.Plan(info.name, 5, 5, info.name, 50, 50, nil, mapID, mapID)
 		local bMin, bLegs = J.Plan(info.name, 95, 95, info.name, 50, 50, nil, mapID, mapID)

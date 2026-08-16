@@ -214,6 +214,16 @@ around, and a reload does not invalidate it the way a counter would.
   are real goals you can progress today, and an event window is not. AutoPlanAll
   is untouched: planning everything is its job, and the router parks what cannot
   be done.
+- **A zone needs FOUR things to join the travel network, and Voidstorm has none
+  of them.** Harandar is the template: an endpoint each side of its portal with
+  real coordinates, its flight masters, one `{from,to,method="portal"}` edge,
+  and `[mapID]="GROUP"` in `MapTraversalGroup`. Voidstorm has four taxi nodes in
+  `FlightSeconds` that connect only to EACH OTHER, so it is an island: the
+  planner can only teleport out and back, every journey there costs the same
+  whatever the origin, and stops in it cannot be grouped by geography.
+  `Nav/FlightPointData` already holds real coordinates for its flight masters;
+  what is missing is the two ends of the portal, and nothing exposes those but
+  standing at them. Reported under REMAINING GAPS rather than guessed.
 - **A currency that returns a value is not thereby the right currency.** Id 3130
   was picked for Midnight's Delver's Journey rank because it answered while the
   other candidates read 0 of 0 -- but an unstarted track reads zero PRECISELY
