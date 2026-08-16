@@ -15,6 +15,24 @@ local _, MM = ...
 MM.Diagnostics = {}
 local D = MM.Diagnostics
 
+-- How much of a report is kept in saved variables. Reports run about 87 KB, and
+-- the whole of one used to be stored for the life of the account. 24 KB keeps
+-- the sections a reader actually needs -- scorecard, release verdict, fixes --
+-- while bounding what every login has to load and parse.
+local REPORT_KEEP = 24 * 1024
+
+-- SHED WHAT IS ALREADY STORED. The cap above only bounds reports written from
+-- now on; anyone upgrading is carrying a full one already. Trimmed once, at
+-- login, so the saving reaches existing installs rather than only new ones.
+MM:On("MM_LOGIN", function()
+	local db = MM.db
+	if db and type(db.lastReport) == "string" and #db.lastReport > REPORT_KEEP then
+		db.lastReport = "[trimmed on upgrade to keep the saved copy bounded -- "
+			.. "run /mm report again for the whole thing]\n\n"
+			.. db.lastReport:sub(-REPORT_KEEP)
+	end
+end)
+
 -- WHAT COUNTS AS UNPRICED, in one place.
 --
 -- Defined as a function rather than inline because two things ask the
@@ -416,8 +434,24 @@ MM:On("MM_REPORT", function()
 		-- MasterMountsWorldTour.lua, which takes the ADDON FOLDER's name and not
 		-- the variable's -- flushed on /reload or logout. So a report can be
 		-- handed to someone outside the game without copying anything by hand.
+		-- BOUNDED. The file is genuinely how a report leaves the game, so this
+		-- stays -- but it was unbounded and never pruned, so one run of a
+		-- command left ~87 KB in the account database for good, reloaded and
+		-- reparsed at every login on every character thereafter.
+		--
+		-- Capped at the tail rather than the head: when a report is too long to
+		-- keep whole, the end is the half worth having -- the scorecard, the
+		-- release verdict and the fixes list all live there, while the opening
+		-- sections are the ones a reader can regenerate on demand.
 		if MM.db then
-			MM.db.lastReport = text
+			local kept = text
+			if #kept > REPORT_KEEP then
+				kept = "[the first " .. (#kept - REPORT_KEEP) .. " characters were "
+					.. "trimmed to keep the saved copy bounded -- run /mm report "
+					.. "again for the whole thing]\n\n"
+					.. kept:sub(-REPORT_KEEP)
+			end
+			MM.db.lastReport = kept
 			MM.db.lastReportAt = date and date("%Y-%m-%d %H:%M") or nil
 		end
 		if D.ShowExport then

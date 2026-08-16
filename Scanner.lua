@@ -396,6 +396,13 @@ MM:RegisterGameEvent("BOSS_KILL", function(_, encounterName)
 	if not key then return end
 	local now = GetTime()
 	if lastKillAt[key] and now - lastKillAt[key] < 5 then return end
+	-- The stamps only matter for five seconds, so anything older is a name kept
+	-- for the rest of the session for no reason. Swept here rather than on a
+	-- timer: this is the only place that adds to the table, so it is the only
+	-- place it can grow.
+	for name, at in pairs(lastKillAt) do
+		if now - at > 60 then lastKillAt[name] = nil end
+	end
 	lastKillAt[key] = now
 	onEncounterEnd(nil, encounterName, nil, nil, 1)
 end)

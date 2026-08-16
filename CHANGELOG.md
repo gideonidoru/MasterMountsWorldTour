@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.1 — unreleased
+
+Housekeeping after 1.2.0, all of it invisible except for what it stops costing.
+
+- **The addon stops hoarding its own diagnostics.** Running the id export wrote
+  about 53 KB into saved variables every time and nothing ever read it back;
+  a diagnostic report saved another 87 KB and was never pruned. Both were then
+  reloaded and reparsed at every login, on every character, for the life of the
+  account. The export is now kept only on clients with no copy window — the
+  case it was actually for — the report is capped, and anything already stored
+  is shed once on upgrade.
+
+- **The kill-debounce table is swept.** It held a name for every boss killed in
+  a session to suppress duplicate counting for five seconds, and then kept it
+  for the rest of the session.
+
 ## 1.2.0 — 2026-08-15
 
 Minor rather than patch: numbers you already read start reading differently.

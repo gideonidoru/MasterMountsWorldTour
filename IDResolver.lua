@@ -792,7 +792,6 @@ function R.Export()
 	tinsert(out, "})")
 
 	local text = table.concat(out, "\n")
-	MM.db.idExport = text
 
 	-- ON SCREEN, NOW -- BECAUSE "EXPORTED" WAS NOT TRUE YET.
 	--
@@ -806,20 +805,30 @@ function R.Export()
 	-- length cap, and it selects its own contents so Ctrl+C is the only key
 	-- anybody needs. Nothing about an id export made it a different problem, it
 	-- simply never asked for the window.
+	-- PERSISTED ONLY WHEN IT IS THE DELIVERY MECHANISM.
+	--
+	-- This used to write the whole chunk into saved variables every time,
+	-- unconditionally -- about 53 KB, kept for the life of the account, on the
+	-- machine of every player who ever ran the command. Nothing reads it back:
+	-- it exists so a HUMAN can find it in the file, which only matters when the
+	-- copy window is unavailable. When the window opens, the text is already on
+	-- screen and selects itself, and the copy on disk buys nothing.
 	if MM.Diagnostics and MM.Diagnostics.ShowExport then
+		MM.db.idExport = nil
 		MM.Diagnostics.ShowExport(text, ("Resolved IDs — %d lines"):format(#out))
 		MM:Print("%d lines ready to copy. Paste into Data/_source/Data_87_ResolvedIDs.lua.", #out)
-	else
-		MM:Print("%d lines stored in MasterMountsDB.idExport.", #out)
+		return
 	end
-	-- Said second and said accurately: the copy on disk is the fallback, and it
-	-- is not there yet. NAMED CORRECTLY TOO -- the saved-variables file takes the
-	-- ADDON FOLDER's name, so it is MasterMountsWorldTour.lua. Every message here
-	-- used to say MasterMounts.lua, which is a file that has never existed, so
-	-- anyone following the instruction was checking the wrong path.
-	MM:Print("   Also kept in MasterMountsDB.idExport, which reaches "
+	-- The fallback path, and now the only one that writes to disk. Said
+	-- accurately: the copy is not there yet. NAMED CORRECTLY TOO -- the
+	-- saved-variables file takes the ADDON FOLDER's name, so it is
+	-- MasterMountsWorldTour.lua. Every message here used to say
+	-- MasterMounts.lua, which is a file that has never existed, so anyone
+	-- following the instruction was checking the wrong path.
+	MM.db.idExport = text
+	MM:Print("%d lines kept in MasterMountsDB.idExport, which reaches "
 		.. "WTF/Account/<ACCOUNT>/SavedVariables/MasterMountsWorldTour.lua "
-		.. "on your next /reload or logout -- not before.")
+		.. "on your next /reload or logout -- not before.", #out)
 end
 
 ------------------------------------------------------------
@@ -942,5 +951,15 @@ MM:On("MM_IDS_DEBUG", function()
 	if #c.unresolved > 0 then
 		MM:Print("|cffff4444Unresolvable zone names (%d):|r %s", #c.unresolved,
 			table.concat(c.unresolved, ", "))
+	end
+end)
+
+-- The stored id export is a fallback for clients with no copy window, and it is
+-- about 53 KB. Anyone who ran the command before this build is carrying one
+-- that nothing reads. Dropped once, and only where the window that replaced it
+-- actually exists -- on a client that still needs the fallback, it stays.
+MM:On("MM_LOGIN", function()
+	if MM.db and MM.db.idExport and MM.Diagnostics and MM.Diagnostics.ShowExport then
+		MM.db.idExport = nil
 	end
 end)
