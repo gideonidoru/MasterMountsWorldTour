@@ -109,6 +109,29 @@ function S.Fit(minutes, route)
 	local state = R.TravelState and R.TravelState() or nil
 	local continent, world = U.PlayerWorldPos()
 
+	-- WORK DOES NOT CHANGE AS THE SESSION FILLS. Travel does -- the state moves
+	-- and charges get spent -- but what a stop COSTS TO DO is a property of the
+	-- stop, and it was being recomputed for every candidate in every round.
+	-- VisitMinutes across a stop's members is not cheap, and the greedy loop
+	-- asked for it roughly thirty times per stop on a full plan.
+	--
+	-- Priced once, up front. Same numbers, same order, one pass instead of n.
+	local workOf = {}
+	do
+		local VM = MM.Planner and MM.Planner.VisitMinutes
+		for _, stop in ipairs(pool) do
+			local work
+			if VM then
+				if stop.entry then work = VM(stop.entry) end
+				for _, m in ipairs(stop.members or {}) do
+					local v = m.entry and VM(m.entry)
+					if v and (not work or v > work) then work = v end
+				end
+			end
+			workOf[stop] = work or stop.workMinutes or 15
+		end
+	end
+
 	while #pool > 0 do
 		local bestIdx, bestScore, bestCost, bestTravel, bestPref
 		for i, stop in ipairs(pool) do
@@ -141,16 +164,7 @@ function S.Fit(minutes, route)
 			--
 			-- Taken as the MAX across everything at the stop, not the sum: one
 			-- island run is one island run however many mounts can drop from it.
-			local work
-			local VM = MM.Planner and MM.Planner.VisitMinutes
-			if VM then
-				if stop.entry then work = VM(stop.entry) end
-				for _, m in ipairs(stop.members or {}) do
-					local v = m.entry and VM(m.entry)
-					if v and (not work or v > work) then work = v end
-				end
-			end
-			work = work or stop.workMinutes or 15
+			local work = workOf[stop] or stop.workMinutes or 15
 			local cost = travel + work
 			-- Only things that actually fit in what is left. A session is a
 			-- promise, and half a raid is not a mount.

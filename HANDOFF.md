@@ -218,6 +218,13 @@ around, and a reload does not invalidate it the way a counter would.
   with `W.Order()` (three table allocations) and a `table.concat` to test its
   own cache, called from `selectionScore` inside sort comparators. Measure the
   phases before optimising anything here; the obvious suspect was wrong.
+  Fixed, measured live: 743 ms -> 45 ms, layer 2 from 676 ms to 3 ms.
+- **The recurring shape is a value recomputed inside a loop that cannot change
+  it.** Sort comparators asked for StopValue twice per comparison; the session's
+  greedy fit recomputed a stop's work cost every round though only travel moves;
+  TierRank rebuilt its own cache key every call. Each was found by measuring,
+  not by reading. When something here is slow, look for the invariant being
+  recomputed before looking for the algorithm.
 - **`SetConditionAmount` matches BY NAME, and the flat file resolves it at build
   time.** So a renamed condition prices nothing, the shipped addon never runs
   the call, and no in-client check can ever see the failure -- the miss only
