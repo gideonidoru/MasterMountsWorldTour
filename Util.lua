@@ -113,6 +113,23 @@ local function nameCandidates(name)
 	if name:find("Garrison", 1, true) then
 		for _, g in ipairs(garrisonNames()) do tinsert(out, g) end
 	end
+	-- A leading "The", added or dropped. Tried LAST, after every exact and
+	-- authored name above, so it can only ever answer a name that matched
+	-- nothing at all.
+	--
+	-- The client is not consistent about the article and neither is anyone
+	-- writing a zone down: the continent is "The Shadowlands" and the item that
+	-- goes there is a "Wormhole Generator: Shadowlands", and there is no map
+	-- called "Coiled Isle" -- only "The Coiled Isle". Both spellings reach one
+	-- place, and until now only one of them arrived.
+	--
+	-- Of the 883 map names this client ships, 119 begin with "The", and just
+	-- four have a bare twin -- Arcatraz, Emerald Dream, Emerald Dreamway and
+	-- Violet Hold. Every one of those four is the SAME place under both
+	-- spellings, so this can never send anyone somewhere else; and each is an
+	-- exact match in its own right, so none of them ever reaches this line.
+	local article = stripped:match("^[Tt]he%s+(.+)$")
+	tinsert(out, article or ("The " .. stripped))
 	return out
 end
 

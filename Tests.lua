@@ -4598,6 +4598,45 @@ local function runLogic()
 		return true, ("%d zones resolve identically in any case"):format(checked)
 	end)
 
+	check("A zone name resolves whether or not it starts with 'The'", function()
+		-- The client is not consistent about the article and neither is anyone
+		-- writing a zone down. The continent is "The Shadowlands"; the item that
+		-- goes there is a "Wormhole Generator: Shadowlands", and it was offered
+		-- to nobody because "this client has no map called Shadowlands" -- which
+		-- was true, and the wrong question.
+		--
+		-- Every "The X" the client ships is asked for without its article. The
+		-- answer has to be a map of that same name; anything else would be the
+		-- fallback reaching past a real match, which is the only way this could
+		-- do harm.
+		local U = MM.Util
+		if not (U and U.ResolveMapByName) then return nil, "resolver missing" end
+		local asked, bad = 0, {}
+		local seen = {}
+		for mapID = 1, 3000 do
+			local info = C_Map.GetMapInfo(mapID)
+			local bare = info and info.name and info.name:match("^The%s+(.+)$")
+			if bare and not seen[bare] then
+				seen[bare] = true
+				asked = asked + 1
+				local got = U.ResolveMapByName(bare)
+				local name = got and C_Map.GetMapInfo(got)
+				name = name and name.name
+				if name ~= info.name and name ~= bare then
+					if #bad < 4 then
+						bad[#bad + 1] = ("%s -> %s"):format(bare, tostring(name))
+					end
+				end
+			end
+		end
+		if asked == 0 then return nil, "no articled map name on this client" end
+		if #bad > 0 then
+			return false, ("%d of %d articled names miss: %s"):format(
+				#bad, asked, table.concat(bad, ", "))
+		end
+		return true, ("%d articled zone name(s) resolve without their article"):format(asked)
+	end)
+
 	check("Nowhere on another continent is ever called nearby", function()
 		-- The bug this exists for: a world position is CONTINENT-RELATIVE, so
 		-- differencing two of them across continents is not a distance. It is
