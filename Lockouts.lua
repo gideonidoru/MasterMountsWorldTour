@@ -44,10 +44,15 @@ function L.Scan()
 			GetSavedInstanceInfo(i)
 		if locked and reset and reset > 0 then
 			local expiry = GetServerTime() + reset
-			local key = instanceID or (name and name:lower())
+			-- The name is a client string the 12.0 client may withhold, and it
+			-- is used two forbidden ways here: lowercased for a key, and stored
+			-- into saved variables. The id is not a string and is preferred
+			-- anyway, so a withheld name costs only the label.
+			local readable = MM.Util.ReadableString(name)
+			local key = instanceID or (readable and readable:lower())
 			if key then
 				store[key] = store[key] or {}
-				store[key].name = name
+				store[key].name = readable
 				store[key].diffs = store[key].diffs or {}
 				store[key].diffs[difficultyID] = expiry
 				-- legacy raid difficulties share the lock
@@ -63,8 +68,15 @@ function L.Scan()
 				store[key].bosses = store[key].bosses or {}
 				for e = 1, (numEncounters or 0) do
 					local bossName, _, isKilled = GetSavedInstanceEncounterInfo(i, e)
-					if bossName then
-						store[key].bosses[bossName:lower()] = isKilled and expiry or false
+					-- BOSS NAMES ARE THE STRINGS 12.0 GUARDS MOST. Scanner
+					-- already reads them through the helper for exactly this
+					-- reason; this loop did not, and it lowercases the name for
+					-- a table key and writes it to saved variables -- two
+					-- forbidden operations, run once per boss, the moment a
+					-- dungeon saves the player.
+					local readable = MM.Util.ReadableString(bossName)
+					if readable then
+						store[key].bosses[readable:lower()] = isKilled and expiry or false
 					end
 				end
 			end

@@ -409,6 +409,36 @@ def currency_name_id_pairs():
                 note(m.group(1), m.group(2), path, i)
     return seen
 
+def a_second_bearing():
+    """A world bearing computed outside the one place that gets it right.
+
+    World axes are not a compass: a map's east and south land wherever the
+    continent's geometry puts them, which is why Nav/Arrow solves for the map's
+    own basis before taking an angle. The rare alert's small arrow instead took
+    atan2 of the raw world delta and claimed in a comment that this matched the
+    main arrow. It did not, and swapping atan2's arguments mirrors a bearing
+    rather than rotating it -- measured offline at up to 179 degrees wrong,
+    which is an arrow that sends you the other way.
+
+    Nav/Arrow owns bearings and exposes MM.Arrow.WorldBearing. Broker's angle is
+    screen-space -- an icon around the minimap, no world involved -- so it is
+    named here rather than left to fire forever.
+    """
+    OWNS = {"Nav/Arrow.lua"}
+    SCREEN = {"UI/Broker.lua"}
+    out = []
+    for fname in shipped_files():
+        if fname in OWNS or fname in SCREEN or not os.path.exists(fname):
+            continue
+        if fname.startswith("Libs/"):
+            continue
+        for i, line in enumerate(open(fname, encoding="utf-8", errors="replace"), 1):
+            if line.lstrip().startswith("--"):
+                continue
+            if re.search(r"\batan2?\s*\(", line):
+                out.append((fname, i, line.strip()[:60]))
+    return out
+
 def one_id_two_names():
     """One currency id given two different names.
 
@@ -1151,6 +1181,18 @@ def unguarded_secret_reads(_ignored=None):
     # reported eight false alarms on UnitName("player").
     out = []
     call = re.compile(r'(?<![\w_.])(UnitName|GetUnitName)\(([^)]*)\)')
+    #
+    # UNIT NAMES ARE NOT THE ONLY GUARDED STRINGS. A boss name and a saved
+    # instance name are withheld the same way, and the same two operations are
+    # forbidden on them: lowercasing, and use as a table key. Three sites read
+    # those raw -- the lockout scan lowercased every boss name it was told
+    # about -- and they threw the moment a dungeon actually saved the player,
+    # which is why it looked like a bug in killing the second boss.
+    #
+    # These take no argument worth reading, so the test is simply: does the
+    # value reach a string operation without passing through the helper?
+    sources = re.compile(r'(?<![\w_.])(GetSavedInstanceInfo|GetSavedInstanceEncounterInfo'
+                         r'|GetInstanceInfo)\s*\(')
     for fname in shipped_files():
         if fname.endswith("Util.lua") or not os.path.exists(fname):
             continue
@@ -1166,6 +1208,29 @@ def unguarded_secret_reads(_ignored=None):
                     continue
                 out.append((fname, i, m.group(1),
                             "a unit's name is secret inside an instance"))
+            for m in sources.finditer(line):
+                # FOLLOW THE VARIABLE, not the line. The guard is almost always
+                # the statement AFTER the call -- read the name, then hand it to
+                # the helper -- so testing this line alone reported every site
+                # that had just been fixed.
+                if "ReadableString" in line:
+                    continue
+                # The assignment may WRAP: a fourteen-return call is routinely
+                # split across two lines, so the locals are on the line above.
+                lines = text.split("\n")
+                stmt = (lines[i - 2] if i >= 2 else "") + " " + line
+                lhs = re.search(r"\blocal\s+([\w, ]+?)\s*=", stmt)
+                names = [v.strip() for v in lhs.group(1).split(",")] if lhs else []
+                names = [v for v in names if v and v != "_"]
+                # Generous window: the guard is often below a comment block
+                # explaining why it is there.
+                window = "\n".join(lines[i - 2:i + 12])
+                if names and any(
+                        re.search(r"ReadableString\s*\(\s*%s\b" % re.escape(v), window)
+                        for v in names):
+                    continue
+                out.append((fname, i, m.group(1),
+                            "boss and instance names are withheld the same way"))
     return out
 
 def deferred_without_flush():
@@ -1419,6 +1484,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    bear = a_second_bearing()
+    print(f"a second world bearing    : {len(bear)}")
+    for f, ib, snip in bear:
+        print(f"   {f}:{ib}  `{snip}` -- use MM.Arrow.WorldBearing")
     onename = one_id_two_names()
     print(f"one currency id, two names: {len(onename)}")
     for cid, where in onename:

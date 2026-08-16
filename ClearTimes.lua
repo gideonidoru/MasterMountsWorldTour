@@ -87,7 +87,11 @@ local function now()
 end
 
 local function check()
-	local name, kind = GetInstanceInfo and GetInstanceInfo()
+	-- The instance name is a client string, and CT.Record lowercases it for a
+	-- saved-variable key. Read through the helper so a withheld name simply
+	-- means no clear time is recorded, rather than an error on zoning in.
+	local rawName, kind = GetInstanceInfo and GetInstanceInfo()
+	local name = MM.Util.ReadableString(rawName)
 	local isInstance = kind == "party" or kind == "raid" or kind == "scenario"
 	if isInstance and not inside then
 		inside, startedAt, instanceName = true, now(), name

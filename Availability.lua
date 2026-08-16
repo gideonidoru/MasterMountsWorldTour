@@ -422,8 +422,13 @@ MM:RegisterGameEvent("UPDATE_INSTANCE_INFO", function()
 	wipe(savedLocks)
 	for i = 1, GetNumSavedInstances() do
 		local instName, _, reset, _, locked = GetSavedInstanceInfo(i)
-		if instName and locked then
-			savedLocks[instName:lower()] = reset
+		-- A SAVED INSTANCE NAME IS A CLIENT STRING, and 12.0 may withhold it.
+		-- `:lower()` on a withheld value throws, and so does using it as a table
+		-- key -- which is why this fired the moment a dungeon actually saved
+		-- the player, on the second and third boss rather than the first.
+		local readable = MM.Util.ReadableString(instName)
+		if readable and locked then
+			savedLocks[readable:lower()] = reset
 		end
 	end
 	MM:Fire("MM_LOCKS")

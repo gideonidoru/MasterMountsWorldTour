@@ -767,9 +767,25 @@ local function updateMini()
 	local dy = RA.pointAt.world.y - world.y
 	local facing = GetPlayerFacing()
 	if not facing then return end
-	-- world axes are rotated relative to the compass; atan2(dx, dy) matches the
-	-- convention the main arrow already uses.
-	mini.tex:SetRotation(math.atan2(dx, dy) - facing)
+	-- ONE BEARING, COMPUTED ONCE, IN THE PLACE THAT GETS IT RIGHT.
+	--
+	-- This used to be atan2(dx, dy) on the raw world delta, with a comment
+	-- claiming it matched the main arrow. It did not: the main arrow solves for
+	-- the map's own east/south axes first, precisely because the world axes are
+	-- not a compass, and swapping atan2's arguments mirrors a bearing rather
+	-- than rotating it. Reported from play as an arrow pointing away from a rare
+	-- that was right there.
+	--
+	-- The distance below was always fine -- world units are yards, and a length
+	-- does not care which way the axes point.
+	local bearing = MM.Arrow and MM.Arrow.WorldBearing
+		and MM.Arrow.WorldBearing(RA.pointAt.world)
+	if bearing then
+		mini.tex:SetRotation(bearing - facing)
+	else
+		-- Rather than point somewhere invented. The distance still reads.
+		mini.tex:SetRotation(0)
+	end
 	local d = math.sqrt(dx * dx + dy * dy)
 	mini.dist:SetText(("%d yd"):format(d))
 end

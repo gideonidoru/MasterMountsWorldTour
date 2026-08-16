@@ -132,7 +132,7 @@ around, and a reload does not invalidate it the way a counter would.
   `noLocationReason` does for a place. It is a sentence, not a boolean, it is
   listed in `/mm known` so it cannot become a comment that only satisfies a
   checker, and it is NOT a way to silence a gate that could be modelled.
-- Gates before any release: `python3 tools/audit.py` (**29 rules**), `luac -p` on every
+- Gates before any release: `python3 tools/audit.py` (**30 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
@@ -183,6 +183,21 @@ around, and a reload does not invalidate it the way a counter would.
   look without changing it; `modernTexture` is for genuine replacement only.
   Rule 26 reports the round-trip. It is invisible on file-backed art, which is
   why five call sites carried it for months.
+- **A boss name and a saved instance name are withheld the same way a unit name
+  is.** Scanner reads boss names through `ReadableString`; the lockout scan, the
+  availability lock scan and the clear-time tracker did not, and all three
+  lowercase the name for a table key or write it to saved variables. They threw
+  the moment a dungeon actually SAVED the player -- which is why it read as a
+  bug in killing the second boss rather than the first. Rule for raw client
+  strings now covers `GetSavedInstanceInfo`, `GetSavedInstanceEncounterInfo`
+  and `GetInstanceInfo`, following the assigned variable rather than the line.
+- **THERE IS ONE WORLD BEARING AND `Nav/Arrow` OWNS IT.** World axes are not a
+  compass: a map's east and south land wherever the continent's geometry puts
+  them, which is why `worldBearing` solves for the map's own basis first. The
+  rare alert's small arrow took `atan2` of the raw world delta and its comment
+  claimed that matched the main arrow -- measured offline at up to 179 degrees
+  wrong, an arrow pointing the other way. Use `MM.Arrow.WorldBearing`; rule 30
+  reports any other `atan2` outside Broker's screen-space minimap angle.
 - **A currency that returns a value is not thereby the right currency.** Id 3130
   was picked for Midnight's Delver's Journey rank because it answered while the
   other candidates read 0 of 0 -- but an unstarted track reads zero PRECISELY

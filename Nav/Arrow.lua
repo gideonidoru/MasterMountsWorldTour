@@ -425,6 +425,22 @@ local function worldBearing(targetWorld, playerMapID, playerMapPos, playerWorld)
 	return atan2(-east, -south) -- atan2(west component, north component)
 end
 
+-- Exposed because the rare alert's small arrow needs the SAME answer.
+--
+-- It was computing its own bearing as atan2(dx, dy) on raw world deltas, which
+-- treats the world axes as a compass. They are not one -- which is the whole
+-- reason the function above solves for the map's own east/south basis first --
+-- and swapping atan2's arguments mirrors a bearing rather than rotating it. The
+-- small arrow could therefore point away from a rare that was right there.
+function MM.Arrow.WorldBearing(targetWorld)
+	if not targetWorld then return nil end
+	local _, playerWorld, playerMapID, playerMapPos = U.PlayerWorldPos()
+	if not (playerWorld and playerMapID and playerMapPos) then return nil end
+	local ok, bearing = pcall(worldBearing, targetWorld, playerMapID,
+		playerMapPos, playerWorld)
+	return ok and bearing or nil
+end
+
 local function aimAtWorld(world, playerMapID, playerMapPos, playerWorld)
 	local bearing = worldBearing(world, playerMapID, playerMapPos, playerWorld)
 	if bearing then
