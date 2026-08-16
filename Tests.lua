@@ -121,6 +121,17 @@ local BUILD_BOUND = {
 	-- next line, which was quick and wrong; waiting for the build is what makes
 	-- it correct, and the wait is the router's cost.
 	["The arrow and the plan cannot disagree about where you are going"] = true,
+	-- Opens with an unconditional BuildSync, and has to: it then asks whether
+	-- trimming to the CURRENT plan removes anything, which is only a fair
+	-- question if the route was built from that same plan. An earlier check
+	-- that edits the plan leaves the signature stale, so this build is the full
+	-- search rather than a restore -- the case the note above describes.
+	--
+	-- `routeInHand` was the tempting fix and is the wrong one: reusing a route
+	-- built before another check moved the plan would make DropUnplanned remove
+	-- goals legitimately, and this check would fail for a reason that is not
+	-- its subject. The build is load-bearing, so it is charged to the router.
+	["A plan edit does not re-chart on the frame"] = true,
 }
 
 -- ONE ANSWER TO "WHICH CHECK IS SLOWEST", because there were two and they

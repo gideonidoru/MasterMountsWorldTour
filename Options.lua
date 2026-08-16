@@ -140,6 +140,7 @@ local function buildPanel()
 				if MM.Nav and MM.Nav.Refresh then MM.Nav.Refresh() end
 			end
 		end)
+		MM.Theme.ExtendCheckboxHitTarget(c, t)
 		return place(c, 24, indent)
 	end
 
@@ -159,6 +160,7 @@ local function buildPanel()
 			MM.db.announce = MM.db.announce or {}
 			MM.db.announce[key] = self:GetChecked() and true or false
 		end)
+		MM.Theme.ExtendCheckboxHitTarget(c, t)
 		return place(c, 24, indent)
 	end
 
@@ -264,6 +266,7 @@ local function buildPanel()
 	minimap:SetScript("OnClick", function(self)
 		MM.SetMinimapShown(self:GetChecked() and true or false)
 	end)
+	MM.Theme.ExtendCheckboxHitTarget(minimap, mmText)
 	place(minimap, 24)
 
 	heading("|cffffd84dAnnounce new mounts in chat|r")
@@ -489,6 +492,11 @@ local function buildWeights()
 	local content = CreateFrame("Frame", nil, scroll)
 	content:SetSize(1, 1)
 	scroll:SetScrollChild(content)
+	local contentCard = content:CreateTexture(nil, "BACKGROUND", nil, 1)
+	contentCard:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -4)
+	contentCard:SetSize(552, 1168)
+	MM.Theme.RegisterSurface(contentCard, "card")
+	MM.Theme.BorderSurface(content, contentCard, "subtle")
 
 	local LEFT, WIDTH, ROW_H = 16, 560, 30
 
@@ -845,6 +853,11 @@ local function buildTravel()
 	local content = CreateFrame("Frame", nil, scroll)
 	content:SetSize(560, 1200)   -- generous until the real measurement lands
 	scroll:SetScrollChild(content)
+	local contentCard = content:CreateTexture(nil, "BACKGROUND", nil, 1)
+	contentCard:SetPoint("TOPLEFT", content, "TOPLEFT", 0, 0)
+	contentCard:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", 0, 0)
+	MM.Theme.RegisterSurface(contentCard, "card")
+	MM.Theme.BorderSurface(content, contentCard, "subtle")
 
 	local WIDTH = 560
 	local rows, group, empty = {}, nil, nil
@@ -892,6 +905,7 @@ local function buildTravel()
 					MM.Teleports.SetOff(self.mmKey, not self:GetChecked())
 					layout()
 					end)
+					MM.Theme.ExtendCheckboxHitTarget(row, row.label)
 					MM.Theme.Register(row, "checkbox")
 				rows[i] = row
 			end
@@ -922,6 +936,7 @@ local function buildTravel()
 						if it.dungeon and not it.off then anyOn = true break end
 					end
 					group.turnOff = anyOn
+					MM.Theme.SetIntent(group, anyOn and "danger" or "primary")
 					group:SetText(anyOn and "Turn off all dungeon teleports"
 						or "Turn on all dungeon teleports")
 					group:ClearAllPoints()

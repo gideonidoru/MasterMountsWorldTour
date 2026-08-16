@@ -172,12 +172,20 @@ end
 ------------------------------------------------------------
 -- Skinning
 ------------------------------------------------------------
-local restoreArt, hideModern, restoreStatusTexture, restoreModernControls -- forward declarations
+-- `hideArt` belongs here too. It is defined far below but the Blizzard button
+-- branch calls it, and without the forward declaration that name resolved to a
+-- global -- nil at runtime, so skinning a button under the Blizzard theme threw
+-- rather than skinned. Every other call site sits after the definition, which
+-- is why only one branch was affected and why the modern theme never showed it.
+local restoreArt, hideModern, restoreStatusTexture, restoreModernControls, hideArt -- forward declarations
+local flatBackground, flatBorder -- used by the Blizzard normalization path
 local function skinBlizzard(frame, kind)
 	-- undo anything the flat skin added, so switching back is complete
 	if hideModern then hideModern(frame) end
 	if kind == "statusbar" and restoreStatusTexture then restoreStatusTexture(frame) end
 	if restoreModernControls then restoreModernControls(frame, kind) end
+	if frame.mmFlatTabIndicator then frame.mmFlatTabIndicator:SetAlpha(0) end
+	if frame.mmFlatCheckboxBox then frame.mmFlatCheckboxBox:SetAlpha(0) end
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
 	if frame.mmBorder then
 		for _, t in pairs(frame.mmBorder) do t:SetAlpha(0) end
@@ -219,6 +227,23 @@ local function skinBlizzard(frame, kind)
 			})
 			frame:SetBackdropColor(unpack(c.bg))
 			frame:SetBackdropBorderColor(unpack(c.border))
+		end
+	elseif kind == "button" then
+		-- Retail's current generic button template is saturated red. That is a
+		-- useful danger colour, but it made every harmless planner command read
+		-- like a destructive action. Blizzard keeps its gold/black vocabulary
+		-- while neutral actions receive a quiet, native-feeling chassis.
+		hideArt(frame)
+		local c = PALETTE.blizzard
+		local danger = frame.mmIntent == "danger"
+		local fill = danger and { 0.28, 0.035, 0.025, 0.96 }
+			or { 0.075, 0.060, 0.045, 0.96 }
+		flatBackground(frame, fill)
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], danger and 0.92 or 0.58)
+		local fs = controlFont(frame)
+		if fs then
+			local tc = danger and c.danger or c.text
+			fs:SetTextColor(tc[1], tc[2], tc[3])
 		end
 	end
 end
@@ -466,7 +491,7 @@ end
 
 -- Draw a 1px border out of four thin textures (cheap, no edge file, and it
 -- stays exactly 1px at any frame size unlike a scaled edgeFile).
-local function flatBorder(frame, r, g, b, a)
+flatBorder = function(frame, r, g, b, a)
 	if frame.mmBorder then
 		for _, t in pairs(frame.mmBorder) do
 			t:SetColorTexture(r, g, b, a or 1)
@@ -493,7 +518,7 @@ local function flatBorder(frame, r, g, b, a)
 	frame.mmBorder = edges
 end
 
-local function flatBackground(frame, c)
+flatBackground = function(frame, c)
 	if not frame.mmBackground then
 		local t = frame:CreateTexture(nil, "BACKGROUND")
 		t:SetAllPoints()
@@ -566,15 +591,25 @@ local function templateRegions(frame)
 	return out
 end
 
-local function hideArt(frame)
+function hideArt(frame)
 	local keep = frame.GetCheckedTexture and select(2, pcall(frame.GetCheckedTexture, frame))
 	for _, t in ipairs(templateRegions(frame)) do
-		if t ~= keep then pcall(t.SetAlpha, t, 0) end
+		if t ~= keep then
+			frame.mmOriginalArt = frame.mmOriginalArt or setmetatable({}, { __mode = "k" })
+			if not frame.mmOriginalArt[t] then
+				local ok, alpha = pcall(t.GetAlpha, t)
+				frame.mmOriginalArt[t] = ok and alpha or 1
+			end
+			pcall(t.SetAlpha, t, 0)
+		end
 	end
 end
 
 function restoreArt(frame)
-	for _, t in ipairs(templateRegions(frame)) do t:SetAlpha(1) end
+	for _, t in ipairs(templateRegions(frame)) do
+		local original = frame.mmOriginalArt and frame.mmOriginalArt[t]
+		pcall(t.SetAlpha, t, original ~= nil and original or 1)
+	end
 end
 
 -- Any Modern control that borrows a native texture records it first. Theme
@@ -592,6 +627,7 @@ local function modernTexture(frame, texture, path)
 			width = texture:GetWidth(), height = texture:GetHeight(),
 			vertex = { r, g, b, a or 1 }, alpha = texture:GetAlpha(),
 			blend = texture.GetBlendMode and texture:GetBlendMode() or nil,
+			desaturated = texture.IsDesaturated and texture:IsDesaturated() or false,
 		}
 	end
 	texture:SetTexture(path)
@@ -616,6 +652,9 @@ restoreModernControls = function(frame)
 			texture:SetAlpha(original.alpha or 1)
 			if original.blend and texture.SetBlendMode then
 				texture:SetBlendMode(original.blend)
+			end
+			if texture.SetDesaturated then
+				texture:SetDesaturated(original.desaturated and true or false)
 			end
 		end
 	end
@@ -660,14 +699,41 @@ function flatSkin(frame, kind, c)
 	if kind == "row" then
 		hideArt(frame)
 		flatBackground(frame, c.row)
-		flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.58)
+		flatBorder(frame, c.border[1], c.border[2], c.border[3], 0.24)
 		return
 	end
 
-	if kind == "button" then
+	if kind == "button" or kind == "tab" then
 		hideArt(frame)
-		flatBackground(frame, { 0.12, 0.12, 0.12, 1 })
-		flatBorder(frame, 0, 0, 0, 1)
+		local danger = kind == "button" and frame.mmIntent == "danger"
+		flatBackground(frame, danger and { 0.24, 0.035, 0.030, 0.94 }
+			or { 0.105, 0.105, 0.105, 0.96 })
+		flatBorder(frame, 0, 0, 0, 0.72)
+		if kind == "tab" then
+			if not frame.mmFlatTabIndicator then
+				local indicator = frame:CreateTexture(nil, "OVERLAY")
+				indicator:SetPoint("BOTTOMLEFT", 4, 1)
+				indicator:SetPoint("BOTTOMRIGHT", -4, 1)
+				indicator:SetHeight(2)
+				frame.mmFlatTabIndicator = indicator
+			end
+			local active = frame.IsEnabled and not frame:IsEnabled()
+			frame.mmFlatTabIndicator:SetColorTexture(c.accent[1], c.accent[2], c.accent[3], 0.92)
+			frame.mmFlatTabIndicator:SetShown(active and true or false)
+			if active and frame.mmBackground then
+				frame.mmBackground:SetColorTexture(c.accent[1] * 0.20,
+					c.accent[2] * 0.20, c.accent[3] * 0.20, 0.96)
+			end
+			if not frame.mmFlatTabHooks then
+				frame.mmFlatTabHooks = true
+				frame:HookScript("OnEnable", function(self)
+					if T.Active() == "elvui" then flatSkin(self, "tab", T.Colors()) end
+				end)
+				frame:HookScript("OnDisable", function(self)
+					if T.Active() == "elvui" then flatSkin(self, "tab", T.Colors()) end
+				end)
+			end
+		end
 		-- Tint the EXISTING highlight; never swap its texture. Replacing the
 		-- texture path is unrecoverable, which is what left a solid white
 		-- block behind after switching back to the Blizzard theme.
@@ -683,8 +749,17 @@ function flatSkin(frame, kind, c)
 
 	if kind == "checkbox" then
 		hideArt(frame)
-		flatBackground(frame, { 0.12, 0.12, 0.12, 1 })
-		flatBorder(frame, 0, 0, 0, 1)
+		if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
+		if not frame.mmFlatCheckboxBox then
+			local box = CreateFrame("Frame", nil, frame)
+			box:SetSize(18, 18)
+			box:SetPoint("CENTER")
+			box.mmNoSkin = true
+			frame.mmFlatCheckboxBox = box
+		end
+		flatBackground(frame.mmFlatCheckboxBox, { 0.10, 0.10, 0.10, 0.98 })
+		flatBorder(frame.mmFlatCheckboxBox, 0, 0, 0, 0.82)
+		frame.mmFlatCheckboxBox:SetAlpha(1)
 		-- keep the tick, tint it to the accent so state is still obvious
 		local checked = frame.GetCheckedTexture and frame:GetCheckedTexture()
 		if checked then
@@ -997,6 +1072,8 @@ local function skinModern(frame, kind)
 	-- not native art, so hide it explicitly or it sits above the textured
 	-- Modern surface when switching themes live.
 	if frame.mmBackground then frame.mmBackground:SetAlpha(0) end
+	if frame.mmFlatTabIndicator then frame.mmFlatTabIndicator:SetAlpha(0) end
+	if frame.mmFlatCheckboxBox then frame.mmFlatCheckboxBox:SetAlpha(0) end
 	if kind == "slider" then
 		skinModernSlider(frame, c)
 		return
@@ -1114,6 +1191,14 @@ local function skinElv(frame, kind)
 	if restoreArt then restoreArt(frame) end
 	local S = elvSkins()
 	local c = T.Colors()
+	-- Tabs and checkboxes are stateful compound controls. ElvUI's public
+	-- handlers are intentionally one-way and may preserve a prior selected
+	-- texture or resize the checkbox hit frame. Our small flat primitives use
+	-- the profile palette and remain exactly reversible.
+	if kind == "tab" or kind == "checkbox" then
+		flatSkin(frame, kind, c)
+		return
+	end
 
 	-- Prefer ElvUI's own handlers: they match the player's exact settings.
 	if S then
@@ -1133,7 +1218,7 @@ local function skinElv(frame, kind)
 		end
 	end
 
-	flatSkin(frame, kind == "tab" and "button" or kind, c)
+	flatSkin(frame, kind, c)
 end
 
 -- Apply the active theme to one frame.
@@ -1159,6 +1244,54 @@ function T.Register(frame, kind, owned)
 	registry[frame] = kind or "frame"
 	T.Skin(frame, kind or "frame")
 	return frame
+end
+
+-- Meaning is not colour. Callers mark the rare destructive control and each
+-- theme decides how strongly to express it; unmarked actions stay neutral.
+function T.SetIntent(frame, intent)
+	if not frame then return frame end
+	frame.mmIntent = intent
+	local kind = registry[frame] or "button"
+	T.Skin(frame, kind)
+	return frame
+end
+
+-- Keep the visible 18px checkbox while making its full label a click target.
+-- SetHitRectInsets expands the existing button without stretching Blizzard's
+-- template textures or moving the Modern/ElvUI chassis.
+function T.ExtendCheckboxHitTarget(check, label, padding)
+	if not (check and check.SetHitRectInsets and label) then return check end
+	local function refresh()
+		local width = label.GetStringWidth and label:GetStringWidth() or 0
+		check:SetHitRectInsets(0, -math.ceil(width + (padding or 8)), 0, 0)
+	end
+	refresh()
+	if label.HookScript then label:HookScript("OnSizeChanged", refresh) end
+	return check
+end
+
+-- ButtonFrameTemplate may expose the same title through two aliases, or two
+-- genuinely distinct FontStrings depending on client build. Exactly one title
+-- is allowed to own the rail: Modern's authored label, otherwise one native
+-- label. This removes the doubled ElvUI title without relying on API aliases.
+function T.SyncWindowIdentity(frame)
+	if not frame then return end
+	local modern = frame.mmModernTitleText
+	local nativeA = frame.TitleContainer and frame.TitleContainer.TitleText
+	local nativeB = frame.TitleText
+	local active = T.Active()
+	if modern and modern.SetAlpha then modern:SetAlpha(active == "modern" and 1 or 0) end
+	local chosen = nativeA or nativeB
+	for _, title in ipairs({ nativeA, nativeB }) do
+		if title and title.SetAlpha then
+			title:SetAlpha(active ~= "modern" and title == chosen and 1 or 0)
+		end
+	end
+	if chosen and active ~= "modern" and chosen.SetTextColor then
+		local c = T.Colors()
+		local color = active == "elvui" and c.accent or c.text
+		chosen:SetTextColor(color[1], color[2], color[3])
+	end
 end
 
 -- Typography is part of the hierarchy too. `GameFontNormal` is bright yellow,
@@ -1636,10 +1769,11 @@ function T.ReskinAll()
 	local c = T.Colors()
 	for _, name in ipairs({ "MasterMountsFrame", "MasterMountsMonitor",
 		"MasterMountsCompact", "MasterMountsZoneAlert", "MasterMountsRareAlert",
-		"MasterMountsArrow" }) do
+		"MasterMountsArrow", "MasterMountsOnboarding" }) do
 		local f = _G[name]
 		if f then
 			T.SkinTree(f)
+			if f.mmIsWindow then T.SyncWindowIdentity(f) end
 			if f.mmBand then
 				f.mmBand:SetColorTexture(c.header[1], c.header[2], c.header[3], c.header[4] or 0.15)
 			end

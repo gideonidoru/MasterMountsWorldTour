@@ -104,8 +104,10 @@ function UI.MakeCheck(parent, text, onClick)
 	local label = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	label:SetPoint("LEFT", c, "RIGHT", 2, 1)
 	label:SetText(text)
+	MM.Theme.RegisterText(label, "primary")
 	c.labelText = label
 	c:SetScript("OnClick", function(self) onClick(self:GetChecked() and true or false) end)
+	MM.Theme.ExtendCheckboxHitTarget(c, label)
 	return MM.Theme.Register(c, "checkbox")
 end
 
@@ -586,6 +588,18 @@ local function buildMain()
 	frame:SetScript("OnDragStart", function(self) self:StartMoving() end)
 	frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 	frame:SetToplevel(true)
+	-- Preserve the authored layout at normal sizes and scale the complete
+	-- composition only when the available UI canvas is smaller. Scaling keeps
+	-- columns, hit targets and text together; independently squeezing anchors
+	-- would make this dense planner collide with itself.
+	local function fitToScreen()
+		local pw, ph = UIParent:GetWidth() or 1000, UIParent:GetHeight() or 640
+		local fit = math.min(1, (pw * 0.94) / 1000, (ph * 0.90) / 640)
+		frame:SetScale(math.max(0.68, fit))
+	end
+	frame.mmFitToScreen = fitToScreen
+	fitToScreen()
+	if UIParent.HookScript then UIParent:HookScript("OnSizeChanged", fitToScreen) end
 
 	pcall(function() frame:SetTitle("Master Mounts") end)
 	if frame.TitleText then pcall(frame.TitleText.SetText, frame.TitleText, "Master Mounts") end
@@ -767,13 +781,18 @@ local function buildMain()
 		first:ClearAllPoints()
 		first:SetPoint("TOPLEFT", frame, "TOPLEFT",
 			MM.Theme.Active() == "blizzard" and 74 or 46, -31)
+		MM.Theme.SyncWindowIdentity(frame)
 	end
 	frame.ApplyThemeLayout = applyThemeLayout
 	MM:On("MM_THEME_CHANGED", applyThemeLayout)
 	applyThemeLayout()
 	pcall(PanelTemplates_SetNumTabs, frame, 2)
 
-	frame:SetScript("OnShow", function() UI:Refresh() end)
+	frame:SetScript("OnShow", function()
+		if frame.mmFitToScreen then frame.mmFitToScreen() end
+		MM.Theme.SyncWindowIdentity(frame)
+		UI:Refresh()
+	end)
 
 	-- lazy-build tab contents
 	UI.BuildCollection(frame.CollectionPanel)
@@ -799,6 +818,9 @@ function UI:SelectTab(i)
 	buildMain()
 	frame.selectedTab = i
 	pcall(PanelTemplates_SetTab, frame, i)
+	-- PanelTemplates changes enabled state to identify the active tab. Repaint
+	-- after that state transition so each theme owns the selected treatment.
+	for _, tab in ipairs(frame.Tabs or {}) do MM.Theme.Skin(tab, "tab") end
 	frame.CollectionPanel:SetShown(i == 1)
 	frame.PlannerPanel:SetShown(i == 2)
 	UI:Refresh()

@@ -495,6 +495,7 @@ function UI.BuildPlanner(panel)
 	MM:On("MM_ROUTE_ADVANCED", repaintForRoute)
 
 	local clearBtn = UI.MakeButton(panel, "Clear Plan")
+	MM.Theme.SetIntent(clearBtn, "danger")
 	clearBtn:SetPoint("LEFT", easyBtn, "RIGHT", 6, 0)
 
 	-- SESSION SITS OVER THE PLAN, because that is what it changes.
@@ -716,8 +717,8 @@ function UI.BuildPlanner(panel)
 	-- At the foot of the panel it gets margin on every side, it reads as the
 	-- end of the flow (plan above, act below), and the ETA gets the whole row.
 	routeButton = UI.MakeButton(panel, "Start Route", 170)
-	routeButton.mmStartWidth, routeButton.mmStartHeight = 204, 32
-	routeButton.mmStopWidth, routeButton.mmStopHeight = 168, 28
+	routeButton.mmStartWidth, routeButton.mmStartHeight = 190, 30
+	routeButton.mmStopWidth, routeButton.mmStopHeight = 144, 24
 	routeButton:SetSize(routeButton.mmStartWidth, routeButton.mmStartHeight)
 	routeButton:SetScript("OnClick", function() MM:Fire("MM_ROUTE_TOGGLE") end)
 
@@ -768,6 +769,7 @@ function UI.BuildPlanner(panel)
 
 	function routeButton:SetRouteState(active)
 		self:SetText(active and "Stop Route" or "Start Route")
+		MM.Theme.SetIntent(self, active and "danger" or "primary")
 		self:SetSize(
 			active and self.mmStopWidth or self.mmStartWidth,
 			active and self.mmStopHeight or self.mmStartHeight)
