@@ -225,6 +225,22 @@ around, and a reload does not invalidate it the way a counter would.
   TierRank rebuilt its own cache key every call. Each was found by measuring,
   not by reading. When something here is slow, look for the invariant being
   recomputed before looking for the algorithm.
+- **The scorecard graded presence, not correctness.** Every defect reported from
+  play across a whole session moved the score by 0.0 -- the Timewalking week,
+  the ElvUI close button, four wrong currency ids, a thirteen-day grind leading
+  the route. Id resolution counted whether a condition CARRIES an id and read
+  100% while four of those ids were wrong. It is now worth 5, with the other 5
+  on whether an id measures what its condition names.
+- **That measure only works because the deliberate disagreements are recorded.**
+  A condition is named for the player, so "Preyseeker's Journey rank" against
+  the client's "Renown - Prey Season 2" is correct and must not cost anything.
+  `R.EXPECTED_CLIENT_NAME` holds the client name each was checked against, so a
+  settled disagreement passes, a new one fails, and a Blizzard rename fails
+  again. Add an entry when a name is deliberately ours -- never to silence a
+  suspect.
+- **Degraded checks count as half.** They are not defects and not passes; a
+  promise nobody exercised is not a promise kept, and eleven of them used to
+  read as a flat 30/30.
 - **`SetConditionAmount` matches BY NAME, and the flat file resolves it at build
   time.** So a renamed condition prices nothing, the shipped addon never runs
   the call, and no in-client check can ever see the failure -- the miss only

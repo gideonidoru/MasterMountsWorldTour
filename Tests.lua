@@ -1744,57 +1744,33 @@ local function runLogic()
 		return true, "repaint is a cache hit"
 	end)
 
-	check("Every currency id agrees with what the client calls it", function()
-		-- HOW A WRONG ID HIDES. Condition names here are written for players,
-		-- so "Delver's Journey rank" reads correctly whatever id sits beside
-		-- it. Currency 3130 is named "renown - season 2 delves" by the client
-		-- -- a PREVIOUS expansion's track -- and a character holding last
-		-- season's rank 10 satisfied a Midnight gate it had never started.
-		-- Nothing could see that except the client's own name for the id.
+	check("Every currency id measures what the condition names", function()
+		-- ID RESOLUTION IS THE EASY HALF and reads 100%. Whether an id measures
+		-- the thing its condition NAMES is the half that has been wrong: 3130
+		-- was a live id for a previous expansion's delve renown, so last
+		-- season's rank satisfied a gate that had never been started.
 		--
-		-- Reported rather than failed: a player-facing name legitimately
-		-- differs from an internal string. This lists them for a human to
-		-- read, which is the step that was missing.
-		if not (C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo) then
-			return nil, "no currency API"
-		end
-		local function words(text)
-			local out = {}
-			for w in tostring(text):lower():gmatch("[%a']+") do
-				if #w > 3 then out[w] = true end
+		-- A disagreement with the client's own name is the only automatic
+		-- signal, and it is noisy alone -- conditions are named for the player.
+		-- The deliberate ones are recorded with the client name they were
+		-- checked against, so a settled disagreement passes and a NEW one, or
+		-- a Blizzard rename, does not.
+		local IDs = MM.IDs
+		if not (IDs and IDs.NameDisagreements) then return nil, "no resolver" end
+		local checked, suspect, settled = IDs.NameDisagreements()
+		if not checked then return nil, "no currency API" end
+		if #suspect > 0 then
+			local shown = {}
+			for i = 1, math.min(#suspect, 4) do
+				local d = suspect[i]
+				shown[i] = ("%s: id %d is \"%s\" here, \"%s\" in the client")
+					:format(d.name, d.id, d.ours, d.client)
 			end
-			return out
+			return false, ("%d id(s) name something else with no record of a check: %s")
+				:format(#suspect, table.concat(shown, "; "))
 		end
-		local odd, checked = {}, 0
-		for _, rec in ipairs(MM.DBList or {}) do
-			for _, cond in ipairs(rec.conditions or {}) do
-				if cond.type == "CURRENCY" and cond.id and cond.name then
-					local info = select(2, pcall(C_CurrencyInfo.GetCurrencyInfo, cond.id))
-					local client = info and info.name
-					if client then
-						checked = checked + 1
-						-- An exact match needs no word comparison, and MUST be
-						-- taken first: the filter below drops words of three
-						-- letters or fewer, so "Kej" reduces to nothing on both
-						-- sides and two identical names shared nothing at all.
-						local same = cond.name:lower() == client:lower()
-						local mine, theirs, shared = words(cond.name), words(client), false
-						for w in pairs(mine) do if theirs[w] then shared = true end end
-						-- Neither name offering a long word is not disagreement.
-						if not next(mine) or not next(theirs) then shared = true end
-						if not (same or shared) then
-							odd[#odd + 1] = ("%s: id %d is \"%s\" here, \"%s\" in the client")
-								:format(rec.name, cond.id, cond.name, client)
-						end
-					end
-				end
-			end
-		end
-		if #odd > 0 then
-			return nil, ("%d of %d currency ids name something else: %s")
-				:format(#odd, checked, table.concat(odd, "; "))
-		end
-		return true, ("%d currency ids agree with the client"):format(checked)
+		return true, ("%d currency ids agree, %d differ deliberately and still match")
+			:format(checked - #settled, #settled)
 	end)
 
 	check("No badge line offers a purchase with no Timewalking week running", function()

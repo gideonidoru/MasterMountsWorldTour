@@ -42,16 +42,31 @@ local DIMENSIONS = {
 		measure = function()
 			local t = MM.Tests and MM.Tests.lastRun
 			if not t then return nil, "self-test has not run yet" end
-			local total = (t.passed or 0) + (t.failed or 0)
+			-- A DEGRADED CHECK IS NOT A DEFECT, AND IT IS NOT A PASS EITHER.
+			--
+			-- The denominator used to be passes plus failures, so ten checks
+			-- that could not run scored the same as ten that ran and passed --
+			-- and the heaviest dimension on the card read a flat 30/30 while a
+			-- twentieth of the contract went unexercised. A promise nobody
+			-- tested is not a promise kept.
+			--
+			-- It is not a broken promise either, so it does not cost what a
+			-- failure costs: a degraded check counts as half. That keeps a
+			-- clean run near the top of the range while making an unexercised
+			-- check visible in the number instead of only in a footnote.
+			local passed, failed = t.passed or 0, t.failed or 0
+			local degraded = t.degraded or 0
+			local total = passed + failed + degraded
 			if total == 0 then return nil, "no checks ran" end
-			local frac = (t.passed or 0) / total
+			local frac = (passed + degraded * 0.5) / total
 			local why
-			if (t.failed or 0) > 0 then
+			if failed > 0 then
 				why = ("%d self-test failure%s — these are promises being broken")
-					:format(t.failed, t.failed == 1 and "" or "s")
-			elseif (t.degraded or 0) > 0 then
-				why = ("%d degraded — checks that could not run, not defects")
-					:format(t.degraded)
+					:format(failed, failed == 1 and "" or "s")
+			elseif degraded > 0 then
+				why = ("%d check%s could not run — counted as half, because an "
+					.. "untested promise is not a kept one"):format(
+					degraded, degraded == 1 and "" or "s")
 			end
 			return frac, why
 		end,
@@ -134,7 +149,7 @@ local DIMENSIONS = {
 		end,
 	},
 	{
-		key = "resolution", label = "Id resolution", weight = 10,
+		key = "resolution", label = "Id resolution", weight = 5,
 		-- Ids that the CLIENT can supply. Items and quests are excluded from
 		-- the denominator entirely: WoW has no reverse name->id lookup for
 		-- either, so counting them would peg this below 100 forever.
@@ -203,6 +218,35 @@ local DIMENSIONS = {
 						.. "exports them"):format(absent, absent == 1 and "" or "s")
 			end
 			return frac, note
+		end,
+	},
+	{
+		key = "agreement", label = "Data correctness", weight = 5,
+		-- THE HALF ID RESOLUTION DOES NOT MEASURE. Whether a condition carries
+		-- an id is a counting exercise, and it has read 100% throughout. Whether
+		-- that id measures the thing the condition NAMES is what has actually
+		-- gone wrong -- four wrong ids in one session, including one that was
+		-- live, valid, and belonged to a previous expansion. Every one of them
+		-- scored full marks at the time.
+		--
+		-- Scored on UNEXPLAINED disagreements only. A condition named for the
+		-- player rather than for the client is deliberate and recorded with the
+		-- client name it was checked against; those cost nothing. A new
+		-- disagreement, or one whose recorded name no longer matches because
+		-- Blizzard renamed something, is a suspect and costs.
+		measure = function()
+			local IDs = MM.IDs
+			if not (IDs and IDs.NameDisagreements) then return nil, "no resolver" end
+			local checked, suspect, settled = IDs.NameDisagreements()
+			if not checked or checked == 0 then return nil, "nothing to check" end
+			if #suspect == 0 then
+				return 1, #settled > 0 and ("%d id(s) differ from the client "
+					.. "deliberately, and still match what was recorded")
+					:format(#settled) or nil
+			end
+			return math.max(0, 1 - #suspect / checked),
+				("%d of %d ids name something the client does not, with no "
+					.. "record of a check"):format(#suspect, checked)
 		end,
 	},
 	{

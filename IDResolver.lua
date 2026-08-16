@@ -703,6 +703,82 @@ function R.Resolve(verbose, onDone)
 	step()
 end
 
+------------------------------------------------------------
+-- Does an id measure what we say it measures?
+------------------------------------------------------------
+-- ID RESOLUTION IS THE EASY HALF. Whether a condition carries an id is a
+-- counting exercise and reads 100%; whether that id measures the thing the
+-- condition NAMES is the half that has actually been wrong. Currency 3130 was
+-- a valid id with a live quantity and belonged to a previous expansion's delve
+-- renown, so a character carrying last season's rank satisfied a gate it had
+-- never begun. Nothing counted that as a defect.
+--
+-- The only automatic signal is the client's own name for the id. That signal
+-- is noisy on its own, because a condition is named for the PLAYER: "Kej" is
+-- the client's word too, but "Preyseeker's Journey rank" is deliberately not
+-- what the client calls currency 3514.
+--
+-- So the deliberate ones are written down, WITH the client's name at the time
+-- of writing. An annotated disagreement is settled. An unannotated one is a
+-- suspect. And if Blizzard renames a currency, the annotation stops matching
+-- and it becomes a suspect again -- which is the behaviour we want from a
+-- record of "we checked this".
+R.EXPECTED_CLIENT_NAME = {
+	-- Season-scoped renown tracks. The client names these by system and
+	-- season; the condition names them the way a player would say it.
+	[3514] = "Renown - Prey Season 2",
+	-- An internal tracking currency. [DNT] is Blizzard's own marker for a
+	-- string never meant to be shown, so the condition supplies a real name.
+	[3375] = "[DNT] Moth Hunt Tracking Currency",
+}
+
+-- Returns: checked, a list of unexplained disagreements, a list of settled ones.
+-- Shared by the release gate and the scorecard so the two cannot drift.
+function R.NameDisagreements()
+	if not (C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo) then return nil end
+	local function words(text)
+		local out = {}
+		for w in tostring(text):lower():gmatch("[%a']+") do
+			if #w > 3 then out[w] = true end
+		end
+		return out
+	end
+	local checked, suspect, settled = 0, {}, {}
+	for _, rec in ipairs(MM.DBList or {}) do
+		for _, cond in ipairs(rec.conditions or {}) do
+			if cond.type == "CURRENCY" and cond.id and cond.name then
+				local info = select(2, pcall(C_CurrencyInfo.GetCurrencyInfo, cond.id))
+				local client = info and info.name
+				if client then
+					checked = checked + 1
+					local agrees = cond.name:lower() == client:lower()
+					if not agrees then
+						local mine, theirs = words(cond.name), words(client)
+						if not next(mine) or not next(theirs) then
+							agrees = true
+						else
+							for w in pairs(mine) do
+								if theirs[w] then agrees = true break end
+							end
+						end
+					end
+					if not agrees then
+						local expected = R.EXPECTED_CLIENT_NAME[cond.id]
+						local entry = { name = rec.name, id = cond.id,
+							ours = cond.name, client = client }
+						if expected and expected:lower() == client:lower() then
+							settled[#settled + 1] = entry
+						else
+							suspect[#suspect + 1] = entry
+						end
+					end
+				end
+			end
+		end
+	end
+	return checked, suspect, settled
+end
+
 function R.Coverage()
 	local store = db()
 	local total, withID = 0, 0
