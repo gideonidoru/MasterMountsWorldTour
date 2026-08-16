@@ -631,11 +631,22 @@ local function buildMain()
 	badgeRing:SetTexture(MM.MEDIA .. "Modern\\class_ring_reskin.tga")
 	frame.mmModernLogoRing = badgeRing
 
+	-- THE ICON SITS INSIDE THE RING, AND IS MASKED BEFORE IT IS CROPPED.
+	--
+	-- At 38 against a 46px ring the square art reached past the ring's opening,
+	-- so the corners showed outside the circle and the whole badge read as a
+	-- square with a ring behind it rather than an icon in a ring. 30 leaves the
+	-- stroke its own width on every side.
+	--
+	-- SetTexCoord is gone. The reference interface masks its icons and does not
+	-- crop them, and cropping first means the mask is applied to an already
+	-- re-mapped coordinate space -- the two operations fight, and the mask is
+	-- the one that decides the silhouette. The mask is a circle, so the icon's
+	-- own border is outside it and there is nothing left for the crop to do.
 	local badge = frame:CreateTexture(nil, "ARTWORK", nil, 6)
-	badge:SetSize(38, 38)
+	badge:SetSize(30, 30)
 	badge:SetPoint("CENTER", badgeRing, "CENTER")
 	badge:SetTexture(PORTRAIT)
-	badge:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	MM.Theme.RoundIcon(frame, badge)
 	frame.mmModernLogo = badge
 
@@ -732,20 +743,19 @@ local function buildMain()
 		local p = CreateFrame("Frame", nil, frame)
 		p:SetPoint("TOPLEFT", 8, -68)
 		p:SetPoint("BOTTOMRIGHT", -8, 10)
-		local bg = p:CreateTexture(nil, "BACKGROUND")
-		bg:SetAllPoints()
-		local pc = MM.Theme.Colors()
-		bg:SetColorTexture(pc.bg[1], pc.bg[2], pc.bg[3], pc.bg[4])
-		pcall(function()
-			bg:SetGradient("VERTICAL",
-				CreateColor(0.02, 0.03, 0.07, 0.95),
-				CreateColor(0.08, 0.09, 0.16, 0.95))
-		end)
-		-- Semantic content surface: Modern uses Vaultloom's warm stone plate,
-		-- ElvUI renders the same region flat, and Blizzard keeps the native
-		-- journal gradient underneath. The hierarchy is shared; only material
-		-- changes with the theme.
-		MM.Theme.Register(p, "content", false)
+		-- A CONTAINER, NOT A REGION. It draws nothing at all now.
+		--
+		-- This used to paint a dark gradient, then take a content plate over
+		-- the top of it, then a hairline border around the lot -- while sitting
+		-- 8px inside a window that already has its own plate and rounded edge,
+		-- and holding panes that have theirs. Three borders inside forty pixels
+		-- on the left edge, which is the stack of unexplained rectangles.
+		--
+		-- The reference interface has two levels and only two: the window, and
+		-- the panels sitting on it. There is no bordered box in between,
+		-- because a thing that only groups other things is not a surface. The
+		-- tab body is that thing, so it is transparent and the window plate
+		-- shows through to meet the panes directly.
 		p:Hide()
 		return p
 	end
