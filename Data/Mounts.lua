@@ -32908,12 +32908,6 @@ MM.AddMounts({
 				id = 2803,
 				type = "CURRENCY",
 			},
-			{
-				name = "Delver's Journey rank",
-				amount = 5,
-				id = 3130,
-				type = "CURRENCY",
-			},
 		},
 		altSources = {
 			{
@@ -32927,6 +32921,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		notes = "Locked behind Delver's Journey Rank 5 for the season.",
+		unmeasurableGate = "Requires Delver's Journey Rank 5; the rank track's currency id for this season is not yet established, so progress toward it is not checked.",
 	},
 	{
 		name = "Preyseeker's Hubris",
@@ -35041,12 +35036,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 				id = 3316,
 				type = "CURRENCY",
 			},
-			{
-				name = "Delver's Journey rank",
-				amount = 5,
-				id = 3130,
-				type = "CURRENCY",
-			},
 		},
 		altSources = {
 			{
@@ -35060,6 +35049,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		effort = 2,
 		notes = "Cheap once Delver's Journey Rank 5 is unlocked.",
+		unmeasurableGate = "Requires Delver's Journey Rank 5; the rank track's currency id for this season is not yet established, so progress toward it is not checked.",
 	},
 	{
 		name = "Hexflame Reaver",

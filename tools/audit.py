@@ -365,6 +365,37 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def bar_text_takes_window_colour():
+    """A label drawn on a status bar registered with a window text role.
+
+    Shipped one: the collection bar's "1021 / 1359 (75%)" took the palette's
+    primary text -- 0.90 grey under ElvUI, over a fill running amber to green.
+    That is about 1.4:1, and ElvUI reads the player's own profile so it can be
+    dimmer still. The window's text colour is chosen against the window's
+    background; a status bar is a coloured DATA surface and is not that.
+
+    The "onbar" role exists for this: white with a hard shadow, which is the
+    only pairing that holds over both the filled and unfilled halves of a bar.
+    """
+    out = []
+    for path in sorted(glob.glob("UI/*.lua") + glob.glob("*.lua")):
+        if path.startswith(("Libs/", "tools/")):
+            continue
+        text = open(path, encoding="utf-8", errors="replace").read()
+        bars = set(re.findall(r'\b(\w+)\s*=\s*CreateFrame\(\s*"StatusBar"', text))
+        if not bars:
+            continue
+        for m in re.finditer(r'\b(\w+)\s*=\s*(\w+):CreateFontString\(', text):
+            label, owner = m.group(1), m.group(2)
+            if owner not in bars:
+                continue
+            if re.search(r'RegisterText\(\s*%s\s*,\s*"onbar"' % re.escape(label), text):
+                continue
+            role = re.search(r'RegisterText\(\s*%s\s*,\s*"(\w+)"' % re.escape(label), text)
+            line = text[:m.start()].count("\n") + 1
+            out.append((path, line, label, owner, role.group(1) if role else "none"))
+    return out
+
 def texture_handed_its_own_path():
     """A texture passed its own GetTexture() back into a setter.
 
@@ -1303,6 +1334,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    bartext = bar_text_takes_window_colour()
+    print(f"bar text with window colour: {len(bartext)}")
+    for f, il, label, owner, role in bartext:
+        print(f"   {f}:{il}  {label} sits on status bar {owner} with role '{role}', not 'onbar'")
     ownpath = texture_handed_its_own_path()
     print(f"a texture given its own art: {len(ownpath)}")
     for f, il, fn, var, what in ownpath:

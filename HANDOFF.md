@@ -132,7 +132,7 @@ around, and a reload does not invalidate it the way a counter would.
   `noLocationReason` does for a place. It is a sentence, not a boolean, it is
   listed in `/mm known` so it cannot become a comment that only satisfies a
   checker, and it is NOT a way to silence a gate that could be modelled.
-- Gates before any release: `python3 tools/audit.py` (**26 rules**), `luac -p` on every
+- Gates before any release: `python3 tools/audit.py` (**27 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
@@ -183,6 +183,14 @@ around, and a reload does not invalidate it the way a counter would.
   look without changing it; `modernTexture` is for genuine replacement only.
   Rule 26 reports the round-trip. It is invisible on file-backed art, which is
   why five call sites carried it for months.
+- **A currency that returns a value is not thereby the right currency.** Id 3130
+  was picked for Midnight's Delver's Journey rank because it answered while the
+  other candidates read 0 of 0 -- but an unstarted track reads zero PRECISELY
+  because it has not been started. It is The War Within's season 2 delve
+  renown, so a character holding last expansion's rank 10 satisfied a gate it
+  had never begun. Check an id against the CLIENT'S OWN NAME for it (`/mm
+  lookup`), never against whether it has data. `/mm report` now lists ids whose
+  client name shares no word with ours.
 
 ## Where things live
 

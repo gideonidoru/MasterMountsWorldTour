@@ -1435,6 +1435,21 @@ local function skinText(fontString, spec)
 	local c = active == "elvui" and T.Colors()
 		or PALETTE[active] or PALETTE.blizzard
 	local color
+	-- "onbar" is text drawn over a COLOURED DATA SURFACE, not over the window.
+	-- It cannot take the window's text colour, because the thing behind it is
+	-- the fill: the collection bar runs amber to green, and ElvUI's 0.90 grey
+	-- over a 0.30/0.85/0.40 green is about 1.4:1 -- and ElvUI reads the
+	-- player's own profile, so it can be dimmer again. White plus a hard shadow
+	-- is the only pairing that holds over both the filled and unfilled halves,
+	-- since a centred label sits across the boundary between them.
+	if spec.role == "onbar" then
+		fontString:SetTextColor(1, 1, 1, 1)
+		if fontString.SetShadowColor then
+			fontString:SetShadowColor(0, 0, 0, 1)
+			fontString:SetShadowOffset(1, -1)
+		end
+		return
+	end
 	if active == "modern" then
 		color = spec.role == "accent" and c.accent
 			or c[spec.role]

@@ -1744,6 +1744,52 @@ local function runLogic()
 		return true, "repaint is a cache hit"
 	end)
 
+	check("Every currency id agrees with what the client calls it", function()
+		-- HOW A WRONG ID HIDES. Condition names here are written for players,
+		-- so "Delver's Journey rank" reads correctly whatever id sits beside
+		-- it. Currency 3130 is named "renown - season 2 delves" by the client
+		-- -- a PREVIOUS expansion's track -- and a character holding last
+		-- season's rank 10 satisfied a Midnight gate it had never started.
+		-- Nothing could see that except the client's own name for the id.
+		--
+		-- Reported rather than failed: a player-facing name legitimately
+		-- differs from an internal string. This lists them for a human to
+		-- read, which is the step that was missing.
+		if not (C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo) then
+			return nil, "no currency API"
+		end
+		local function words(text)
+			local out = {}
+			for w in tostring(text):lower():gmatch("[%a']+") do
+				if #w > 3 then out[w] = true end
+			end
+			return out
+		end
+		local odd, checked = {}, 0
+		for _, rec in ipairs(MM.Data.Mounts or {}) do
+			for _, cond in ipairs(rec.conditions or {}) do
+				if cond.type == "CURRENCY" and cond.id and cond.name then
+					local info = select(2, pcall(C_CurrencyInfo.GetCurrencyInfo, cond.id))
+					local client = info and info.name
+					if client then
+						checked = checked + 1
+						local mine, theirs, shared = words(cond.name), words(client), false
+						for w in pairs(mine) do if theirs[w] then shared = true end end
+						if not shared then
+							odd[#odd + 1] = ("%s: id %d is \"%s\" here, \"%s\" in the client")
+								:format(rec.name, cond.id, cond.name, client)
+						end
+					end
+				end
+			end
+		end
+		if #odd > 0 then
+			return nil, ("%d of %d currency ids name something else: %s")
+				:format(#odd, checked, table.concat(odd, "; "))
+		end
+		return true, ("%d currency ids agree with the client"):format(checked)
+	end)
+
 	check("No badge line offers a purchase with no Timewalking week running", function()
 		-- Holding the cost is not the same as being able to spend it. The
 		-- "you have enough" branch returned before the event check below it

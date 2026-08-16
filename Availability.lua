@@ -183,9 +183,30 @@ local function doScanCalendar()
 	anchorMonth(today)
 	local ok, num = pcall(C_Calendar.GetNumDayEvents, 0, today.monthDay)
 	if not ok or not num then return end
+	-- "HAS THE EVENT LIST ARRIVED" IS A QUESTION ABOUT THE MONTH, NOT TODAY.
+	--
+	-- This asked only whether TODAY had events, so an ordinary quiet day was
+	-- indistinguishable from a calendar that had never loaded -- and every
+	-- holiday-gated record then answered "event calendar still syncing"
+	-- indefinitely. It went unnoticed because a Timewalking false positive was
+	-- separately forcing the flag true; fixing that detection exposed this.
+	--
+	-- Walk the month only when today is empty, and stop at the first day that
+	-- has anything. A loaded calendar answers on the first or second probe.
 	if num > 0 then
 		A.calendarEventsSeen = true
 		A.calendarLoaded = true
+	else
+		local mInfo = C_Calendar.GetMonthInfo and select(2, pcall(C_Calendar.GetMonthInfo))
+		local days = (type(mInfo) == "table" and mInfo.numDays) or 31
+		for day = 1, days do
+			local okD, n = pcall(C_Calendar.GetNumDayEvents, 0, day)
+			if okD and n and n > 0 then
+				A.calendarEventsSeen = true
+				A.calendarLoaded = true
+				break
+			end
+		end
 	end
 	for i = 1, num do
 		local ev
