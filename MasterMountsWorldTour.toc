@@ -9,6 +9,7 @@
 ## Category-enUS: Collections
 ## X-Category: Information
 ## X-Donate: https://ko-fi.com/gideonidoru
+## X-Credits: Modern theme artwork by Legijaone (Vaultloom), used with permission
 ## OptionalDeps: TomTom, Titan, MountsRarity, ElvUI
 
 Libs\LibStub.lua
