@@ -33,16 +33,64 @@ local J = MM.Journey
 -- groups certain zones for traversal; it is not an index of what is on the
 -- network. Orgrimmar carries 28 nodes and appears in it nowhere, so testing it
 -- reported Orgrimmar, Icecrown and a hundred others as off-network.
-local onNetwork
+--
+-- ONE PLACE CAN HAVE TWO MAP IDS, and this has to allow for that.
+--
+-- K'aresh is the case that proved it: nineteen records name it as map 2371,
+-- every one of its eleven travel nodes sits on 2472, and the two never meet.
+-- The zone has a portal from Dornogal, flight points and a taxi network, the
+-- router travels through it -- and this answered "off the network", which sent
+-- the gap report asking for a portal that has been shipped since the start.
+--
+-- The client settles it: two maps with the SAME NAME on the SAME CONTINENT are
+-- the same place. Name alone is not enough -- there are two Dalarans and two
+-- Silvermoons, and one of each having nodes says nothing about the other.
+local onNetwork, networkNames
+local function nameOf(mapID)
+	local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+	return info and info.name
+end
+
 function J.ZoneOnNetwork(mapID)
 	if not mapID then return false end
 	if not onNetwork then
-		onNetwork = {}
+		onNetwork, networkNames = {}, {}
 		for _, node in pairs(MM.TravelNodes or {}) do
 			if node.mapID then onNetwork[node.mapID] = true end
 		end
+		-- What each of those maps is CALLED, once, so the same place under a
+		-- second id can be recognised without asking the client per query.
+		for id in pairs(onNetwork) do
+			local name = nameOf(id)
+			if name then
+				networkNames[name] = networkNames[name] or {}
+				local list = networkNames[name]
+				list[#list + 1] = id
+			end
+		end
 	end
-	return onNetwork[mapID] == true
+	if onNetwork[mapID] then return true end
+
+	local name = nameOf(mapID)
+	local twins = name and networkNames[name]
+	if not twins then return false end
+	local U = MM.Util
+	for _, id in ipairs(twins) do
+		if not (U and U.IsSameContinent) then return true end
+		if U.IsSameContinent(id, mapID) then return true end
+	end
+	return false
+end
+
+-- Which map id actually carries the nodes for this place, when it is not the
+-- one asked about. Reported rather than hidden: a zone reachable only under a
+-- second id is worth seeing, because it means two halves of this addon are
+-- naming the same place differently.
+function J.NetworkTwin(mapID)
+	if not mapID or not J.ZoneOnNetwork(mapID) then return nil end
+	if onNetwork[mapID] then return nil end
+	local twins = networkNames[nameOf(mapID) or ""]
+	return twins and twins[1] or nil
 end
 
 local graph, byZone      -- node name -> { mapID, x, y, zone }, and zone -> {names}
@@ -317,7 +365,7 @@ function J.Forget()
 	-- invisible to every reader that asks whether a zone is on it: the gap
 	-- report went on naming Voidstorm as unreachable while the route was
 	-- already travelling through its portal.
-	onNetwork = nil
+	onNetwork, networkNames = nil, nil
 	planCache = {}
 	planCacheSize = 0
 	nodeWorldCache = {}

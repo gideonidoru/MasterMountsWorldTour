@@ -692,6 +692,21 @@ MM:On("MM_GAPS_DEBUG", function()
 			if z then z.n = z.n + 1 end
 		end
 	end
+	-- PLACES REACHED UNDER A SECOND MAP ID. Not a gap -- the travel graph does
+	-- reach them -- but worth naming, because it means the records and the
+	-- network are calling one place by two different numbers, and the next
+	-- reader of either will be as confused as this section was about K'aresh.
+	local twins = {}
+	if MM.Journey and MM.Journey.NetworkTwin then
+		for _, rec in pairs(MM.DBByName or {}) do
+			local z = rec.zone
+			if z and z.mapID and not twins[z.mapID] then
+				local other = MM.Journey.NetworkTwin(z.mapID)
+				if other then twins[z.mapID] = other end
+			end
+		end
+	end
+
 	local offList = {}
 	for mapID, z in pairs(offNetwork) do
 		if z then offList[#offList + 1] = { mapID = mapID, name = z.name, n = z.n } end
@@ -761,6 +776,12 @@ MM:On("MM_GAPS_DEBUG", function()
 			MM:Print("   (%d dungeon or raid map(s) left out: those are entered by",
 				instanceMaps)
 			MM:Print("   their own door, so they need no travel node.)")
+		end
+		for mapID, other in pairs(twins) do
+			local a = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+			MM:Print("   |cff9a9a9a%s is reached as map %d, though records name it "
+				.. "%d -- one place under two ids, and it IS on the network.|r",
+				tostring((a and a.name) or mapID), other, mapID)
 		end
 	end
 
