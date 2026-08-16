@@ -68,22 +68,6 @@ local function initMissingRow(row, entry)
 		row.hl:SetAllPoints()
 		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
 
-		-- BANDED BY STOP, NOT STRIPED BY ROW.
-		--
-		-- The row surface sits at 20% over a pane of nearly the same brown, so
-		-- ninety rows ran together into one field of texture: the structure was
-		-- all there and none of it was visible. A band fixes the contrast, and
-		-- banding on the STOP rather than the row does something a zebra
-		-- cannot -- the five mounts that share the Dazar'alor trip get one
-		-- band between them, so a shared stop reads as one block instead of
-		-- five separate lines that happen to be adjacent.
-		--
-		-- Tinted through the theme rather than coloured here, so it follows a
-		-- theme change like everything else.
-		row.band = row:CreateTexture(nil, "BACKGROUND", nil, 2)
-		row.band:SetPoint("TOPLEFT", 1, 0)
-		row.band:SetPoint("BOTTOMRIGHT", -1, 0)
-		MM.Theme.RegisterTint(row.band, "row", 0.55)
 
 		-- ONE ICON SIZE ACROSS THE ADDON.
 		--
@@ -295,6 +279,23 @@ local function initPlanRow(row, data)
 		row.hl = row:CreateTexture(nil, "HIGHLIGHT")
 		row.hl:SetAllPoints()
 		MM.Theme.RegisterTint(row.hl, "accent", 0.10)
+
+		-- BANDED BY STOP, NOT STRIPED BY ROW.
+		--
+		-- The row surface sits at 20% over a pane of nearly the same brown, so
+		-- ninety rows ran together into one field of texture: the structure was
+		-- all there and none of it was visible. A band fixes the contrast, and
+		-- banding on the STOP rather than the row does something a zebra
+		-- cannot -- the five mounts that share the Dazar'alor trip get one
+		-- band between them, so a shared stop reads as one block instead of
+		-- five separate lines that happen to be adjacent.
+		--
+		-- Tinted through the theme rather than coloured here, so it follows a
+		-- theme change like everything else.
+		row.band = row:CreateTexture(nil, "BACKGROUND", nil, 2)
+		row.band:SetPoint("TOPLEFT", 1, 0)
+		row.band:SetPoint("BOTTOMRIGHT", -1, 0)
+		MM.Theme.RegisterTint(row.band, "row", 0.55)
 
 		-- gold bar marking the active route goal
 		row.cur = row:CreateTexture(nil, "ARTWORK")

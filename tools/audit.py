@@ -365,6 +365,45 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def row_field_built_where_used():
+    """A `row.field` indexed in one initializer and created in another.
+
+    Shipped exactly this: a banding texture added to initMissingRow and read
+    by initPlanRow, forty errors deep in a scroll box before anyone saw it.
+    The two initializers are near-identical in shape, which is what makes a
+    misplaced edit look right -- the block sits under the same `row.hl` lines
+    in both, so a search-and-replace lands in whichever comes first.
+
+    Only INDEXING is reported. `row.x = ...` creates it and `row.x` alone is
+    harmless; `row.x:Method()` or `row.x.field` on something never assigned in
+    the same function is the crash.
+    """
+    bad = []
+    for f in sorted(glob.glob("UI/*.lua")):
+        src = open(f, encoding="utf-8").read()
+        lines = src.split("\n")
+        starts = [i for i, l in enumerate(lines)
+                  if re.match(r'local function init\w*Row\s*\(\s*row\b', l)]
+        if not starts:
+            continue
+        bounds = []
+        for idx, st in enumerate(starts):
+            en = starts[idx + 1] - 1 if idx + 1 < len(starts) else len(lines) - 1
+            bounds.append((st, en))
+        for st, en in bounds:
+            body = "\n".join(lines[st:en + 1])
+            made = set(re.findall(r'\brow\.(\w+)\s*=', body))
+            for i in range(st, en + 1):
+                line = lines[i]
+                if line.lstrip().startswith("--"):
+                    continue
+                for m in re.finditer(r'\brow\.(\w+)\s*[:.]', line):
+                    name = m.group(1)
+                    if name in made:
+                        continue
+                    bad.append((f, i + 1, name, lines[st].strip()[:40]))
+    return bad
+
 def scan_ceiling_covers_the_data():
     """The id space the client is walked over, against the ids we already hold.
 
@@ -1087,6 +1126,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    rowf = row_field_built_where_used()
+    print(f"a row field built elsewhere: {len(rowf)}")
+    for f, ir, name, fn in rowf:
+        print(f"   {f}:{ir}  row.{name} is indexed here and created in another initializer")
     ceil = scan_ceiling_covers_the_data()
     print(f"the id scan stops too soon : {len(ceil)}")
     for f, _i, c, h in ceil:
@@ -1121,7 +1164,7 @@ def main():
         print(f"   {f}:{i7}  defers SetAttribute in combat and never re-applies it "
               f"-- flush on PLAYER_REGEN_ENABLED")
     return 1 if (bad or fwd or gone or early or btr or retval or secret or guids
-                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil) else 0
+                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf) else 0
 
 if __name__ == "__main__":
     sys.exit(main())
