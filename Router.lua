@@ -2079,6 +2079,7 @@ local function newStage()
 		totals = nil, baseOrder = nil, builtRouteCount = nil,
 		restoredChart = nil, capReport = nil, pinReport = nil,
 		blocksSkipped = nil, timeSaved = nil, lastBuildMs = nil,
+		phaseMs = nil, chartHit = nil,
 		travelPrecomputed = nil, hereDebug = nil,
 		-- What this build charted for. Published as the description of the
 		-- route it publishes, and never before.
@@ -2099,6 +2100,9 @@ end
 local STAGED_FIELDS = {
 	"totals", "baseOrder", "builtRouteCount", "restoredChart", "capReport",
 	"pinReport", "blocksSkipped", "timeSaved", "lastBuildMs", "travelPrecomputed",
+	-- Per-phase timings and whether the stored chart was usable. Staged with
+	-- the rest so an abandoned build cannot leave its numbers as the last word.
+	"phaseMs", "chartHit",
 	"hereDebug", "builtSignature",
 }
 
@@ -2176,6 +2180,26 @@ function R.RunBuild(sig)
 	-- build, whole and self-consistent -- one build stale, which is a far better
 	-- answer than a mixture of two, and briefer than the freeze it replaces.
 	local stage = newStage()
+	--
+	-- WHERE THE TIME GOES, not just how much of it there is.
+	--
+	-- One number for the whole build says a route is slow and nothing about
+	-- which part of it is. The chart cache already skips the expensive scan
+	-- when the signature matches, so a slow build means a MISS -- but the
+	-- origin-search cache reports 98% reuse on the same run, which does not fit
+	-- a story about repeated searching. These marks tell the two apart.
+	--
+	-- Recorded per build and staged like everything else here, so a build that
+	-- never publishes cannot leave its timings behind as the last word.
+	local phaseAt = startedAt
+	stage.phaseMs = {}
+	stage.chartHit = R.chartRank ~= nil
+	local function mark(name)
+		if not (debugprofilestop and phaseAt) then return end
+		local now = debugprofilestop()
+		stage.phaseMs[#stage.phaseMs + 1] = { name = name, ms = now - phaseAt }
+		phaseAt = now
+	end
 
 	-- Refresh the travel snapshot ONCE for this whole build. Every travel-time
 	-- question below then reads a plain table instead of the toybox.
@@ -2386,6 +2410,7 @@ function R.RunBuild(sig)
 		return (stop.visitMinutes or 15) <= 30
 	end
 
+	mark("layer 1 preference")
 	------------------------------------------------------------
 	-- LAYER 2: grouping
 	------------------------------------------------------------
@@ -2652,6 +2677,7 @@ function R.RunBuild(sig)
 
 	table.sort(stage.deferred, function(a, b) return a.entry.name < b.entry.name end)
 
+	mark("layer 2 grouping and chaining")
 	------------------------------------------------------------
 	-- LAYER 3: the clock
 	------------------------------------------------------------
@@ -2760,6 +2786,7 @@ function R.RunBuild(sig)
 	-- THE PUBLICATION POINT. Everything above either succeeded or threw, and a
 	-- throw never reaches this line: the stage is a local, so an error unwinds
 	-- it and the last successful route is still standing, untouched.
+	mark("layer 3 the clock")
 	return R.Publish(stage)
 end
 
@@ -3412,6 +3439,22 @@ MM:On("MM_ROUTE_DEBUG", function()
 	MM:Print("  Built in %s%s",
 		R.lastBuildMs and ("%.0f ms"):format(R.lastBuildMs) or "unmeasured",
 		(R.lastBuildMs or 0) > 250 and " |cffff4444— too slow, this is a freeze|r" or "")
+	-- WHICH PART, and whether the stored chart could be used at all. A build
+	-- that had to re-chart pays the O(n^2) travel scan; one that read the chart
+	-- skips it. Reporting only the total made those two look like the same
+	-- event happening at different speeds.
+	if R.chartHit ~= nil then
+		MM:Print("    Stored chart: %s", R.chartHit
+			and "|cff40d860reused — the travel scan was skipped|r"
+			or "|cffffd84dnot usable, so this build re-charted from scratch|r")
+	end
+	if R.phaseMs and #R.phaseMs > 0 then
+		local parts = {}
+		for _, ph in ipairs(R.phaseMs) do
+			parts[#parts + 1] = ("%s %.0f ms"):format(ph.name, ph.ms)
+		end
+		MM:Print("    Where it went: %s", table.concat(parts, " · "))
+	end
 	MM:Print("  Travel weight %.2fx, detours accepted up to %.1f minutes off the path",
 		R.TravelScale(), R.DetourMinutes())
 	-- Why "you are already here" did or did not fire. Without this the two
