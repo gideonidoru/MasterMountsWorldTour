@@ -1757,6 +1757,17 @@ pumpBuild = function(sync)
 	local ok, err = coroutine.resume(building)
 	if not ok then
 		building = nil
+		-- A REPLACEMENT QUEUED DURING A FAILED BUILD IS NOT PART OF THE FAILURE.
+		--
+		-- This used to drop it on the floor. Edit the plan while a build is in
+		-- flight, have that build throw, and the edit was simply forgotten: no
+		-- rebuild, no error about the edit, and a route on screen that no
+		-- longer matched the plan until something unrelated triggered another
+		-- build. The queued request is for a DIFFERENT plan -- its signature
+		-- moved, which is why it was queued -- so honouring it is not retrying
+		-- the thing that just broke. Each failure consumes at most one queued
+		-- request, so this cannot spin.
+		local retry, retryForced = R.rebuildWhenDone, R.rebuildForced
 		R.rebuildWhenDone, R.rebuildForced = nil, nil
 		-- ONLY THE IN-FLIGHT SIGNATURE GOES. `R.builtSignature` still describes
 		-- the route on screen, which a failed build never replaced, and the
@@ -1771,6 +1782,13 @@ pumpBuild = function(sync)
 		R.chartRank = nil
 		if MM.Print then MM:Print("|cffff5555route build failed|r -- %s",
 			tostring(err):sub(-140)) end
+		if retry then
+			-- Waiters stay queued for the replacement, exactly as they do when
+			-- a build is superseded rather than broken: it is the build whose
+			-- result they asked for.
+			R:Build(retryForced, sync)
+			return
+		end
 		finishBuild(false)
 		return
 	end
@@ -1829,7 +1847,16 @@ function R:BuildSync(force)
 	-- Belt and braces: Build(sync) only returns with `building` cleared, so this
 	-- is an assertion that the contract held rather than a loop that runs.
 	if R.IsBuilding() then drain() end
-	return #R.route
+	-- THE SECOND RETURN IS WHETHER THAT COUNT MEANS ANYTHING.
+	--
+	-- A failed build leaves the previous route standing, which is the right
+	-- thing for the screen and a trap for a caller: `#R.route` then describes
+	-- the OLD route and reads exactly like a successful build of the same size.
+	-- Diagnostics duly reported a stale route as freshly built. AfterBuild
+	-- callers already receive `ok`; this is the same fact, for the callers who
+	-- ask synchronously. Added as a second value so existing single-value call
+	-- sites are unaffected.
+	return #R.route, not R.buildFailed
 end
 
 -- Run `fn(stops, ok)` when the route is complete and current, without freezing
@@ -1842,7 +1869,20 @@ function R.AfterBuild(force, fn)
 	if not fn then return R:Build(force) end
 	local slot = { fn = fn }
 	pendingCompletion[#pendingCompletion + 1] = slot
-	local status = R:Build(force)
+	-- THE SLOT COMES BACK OUT IF THE REQUEST NEVER HAPPENED.
+	--
+	-- Registering first is deliberate -- a small plan can finish inside its
+	-- first slice -- but it meant an error out of Build left the callback
+	-- sitting in the queue with no build coming for it. The next build from
+	-- anywhere would then run it, and these callbacks start and advance
+	-- routes, so a stranded one acts on a request nobody made.
+	local fine, status = pcall(R.Build, R, force)
+	if not fine then
+		for i = #pendingCompletion, 1, -1 do
+			if pendingCompletion[i] == slot then table.remove(pendingCompletion, i) break end
+		end
+		error(status, 0)
+	end
 	if status ~= R.BUILD_CURRENT then return status end
 	-- Nothing to wait for: the route already is this plan's route, so the slot
 	-- comes back out and the answer is given now rather than at the next build.

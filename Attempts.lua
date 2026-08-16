@@ -73,6 +73,18 @@ end
 
 function A.Record(spellID)
 	if not spellID then return end
+	-- MIGRATE BEFORE RECORDING, NEVER AFTER.
+	--
+	-- Recording writes to BOTH stores -- the account total and the
+	-- per-character tally -- and migration folds the per-character tally into
+	-- the account total. An attempt recorded before migration ran was
+	-- therefore counted twice. Migration was scheduled two seconds after
+	-- login, and a kill inside those two seconds is not a hypothetical: it is
+	-- what happens to anyone who reloads mid-fight.
+	--
+	-- Free after the first call: Migrate returns immediately once this
+	-- character is marked merged.
+	if A.Migrate then pcall(A.Migrate) end
 	local acct = store()
 	acct[spellID] = (acct[spellID] or 0) + 1
 	-- The per-character count is kept as a local tally so "how many on THIS
@@ -298,7 +310,16 @@ end
 ------------------------------------------------------------
 -- Wiring
 ------------------------------------------------------------
-MM:On("MM_LOGIN", function() C_Timer.After(2, function() pcall(A.Migrate) end) end)
+-- Run it now rather than in two seconds' time. The delay existed to let saved
+-- variables land, so the fallback keeps that safety -- but when they are
+-- already there, waiting only widened the window Record now closes anyway.
+MM:On("MM_LOGIN", function()
+	if MM.db and MM.cdb then
+		pcall(A.Migrate)
+	else
+		C_Timer.After(2, function() pcall(A.Migrate) end)
+	end
+end)
 
 ------------------------------------------------------------
 -- Reported, not just stored

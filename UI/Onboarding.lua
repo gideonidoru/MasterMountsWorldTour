@@ -511,13 +511,37 @@ function O.GoTo(i)
 	return true
 end
 
+-- ONE READING OF `onboarded`, AND IT IS A NUMBER.
+--
+-- The flag is a SCHEMA VERSION, and it was tested two ways: truthily here, and
+-- numerically by the report below (`db.onboarded < O.SCHEMA`). Those disagree
+-- about anything that is not a number -- a stored `true` from an older build
+-- reads as "done" here and throws "attempt to compare boolean with number"
+-- there. Normalised once, on the way in, so both readings see a number and
+-- neither has to guess.
+--
+-- A legacy truthy value means onboarding was completed under a schema that
+-- predates the version stamp, which is schema 1. It is not re-asked: someone
+-- who answered the questions should not be asked them again because the flag
+-- changed shape underneath them.
+local function onboardedSchema()
+	local v = MM.db and MM.db.onboarded
+	if type(v) == "number" then return v end
+	if v then
+		MM.db.onboarded = 1
+		return 1
+	end
+	return nil
+end
+O.CompletedSchema = onboardedSchema
+
 -- Only ever fires by itself once, and only after the collection has been read:
 -- the preset step is meaningless before we know what the player is missing.
 MM:On("MM_SCANNED", function()
-	if MM.db.onboarded then return end
+	if onboardedSchema() then return end
 	if frame and frame:IsShown() then return end
 	C_Timer.After(2, function()
-		if not MM.db.onboarded then O.Show() end
+		if not onboardedSchema() then O.Show() end
 	end)
 end)
 
@@ -533,15 +557,16 @@ MM:On("MM_ONBOARDING", function() O.Show() end)
 -- default settings -- so the state has to be readable.
 MM:On("MM_ONBOARDING_DEBUG", function()
 	local db = MM.db
-	if not db.onboarded then
+	local done = onboardedSchema()
+	if not done then
 		MM:Print("Onboarding: |cffff9a3cnot completed|r — it opens 2s after the "
 			.. "first collection scan, or run |cffffd24d/mm onboard|r.")
 	else
 		MM:Print("Onboarding: completed (schema %s of %s) on %s%s",
-			tostring(db.onboarded), tostring(O.SCHEMA),
+			tostring(done), tostring(O.SCHEMA),
 			db.onboardedAt or "an unknown date",
 			(db.onboardedChoices and db.onboardedChoices.skipped) and " |cffff9a3c(skipped)|r" or "")
-		if db.onboarded < O.SCHEMA then
+		if done < O.SCHEMA then
 			MM:Print("   A newer schema exists — new steps would be asked on next login.")
 		end
 	end
