@@ -328,10 +328,8 @@ local done = false
 MM:RegisterGameEvent("PLAYER_ENTERING_WORLD", function()
 	if done then return end
 	done = true
-	C_Timer.After(8, function()
-		local ok, added = pcall(PL.Scan)
-		if ok and added and added > 0 then
-			MM:Debug("portals learned from the map: %d", added)
-		end
-	end)
+	-- SILENT. Joining a zone to the travel graph is not news to a player, and
+	-- a line in chat at every login would be. What it found is in the report,
+	-- under REMAINING GAPS, and /mm portals prints it on demand.
+	C_Timer.After(8, function() pcall(PL.Scan) end)
 end)

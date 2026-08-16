@@ -1406,6 +1406,34 @@ def patch121_overridden():
     return out
 
 
+
+def unresolved_methods(clean):
+    """Every MM:<name>( call whose method nothing defines.
+
+    The dot-access rule above never saw these. `MM:Debug("...")` parses, loads
+    and passes every syntax check; it throws only when the line actually runs,
+    which for a login handler or an error path can be a long time after the
+    build that shipped it. One reached a release candidate: a timer callback
+    calling a logger that was never written.
+    """
+    defined = set()
+    for s in clean.values():
+        for m in re.finditer(r'function\s+MM[.:](\w+)\s*\(', s):
+            defined.add(m.group(1))
+        # MM.Print = function(...) names one just as surely.
+        for m in re.finditer(r'MM\.(\w+)\s*=\s*function', s):
+            defined.add(m.group(1))
+    out = []
+    for fname, s in clean.items():
+        for i, line in enumerate(s.split("\n"), 1):
+            # Skip the definitions themselves.
+            if re.match(r'\s*function\s+MM[.:]', line):
+                continue
+            for m in re.finditer(r'\bMM:(\w+)\s*\(', line):
+                if m.group(1) not in defined:
+                    out.append((fname, i, "MM:" + m.group(1)))
+    return out
+
 def main():
     if "--selftest" in sys.argv:
         injected = ("local x = MM.Planner.InvalidateRanking\n"
@@ -1424,13 +1452,24 @@ def main():
         print(f"selftest: {len(caught2)} of 2 injected client-global faults caught")
         for f, i, name, why in caught2:
             print(f"   caught {name}")
-        return 0 if (len(caught) == 2 and len(caught2) == 2) else 1
+        injected3 = load('MM:Debug("x")\nMM:AlsoNotReal(1)\n')
+        caught3 = [b for b in unresolved_methods(injected3)
+                   if b[0] == "<injected>"]
+        print(f"selftest: {len(caught3)} of 2 injected MM: method faults caught")
+        for f, i, ref in caught3:
+            print(f"   caught {ref}")
+        return 0 if (len(caught) == 2 and len(caught2) == 2
+                     and len(caught3) == 2) else 1
 
     clean = load()
     bad = unresolved(clean, resolve(clean))
     fwd = forward_calls()
     print(f"unresolved MM.* references : {len(bad)}")
     for f, i, ref in bad:
+        print(f"   {f}:{i}  {ref}")
+    meth = unresolved_methods(clean)
+    print(f"unresolved MM: methods     : {len(meth)}")
+    for f, i, ref in meth:
         print(f"   {f}:{i}  {ref}")
     print(f"file-level forward calls   : {len(fwd)}")
     for f, i, n, d in fwd:
