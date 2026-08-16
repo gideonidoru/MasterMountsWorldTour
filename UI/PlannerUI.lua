@@ -456,11 +456,17 @@ function UI.BuildPlanner(panel)
 	-- flat surfaces. This also gives a short list a deliberate resting surface
 	-- instead of the large accidental black void visible in the first pass.
 	local leftSurface = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
-	leftSurface:SetPoint("TOPLEFT", 4, -62)
-	leftSurface:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 438, 4)
+	-- EQUAL AIR ON BOTH SIDES. The left pane sat 4px from the window edge while
+	-- the right sat 24 -- six times the margin on one side, and the 4px sliver
+	-- of window surface left showing past the pane reads as a stripe down the
+	-- edge of the frame. It became obvious the moment the sidebar tint darkened
+	-- away from the window behind it. Both margins are 24 now, both panes inset
+	-- their content by 8, and the 26px channel between them is unchanged.
+	leftSurface:SetPoint("TOPLEFT", 24, -62)
+	leftSurface:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 444, 4)
 	MM.Theme.RegisterSurface(leftSurface, "sidebar")
 	local rightSurface = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
-	rightSurface:SetPoint("TOPLEFT", 464, -62)
+	rightSurface:SetPoint("TOPLEFT", 470, -62)
 	rightSurface:SetPoint("BOTTOMRIGHT", -24, 4)
 	MM.Theme.RegisterSurface(rightSurface, "content")
 
@@ -469,8 +475,14 @@ function UI.BuildPlanner(panel)
 	-- polished Warcraft interfaces without building heavy boxes around every
 	-- control. Because the rules are semantic, ElvUI and Blizzard inherit the
 	-- same hierarchy with their own accent colour.
-	panel.mmLeftPaneRules = MM.Theme.BorderSurface(panel, leftSurface, "subtle")
-	panel.mmRightPaneRules = MM.Theme.BorderSurface(panel, rightSurface, "subtle")
+	-- DRAWN, NOT HINTED. These were "subtle", a 0.26 hairline, which on a
+	-- surface only slightly different from the window behind it is no edge at
+	-- all -- the panes read as tinted areas that bleed into the frame rather
+	-- than as regions with a boundary. The reference interface this theme
+	-- follows draws every panel edge plainly, and that single line around each
+	-- region is most of what makes it look composed rather than washed.
+	panel.mmLeftPaneRules = MM.Theme.BorderSurface(panel, leftSurface, "strong")
+	panel.mmRightPaneRules = MM.Theme.BorderSurface(panel, rightSurface, "strong")
 
 	-- toolbar band behind the button row
 	local band = panel:CreateTexture(nil, "BORDER")
@@ -640,7 +652,7 @@ function UI.BuildPlanner(panel)
 	-- level need to share one vertical reference; anchoring each to the panel
 	-- separately is how they drift apart by a few pixels and look untidy.
 	local leftHeader = CreateFrame("Frame", nil, panel)
-	leftHeader:SetPoint("TOPLEFT", 10, -28)
+	leftHeader:SetPoint("TOPLEFT", 32, -28)
 	leftHeader:SetPoint("TOPRIGHT", panel, "TOPLEFT", 436, -28)
 	leftHeader:SetHeight(22)
 
@@ -711,13 +723,13 @@ function UI.BuildPlanner(panel)
 	-- top -66, bottom 6. Full height on this side -- only the plan column gives
 	-- up space for the action strip below it.
 	missingBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
-	missingBox:SetPoint("TOPLEFT", 4, -66)
+	missingBox:SetPoint("TOPLEFT", 32, -66)
 	-- BOTTOM 48, THE SAME AS THE PLAN COLUMN. This sat at 6 while the column
 	-- beside it stopped at 48 to clear the action strip, so the two panes --
 	-- and the two scroll bars on them -- ended forty-two pixels apart with
 	-- nothing in the gap to explain why. The strip now reads as a full-width
 	-- footer under both columns rather than a notch cut out of one.
-	missingBox:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 434, 48)
+	missingBox:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 436, 48)
 
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	-- SIX, LIKE EVERY OTHER SCROLLBAR HERE. This one sat at 4 and nothing else
@@ -756,8 +768,8 @@ function UI.BuildPlanner(panel)
 	-- right pane: the plan
 	local rightLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	local rightHeader = CreateFrame("Frame", nil, panel)
-	rightHeader:SetPoint("TOPLEFT", 470, -28)
-	rightHeader:SetPoint("TOPRIGHT", -26, -28)
+	rightHeader:SetPoint("TOPLEFT", 478, -28)
+	rightHeader:SetPoint("TOPRIGHT", -32, -28)
 	rightHeader:SetHeight(22)
 
 	rightLabel:SetPoint("LEFT", rightHeader, "LEFT", 0, 0)
@@ -946,8 +958,8 @@ function UI.BuildPlanner(panel)
 	summaryHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 	planBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
-	planBox:SetPoint("TOPLEFT", 470, -66)
-	planBox:SetPoint("BOTTOMRIGHT", -26, 48)
+	planBox:SetPoint("TOPLEFT", 478, -66)
+	planBox:SetPoint("BOTTOMRIGHT", -32, 48)
 
 	local planBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	planBar:SetPoint("TOPLEFT", planBox, "TOPRIGHT", 6, 0)

@@ -651,7 +651,10 @@ local function buildMain()
 	-- automatically when switching to Blizzard or ElvUI.
 	frame.mmNativeClose = frame.CloseButton or frame.closeButton
 	local modernClose = MM.Theme.CreateTitleCloseButton(frame, 18)
-	modernClose:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -7, -3)
+	-- Tight into the corner. -7,-3 on an 18px button left it visibly adrift
+	-- from the frame edge in modern, where the title bar has no ornament to
+	-- sit against and the gap reads as a mistake rather than as margin.
+	modernClose:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
 	modernClose:SetFrameLevel(frame:GetFrameLevel() + 30)
 	modernClose.mmTooltip = "Close Master Mounts"
 	modernClose:SetScript("OnClick", function() frame:Hide() end)
