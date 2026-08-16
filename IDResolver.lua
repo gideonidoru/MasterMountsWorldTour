@@ -404,6 +404,21 @@ end
 local SCAN_MAX = 3200
 local SCAN_CHUNK = 200
 
+-- The two name readers, named once. The lookup below walks the same space for
+-- a single name when the index says it is ambiguous, and a second inline copy
+-- of these would be a second thing to keep in step.
+local function currencyName(id)
+	local info = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo
+		and C_CurrencyInfo.GetCurrencyInfo(id)
+	return info and info.name
+end
+
+local function factionName(id)
+	local data = C_Reputation and C_Reputation.GetFactionDataByID
+		and C_Reputation.GetFactionDataByID(id)
+	return data and data.name
+end
+
 local function scanSpace(getName, into, onDone)
 	local id, found = 1, 0
 	local function step()
@@ -499,17 +514,11 @@ function R.BuildIndexes(force)
 	end
 
 	if C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo then
-		scanSpace(function(id)
-			local info = C_CurrencyInfo.GetCurrencyInfo(id)
-			return info and info.name
-		end, store.currencies, done)
+		scanSpace(currencyName, store.currencies, done)
 	else done() end
 
 	if C_Reputation and C_Reputation.GetFactionDataByID then
-		scanSpace(function(id)
-			local data = C_Reputation.GetFactionDataByID(id)
-			return data and data.name
-		end, store.factions, done)
+		scanSpace(factionName, store.factions, done)
 	else done() end
 end
 
@@ -795,12 +804,37 @@ function R.Lookup(needle)
 			for i, name in ipairs(names) do
 				if i > 12 then capped = true break end
 				hits = hits + 1
+				local label = kind == "factions" and "FACTION" or "CURRENCY"
+				local id = index[name]
 				-- No colour: the window that carries this strips it, and the
 				-- line is going to be pasted back rather than admired. Shaped
 				-- so the answer to "which index, and what id" is one glance.
-				MM:Print("  %-8s  %-40s id %s",
-					kind == "factions" and "FACTION" or "CURRENCY",
-					name, tostring(index[name]))
+				if id == false then
+					-- AMBIGUOUS, WHICH IS AN ANSWER AND NOT A FAILURE. The
+					-- index stores false when several ids share a name, because
+					-- picking one is how somebody gets told to earn the wrong
+					-- thing. Printing "id false" said none of that, so the
+					-- space is walked again for this one name and every
+					-- candidate is listed. 3200 ids in one pass is affordable
+					-- for a command somebody typed on purpose.
+					MM:Print("  %-8s  %-40s AMBIGUOUS -- several ids share this name:",
+						label, name)
+					local shown = 0
+					for probe = 1, SCAN_MAX do
+						local okP, pname = pcall(
+							kind == "factions" and factionName or currencyName, probe)
+						if okP and pname and pname:lower() == name then
+							shown = shown + 1
+							MM:Print("      id %d", probe)
+							if shown >= 12 then break end
+						end
+					end
+					if shown == 0 then
+						MM:Print("      (none found on a re-scan -- the id space may have moved)")
+					end
+				else
+					MM:Print("  %-8s  %-40s id %s", label, name, tostring(id))
+				end
 			end
 		end
 	end
