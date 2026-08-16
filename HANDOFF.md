@@ -170,6 +170,13 @@ around, and a reload does not invalidate it the way a counter would.
   controls are the opposite case -- leaving tabs, checkboxes, edit boxes and
   scroll bars to their own art IS the Blizzard theme. Rule 25 tells the two
   apart by reporting only styling written for a kind that cannot be reached.
+- **The calendar lists a holiday on EVERY day it covers, as `HOLIDAY ONGOING`.**
+  It does not emit markers only on the start/end Tuesdays -- a comment in
+  `Availability.lua` claimed it did, and the Timewalking scan was built on that
+  claim. `/mm events` dumps the month with sequence types and is what disproved
+  it. Because ONGOING entries persist, "is there a marker in the past 7 days" is
+  never the question; the NEWEST marker decides, and an `END` means the week is
+  over. Read the dump before trusting any calendar reasoning here.
 
 ## Where things live
 

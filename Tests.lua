@@ -1744,6 +1744,33 @@ local function runLogic()
 		return true, "repaint is a cache hit"
 	end)
 
+	check("No badge line offers a purchase with no Timewalking week running", function()
+		-- Holding the cost is not the same as being able to spend it. The
+		-- "you have enough" branch returned before the event check below it
+		-- ever ran, so a full purse read as "buy it during the right
+		-- Timewalking week!" on a week with no Timewalking at all -- and the
+		-- rows carried an "ending soon" tag with nothing to end.
+		local TW = MM.Timewalking
+		if not (TW and TW.Estimate and TW.IsActive) then return nil, "no timewalking" end
+		if TW.IsActive() then
+			return nil, "a Timewalking week is running; nothing to assert"
+		end
+		local offered = {}
+		for _, rec in ipairs(MM.Data.Mounts or {}) do
+			if rec.category == "TIMEWALKING" and rec.conditions then
+				local _, _, text = TW.Estimate(rec)
+				if text and text:find("buy it", 1, true) then
+					offered[#offered + 1] = rec.name
+				end
+			end
+		end
+		if #offered > 0 then
+			return false, ("%d record(s) say to buy with no event running, e.g. %s")
+				:format(#offered, offered[1])
+		end
+		return true, "no purchase offered outside a Timewalking week"
+	end)
+
 	check("Every theme leaves a close button you can actually see", function()
 		-- Each theme reaches the close differently: Modern draws its own and
 		-- hides the native one, Blizzard restores the template art it never

@@ -24,7 +24,12 @@ function TW.IsActive()
 	-- Tuesdays); fallback: any TW-ish title on today's calendar
 	if MM.Availability.twActive then return true end
 	for title in pairs(MM.Availability.activeEvents) do
-		if isTimewalkingTitle(title:lower()) then return true end
+		-- An "Ends" entry is titled exactly like the "Begins" one, so matching
+		-- on the title alone declared a week live on the day it finished.
+		if isTimewalkingTitle(title:lower())
+			and MM.Availability.activeEventSequence[title] ~= "END" then
+			return true
+		end
 	end
 	return false
 end
@@ -188,6 +193,13 @@ function TW.Estimate(rec)
 	local have = TW.Badges()
 	local needed = math.max(0, cost - have)
 	if needed == 0 then
+		-- Having the badges is not the same as being able to spend them. This
+		-- branch returned before the event check below ever ran, so a full
+		-- purse read as "buy it now" in a week with no Timewalking at all.
+		if not TW.IsActive() then
+			return 0, 0, ("Badges ready: %s / %s — waiting for a Timewalking week")
+				:format(U.Comma(have), U.Comma(cost))
+		end
 		return 0, 0, ("Badges ready: %s / %s — buy it during the right Timewalking week!")
 			:format(U.Comma(have), U.Comma(cost))
 	end

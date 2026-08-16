@@ -1940,21 +1940,32 @@ function P:EstimateLine(entry)
 	end
 
 	if rec.conditions then
-		for _, cond in ipairs(rec.conditions) do
-			if cond.type == "REP" then
-				local _, text = MM.Conditions.Evaluate(cond)
-				return text
+		-- SHOW WHAT IS STOPPING YOU, not whichever requirement happens to be
+		-- written first. Corroded Soul Crusher costs 10 Voidlight Marl AND
+		-- Delver's Journey Rank 5; a player with thousands of marl and no rank
+		-- was shown "Voidlight Marl: 5,043 / 10" and nothing about the rank
+		-- that actually barred the purchase. Two passes: the first reports an
+		-- unmet requirement, the second falls back to describing the cost when
+		-- every requirement is already met.
+		local function describe(wantUnmet)
+			for _, cond in ipairs(rec.conditions) do
+				if cond.type == "REP" then
+					local met, text = MM.Conditions.Evaluate(cond)
+					if not wantUnmet or met == false then return text end
+				end
 			end
+			for _, cond in ipairs(rec.conditions) do
+				if cond.type == "CURRENCY" then
+					local met, text = MM.Conditions.Evaluate(cond)
+					if not wantUnmet or met == false then return text end
+				elseif cond.type == "ITEM" and cond.cost and not wantUnmet then
+					return "Buy: " .. (cond.name or "item") .. " — " .. cond.cost
+				end
+			end
+			return nil
 		end
-		for _, cond in ipairs(rec.conditions) do
-			if cond.type == "ITEM" and cond.cost then
-				return "Buy: " .. (cond.name or "item") .. " — " .. cond.cost
-			end
-			if cond.type == "CURRENCY" then
-				local _, text = MM.Conditions.Evaluate(cond)
-				return text
-			end
-		end
+		local text = describe(true) or describe(false)
+		if text then return text end
 	end
 
 	return rec.source

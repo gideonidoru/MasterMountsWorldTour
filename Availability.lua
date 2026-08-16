@@ -36,12 +36,22 @@ A.HOLIDAY_KEYWORDS = {
 
 A.calendarLoaded = false
 A.twActive = false -- Timewalking week running right now
+A.activeEventSequence = {} -- [title] = calendar sequence type for today's entry
 A.twEra = nil      -- era name if we could parse it, else nil (= unknown)
 
--- The Timewalking calendar entry only exists on its start/end Tuesdays
--- ("Begins"/"Ends" markers) — on any other weekday, today's calendar shows
--- nothing. So: a TW week is active if a Begins marker exists within the past
--- 7 days (scanning back across the month boundary when needed).
+-- THE CALENDAR IS NOT MARKERS-ONLY. This scan was written believing the
+-- Timewalking entry existed only on its start/end Tuesdays, so "a non-END entry
+-- anywhere in the past 7 days" was taken to mean a week was running. A live
+-- calendar read says otherwise: "Timewalking Dungeon Event" is listed EVERY day
+-- it covers, as HOLIDAY ONGOING, with START and END both landing on the
+-- changeover Tuesday. Under the old reading, last week's ONGOING entries kept
+-- the vendor open for days after the week had finished -- badges declared
+-- spendable, rows tagged "ending soon", with no event running at all.
+--
+-- So the question is not "is there a marker" but "which marker is newest".
+-- Scanning back 7 days, the most recent Timewalking entry decides: an END means
+-- the week is over, anything else means it is still running. On a changeover
+-- Tuesday both land on the same day and the START wins.
 local function scanTimewalkingWindow(today)
 	A.twActive, A.twEra, A.twEndingEra = false, nil, nil
 	-- The month is already anchored by scanCalendar before this runs; anchoring
@@ -58,6 +68,10 @@ local function scanTimewalkingWindow(today)
 	--
 	-- The era that matters is the one that STARTED. Never the one that ended.
 	local startedToday, endedToday, ongoing
+	-- The MOST RECENT marker decides. A Begins earlier in the window with an
+	-- Ends after it describes a week that is over, and tracking "something
+	-- started and nothing today says otherwise" could not tell those apart.
+	local latestDelta, latestIsStart
 
 	for delta = 0, 7 do
 		local monthOffset, day = 0, today.monthDay - delta
@@ -74,25 +88,34 @@ local function scanTimewalkingWindow(today)
 					.. ((okHol and hol and hol.name) or "") .. " "
 					.. ((okHol and hol and hol.description) or "")):lower())
 
+				local isStart = ev.sequenceType ~= "END"
+				-- Nearer wins; on a tie a Begins beats an Ends, which is what
+				-- a changeover Tuesday looks like -- both markers, same day.
+				if latestDelta == nil or delta < latestDelta
+					or (delta == latestDelta and isStart) then
+					latestDelta, latestIsStart = delta, isStart
+				end
 				if delta == 0 then
-					A.twActive = true -- any marker today means a week is running
-					if ev.sequenceType == "END" then
-						endedToday = endedToday or era
-					else
+					if isStart then
 						startedToday = startedToday or era
+					else
+						endedToday = endedToday or era
 					end
-				elseif ev.sequenceType ~= "END" then
-					-- a week that began earlier and has not ended is still running
-					A.twActive = true
+				elseif isStart then
 					ongoing = ongoing or era
 				end
 			end
 		end
 	end
 
-	-- Today's START beats anything older; an ongoing marker from earlier in the
-	-- week beats today's END, which describes the week that just finished.
-	A.twEra = startedToday or ongoing or endedToday
+	-- AN "ENDS" MARKER IS NOT A LIVE EVENT. Both markers carry the word
+	-- Timewalking, and treating any marker on today's calendar as proof of a
+	-- running week meant the Tuesday a week finished read as a week in progress
+	-- -- the vendor offered, the badges declared spendable, and the rows tagged
+	-- "ending soon" with nothing to end. A week is running only if one started
+	-- today or one began earlier and has not ended since.
+	A.twActive = latestIsStart == true
+	A.twEra = A.twActive and (startedToday or ongoing) or endedToday
 	A.twEndingEra = (startedToday and endedToday and endedToday ~= startedToday)
 		and endedToday or nil
 end
@@ -154,6 +177,7 @@ A.HasCalendarData = calendarHasData
 local function doScanCalendar()
 	if not (C_Calendar and C_Calendar.GetNumDayEvents) then return end
 	wipe(A.activeEvents)
+	wipe(A.activeEventSequence)
 	local today = C_DateAndTime.GetCurrentCalendarTime()
 	if not today then return end
 	anchorMonth(today)
@@ -180,6 +204,13 @@ local function doScanCalendar()
 			-- and micro-holidays; a guild raid someone scheduled is also an
 			-- "event today" and must never be mistaken for one.
 			A.activeEvents[title] = ev.calendarType or true
+			-- Keep the sequence type too. Without it the Timewalking fallback
+			-- could not tell a week beginning from one finishing, and both
+			-- entries are titled the same. A title carrying both markers on a
+			-- changeover day keeps the one that is not an END.
+			if A.activeEventSequence[title] ~= "END" or ev.sequenceType ~= "END" then
+				A.activeEventSequence[title] = ev.sequenceType or ""
+			end
 		end
 	end
 	scanTimewalkingWindow(today)
