@@ -393,6 +393,7 @@ function PL.Scan()
 		end
 	end
 	PL.scanned = true
+	PL.Save()
 	PL.mapsAsked = 0
 	for _ in pairs(asked) do PL.mapsAsked = PL.mapsAsked + 1 end
 	if added > 0 then
@@ -404,6 +405,70 @@ function PL.Scan()
 			MM.Router.InvalidateTravelTopology()
 		end
 	end
+	return added
+end
+
+------------------------------------------------------------
+-- Remembering what was read
+------------------------------------------------------------
+-- KEPT ACROSS SESSIONS, and applied before anything charts.
+--
+-- Without this the count in the route's cache signature went 0 -> 4 eight
+-- seconds after login, every login: the stored chart was looked up under a
+-- world with no learned portals, missed, and the whole route was charted from
+-- scratch -- 3.8 seconds of it -- before the scan then restored the signature
+-- the chart had been saved under. The portals were being re-learned from the
+-- map each session anyway, so nothing was gained by forgetting them.
+--
+-- Only the endpoints are stored. They are coordinates the client published,
+-- and re-reading them is what the scan does; this is a cache of that, not a
+-- second source of truth. A rescan that finds a link already present leaves it
+-- alone, because Apply refuses an endpoint it has already placed.
+function PL.Save()
+	-- TYPE, not truthiness. Saved variables are a table or they are not usable,
+	-- and "not nil" is not the same question.
+	if type(MM.db) ~= "table" then return end
+	local out = {}
+	for _, l in ipairs(PL.learned) do
+		out[#out + 1] = {
+			fromMap = l.fromMap, fromX = l.fromX, fromY = l.fromY,
+			toMap = l.toMap, toX = l.toX, toY = l.toY,
+			method = l.method, dest = l.dest, back = l.back,
+		}
+	end
+	MM.db.portals = out
+end
+
+-- Put last session's portals back into the network. Cheap -- a handful of
+-- table writes -- so it runs inline the moment saved variables are readable,
+-- rather than on a timer that would reintroduce the churn it exists to avoid.
+function PL.Restore()
+	if type(MM.db) ~= "table" or type(MM.db.portals) ~= "table"
+		or type(MM.TravelNodes) ~= "table" then
+		return 0
+	end
+	local added = 0
+	for _, l in ipairs(MM.db.portals) do
+		if l.fromMap and l.toMap and l.fromX and l.toX and PL.Apply(l) then
+			added = added + 1
+			PL.learned[#PL.learned + 1] = l
+		end
+	end
+	if added > 0 then
+		-- Modules checked by TYPE. Restore runs at MM_DB_READY, earlier than
+		-- anything else here, and asking whether a module is "there" by
+		-- truthiness answers yes for things that are not tables yet.
+		if type(MM.Network) == "table" and MM.Network.Invalidate then
+			MM.Network.Invalidate()
+		end
+		if type(MM.InvalidateTravelFingerprint) == "function" then
+			MM.InvalidateTravelFingerprint()
+		end
+		if type(MM.Journey) == "table" and MM.Journey.Forget then
+			MM.Journey.Forget()
+		end
+	end
+	PL.restored = added
 	return added
 end
 
@@ -420,6 +485,11 @@ function PL.Count() return #PL.learned end
 -- the one time this addon froze a client, it was a loop over maps running
 -- eagerly during login. It reads a couple of dozen maps a single time, well
 -- after the world has settled, and never again in the session.
+-- BEFORE ANYTHING CHARTS. Saved variables are readable at MM_DB_READY, which
+-- is well ahead of the first route build, so a portal learned last session is
+-- in the graph by the time the stored chart is looked up.
+MM:On("MM_DB_READY", function() pcall(PL.Restore) end)
+
 local done = false
 MM:RegisterGameEvent("PLAYER_ENTERING_WORLD", function()
 	if done then return end

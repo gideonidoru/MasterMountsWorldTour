@@ -2037,17 +2037,47 @@ local function runLogic()
 		--
 		-- Presence means a travel NODE on this map. MapTraversalGroup is not
 		-- that -- it holds 48 zones and Orgrimmar, with 28 nodes, is not one.
+		-- ONE NODE IS NOT TWO PLACES. A zone joined by a single portal has one
+		-- way in, so both corners share an entry node no matter how far apart
+		-- they are; only the legs either side of it can differ. Distinguishing
+		-- entry nodes needs at least two, and saying so is not the same as
+		-- saying the planner is wrong.
+		local nodesHere = 0
+		for _, node in pairs(MM.TravelNodes or {}) do
+			if tonumber(node.mapID) == mapID then nodesHere = nodesHere + 1 end
+		end
 		if J.ZoneOnNetwork and not J.ZoneOnNetwork(mapID) then
 			return nil, ("%s is not on the travel network, so every journey "
 				.. "leaves and returns -- see REMAINING GAPS"):format(info.name)
 		end
-		-- Two corners of wherever we are standing, to the same destination.
-		local aMin, aLegs = J.Plan(info.name, 5, 5, info.name, 50, 50, nil, mapID, mapID)
-		local bMin, bLegs = J.Plan(info.name, 95, 95, info.name, 50, 50, nil, mapID, mapID)
+		-- TWO CORNERS AT DIFFERENT DISTANCES FROM THE DESTINATION.
+		--
+		-- This asked about (5,5) and (95,95) travelling to (50,50), which are
+		-- the same distance from it -- 63.6 either way. Identical answers were
+		-- therefore the CORRECT result, and the check only ever passed because
+		-- a zone with many nodes gave the two corners different entry nodes.
+		-- Standing in a zone with exactly one, the symmetry showed through and
+		-- it read as a planner defect.
+		--
+		-- Off-centre, the near corner is 28 units out and the far one 99. Equal
+		-- answers now mean what the check says they mean.
+		local aMin, aLegs = J.Plan(info.name, 5, 5, info.name, 25, 25, nil, mapID, mapID)
+		local bMin, bLegs = J.Plan(info.name, 95, 95, info.name, 25, 25, nil, mapID, mapID)
 		if not (aMin and bMin) then
 			return nil, "no route between these points to compare"
 		end
 		local function entry(legs) return legs and legs[1] and legs[1].to end
+		-- With one node the entry is shared by construction, so the TOTALS
+		-- carry the whole question: a corner three times further away must
+		-- cost more.
+		if nodesHere < 2 then
+			if aMin == bMin then
+				return false, ("one entry node, and both corners still cost "
+					.. "%.2f min despite one being 3.5x further"):format(aMin)
+			end
+			return true, ("%.2f min from the near corner, %.2f from the far "
+				.. "one, through the zone's only node"):format(aMin, bMin)
+		end
 		if aMin == bMin and entry(aLegs) == entry(bLegs) then
 			return false, ("opposite corners got one identical answer (%.2f min via %s)")
 				:format(aMin, tostring(entry(aLegs)))

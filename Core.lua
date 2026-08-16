@@ -459,6 +459,9 @@ end)
 -- Saved variables
 ------------------------------------------------------------
 local accountDefaults = {
+	-- Portals read off the map, kept so the route's cache signature does not
+	-- change eight seconds into every session. See Nav/PortalLearn.lua.
+	portals = {},
 	celebration = true,       -- big splash when a hunted mount drops
 	celebrationShot = true,   -- take a screenshot during the splash
 	celebrateAll = false,     -- celebrate every new mount, not only planned ones
