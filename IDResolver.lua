@@ -113,7 +113,32 @@ local function resolveInstances(store)
 				local ok, instanceID, name = pcall(EJ_GetInstanceByIndex, index, isRaid)
 				if not ok or not instanceID then break end
 				if name then
-					local rec = store.instances[name:lower()] or {}
+					-- KEYED SO A REMAKE CANNOT ERASE THE ORIGINAL.
+					--
+					-- This wrote to store.instances[name:lower()], so the
+					-- second dungeon the journal offered under a given name
+					-- overwrote the first and only one id survived. Magisters'
+					-- Terrace exists in the Burning Crusade tier and again in
+					-- Midnight; Zul'Aman exists twice as well. The harvest
+					-- collapsed each pair to whichever tier came last, which is
+					-- why a mount from the old version routed into the new one.
+					--
+					-- The name key is kept, because everything downstream still
+					-- looks up by name and most instances are unambiguous. What
+					-- is added is `alsoKnown`: every OTHER id the journal offers
+					-- for that name, with the tier it came from, so a record can
+					-- be pinned to the right one instead of guessing.
+					local key = name:lower()
+					local rec = store.instances[key] or {}
+					if rec.journalInstanceID and rec.journalInstanceID ~= instanceID then
+						rec.alsoKnown = rec.alsoKnown or {}
+						rec.alsoKnown[#rec.alsoKnown + 1] = {
+							id = rec.journalInstanceID,
+							tier = rec.tier,
+							isRaid = rec.isRaid,
+						}
+					end
+					rec.tier = tier
 					rec.journalInstanceID = instanceID
 					rec.isRaid = isRaid
 					rec.encounters = rec.encounters or {}
@@ -772,8 +797,21 @@ function R.Export()
 					tinsert(encs, ('[%q]=%d'):format(e, d.dungeonEncounterID))
 				end
 			end
-			tinsert(out, ('    [%q] = { id = %d, raid = %s, enc = { %s } },'):format(
-				name, inst.journalInstanceID, tostring(inst.isRaid or false),
+			-- A name the journal offers more than once is reported with every
+			-- id and the tier each came from. Silently exporting one of them
+			-- is what sent a Burning Crusade mount into a Midnight dungeon.
+			local also = ""
+			if inst.alsoKnown and #inst.alsoKnown > 0 then
+				local parts = {}
+				for _, k in ipairs(inst.alsoKnown) do
+					parts[#parts + 1] = ("{ id = %d, tier = %s }")
+						:format(k.id, tostring(k.tier))
+				end
+				also = (", alsoKnown = { %s }"):format(table.concat(parts, ", "))
+			end
+			tinsert(out, ('    [%q] = { id = %d, tier = %s, raid = %s%s, enc = { %s } },'):format(
+				name, inst.journalInstanceID, tostring(inst.tier),
+				tostring(inst.isRaid or false), also,
 				table.concat(encs, ", ")))
 		end
 	end
