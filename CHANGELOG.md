@@ -1,6 +1,68 @@
 # Changelog
 
-## 1.2.2 — unreleased
+## 1.2.2 — 2026-08-16
+
+Player reports, and a zone that had been quietly costing more than it should.
+
+### Reported by players
+
+- **The Nether-Swept Drake is fished in Voidstorm, not bought in Outland.** The
+  record was already right about where; it now carries the item id as an item
+  id. A spell id had been recorded in that field, which is how the wrong vendor
+  ended up attached to it.
+
+- **Killing a boss no longer throws an error.** 12.0 withholds some strings the
+  client used to hand over, and reading one as text threw. Three calls were
+  unguarded; the one that fired per boss kill is what people actually saw.
+
+- **The rare alert's arrow points at the spawn.** It was reading world axes as
+  though they were a compass, which on Magisters' Terrace put it 179 degrees
+  out -- reliably away from the rare.
+
+- **The alert no longer stalls a frame.** Setting the audio volume and loading
+  the model both happened in the same frame the window appeared. Both now
+  happen after it is on screen.
+
+- **Timewalking mounts are not offered when no Timewalking week is running.**
+  Detection was fixed in 1.2.1; the recommendation never asked. "Add 10
+  easiest" now skips work that cannot be started today.
+
+### Travel
+
+- **A zone joins the travel network from its own map.** Portals are published
+  as points of interest, both ends, with positions -- so Voidstorm, which had
+  no travel node and priced all fourteen of its goals as leave-and-return, now
+  routes through the portal it actually has. Four links read this way, kept
+  across sessions, and re-read on login for anything new.
+
+  A link is only made when BOTH ends are read. One end plus an assumption about
+  the other is how a route sends somebody through a door that is not there --
+  which nearly happened, when "Portal to Silvermoon" resolved to the Burning
+  Crusade city rather than the one next door. Place names now resolve near the
+  map that names them.
+
+  K'aresh stays off the network, correctly: its portal names Dornogal, and
+  Dornogal publishes no portal back.
+
+### Faster
+
+- **The route builds in about 25 ms**, from roughly 740. Three separate
+  causes, all the same shape -- work repeated inside a loop that could not
+  change it. The route panel now reports where its time went and whether the
+  stored chart was reused.
+
+### Honesty
+
+- **The report says what it cannot do, rather than blaming the planner.** A
+  zone off the travel network is now named as that, and the survey list leaves
+  out dungeon and raid maps -- you do not reach a raid by portal.
+
+- **Costs that were one flat number are now counted**: a quest chain's length,
+  and a visit that is measured rather than assumed.
+
+- **Ids are graded on whether they measure what their condition names**, which
+  found five that differ from the client deliberately and confirmed the rest.
+
 
 ## 1.2.1 — 2026-08-16
 
