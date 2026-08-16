@@ -132,6 +132,18 @@ local BUILD_BOUND = {
 	-- goals legitimately, and this check would fail for a reason that is not
 	-- its subject. The build is load-bearing, so it is charged to the router.
 	["A plan edit does not re-chart on the frame"] = true,
+	-- Opens with an unconditional BuildSync for the same reason as the one
+	-- above: it asks whether Build reports a SETTLED route, which is only a
+	-- fair question if the route was just built.
+	--
+	-- It sat outside this list for a long time and passed, which was luck
+	-- rather than speed. An earlier check happened to leave the chart warm, so
+	-- its BuildSync was a restore rather than a search. When the signature
+	-- started moving -- learned portals joining the graph -- the full search
+	-- landed here instead, and 3.9 seconds appeared in a check that had never
+	-- looked expensive. The cost was always the router's; only which check
+	-- paid it moved.
+	["Build answers with a status, never a stop count"] = true,
 }
 
 -- ONE ANSWER TO "WHICH CHECK IS SLOWEST", because there were two and they
@@ -2067,13 +2079,31 @@ local function runLogic()
 			return nil, "no route between these points to compare"
 		end
 		local function entry(legs) return legs and legs[1] and legs[1].to end
+		local function opensWithTeleport(legs)
+			local mode = legs and legs[1] and legs[1].mode
+			return type(mode) == "string" and mode:find("^teleport:") ~= nil
+		end
+		-- A TELEPORT IS THE SAME FROM ANYWHERE, and that is the point of one.
+		--
+		-- This check exists because Plan once cached under zone names and map
+		-- ids alone, so two stops in one zone shared an answer. Equal totals
+		-- only prove that when the winning route DEPENDS on where you started.
+		-- Where a teleport out and back beats crossing the zone -- which it
+		-- does in a zone joined by a single portal and no flight points --
+		-- both corners genuinely take the same journey, and calling that a
+		-- collapsed cache blames the planner for being right.
+		if aMin == bMin and opensWithTeleport(aLegs) and opensWithTeleport(bLegs) then
+			return true, ("both corners take the same teleport (%.2f min); "
+				.. "nothing here depends on where you stood"):format(aMin)
+		end
 		-- With one node the entry is shared by construction, so the TOTALS
 		-- carry the whole question: a corner three times further away must
-		-- cost more.
+		-- cost more, unless a teleport won -- handled above.
 		if nodesHere < 2 then
 			if aMin == bMin then
-				return false, ("one entry node, and both corners still cost "
-					.. "%.2f min despite one being 3.5x further"):format(aMin)
+				return false, ("one entry node, both corners cost %.2f min by "
+					.. "%s, and one is 3.5x further"):format(aMin,
+						tostring(aLegs and aLegs[1] and aLegs[1].mode))
 			end
 			return true, ("%.2f min from the near corner, %.2f from the far "
 				.. "one, through the zone's only node"):format(aMin, bMin)
