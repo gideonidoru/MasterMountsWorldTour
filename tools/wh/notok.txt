@@ -1,0 +1,32 @@
+Arthur Flew:notfound
+Beska Redtusk:nomapid
+Bloodlord Mandokir:ambiguous
+Brendormi:nomapid
+Collector Ta'steld:nomapid
+Deathguard Netharian:ambiguous
+Degentrius:nomapid
+Gina Mudclaw:ambiguous
+Gul'dan:ambiguous
+Harb Clawhoof:ambiguous
+High Priest Thekal:notfound
+Historian Ma'di:notfound
+Humon'gozz:nomapper
+Jan'sari:notfound
+Lindormi:ambiguous
+Provisioner Qorra:ambiguous
+Relinquishing Relics:notfound
+Second Mate Sluggs:notfound
+Skullripper:ambiguous
+So'leah:ambiguous
+Sylvanas Windrunner:ambiguous
+Telemancer Astrandis:ambiguous
+Thraxadus:notfound
+Ula'tek:notfound
+Uncle Bigpocket:ratelimited
+Vasarin Redmorn:ratelimited
+Violet Mistake:ratelimited
+Void Researcher Anowin:ratelimited
+Warbringer Mal'Korak:ratelimited
+Wild Worldcracker:ratelimited
+Wrangler Kravos:ratelimited
+Zul'jan:ratelimited

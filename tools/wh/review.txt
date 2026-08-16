@@ -1,0 +1,130 @@
+Abyss Worm                           Mistress Sassz'ine         not harvested
+Acidic Void Creeper                  Shad'anis                  not harvested
+Aerial Unit R-21/X                   King Mechagon              not harvested
+Amethyst Mechsuit                    Lindormi                   ambiguous
+Amethyst Ruinstrider                 Toraan                     not harvested
+Arcadian War Turtle                  Xur'ios                    not harvested
+Argent Charger                       Dame Evniki Kapsalis       not harvested
+Argent Warhorse                      Dame Evniki Kapsalis       not harvested
+Armored Blue Wind Rider              Mei Francis                not harvested
+Armored Brown Bear                   Mei Francis                not harvested
+Armored Irontusk                     Maaria                     not harvested
+Armored Razzashi Raptor              Bloodlord Mandokir         ambiguous
+Armored Snowy Gryphon                Mei Francis                not harvested
+Ascendant Skyrazor                   Queen Ansurek              not harvested
+Ashhide Mushan Beast                 Speaker Gulan              not harvested
+Asset Advocator                      Skedgit Cinderbangs        not harvested
+Astral Cloud Serpent                 Elegon                     not harvested
+Azure Drake                          Malygos                    not harvested
+Azure Riding Crane                   Jaluu                      not harvested
+Beryl Ruinstrider                    Toraan                     not harvested
+Black Drake                          Sartharion                 not harvested
+Black Hawkstrider                    Winaestra                  not harvested
+Black Riding Goat                    Gina Mudclaw               ambiguous
+Blonde Riding Yak                    Uncle Bigpocket            ratelimited
+Blue Drake                           Malygos                    not harvested
+Blue Hawkstrider                     Winaestra                  not harvested
+Blue Shado-Pan Riding Tiger          Rushi                      not harvested
+Brown Elekk                          Torallius                  not harvested
+Brown Riding Camel                   Blacksmith Abasi           not harvested
+Brown Riding Goat                    Gina Mudclaw               ambiguous
+Cartel Master's Gearglider           So'leah                    ambiguous
+Cerulean Deathwalker                 Lindormi                   ambiguous
+Cerulean Ruinstrider                 Toraan                     not harvested
+Clutch of Ji-Kun                     Ji-Kun                     not harvested
+Corroded Soul Crusher                Telemancer Astrandis       ambiguous
+Crimson Lupine                       Collector Ta'steld         nomapid
+Crimson Primal Direhorn              Hiren Loresong             not harvested
+Crimson Tidestallion                 Mrrl                       not harvested
+Darkmoon Dancing Bear                Lhara                      not harvested
+Darkmoon Dirigible                   Lhara                      not harvested
+Darkwater Skate                      Galissa Sundew             not harvested
+Drake of the North Wind              Altairus                   not harvested
+Drake of the South Wind              Al'Akir                    not harvested
+Eclipse Dragonhawk                   Cupri                      not harvested
+Felblaze Infernal                    Gul'dan                    ambiguous
+Fiendish Hellfire Core               Gul'dan                    ambiguous
+Frenzied Shredclaw                   Thraxadus                  notfound
+G.M.O.D.                             High Tinker Mekkatorque    not harvested
+Glacial Tidestorm                    Lady Jaina Proudmoore      not harvested
+Golden Primal Direhorn               Vasarin Redmorn            ratelimited
+Golden Riding Crane                  Jaluu                      not harvested
+Grand Expedition Yak                 Uncle Bigpocket            ratelimited
+Grand Gryphon                        Vasarin Redmorn            ratelimited
+Grand Ice Mammoth                    Lillehoff                  not harvested
+Gray Elekk                           Torallius                  not harvested
+Great Blue Elekk                     Torallius                  not harvested
+Great Green Elekk                    Torallius                  not harvested
+Great Purple Elekk                   Torallius                  not harvested
+Green Shado-Pan Riding Tiger         Rushi                      not harvested
+Grey Riding Yak                      Uncle Bigpocket            ratelimited
+Heavenly Golden Cloud Serpent        Mistweaver Ku              not harvested
+Hellfire Infernal                    Gul'dan                    ambiguous
+Ice Mammoth                          Lillehoff                  not harvested
+Illidari Doomhawk                    Historian Ma'di            notfound
+Indigo Coiled Horror                 Jan'sari                   notfound
+Innovation Investigator              Skedgit Cinderbangs        not harvested
+Ironbound Wraithcharger              Auzin                      not harvested
+Ironside Warwolf                     Kil'rip                    not harvested
+Kor'kron Juggernaut                  Garrosh Hellscream         not harvested
+Lavender K'arroc                     Shad'anis                  not harvested
+Lightforged Warframe                 Vindicator Jaelaana        not harvested
+Lucent Hawkstrider                   Degentrius                 nomapid
+Margin Manipulator                   Skedgit Cinderbangs        not harvested
+Mecha-Mogul Mk2                      Mogul Razdunk              not harvested
+Nether Drake                         Drake Dealer Hurlunk       not harvested
+Noble Bruffalon                      Storykeeper Ashekh         not harvested
+Onyxian Drake                        Onyxia                     not harvested
+Perfected Juggernaut                 Gill                       not harvested
+Primeval Skyfriend                   Ula'tek                    notfound
+Prototype A.S.M.R.                   Chrome King Gallywix       not harvested
+Prowling Shredclaw                   Thraxadus                  notfound
+Pureblood Fire Hawk                  Ragnaros                   not harvested
+Purple Elekk                         Torallius                  not harvested
+Purple Hawkstrider                   Winaestra                  not harvested
+Quantum Courser                      Chrono-Lord Deios          not harvested
+Raven Lord                           Anzu                       not harvested
+Ravenous Shredclaw                   Void Researcher Anowin     ratelimited
+Red Flying Cloud                     Tan Shin Tiao              not harvested
+Red Hawkstrider                      Winaestra                  not harvested
+Red Shado-Pan Riding Tiger           Rushi                      not harvested
+Regal Riding Crane                   Jaluu                      not harvested
+Relinquished Scarlet Charger         Relinquishing Relics       notfound
+Rivendare's Deathcharger             Lord Aurius Rivendare      not harvested
+Russet Ruinstrider                   Toraan                     not harvested
+Sable Ruinstrider                    Toraan                     not harvested
+Sea-Dwelling Isle Serpent            Second Mate Sluggs         notfound
+Skypaw Glimmerfur                    Collector Ta'steld         nomapid
+Skyskin Hornstrider                  Brendormi                  nomapid
+Snowpaw Glimmerfur Prowler           Collector Ta'steld         nomapid
+Soaring Meaderbee                    Cendvin                    not harvested
+Soweezi's Vintage Waveshredder       Soweezi                    not harvested
+Spawn of Horridon                    Horridon                   not harvested
+Spectral Pterrorwing                 Natal'hakata               not harvested
+Sthaarbs's Last Lunch                Sthaarbs                   not harvested
+Stonevault Mechsuit                  Void Speaker Eirich        not harvested
+Sunreaver Dragonhawk                 Vasarin Redmorn            ratelimited
+Sunreaver Hawkstrider                Vasarin Redmorn            ratelimited
+Sureki Skyrazor                      Queen Ansurek              not harvested
+Swift Forest Strider                 Lhara                      not harvested
+Swift Green Hawkstrider              Winaestra                  not harvested
+Swift Pink Hawkstrider               Winaestra                  not harvested
+Swift Purple Hawkstrider             Winaestra                  not harvested
+Swift Razzashi Raptor                Bloodlord Mandokir         ambiguous
+Swift White Hawkstrider              Kael'thas Sunstrider       not harvested
+Swift Zulian Panther                 High Priestess Kilnara     not harvested
+Swift Zulian Tiger                   High Priest Thekal         notfound
+Tan Riding Camel                     Blacksmith Abasi           not harvested
+The Big G                            Chrome King Gallywix       not harvested
+The Writhing Brood                   Zul'jan                    ratelimited
+Thundering Ruby Cloud Serpent        Alani                      not harvested
+Traveler's Tundra Mammoth            Mei Francis                not harvested
+Twilight Drake                       Sartharion                 not harvested
+Umber Ruinstrider                    Toraan                     not harvested
+Vengeance                            Sylvanas Windrunner        ambiguous
+Violet-Backed Skyfang                Jan'sari                   notfound
+Vitreous Stone Drake                 Slabhide                   not harvested
+Voidbound Stormray                   Void Researcher Anowin     ratelimited
+Wastewander Skyterror                Provisioner Qorra          ambiguous
+White Riding Goat                    Gina Mudclaw               ambiguous
+Wooly Mammoth                        Mei Francis                not harvested

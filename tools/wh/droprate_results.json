@@ -1,0 +1,481 @@
+[
+ {
+  "item": 143643,
+  "status": "ok",
+  "count": 222,
+  "outof": 99271
+ },
+ {
+  "item": 168830,
+  "status": "ok",
+  "count": 519,
+  "outof": 20687
+ },
+ {
+  "item": 152816,
+  "status": "norate"
+ },
+ {
+  "item": 210061,
+  "status": "ok",
+  "count": 68,
+  "outof": 10867
+ },
+ {
+  "item": 181815,
+  "status": "ok",
+  "count": 186,
+  "outof": 39001
+ },
+ {
+  "item": 68823,
+  "status": "ok",
+  "count": 2116,
+  "outof": 308873
+ },
+ {
+  "item": 32458,
+  "status": "ok",
+  "count": 3179,
+  "outof": 187121
+ },
+ {
+  "item": 87777,
+  "status": "ok",
+  "count": 2174,
+  "outof": 54763
+ },
+ {
+  "item": 43952,
+  "status": "ok",
+  "count": 1990,
+  "outof": 82062
+ },
+ {
+  "item": 184062,
+  "status": "ok",
+  "count": 476,
+  "outof": 95124
+ },
+ {
+  "item": 77067,
+  "status": "ok",
+  "count": 844,
+  "outof": 89988
+ },
+ {
+  "item": 166468,
+  "status": "ok",
+  "count": 33,
+  "outof": 2468
+ },
+ {
+  "item": 43953,
+  "status": "ok",
+  "count": 417,
+  "outof": 181776
+ },
+ {
+  "item": 182075,
+  "status": "ok",
+  "count": 298,
+  "outof": 48033
+ },
+ {
+  "item": 94228,
+  "status": "ok",
+  "count": 149,
+  "outof": 38360
+ },
+ {
+  "item": 205203,
+  "status": "ok",
+  "count": 217,
+  "outof": 26461
+ },
+ {
+  "item": 190765,
+  "status": "ok",
+  "count": 310,
+  "outof": 1231
+ },
+ {
+  "item": 163583,
+  "status": "ok",
+  "count": 85,
+  "outof": 2468
+ },
+ {
+  "item": 186645,
+  "status": "ok",
+  "count": 847,
+  "outof": 42344
+ },
+ {
+  "item": 187676,
+  "status": "ok",
+  "count": 619,
+  "outof": 13473
+ },
+ {
+  "item": 63040,
+  "status": "ok",
+  "count": 1073,
+  "outof": 139155,
+  "sources": 1
+ },
+ {
+  "item": 63041,
+  "status": "ok",
+  "count": 1398,
+  "outof": 71540
+ },
+ {
+  "item": 180582,
+  "status": "ok",
+  "count": 371,
+  "outof": 42340
+ },
+ {
+  "item": 78919,
+  "status": "ok",
+  "count": 1271,
+  "outof": 110407
+ },
+ {
+  "item": 186659,
+  "status": "ok",
+  "count": 918,
+  "outof": 8628
+ },
+ {
+  "item": 137574,
+  "status": "ok",
+  "count": 168,
+  "outof": 38537,
+  "sources": 1
+ },
+ {
+  "item": 123890,
+  "status": "ok",
+  "count": 2243,
+  "outof": 63714
+ },
+ {
+  "item": 30480,
+  "status": "ok",
+  "count": 3820,
+  "outof": 346946
+ },
+ {
+  "item": 71665,
+  "status": "ok",
+  "count": 2643,
+  "outof": 127445
+ },
+ {
+  "item": 166518,
+  "status": "norate"
+ },
+ {
+  "item": 116779,
+  "status": "ok",
+  "count": 652,
+  "outof": 80495
+ },
+ {
+  "item": 186652,
+  "status": "ok",
+  "count": 475,
+  "outof": 18171
+ },
+ {
+  "item": 116673,
+  "status": "ok",
+  "count": 599,
+  "outof": 80495
+ },
+ {
+  "item": 166705,
+  "status": "ok",
+  "count": 303,
+  "outof": 45926
+ },
+ {
+  "item": 44083,
+  "status": "ok",
+  "count": 1986,
+  "outof": 271591,
+  "sources": 5
+ },
+ {
+  "item": 87771,
+  "status": "ok",
+  "count": 240,
+  "outof": 87230
+ },
+ {
+  "item": 137575,
+  "status": "ok",
+  "count": 3093,
+  "outof": 38537
+ },
+ {
+  "item": 180581,
+  "status": "ok",
+  "count": 417,
+  "outof": 28017
+ },
+ {
+  "item": 180461,
+  "status": "ok",
+  "count": 1429,
+  "outof": 67332
+ },
+ {
+  "item": 50818,
+  "status": "ok",
+  "count": 2054,
+  "outof": 265761
+ },
+ {
+  "item": 116660,
+  "status": "ok",
+  "count": 2730,
+  "outof": 122246
+ },
+ {
+  "item": 166467,
+  "status": "ok",
+  "count": 152,
+  "outof": 1661
+ },
+ {
+  "item": 104253,
+  "status": "ok",
+  "count": 856,
+  "outof": 95768
+ },
+ {
+  "item": 77069,
+  "status": "ok",
+  "count": 1095,
+  "outof": 89988
+ },
+ {
+  "item": 174653,
+  "status": "norate"
+ },
+ {
+  "item": 174769,
+  "status": "ok",
+  "count": 336,
+  "outof": 27543
+ },
+ {
+  "item": 181819,
+  "status": "ok",
+  "count": 226,
+  "outof": 49948
+ },
+ {
+  "item": 142236,
+  "status": "ok",
+  "count": 1038,
+  "outof": 110237
+ },
+ {
+  "item": 45693,
+  "status": "ok",
+  "count": 24,
+  "outof": 2442,
+  "sources": 1
+ },
+ {
+  "item": 174842,
+  "status": "ok",
+  "count": 128,
+  "outof": 1966
+ },
+ {
+  "item": 212599,
+  "status": "ok",
+  "count": 1850,
+  "outof": 46471
+ },
+ {
+  "item": 174872,
+  "status": "ok",
+  "count": 106,
+  "outof": 15536
+ },
+ {
+  "item": 49636,
+  "status": "ok",
+  "count": 1220,
+  "outof": 83927
+ },
+ {
+  "item": 236960,
+  "status": "ok",
+  "count": 111,
+  "outof": 19459
+ },
+ {
+  "item": 69224,
+  "status": "ok",
+  "count": 549,
+  "outof": 32471
+ },
+ {
+  "item": 163582,
+  "status": "ok",
+  "count": 91,
+  "outof": 1207
+ },
+ {
+  "item": 21321,
+  "status": "ok",
+  "count": 37681,
+  "outof": 3740865,
+  "sources": 10
+ },
+ {
+  "item": 166466,
+  "status": "ok",
+  "count": 165,
+  "outof": 1367
+ },
+ {
+  "item": 13335,
+  "status": "ok",
+  "count": 1837,
+  "outof": 212124
+ },
+ {
+  "item": 186656,
+  "status": "ok",
+  "count": 150,
+  "outof": 52089
+ },
+ {
+  "item": 152789,
+  "status": "ok",
+  "count": 362,
+  "outof": 46005
+ },
+ {
+  "item": 116786,
+  "status": "ok",
+  "count": 808,
+  "outof": 80495
+ },
+ {
+  "item": 89783,
+  "status": "ok",
+  "count": 162,
+  "outof": 63299
+ },
+ {
+  "item": 163586,
+  "status": "ok",
+  "count": 112,
+  "outof": 2468
+ },
+ {
+  "item": 166470,
+  "status": "ok",
+  "count": 36,
+  "outof": 2468
+ },
+ {
+  "item": 163585,
+  "status": "ok",
+  "count": 2,
+  "outof": 1207
+ },
+ {
+  "item": 68824,
+  "status": "ok",
+  "count": 2593,
+  "outof": 285605
+ },
+ {
+  "item": 95057,
+  "status": "ok",
+  "count": 165,
+  "outof": 49516
+ },
+ {
+  "item": 104269,
+  "status": "ok",
+  "count": 681,
+  "outof": 76254
+ },
+ {
+  "item": 163584,
+  "status": "ok",
+  "count": 154,
+  "outof": 2468
+ },
+ {
+  "item": 186642,
+  "status": "ok",
+  "count": 175,
+  "outof": 36607
+ },
+ {
+  "item": 180730,
+  "status": "ok",
+  "count": 270,
+  "outof": 25143
+ },
+ {
+  "item": 190768,
+  "status": "ok",
+  "count": 87,
+  "outof": 15151
+ },
+ {
+  "item": 21218,
+  "status": "ok",
+  "count": 323463,
+  "outof": 3740865,
+  "sources": 10
+ },
+ {
+  "item": 21323,
+  "status": "ok",
+  "count": 332705,
+  "outof": 3740865,
+  "sources": 10
+ },
+ {
+  "item": 21324,
+  "status": "ok",
+  "count": 336479,
+  "outof": 3740865,
+  "sources": 10
+ },
+ {
+  "item": 186469,
+  "status": "ok",
+  "count": 1678,
+  "outof": 14545,
+  "sources": 1
+ },
+ {
+  "item": 223501,
+  "status": "ok",
+  "count": 131,
+  "outof": 2189,
+  "sources": 1
+ },
+ {
+  "item": 235707,
+  "status": "ok",
+  "count": 278,
+  "outof": 279,
+  "sources": 1
+ }
+]

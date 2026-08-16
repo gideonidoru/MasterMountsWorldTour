@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""Put real quest ids on conditions that only name a quest.
+
+The client has NO reverse quest-name -> id lookup, which is why 65 QUEST
+conditions carry no id and the report files them under "nobody can". That is
+true of the CLIENT. It is not true of the local guide data, which ships a
+complete questID -> name table for every quest in the game.
+
+So the name is matched against that table, exactly, and an id is written only
+where exactly one quest carries that name. 58 of the 65 do not match anything
+and are left alone -- they are prose ("Covenant: Venthyr", "Threat from Above,
+then To Skettis!"), not quest titles, and inventing an id for prose sends
+someone to complete the wrong quest.
+
+Writes Data/_source/Data_99zk_QuestIDs.lua. Do not hand-edit that file.
+"""
+import json
+import pathlib
+import re
+import subprocess
+import sys
+import collections
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+QUESTS = (pathlib.Path.home()
+          / "Downloads/ZygorGuidesViewer/Localization-Retail/Quests_enUS.lua")
+OUT = ROOT / "Data/_source/Data_99zk_QuestIDs.lua"
+
+
+def quest_index():
+    """name -> {ids}. Built from the source, and ambiguity is preserved."""
+    if not QUESTS.exists():
+        sys.exit("quest name source not found: %s" % QUESTS)
+    idx = collections.defaultdict(set)
+    text = QUESTS.read_text(encoding="utf-8", errors="replace")
+    for qid, name in re.findall(r'\[(\d+)\]\s*=\s*"((?:[^"\\]|\\.)*)"', text):
+        idx[name.strip().lower()].add(int(qid))
+    return idx
+
+
+def conditions_without_ids():
+    """(mount, type, name) for every condition the database cannot resolve.
+
+    Read by LOADING the database rather than parsing it, so this sees exactly
+    what the addon sees after every override has been applied.
+    """
+    lua = r'''
+local MM = {}
+local recs = {}
+MM.AddMounts = function(t) for _, r in ipairs(t) do recs[#recs+1] = r end end
+setmetatable(MM, { __index = function() return function() end end })
+assert(loadfile("%s"))("MasterMounts", MM)
+for _, r in ipairs(recs) do
+  for _, c in ipairs(r.conditions or {}) do
+    if not c.id and c.name then
+      print(string.format("%%s\t%%s\t%%s", c.type or "?", c.name, r.name))
+    end
+  end
+end
+''' % (ROOT / "Data/Mounts.lua")
+    p = subprocess.run(["lua", "-"], input=lua, capture_output=True, text=True)
+    if p.returncode != 0:
+        sys.exit("could not load the database: %s" % p.stderr.strip())
+    out = []
+    for line in p.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) == 3:
+            out.append(tuple(parts))
+    return out
+
+
+def lua_escape(s):
+    return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def main():
+    idx = quest_index()
+    print("  quest names indexed        : %d" % len(idx))
+    conds = conditions_without_ids()
+    quests = [(n, m) for t, n, m in conds if t == "QUEST"]
+    print("  QUEST conditions with no id: %d" % len(quests))
+
+    resolved, ambiguous, unmatched = [], 0, 0
+    seen = set()
+    for name, mount in quests:
+        key = name.strip().lower()
+        # our conditions often carry a parenthetical gloss the title lacks
+        bare = re.sub(r"\s*\(.*\)\s*$", "", key).strip()
+        ids = idx.get(key) or idx.get(bare)
+        if not ids:
+            unmatched += 1
+            continue
+        if len(ids) > 1:
+            # Two quests share this title. Picking one is how you tell someone
+            # to complete the wrong thing.
+            ambiguous += 1
+            continue
+        if (mount, name) in seen:
+            continue
+        seen.add((mount, name))
+        resolved.append((mount, name, next(iter(ids))))
+
+    resolved.sort()
+    print("  resolved exactly           : %d" % len(resolved))
+    print("  left alone (no match)      : %d" % unmatched)
+    print("  left alone (ambiguous)     : %d" % ambiguous)
+
+    body = [
+        "-- MasterMounts: quest ids for conditions that only named a quest.",
+        "--",
+        "-- The CLIENT has no reverse quest-name to id lookup, so these sat",
+        "-- unresolved and the report filed them under \"nobody can\". The local",
+        "-- guide data does have one, so an exact title match supplies the id and",
+        "-- the planner can read real progress instead of assuming.",
+        "--",
+        "-- ONLY WHERE EXACTLY ONE QUEST CARRIES THAT TITLE. %d matched; %d name"
+        % (len(resolved), unmatched),
+        "-- no quest at all (they are prose -- \"Covenant: Venthyr\") and %d are"
+        % ambiguous,
+        "-- shared by more than one quest. Both are left alone.",
+        "--",
+        "-- SetConditionID finds the condition by type and NAME and fills in the",
+        "-- id. OverrideMount cannot: an id changes the condition's identity, so",
+        "-- it would append a duplicate instead of annotating the original.",
+        "--",
+        "-- Generated by tools/extract_quest_ids.py. Do not hand-edit.",
+        "local _, MM = ...",
+        "",
+    ]
+    for mount, name, qid in resolved:
+        body.append('MM.SetConditionID("%s", "QUEST", "%s", %d)'
+                    % (lua_escape(mount), lua_escape(name), qid))
+    body.append("")
+    OUT.write_text("\n".join(body), encoding="utf-8")
+    print("  wrote %s (%d lines)" % (OUT.name, len(resolved)))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,471 @@
+[
+ {
+  "npc": "Adjutant Galos",
+  "id": 174937,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1533,
+   "zone": "Bastion",
+   "x": 67.4,
+   "y": 15.0
+  }
+ },
+ {
+  "npc": "Caeris Fairdawn",
+  "id": 240838,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2395,
+   "zone": "Eversong Woods",
+   "x": 43.4,
+   "y": 47.4
+  }
+ },
+ {
+  "npc": "Construct V'anore",
+  "id": 252956,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2393,
+   "zone": "Silvermoon City",
+   "x": 55.8,
+   "y": 65.8
+  }
+ },
+ {
+  "npc": "Dealer Vexil",
+  "id": 193310,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2022,
+   "zone": "The Waking Shores",
+   "x": 34.8,
+   "y": 46.6
+  }
+ },
+ {
+  "npc": "Derrick Brindlebeard",
+  "id": 33310,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.4,
+   "y": 19.4
+  }
+ },
+ {
+  "npc": "Doru Thunderhorn",
+  "id": 33556,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.2,
+   "y": 24.4
+  }
+ },
+ {
+  "npc": "Eliza Killian",
+  "id": 33555,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.4,
+   "y": 24.0
+  }
+ },
+ {
+  "npc": "Fleshwing",
+  "id": 180042,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1961,
+   "zone": "Korthia",
+   "x": 59.4,
+   "y": 42.4
+  }
+ },
+ {
+  "npc": "Freka Bloodaxe",
+  "id": 33553,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.4,
+   "y": 24.2
+  }
+ },
+ {
+  "npc": "Gieger",
+  "id": 162741,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1536,
+   "zone": "Maldraxxus",
+   "x": 31.4,
+   "y": 35.4
+  }
+ },
+ {
+  "npc": "Gormtamer Tizo",
+  "id": 164107,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1565,
+   "zone": "Ardenweald",
+   "x": 26.6,
+   "y": 55.2
+  }
+ },
+ {
+  "npc": "Gottum",
+  "id": 148810,
+  "status": "ok",
+  "best": {
+   "uiMapId": 863,
+   "zone": "Nazmir",
+   "x": 70.8,
+   "y": 56.4
+  }
+ },
+ {
+  "npc": "Granpap Whiskers",
+  "id": 187408,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2022,
+   "zone": "The Waking Shores",
+   "x": 47.6,
+   "y": 83.2
+  }
+ },
+ {
+  "npc": "Hirukon",
+  "id": 180978,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1970,
+   "zone": "Zereth Mortis",
+   "x": 51.4,
+   "y": 74.2
+  }
+ },
+ {
+  "npc": "Hopecrusher",
+  "id": 166679,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1525,
+   "zone": "Revendreth",
+   "x": 51.4,
+   "y": 52.4
+  }
+ },
+ {
+  "npc": "Irisee",
+  "id": 33657,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.2,
+   "y": 19.2
+  }
+ },
+ {
+  "npc": "Magovu",
+  "id": 240279,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2437,
+   "zone": "Zul'Aman",
+   "x": 45.8,
+   "y": 65.8
+  }
+ },
+ {
+  "npc": "Malbog",
+  "id": 179684,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1961,
+   "zone": "Korthia",
+   "x": 44.4,
+   "y": 29.4
+  }
+ },
+ {
+  "npc": "Mothkeeper Wew'tam",
+  "id": 251259,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2413,
+   "zone": "Harandar",
+   "x": 49.2,
+   "y": 54.4
+  }
+ },
+ {
+  "npc": "Naynar",
+  "id": 240407,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2413,
+   "zone": "Harandar",
+   "x": 51.0,
+   "y": 50.8
+  }
+ },
+ {
+  "npc": "Necrolord Sipe",
+  "id": 73190,
+  "status": "ok",
+  "best": {
+   "uiMapId": 84,
+   "zone": "Stormwind City",
+   "x": 76.8,
+   "y": 65.4
+  }
+ },
+ {
+  "npc": "Nerissa Heartless",
+  "id": 162690,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1536,
+   "zone": "Maldraxxus",
+   "x": 65.4,
+   "y": 35.2
+  }
+ },
+ {
+  "npc": "Ogunaro Wolfrunner",
+  "id": 3362,
+  "status": "ok",
+  "best": {
+   "uiMapId": 85,
+   "zone": "Orgrimmar",
+   "x": 61.0,
+   "y": 35.2
+  }
+ },
+ {
+  "npc": "Ponzo",
+  "id": 204693,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2133,
+   "zone": "Zaralek Cavern",
+   "x": 58.0,
+   "y": 53.8
+  }
+ },
+ {
+  "npc": "Rillie Spindlenut",
+  "id": 33650,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.4,
+   "y": 19.4
+  }
+ },
+ {
+  "npc": "Rook Hawkfist",
+  "id": 33653,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.2,
+   "y": 19.2
+  }
+ },
+ {
+  "npc": "Samamba",
+  "id": 33554,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.0,
+   "y": 24.4
+  }
+ },
+ {
+  "npc": "Stygian Stonecrusher",
+  "id": 179985,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1961,
+   "zone": "Korthia",
+   "x": 45.4,
+   "y": 78.2
+  }
+ },
+ {
+  "npc": "Tahonta",
+  "id": 162586,
+  "status": "ok",
+  "best": {
+   "uiMapId": 1536,
+   "zone": "Maldraxxus",
+   "x": 44.0,
+   "y": 50.4
+  }
+ },
+ {
+  "npc": "Tattukiaka",
+  "id": 199448,
+  "status": "ok",
+  "best": {
+   "uiMapId": 2024,
+   "zone": "The Azure Span",
+   "x": 14.0,
+   "y": 49.6
+  }
+ },
+ {
+  "npc": "Trellis Morningsun",
+  "id": 33557,
+  "status": "ok",
+  "best": {
+   "uiMapId": 118,
+   "zone": "Icecrown",
+   "x": 76.2,
+   "y": 23.8
+  }
+ },
+ {
+  "npc": "Arthur Flew",
+  "status": "notfound"
+ },
+ {
+  "npc": "Beska Redtusk",
+  "status": "nomapid"
+ },
+ {
+  "npc": "Bloodlord Mandokir",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Brendormi",
+  "status": "nomapid"
+ },
+ {
+  "npc": "Collector Ta'steld",
+  "status": "nomapid"
+ },
+ {
+  "npc": "Deathguard Netharian",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Degentrius",
+  "status": "nomapid"
+ },
+ {
+  "npc": "Gina Mudclaw",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Gul'dan",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Harb Clawhoof",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "High Priest Thekal",
+  "status": "notfound"
+ },
+ {
+  "npc": "Historian Ma'di",
+  "status": "notfound"
+ },
+ {
+  "npc": "Humon'gozz",
+  "status": "nomapper"
+ },
+ {
+  "npc": "Jan'sari",
+  "status": "notfound"
+ },
+ {
+  "npc": "Lindormi",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Provisioner Qorra",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Relinquishing Relics",
+  "status": "notfound"
+ },
+ {
+  "npc": "Second Mate Sluggs",
+  "status": "notfound"
+ },
+ {
+  "npc": "Skullripper",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "So'leah",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Sylvanas Windrunner",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Telemancer Astrandis",
+  "status": "ambiguous"
+ },
+ {
+  "npc": "Thraxadus",
+  "status": "notfound"
+ },
+ {
+  "npc": "Ula'tek",
+  "status": "notfound"
+ },
+ {
+  "npc": "Uncle Bigpocket",
+  "status": "ratelimited"
+ },
+ {
+  "npc": "Vasarin Redmorn",
+  "status": "ratelimited"
+ },
+ {
+  "npc": "Violet Mistake",
+  "status": "ratelimited"
+ },
+ {
+  "npc": "Void Researcher Anowin",
+  "status": "ratelimited"
+ },
+ {
+  "npc": "Warbringer Mal'Korak",
+  "status": "ratelimited"
+ },
+ {
+  "npc": "Wild Worldcracker",
+  "status": "ratelimited"
+ },
+ {
+  "npc": "Wrangler Kravos",
+  "status": "ratelimited"
+ },
+ {
+  "npc": "Zul'jan",
+  "status": "ratelimited"
+ }
+]

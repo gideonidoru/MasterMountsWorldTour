@@ -1,0 +1,1780 @@
+[
+ {
+  "mount": "Brown Horse",
+  "source": "Sold by Unger Statforth in the Wetlands.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Unger Statforth"
+ },
+ {
+  "mount": "Pinto",
+  "source": "Sold by Katie Stokx in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Katie Stokx"
+ },
+ {
+  "mount": "Chestnut Mare",
+  "source": "Sold by Katie Stokx in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Katie Stokx"
+ },
+ {
+  "mount": "Swift Palomino",
+  "source": "Sold by Katie Stokx in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Katie Stokx"
+ },
+ {
+  "mount": "Swift White Steed",
+  "source": "Sold by Katie Stokx in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Katie Stokx"
+ },
+ {
+  "mount": "Swift Brown Steed",
+  "source": "Sold by Katie Stokx in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Katie Stokx"
+ },
+ {
+  "mount": "Gray Ram",
+  "source": "Sold by Veron Amberstill at Amberstill Ranch in Dun Morogh for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Veron Amberstill"
+ },
+ {
+  "mount": "White Ram",
+  "source": "Sold by Veron Amberstill at Amberstill Ranch in Dun Morogh for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Veron Amberstill"
+ },
+ {
+  "mount": "Brown Ram",
+  "source": "Sold by Veron Amberstill at Amberstill Ranch in Dun Morogh for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Veron Amberstill"
+ },
+ {
+  "mount": "Swift Brown Ram",
+  "source": "Sold by Veron Amberstill at Amberstill Ranch in Dun Morogh for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Veron Amberstill"
+ },
+ {
+  "mount": "Swift Gray Ram",
+  "source": "Sold by Veron Amberstill at Amberstill Ranch in Dun Morogh for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Veron Amberstill"
+ },
+ {
+  "mount": "Swift White Ram",
+  "source": "Sold by Veron Amberstill at Amberstill Ranch in Dun Morogh for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Veron Amberstill"
+ },
+ {
+  "mount": "Striped Frostsaber",
+  "source": "Sold by Lelanai in the Cenarion Enclave, Darnassus, for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lelanai"
+ },
+ {
+  "mount": "Spotted Frostsaber",
+  "source": "Sold by Lelanai in the Cenarion Enclave, Darnassus, for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lelanai"
+ },
+ {
+  "mount": "Striped Nightsaber",
+  "source": "Sold by Lelanai in the Cenarion Enclave, Darnassus, for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lelanai"
+ },
+ {
+  "mount": "Striped Dawnsaber",
+  "source": "Sold by Lelanai in the Cenarion Enclave, Darnassus (Teldrassil).",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lelanai"
+ },
+ {
+  "mount": "Swift Mistsaber",
+  "source": "Sold by Lelanai in the Cenarion Enclave, Darnassus, for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lelanai"
+ },
+ {
+  "mount": "Swift Frostsaber",
+  "source": "Sold by Lelanai in the Cenarion Enclave, Darnassus, for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lelanai"
+ },
+ {
+  "mount": "Swift Stormsaber",
+  "source": "Sold by Lelanai in the Cenarion Enclave, Darnassus, for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lelanai"
+ },
+ {
+  "mount": "Blue Mechanostrider",
+  "source": "Sold by Milli Featherwhistle at Steelgrill's Depot in Dun Morogh for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Milli Featherwhistle"
+ },
+ {
+  "mount": "Red Mechanostrider",
+  "source": "Sold by Milli Featherwhistle at Steelgrill's Depot in Dun Morogh for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Milli Featherwhistle"
+ },
+ {
+  "mount": "Green Mechanostrider",
+  "source": "Sold by Milli Featherwhistle at Steelgrill's Depot in Dun Morogh for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Milli Featherwhistle"
+ },
+ {
+  "mount": "Unpainted Mechanostrider",
+  "source": "Sold by Milli Featherwhistle at Steelgrill's Depot in Dun Morogh for about 10g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Milli Featherwhistle"
+ },
+ {
+  "mount": "Swift Yellow Mechanostrider",
+  "source": "Sold by Milli Featherwhistle at Steelgrill's Depot in Dun Morogh for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Milli Featherwhistle"
+ },
+ {
+  "mount": "Swift White Mechanostrider",
+  "source": "Sold by Milli Featherwhistle at Steelgrill's Depot in Dun Morogh for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Milli Featherwhistle"
+ },
+ {
+  "mount": "Swift Green Mechanostrider",
+  "source": "Sold by Milli Featherwhistle at Steelgrill's Depot in Dun Morogh for about 100g.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Milli Featherwhistle"
+ },
+ {
+  "mount": "Timber Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in the Valley of Honor, Orgrimmar, for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Dire Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in the Valley of Honor, Orgrimmar, for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Brown Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in the Valley of Honor, Orgrimmar, for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Swift Gray Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in the Valley of Honor, Orgrimmar, for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Swift Brown Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in the Valley of Honor, Orgrimmar, for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Swift Timber Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in the Valley of Honor, Orgrimmar, for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Emerald Raptor",
+  "source": "Sold by Zjolnir on the Echo Isles in Durotar for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Zjolnir"
+ },
+ {
+  "mount": "Turquoise Raptor",
+  "source": "Sold by Zjolnir on the Echo Isles in Durotar for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Zjolnir"
+ },
+ {
+  "mount": "Violet Raptor",
+  "source": "Sold by Zjolnir on the Echo Isles in Durotar for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Zjolnir"
+ },
+ {
+  "mount": "Swift Blue Raptor",
+  "source": "Sold by Zjolnir on the Echo Isles in Durotar for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Zjolnir"
+ },
+ {
+  "mount": "Swift Olive Raptor",
+  "source": "Sold by Zjolnir on the Echo Isles in Durotar for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Zjolnir"
+ },
+ {
+  "mount": "Swift Orange Raptor",
+  "source": "Sold by Zjolnir on the Echo Isles in Durotar for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Zjolnir"
+ },
+ {
+  "mount": "Gray Kodo",
+  "source": "Sold by Harb Clawhoof in Bloodhoof Village, Mulgore, for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Harb Clawhoof"
+ },
+ {
+  "mount": "Brown Kodo",
+  "source": "Sold by Harb Clawhoof in Bloodhoof Village, Mulgore, for about 10g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Harb Clawhoof"
+ },
+ {
+  "mount": "Great White Kodo",
+  "source": "Sold by Harb Clawhoof in Bloodhoof Village, Mulgore, for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Harb Clawhoof"
+ },
+ {
+  "mount": "Great Gray Kodo",
+  "source": "Sold by Harb Clawhoof in Bloodhoof Village, Mulgore, for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Harb Clawhoof"
+ },
+ {
+  "mount": "Great Brown Kodo",
+  "source": "Sold by Harb Clawhoof in Bloodhoof Village, Mulgore, for about 100g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Harb Clawhoof"
+ },
+ {
+  "mount": "Rivendare's Deathcharger",
+  "source": "Drops from Lord Aurius Rivendare in Stratholme (Main Gate side), roughly 1% drop chance.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Lord Aurius Rivendare"
+ },
+ {
+  "mount": "Swift Zulian Tiger",
+  "source": "Formerly dropped from High Priest Thekal in the original level-60 Zul'Gurub; removed when the raid was destroyed in patch 4.0.3a.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "High Priest Thekal"
+ },
+ {
+  "mount": "Swift Razzashi Raptor",
+  "source": "Formerly dropped from Bloodlord Mandokir in the original level-60 Zul'Gurub; removed when the raid was destroyed in patch 4.0.3a.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Bloodlord Mandokir"
+ },
+ {
+  "mount": "Black War Steed",
+  "source": "Sold by Lieutenant Karter in the Champions' Hall, Stormwind, for Marks of Honor.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lieutenant Karter"
+ },
+ {
+  "mount": "Black War Ram",
+  "source": "Sold by Lieutenant Karter in the Champions' Hall, Stormwind, for Marks of Honor.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lieutenant Karter"
+ },
+ {
+  "mount": "Black Battlestrider",
+  "source": "Sold by Lieutenant Karter in the Champions' Hall, Stormwind, for Marks of Honor.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lieutenant Karter"
+ },
+ {
+  "mount": "Black War Tiger",
+  "source": "Sold by Lieutenant Karter in the Champions' Hall, Stormwind, for Marks of Honor.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Lieutenant Karter"
+ },
+ {
+  "mount": "Black War Wolf",
+  "source": "Sold by Raider Bork in the Hall of Legends, Orgrimmar, for Marks of Honor.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Raider Bork"
+ },
+ {
+  "mount": "Black War Kodo",
+  "source": "Sold by Raider Bork in the Hall of Legends, Orgrimmar, for Marks of Honor.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Raider Bork"
+ },
+ {
+  "mount": "Black War Raptor",
+  "source": "Sold by Raider Bork in the Hall of Legends, Orgrimmar, for Marks of Honor.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Raider Bork"
+ },
+ {
+  "mount": "Red Skeletal Warhorse",
+  "source": "Sold by Raider Bork in the Hall of Legends, Orgrimmar, for Marks of Honor.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Raider Bork"
+ },
+ {
+  "mount": "Raven Lord",
+  "source": "Drops from Anzu in Sethekk Halls on Heroic difficulty.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Anzu"
+ },
+ {
+  "mount": "Swift White Hawkstrider",
+  "source": "Drops from Kael'thas Sunstrider in Magisters' Terrace on Heroic difficulty.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Kael'thas Sunstrider"
+ },
+ {
+  "mount": "Brown Elekk",
+  "source": "Sold by Torallius the Pack Handler near the Exodar, Azuremyst Isle.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Torallius"
+ },
+ {
+  "mount": "Gray Elekk",
+  "source": "Sold by Torallius the Pack Handler near the Exodar, Azuremyst Isle.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Torallius"
+ },
+ {
+  "mount": "Purple Elekk",
+  "source": "Sold by Torallius the Pack Handler near the Exodar, Azuremyst Isle.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Torallius"
+ },
+ {
+  "mount": "Great Green Elekk",
+  "source": "Sold by Torallius the Pack Handler near the Exodar, Azuremyst Isle.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Torallius"
+ },
+ {
+  "mount": "Great Blue Elekk",
+  "source": "Sold by Torallius the Pack Handler near the Exodar, Azuremyst Isle.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Torallius"
+ },
+ {
+  "mount": "Great Purple Elekk",
+  "source": "Sold by Torallius the Pack Handler near the Exodar, Azuremyst Isle.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Torallius"
+ },
+ {
+  "mount": "Red Hawkstrider",
+  "source": "Sold by Winaestra outside Silvermoon City, Eversong Woods.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Winaestra"
+ },
+ {
+  "mount": "Blue Hawkstrider",
+  "source": "Sold by Winaestra outside Silvermoon City, Eversong Woods.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Winaestra"
+ },
+ {
+  "mount": "Black Hawkstrider",
+  "source": "Sold by Winaestra outside Silvermoon City, Eversong Woods.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Winaestra"
+ },
+ {
+  "mount": "Purple Hawkstrider",
+  "source": "Sold by Winaestra outside Silvermoon City, Eversong Woods.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Winaestra"
+ },
+ {
+  "mount": "Swift Green Hawkstrider",
+  "source": "Sold by Winaestra outside Silvermoon City, Eversong Woods.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Winaestra"
+ },
+ {
+  "mount": "Swift Purple Hawkstrider",
+  "source": "Sold by Winaestra outside Silvermoon City, Eversong Woods.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Winaestra"
+ },
+ {
+  "mount": "Swift Pink Hawkstrider",
+  "source": "Sold by Winaestra outside Silvermoon City, Eversong Woods.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Winaestra"
+ },
+ {
+  "mount": "Tawny Wind Rider",
+  "source": "Sold by Drakma, the wind rider vendor in Orgrimmar.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Drakma"
+ },
+ {
+  "mount": "Blue Wind Rider",
+  "source": "Sold by Drakma, the wind rider vendor in Orgrimmar.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Drakma"
+ },
+ {
+  "mount": "Green Wind Rider",
+  "source": "Sold by Drakma, the wind rider vendor in Orgrimmar.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Drakma"
+ },
+ {
+  "mount": "Swift Red Wind Rider",
+  "source": "Sold by Drakma, the wind rider vendor in Orgrimmar.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Drakma"
+ },
+ {
+  "mount": "Swift Green Wind Rider",
+  "source": "Sold by Drakma, the wind rider vendor in Orgrimmar.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Drakma"
+ },
+ {
+  "mount": "Swift Yellow Wind Rider",
+  "source": "Sold by Drakma, the wind rider vendor in Orgrimmar.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Drakma"
+ },
+ {
+  "mount": "Swift Purple Wind Rider",
+  "source": "Sold by Drakma, the wind rider vendor in Orgrimmar.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Drakma"
+ },
+ {
+  "mount": "Azure Drake",
+  "source": "Drops from Malygos in The Eye of Eternity (10 or 25 player)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Malygos"
+ },
+ {
+  "mount": "Blue Drake",
+  "source": "Drops from Malygos in The Eye of Eternity (10 or 25 player)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Malygos"
+ },
+ {
+  "mount": "Twilight Drake",
+  "source": "Guaranteed from Sartharion in The Obsidian Sanctum (25) with all three drakes alive",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Sartharion"
+ },
+ {
+  "mount": "Black Drake",
+  "source": "Guaranteed from Sartharion in The Obsidian Sanctum (10) with all three drakes alive",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Sartharion"
+ },
+ {
+  "mount": "Onyxian Drake",
+  "source": "Drops from Onyxia in Onyxia's Lair (level 80 version, 10 or 25 player)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Onyxia"
+ },
+ {
+  "mount": "Ice Mammoth",
+  "source": "Sold by Lillehoff, the Sons of Hodir quartermaster in The Storm Peaks, at Revered",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Lillehoff"
+ },
+ {
+  "mount": "Grand Ice Mammoth",
+  "source": "Sold by Lillehoff, the Sons of Hodir quartermaster in The Storm Peaks, at Exalted",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Lillehoff"
+ },
+ {
+  "mount": "Traveler's Tundra Mammoth",
+  "source": "Sold by Mei Francis in Dalaran (Northrend) for 20,000 gold before discounts",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Mei Francis"
+ },
+ {
+  "mount": "Wooly Mammoth",
+  "source": "Sold by Mei Francis in Dalaran (Northrend)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Mei Francis"
+ },
+ {
+  "mount": "Armored Brown Bear",
+  "source": "Sold by Mei Francis in Dalaran (Northrend)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Mei Francis"
+ },
+ {
+  "mount": "Armored Snowy Gryphon",
+  "source": "Sold by Mei Francis in Dalaran (Northrend) - Alliance only",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Mei Francis"
+ },
+ {
+  "mount": "Armored Blue Wind Rider",
+  "source": "Sold by Mei Francis in Dalaran (Northrend) - Horde only",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Mei Francis"
+ },
+ {
+  "mount": "Argent Warhorse",
+  "source": "Sold by Dame Evniki Kapsalis at the Argent Tournament in Icecrown for 100 Champion's Seals; requires the Crusader title.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Dame Evniki Kapsalis"
+ },
+ {
+  "mount": "Argent Charger",
+  "source": "Sold by Dame Evniki Kapsalis at the Argent Tournament in Icecrown for 100 Champion's Seals; Paladin only, requires the Crusader title.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Dame Evniki Kapsalis"
+ },
+ {
+  "mount": "Sunreaver Hawkstrider",
+  "source": "Sold by Vasarin Redmorn at the Argent Tournament in Icecrown (Sunreavers tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Vasarin Redmorn"
+ },
+ {
+  "mount": "Stormwind Steed",
+  "source": "Sold by Corporal Arthur Flew at the Argent Tournament in Icecrown (Stormwind tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Corporal Arthur Flew"
+ },
+ {
+  "mount": "Ironforge Ram",
+  "source": "Sold by Derrick Brindlebeard at the Argent Tournament in Icecrown (Ironforge tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Derrick Brindlebeard"
+ },
+ {
+  "mount": "Gnomeregan Mechanostrider",
+  "source": "Sold by Rillie Spindlenut at the Argent Tournament in Icecrown (Gnomeregan tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Rillie Spindlenut"
+ },
+ {
+  "mount": "Darnassian Nightsaber",
+  "source": "Sold by Rook Hawkfist at the Argent Tournament in Icecrown (Darnassus tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Rook Hawkfist"
+ },
+ {
+  "mount": "Exodar Elekk",
+  "source": "Sold by Irisee at the Argent Tournament in Icecrown (Exodar tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Irisee"
+ },
+ {
+  "mount": "Orgrimmar Wolf",
+  "source": "Sold by Freka Bloodaxe at the Argent Tournament in Icecrown (Orgrimmar tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Freka Bloodaxe"
+ },
+ {
+  "mount": "Thunder Bluff Kodo",
+  "source": "Sold by Doru Thunderhorn at the Argent Tournament in Icecrown (Thunder Bluff tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Doru Thunderhorn"
+ },
+ {
+  "mount": "Darkspear Raptor",
+  "source": "Sold by Samamba at the Argent Tournament in Icecrown (Darkspear tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Samamba"
+ },
+ {
+  "mount": "Forsaken Warhorse",
+  "source": "Sold by Eliza Killian at the Argent Tournament in Icecrown (Undercity tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Eliza Killian"
+ },
+ {
+  "mount": "Silvermoon Hawkstrider",
+  "source": "Sold by Trellis Morningsun at the Argent Tournament in Icecrown (Silvermoon tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Trellis Morningsun"
+ },
+ {
+  "mount": "Pureblood Fire Hawk",
+  "source": "Drops from Ragnaros in Firelands (Smoldering Egg of Millagazor)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Ragnaros"
+ },
+ {
+  "mount": "Drake of the South Wind",
+  "source": "Drops from Al'Akir in Throne of the Four Winds",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Al'Akir"
+ },
+ {
+  "mount": "Drake of the North Wind",
+  "source": "Drops from Altairus in The Vortex Pinnacle",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Altairus"
+ },
+ {
+  "mount": "Vitreous Stone Drake",
+  "source": "Drops from Slabhide in The Stonecore",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Slabhide"
+ },
+ {
+  "mount": "Armored Razzashi Raptor",
+  "source": "Drops from Bloodlord Mandokir in Zul'Gurub (Cataclysm heroic dungeon)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Bloodlord Mandokir"
+ },
+ {
+  "mount": "Swift Zulian Panther",
+  "source": "Drops from High Priestess Kilnara in Zul'Gurub (Cataclysm heroic dungeon)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "High Priestess Kilnara"
+ },
+ {
+  "mount": "Brown Riding Camel",
+  "source": "Sold by Blacksmith Abasi in Ramkahen, Uldum, at Ramkahen Exalted",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Blacksmith Abasi"
+ },
+ {
+  "mount": "Tan Riding Camel",
+  "source": "Sold by Blacksmith Abasi in Ramkahen, Uldum, at Ramkahen Exalted",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Blacksmith Abasi"
+ },
+ {
+  "mount": "Swift Forest Strider",
+  "source": "Sold by Lhara at the Darkmoon Faire for 180 Darkmoon Prize Tickets",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Lhara"
+ },
+ {
+  "mount": "Darkmoon Dancing Bear",
+  "source": "Sold by Lhara at the Darkmoon Faire for 180 Darkmoon Prize Tickets",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Lhara"
+ },
+ {
+  "mount": "Astral Cloud Serpent",
+  "source": "Drops from Elegon in Mogu'shan Vaults (any difficulty)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Elegon"
+ },
+ {
+  "mount": "Clutch of Ji-Kun",
+  "source": "Drops from Ji-Kun in Throne of Thunder (any difficulty)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Ji-Kun"
+ },
+ {
+  "mount": "Spawn of Horridon",
+  "source": "Drops from Horridon in Throne of Thunder (any difficulty)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Horridon"
+ },
+ {
+  "mount": "Kor'kron Juggernaut",
+  "source": "Drops from Garrosh Hellscream in Siege of Orgrimmar (Mythic only)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Garrosh Hellscream"
+ },
+ {
+  "mount": "Thundering Ruby Cloud Serpent",
+  "source": "Guaranteed drop from Alani in the Vale of Eternal Blossoms; requires a Sky Crystal to remove her shield",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Alani"
+ },
+ {
+  "mount": "Ashhide Mushan Beast",
+  "source": "500 Bloody Coins from Speaker Gulan on the Timeless Isle",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Speaker Gulan"
+ },
+ {
+  "mount": "Heavenly Golden Cloud Serpent",
+  "source": "Sold by Mistweaver Ku on the Timeless Isle for 100,000 Timeless Coins",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Mistweaver Ku"
+ },
+ {
+  "mount": "Green Shado-Pan Riding Tiger",
+  "source": "Sold by Rushi the Fox at Shado-Pan exalted (Townlong Steppes)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Rushi"
+ },
+ {
+  "mount": "Blue Shado-Pan Riding Tiger",
+  "source": "Sold by Rushi the Fox at Shado-Pan exalted (Townlong Steppes)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Rushi"
+ },
+ {
+  "mount": "Red Shado-Pan Riding Tiger",
+  "source": "Sold by Rushi the Fox at Shado-Pan exalted (Townlong Steppes)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Rushi"
+ },
+ {
+  "mount": "Azure Riding Crane",
+  "source": "Sold by Jaluu the Generous at Golden Lotus exalted (Vale of Eternal Blossoms)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Jaluu"
+ },
+ {
+  "mount": "Golden Riding Crane",
+  "source": "Sold by Jaluu the Generous at Golden Lotus exalted (Vale of Eternal Blossoms)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Jaluu"
+ },
+ {
+  "mount": "Regal Riding Crane",
+  "source": "Sold by Jaluu the Generous at Golden Lotus exalted (Vale of Eternal Blossoms)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Jaluu"
+ },
+ {
+  "mount": "Golden Primal Direhorn",
+  "source": "Sold by Vasarin Redmorn at Kirin Tor Offensive exalted (Isle of Thunder)",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Vasarin Redmorn"
+ },
+ {
+  "mount": "Crimson Primal Direhorn",
+  "source": "Sold by Hiren Loresong at Sunreaver Onslaught exalted (Isle of Thunder)",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Hiren Loresong"
+ },
+ {
+  "mount": "Red Flying Cloud",
+  "source": "Sold by Tan Shin Tiao in the Vale of Eternal Blossoms at Exalted with The Lorewalkers",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Tan Shin Tiao"
+ },
+ {
+  "mount": "Grand Expedition Yak",
+  "source": "Sold by Uncle Bigpocket in Kun-Lai Summit for 120,000 gold",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Uncle Bigpocket"
+ },
+ {
+  "mount": "Armored Irontusk",
+  "source": "Sold by Maaria at the Lunarfall garrison Trading Post (level 2) at Exalted with the Sha'tari Defense",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Maaria"
+ },
+ {
+  "mount": "Dusty Rockhide",
+  "source": "Sold by Vindicator Nuurem in Stormshield Town Hall, Ashran at Exalted with the Council of Exarchs",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Vindicator Nuurem"
+ },
+ {
+  "mount": "Ironside Warwolf",
+  "source": "Sold by Kil'rip at the Frostwall garrison Trading Post (level 2) at Exalted with the Laughing Skull Orcs",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Kil'rip"
+ },
+ {
+  "mount": "Felblaze Infernal",
+  "source": "Rare drop from Gul'dan in The Nighthold (Normal, Heroic, or Mythic)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gul'dan"
+ },
+ {
+  "mount": "Hellfire Infernal",
+  "source": "Guaranteed drop from Gul'dan in The Nighthold on Mythic difficulty",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gul'dan"
+ },
+ {
+  "mount": "Abyss Worm",
+  "source": "Rare drop from Mistress Sassz'ine in Tomb of Sargeras (any difficulty)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Mistress Sassz'ine"
+ },
+ {
+  "mount": "Arcadian War Turtle",
+  "source": "Sold by Xur'ios in Dalaran (Broken Isles) for 150 Curious Coins",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Xur'ios"
+ },
+ {
+  "mount": "Darkwater Skate",
+  "source": "Sold by Galissa Sundew at the Darkmoon Faire for 500 Darkmoon Daggermaw",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Galissa Sundew"
+ },
+ {
+  "mount": "Amethyst Ruinstrider",
+  "source": "Sold by Toraan the Revered on the Vindicaar at Argussian Reach Exalted (10,000 gold)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Toraan"
+ },
+ {
+  "mount": "Beryl Ruinstrider",
+  "source": "Sold by Toraan the Revered on the Vindicaar at Argussian Reach Exalted (10,000 gold)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Toraan"
+ },
+ {
+  "mount": "Cerulean Ruinstrider",
+  "source": "Sold by Toraan the Revered on the Vindicaar at Argussian Reach Exalted (10,000 gold)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Toraan"
+ },
+ {
+  "mount": "Russet Ruinstrider",
+  "source": "Sold by Toraan the Revered on the Vindicaar at Argussian Reach Exalted (10,000 gold)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Toraan"
+ },
+ {
+  "mount": "Sable Ruinstrider",
+  "source": "Sold by Toraan the Revered on the Vindicaar at Argussian Reach Exalted (10,000 gold)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Toraan"
+ },
+ {
+  "mount": "Umber Ruinstrider",
+  "source": "Sold by Toraan the Revered on the Vindicaar at Argussian Reach Exalted (10,000 gold)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Toraan"
+ },
+ {
+  "mount": "Lightforged Warframe",
+  "source": "Sold by Vindicator Jaelaana on the Vindicaar at Army of the Light Exalted (500,000 gold)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Vindicator Jaelaana"
+ },
+ {
+  "mount": "Glacial Tidestorm",
+  "source": "Drops from Lady Jaina Proudmoore on Mythic difficulty in Battle of Dazar'alor",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Lady Jaina Proudmoore"
+ },
+ {
+  "mount": "G.M.O.D.",
+  "source": "Drops from High Tinker Mekkatorque in Battle of Dazar'alor (any raid difficulty)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "High Tinker Mekkatorque"
+ },
+ {
+  "mount": "Mecha-Mogul Mk2",
+  "source": "Crafted by Engineering; the schematic drops from Mogul Razdunk in The MOTHERLODE!!",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Mogul Razdunk"
+ },
+ {
+  "mount": "Aerial Unit R-21/X",
+  "source": "Drops from King Mechagon in Operation: Mechagon (Mythic)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "King Mechagon"
+ },
+ {
+  "mount": "Crimson Tidestallion",
+  "source": "Sold by Mrrl, the secret murloc vendor in Nazjatar",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Mrrl"
+ },
+ {
+  "mount": "Hopecrusher Gargon",
+  "source": "Drops from Hopecrusher in Revendreth",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Hopecrusher"
+ },
+ {
+  "mount": "Phalynx of Humility",
+  "source": "Sold by Adjutant Galos for anima, or looted from Kyrian calling caches",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Adjutant Galos"
+ },
+ {
+  "mount": "Bonehoof Tauralus",
+  "source": "Drops from Tahonta in Maldraxxus (Necrolord), or purchased with Grateful Offerings",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Tahonta"
+ },
+ {
+  "mount": "Hulking Deathroc",
+  "source": "Drops from Violet Mistake in Maldraxxus",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Violet Mistake"
+ },
+ {
+  "mount": "Predatory Plagueroc",
+  "source": "Drops from Gieger in Maldraxxus (Necrolord), or purchased with Grateful Offerings",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gieger"
+ },
+ {
+  "mount": "Blisterback Bloodtusk",
+  "source": "Drops from Warbringer Mal'Korak in Maldraxxus",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Warbringer Mal'Korak"
+ },
+ {
+  "mount": "Gorespine",
+  "source": "Drops from Nerissa Heartless in Maldraxxus",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Nerissa Heartless"
+ },
+ {
+  "mount": "Arboreal Gulper",
+  "source": "Drops from Humon'gozz in Ardenweald",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Humon'gozz"
+ },
+ {
+  "mount": "Spinemaw Gladechewer",
+  "source": "Drops from Gormtamer Tizo in Ardenweald",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gormtamer Tizo"
+ },
+ {
+  "mount": "Crimson Shardhide",
+  "source": "Drops from Malbog in Korthia",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Malbog"
+ },
+ {
+  "mount": "Forsworn Aquilon",
+  "source": "Drops from Wild Worldcracker in Korthia",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Wild Worldcracker"
+ },
+ {
+  "mount": "Lord of the Corpseflies",
+  "source": "Drops from Fleshwing in Korthia",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Fleshwing"
+ },
+ {
+  "mount": "Mastercraft Gravewing",
+  "source": "Drops from Stygian Stonecrusher in Korthia",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Stygian Stonecrusher"
+ },
+ {
+  "mount": "Cartel Master's Gearglider",
+  "source": "Drops from So'leah in Tazavesh, the Veiled Market (Hard Mode originally; Mythic)",
+  "faction": null,
+  "hasxy": false,
+  "npc": "So'leah"
+ },
+ {
+  "mount": "Vengeance",
+  "source": "Drops from Sylvanas Windrunner in Sanctum of Domination (Mythic)",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Sylvanas Windrunner"
+ },
+ {
+  "mount": "Deepstar Aurelid",
+  "source": "Drops from Hirukon in Zereth Mortis, lured with the Deepstar Polyp",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Hirukon"
+ },
+ {
+  "mount": "Illidari Doomhawk",
+  "source": "Sold by Historian Ma'di for Bronze Celebration Tokens during the 20th Anniversary event in Tanaris",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Historian Ma'di"
+ },
+ {
+  "mount": "Liberated Slyvern",
+  "source": "Drops from Breezebiter in The Azure Span.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Breezebiter"
+ },
+ {
+  "mount": "Noble Bruffalon",
+  "source": "Sold by Storykeeper Ashekh in The Forbidden Reach for 100,000.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Storykeeper Ashekh"
+ },
+ {
+  "mount": "Soaring Meaderbee",
+  "source": "Purchased from Cendvin in the Cinderwold for 900 Sizzling Cinderpollen gathered from elite mobs there",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Cendvin"
+ },
+ {
+  "mount": "Stonevault Mechsuit",
+  "source": "Drops from Void Speaker Eirich in The Stonevault on Mythic/Mythic+ difficulty",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Void Speaker Eirich"
+ },
+ {
+  "mount": "Sureki Skyrazor",
+  "source": "Drops from Queen Ansurek in Nerub-ar Palace on any difficulty",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Queen Ansurek"
+ },
+ {
+  "mount": "Ascendant Skyrazor",
+  "source": "Drops from Queen Ansurek in Nerub-ar Palace on Mythic difficulty",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Queen Ansurek"
+ },
+ {
+  "mount": "Soweezi's Vintage Waveshredder",
+  "source": "Sold by Soweezi on Siren Isle for 10000 Flame-Blessed Iron",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Soweezi"
+ },
+ {
+  "mount": "Asset Advocator",
+  "source": "Sold by Skedgit Cinderbangs in Undermine",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Skedgit Cinderbangs"
+ },
+ {
+  "mount": "Innovation Investigator",
+  "source": "Sold by Skedgit Cinderbangs in Undermine",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Skedgit Cinderbangs"
+ },
+ {
+  "mount": "Margin Manipulator",
+  "source": "Sold by Skedgit Cinderbangs in Undermine",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Skedgit Cinderbangs"
+ },
+ {
+  "mount": "Prototype A.S.M.R.",
+  "source": "Drops from Chrome King Gallywix in Liberation of Undermine on any difficulty",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Chrome King Gallywix"
+ },
+ {
+  "mount": "The Big G",
+  "source": "Keys to the Big G drop from Chrome King Gallywix in Liberation of Undermine on Mythic difficulty",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Chrome King Gallywix"
+ },
+ {
+  "mount": "Sthaarbs's Last Lunch",
+  "source": "Drops from Sthaarbs in The Oasis, found only in the phase-diving version of K'aresh.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Sthaarbs"
+ },
+ {
+  "mount": "Acidic Void Creeper",
+  "source": "Drops from Shad'anis in K'aresh",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Shad'anis"
+ },
+ {
+  "mount": "Lavender K'arroc",
+  "source": "Drops from Shad'anis in K'aresh",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Shad'anis"
+ },
+ {
+  "mount": "Eclipse Dragonhawk",
+  "source": "Sold by Cupri in Shattrath City for Timewarped Badges during Burning Crusade Timewalking.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Cupri"
+ },
+ {
+  "mount": "Ironbound Wraithcharger",
+  "source": "Sold by Auzin in Dalaran for Timewarped Badges during Wrath of the Lich King Timewalking.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Auzin"
+ },
+ {
+  "mount": "Crimson Lupine",
+  "source": "5,000 Timewarped Badges from Collector Ta'steld in Oribos during Shadowlands timewalking.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Collector Ta'steld"
+ },
+ {
+  "mount": "Snowpaw Glimmerfur Prowler",
+  "source": "5,000 Timewarped Badges from Collector Ta'steld in Oribos during Shadowlands timewalking.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Collector Ta'steld"
+ },
+ {
+  "mount": "Relinquished Scarlet Charger",
+  "source": "Reward from Relinquishing Relics in the Arator's Journey questline.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Relinquishing Relics"
+ },
+ {
+  "mount": "Lucent Hawkstrider",
+  "source": "Drops from Degentrius in Magisters' Terrace on Mythic difficulty.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Degentrius"
+ },
+ {
+  "mount": "Cerulean Deathwalker",
+  "source": "Sold by Lindormi for 1 Timelost Saddle.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Lindormi"
+ },
+ {
+  "mount": "Amethyst Mechsuit",
+  "source": "Sold by Lindormi for 1 Timelost Saddle.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Lindormi"
+ },
+ {
+  "mount": "Crimson Silvermoon Hawkstrider",
+  "source": "6,000 Voidlight Marl from Caeris Fairdawn at Silvermoon Court Renown 17.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Caeris Fairdawn"
+ },
+ {
+  "mount": "Fiery Dragonhawk",
+  "source": "8,000 Voidlight Marl from Caeris Fairdawn at Silvermoon Court Renown 19.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Caeris Fairdawn"
+ },
+ {
+  "mount": "Amani Blessed Bear",
+  "source": "6,000 Voidlight Marl from Magovu in Zul'Aman at Amani Tribe Renown 17.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Magovu"
+ },
+ {
+  "mount": "Amani Windcaller",
+  "source": "8,000 Voidlight Marl from Magovu in Zul'Aman at Amani Tribe Renown 19.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Magovu"
+ },
+ {
+  "mount": "Fierce Grimlynx",
+  "source": "6,000 Voidlight Marl from Naynar at the Den in Harandar at Hara'ti Renown 16.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Naynar"
+ },
+ {
+  "mount": "Cerulean Sporeglider",
+  "source": "8,000 Voidlight Marl from Naynar at the Den in Harandar at Hara'ti Renown 19.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Naynar"
+ },
+ {
+  "mount": "Ravenous Shredclaw",
+  "source": "6,000 Voidlight Marl from Void Researcher Anowin at Singularity Renown 17.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Void Researcher Anowin"
+ },
+ {
+  "mount": "Voidbound Stormray",
+  "source": "8,000 Voidlight Marl from Void Researcher Anowin at Singularity Renown 19.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Void Researcher Anowin"
+ },
+ {
+  "mount": "Vivid Chloroceros",
+  "source": "10 Luminous Dust from Mothkeeper Wew'tam at the Den in Harandar.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Mothkeeper Wew'tam"
+ },
+ {
+  "mount": "Elder Glowmite",
+  "source": "10 Luminous Dust from Mothkeeper Wew'tam at the Den in Harandar.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Mothkeeper Wew'tam"
+ },
+ {
+  "mount": "Frenzied Shredclaw",
+  "source": "6,000 Voidlight Marl from Thraxadus at Exalted with the Slayer's Duellum.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Thraxadus"
+ },
+ {
+  "mount": "Prowling Shredclaw",
+  "source": "6,000 Voidlight Marl from Thraxadus at Exalted with the Slayer's Duellum.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Thraxadus"
+ },
+ {
+  "mount": "Indigo Coiled Horror",
+  "source": "Sold by Jan'sari the Watchful on the Coiled Isle for 6,000 Voidlight Marl.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Jan'sari"
+ },
+ {
+  "mount": "Violet-Backed Skyfang",
+  "source": "Sold by Jan'sari the Watchful on the Coiled Isle for 8,000 Voidlight Marl.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Jan'sari"
+ },
+ {
+  "mount": "Sea-Dwelling Isle Serpent",
+  "source": "Sold by Second Mate Sluggs on the Coiled Isle.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Second Mate Sluggs"
+ },
+ {
+  "mount": "The Writhing Brood",
+  "source": "Drops from Zul'jan at the Altar of Fangs.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Zul'jan"
+ },
+ {
+  "mount": "Primeval Skyfriend",
+  "source": "Drops from Ula'tek in the Venomous Abyss on Mythic difficulty.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Ula'tek"
+ },
+ {
+  "mount": "Corroded Soul Crusher",
+  "source": "Sold by Telemancer Astrandis in Silvermoon City for 10 Void Marks.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Telemancer Astrandis"
+ },
+ {
+  "mount": "Preyhunter's Fury",
+  "source": "Sold by Construct V'anore in Silvermoon City for 2,250 Remnants of Anguish.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Construct V'anore"
+ },
+ {
+  "mount": "White Kodo",
+  "source": "Sold by Harb Clawhoof in Mulgore for about 1g (Thunder Bluff reputation).",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Harb Clawhoof"
+ },
+ {
+  "mount": "Black Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in Orgrimmar for about 1g.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Great Golden Kodo",
+  "source": "Sold by Doru Thunderhorn at the Argent Tournament in Icecrown (Thunder Bluff tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Doru Thunderhorn"
+ },
+ {
+  "mount": "Great Red Elekk",
+  "source": "Sold by Irisee at the Argent Tournament in Icecrown (Exodar tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Irisee"
+ },
+ {
+  "mount": "Swift Burgundy Wolf",
+  "source": "Sold by Freka Bloodaxe at the Argent Tournament in Icecrown (Orgrimmar tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Freka Bloodaxe"
+ },
+ {
+  "mount": "Swift Gray Steed",
+  "source": "Sold by Corporal Arthur Flew at the Argent Tournament in Icecrown (Stormwind tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": false,
+  "npc": "Corporal Arthur Flew"
+ },
+ {
+  "mount": "Swift Moonsaber",
+  "source": "Sold by Rook Hawkfist at the Argent Tournament in Icecrown (Darnassus tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Rook Hawkfist"
+ },
+ {
+  "mount": "Swift Purple Raptor",
+  "source": "Sold by Samamba at the Argent Tournament in Icecrown (Darkspear tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Samamba"
+ },
+ {
+  "mount": "Swift Red Hawkstrider",
+  "source": "Sold by Trellis Morningsun at the Argent Tournament in Icecrown (Silvermoon tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Trellis Morningsun"
+ },
+ {
+  "mount": "Swift Violet Ram",
+  "source": "Sold by Derrick Brindlebeard at the Argent Tournament in Icecrown (Ironforge tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Derrick Brindlebeard"
+ },
+ {
+  "mount": "Turbostrider",
+  "source": "Sold by Rillie Spindlenut at the Argent Tournament in Icecrown (Gnomeregan tent) for Champion's Seals.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Rillie Spindlenut"
+ },
+ {
+  "mount": "White Skeletal Warhorse",
+  "source": "Sold by Eliza Killian at the Argent Tournament in Icecrown (Undercity tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": true,
+  "npc": "Eliza Killian"
+ },
+ {
+  "mount": "Sunreaver Dragonhawk",
+  "source": "Sold by Vasarin Redmorn at the Argent Tournament in Icecrown (Sunreavers tent) for Champion's Seals.",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Vasarin Redmorn"
+ },
+ {
+  "mount": "Black Riding Goat",
+  "source": "Sold by Gina Mudclaw in the Valley of the Four Winds for 1,500g at Exalted with the Tillers.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gina Mudclaw"
+ },
+ {
+  "mount": "Brown Riding Goat",
+  "source": "Sold by Gina Mudclaw in the Valley of the Four Winds for 1,500g at Exalted with the Tillers.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gina Mudclaw"
+ },
+ {
+  "mount": "White Riding Goat",
+  "source": "Sold by Gina Mudclaw in the Valley of the Four Winds for 1,500g at Exalted with the Tillers.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gina Mudclaw"
+ },
+ {
+  "mount": "Grey Riding Yak",
+  "source": "Sold by Uncle Bigpocket in Kun-Lai Summit for 3,000g.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Uncle Bigpocket"
+ },
+ {
+  "mount": "Blonde Riding Yak",
+  "source": "Sold by Uncle Bigpocket in Kun-Lai Summit for 3,000g.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Uncle Bigpocket"
+ },
+ {
+  "mount": "Grand Gryphon",
+  "source": "Sold by Vasarin Redmorn at Violet Rise, Isle of Thunder (Kirin Tor Offensive)",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Vasarin Redmorn"
+ },
+ {
+  "mount": "Mosshide Riverwallow",
+  "source": "Sold by Dawn-Seeker Krek (Stormshield) / Dawn-Seeker Alkset (Warspear), Ashran - 50,000g + 5,000 Apexis Crystals",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Dawn-Seeker Krek"
+ },
+ {
+  "mount": "Swift Frostwolf",
+  "source": "Sold by Beska Redtusk in Warspear Hold, Ashran at Exalted with the Frostwolf Orcs",
+  "faction": "Horde",
+  "hasxy": false,
+  "npc": "Beska Redtusk"
+ },
+ {
+  "mount": "Fiendish Hellfire Core",
+  "source": "Drops from Gul'dan in The Nighthold on Mythic difficulty.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gul'dan"
+ },
+ {
+  "mount": "Maddened Chaosrunner",
+  "source": "Drops from Wrangler Kravos on Argus (Eredath).",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Wrangler Kravos"
+ },
+ {
+  "mount": "Spectral Pterrorwing",
+  "source": "Sold by Natal'hakata in Zuldazar for 90,000g at Exalted with the Zandalari Empire.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Natal'hakata"
+ },
+ {
+  "mount": "Blue Marsh Hopper",
+  "source": "Sold by Gottum in the Frogmarsh, Nazmir, for 333,333g.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gottum"
+ },
+ {
+  "mount": "Green Marsh Hopper",
+  "source": "Sold by Gottum in the Frogmarsh, Nazmir, for 333,333g.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gottum"
+ },
+ {
+  "mount": "Yellow Marsh Hopper",
+  "source": "Sold by Gottum in the Frogmarsh, Nazmir, for 333,333g.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Gottum"
+ },
+ {
+  "mount": "Skullripper",
+  "source": "Drops from Skullripper in warfront-phase Arathi Highlands.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Skullripper"
+ },
+ {
+  "mount": "Wastewander Skyterror",
+  "source": "Sold by Provisioner Qorra at Exalted with the Uldum Accord.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Provisioner Qorra"
+ },
+ {
+  "mount": "Azure Skitterfly",
+  "source": "Sold by Granpap Whiskers at Dragonscale Basecamp for Iridescent Plumes, Contoured Fowlfeathers, and Dragon Isles Supplies.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Granpap Whiskers"
+ },
+ {
+  "mount": "Tamed Skitterfly",
+  "source": "Sold by Granpap Whiskers at Dragonscale Basecamp for 750 Dragon Isles Supplies at Renown 25 with the Dragonscale Expedition.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Granpap Whiskers"
+ },
+ {
+  "mount": "Iskaara Trader's Ottuk",
+  "source": "Sold by Tattukiaka in Iskaara for Terros's Captive Core + Eye of the Vengeful Hurricane (Vault of the Incarnates drops).",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Tattukiaka"
+ },
+ {
+  "mount": "Skyskin Hornstrider",
+  "source": "Sold by Brendormi (Primalist Future) for Essences of the Storm and Elemental Overflow.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Brendormi"
+ },
+ {
+  "mount": "Slumbering Worldsnail",
+  "source": "Sold by Dealer Vexil at Smoldering Perch for 1,000 Magmotes after The Shadow of His Wings.",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Dealer Vexil"
+ },
+ {
+  "mount": "Boulder Hauler",
+  "source": "Sold by Ponzo in Zaralek Cavern for Barter Bricks (cheaper at Loamm Niffen Renown 12).",
+  "faction": null,
+  "hasxy": true,
+  "npc": "Ponzo"
+ },
+ {
+  "mount": "Vicious Kaldorei Warsaber",
+  "source": "1 Vicious Saddle from Necrolord Sipe in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Necrolord Sipe"
+ },
+ {
+  "mount": "Vicious War Mechanostrider",
+  "source": "1 Vicious Saddle from Necrolord Sipe in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Necrolord Sipe"
+ },
+ {
+  "mount": "Vicious War Elekk",
+  "source": "1 Vicious Saddle from Necrolord Sipe in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Necrolord Sipe"
+ },
+ {
+  "mount": "Vicious War Lion",
+  "source": "1 Vicious Saddle from Necrolord Sipe in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Necrolord Sipe"
+ },
+ {
+  "mount": "Vicious Black Warsaber",
+  "source": "1 Vicious Saddle from Necrolord Sipe in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Necrolord Sipe"
+ },
+ {
+  "mount": "Vicious White Warsaber",
+  "source": "1 Vicious Saddle from Necrolord Sipe in Stormwind City.",
+  "faction": "Alliance",
+  "hasxy": true,
+  "npc": "Necrolord Sipe"
+ },
+ {
+  "mount": "Skypaw Glimmerfur",
+  "source": "5,000 Timewarped Badges from Collector Ta'steld in Oribos during Shadowlands timewalking.",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Collector Ta'steld"
+ },
+ {
+  "mount": "Gray Wolf",
+  "source": "Sold by Ogunaro Wolfrunner in Orgrimmar",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Ogunaro Wolfrunner"
+ },
+ {
+  "mount": "Nether Drake",
+  "source": "Sold by Drake Dealer Hurlunk in Shadowmoon Valley (Outland) at Exalted with Netherwing",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Drake Dealer Hurlunk"
+ },
+ {
+  "mount": "Quantum Courser",
+  "source": "Drops from Chrono-Lord Deios in Dawn of the Infinite",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Chrono-Lord Deios"
+ },
+ {
+  "mount": "Perfected Juggernaut",
+  "source": "Sold by Gill the Drill at Tyrhold Reservoir for 3,000 Paracausal Flakes",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Gill"
+ },
+ {
+  "mount": "Darkmoon Dirigible",
+  "source": "Sold by Lhara at the Darkmoon Faire for 1,000 Darkmoon Prize Tickets",
+  "faction": null,
+  "hasxy": false,
+  "npc": "Lhara"
+ }
+]

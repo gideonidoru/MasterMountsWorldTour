@@ -1,0 +1,167 @@
+MASTER MOUNTS — Wowhead coordinate failures
+========================================================================
+Each line: NPC, then the mounts that depend on it.
+'has xy' = we already hold a coordinate; blank = the mount has none.
+
+
+--- AMBIGUOUS (11) — Multiple NPCs share this name — need the right ID
+
+  Bloodlord Mandokir
+    https://www.wowhead.com/search?q=Bloodlord+Mandokir
+      - Armored Razzashi Raptor            has xy   
+      - Swift Razzashi Raptor              (no xy)  
+
+  Deathguard Netharian
+    https://www.wowhead.com/search?q=Deathguard+Netharian
+      (no mounts currently map to this NPC)
+
+  Gina Mudclaw
+    https://www.wowhead.com/search?q=Gina+Mudclaw
+      - Black Riding Goat                  has xy   
+      - Brown Riding Goat                  has xy   
+      - White Riding Goat                  has xy   
+
+  Gul'dan
+    https://www.wowhead.com/search?q=Gul'dan
+      - Felblaze Infernal                  has xy   
+      - Fiendish Hellfire Core             has xy   
+      - Hellfire Infernal                  has xy   
+
+  Harb Clawhoof
+    https://www.wowhead.com/search?q=Harb+Clawhoof
+      - Brown Kodo                         has xy   Horde
+      - Gray Kodo                          has xy   Horde
+      - Great Brown Kodo                   has xy   Horde
+      - Great Gray Kodo                    has xy   Horde
+      - Great White Kodo                   has xy   Horde
+      - White Kodo                         has xy   Horde
+
+  Lindormi
+    https://www.wowhead.com/search?q=Lindormi
+      - Amethyst Mechsuit                  has xy   
+      - Cerulean Deathwalker               has xy   
+
+  Provisioner Qorra
+    https://www.wowhead.com/search?q=Provisioner+Qorra
+      - Wastewander Skyterror              has xy   
+
+  Skullripper
+    https://www.wowhead.com/search?q=Skullripper
+      - Skullripper                        has xy   
+
+  So'leah
+    https://www.wowhead.com/search?q=So'leah
+      - Cartel Master's Gearglider         (no xy)  
+
+  Sylvanas Windrunner
+    https://www.wowhead.com/search?q=Sylvanas+Windrunner
+      - Vengeance                          has xy   
+
+  Telemancer Astrandis
+    https://www.wowhead.com/search?q=Telemancer+Astrandis
+      - Corroded Soul Crusher              has xy   
+
+--- NOTFOUND (8) — No exact NPC match on Wowhead — name in our source may be a title or wrong
+
+  Arthur Flew
+    https://www.wowhead.com/search?q=Arthur+Flew
+      (no mounts currently map to this NPC)
+
+  High Priest Thekal
+    https://www.wowhead.com/search?q=High+Priest+Thekal
+      - Swift Zulian Tiger                 (no xy)  
+
+  Historian Ma'di
+    https://www.wowhead.com/search?q=Historian+Ma'di
+      - Illidari Doomhawk                  (no xy)  
+
+  Jan'sari
+    https://www.wowhead.com/search?q=Jan'sari
+      - Indigo Coiled Horror               has xy   
+      - Violet-Backed Skyfang              has xy   
+
+  Relinquishing Relics
+    https://www.wowhead.com/search?q=Relinquishing+Relics
+      - Relinquished Scarlet Charger       has xy   
+
+  Second Mate Sluggs
+    https://www.wowhead.com/search?q=Second+Mate+Sluggs
+      - Sea-Dwelling Isle Serpent          has xy   
+
+  Thraxadus
+    https://www.wowhead.com/search?q=Thraxadus
+      - Frenzied Shredclaw                 has xy   
+      - Prowling Shredclaw                 has xy   
+
+  Ula'tek
+    https://www.wowhead.com/search?q=Ula'tek
+      - Primeval Skyfriend                 has xy   
+
+--- NOMAPID (4) — Wowhead has coords but no uiMapId — cannot tell which map
+
+  Beska Redtusk
+    https://www.wowhead.com/search?q=Beska+Redtusk
+      - Swift Frostwolf                    (no xy)  Horde
+
+  Brendormi
+    https://www.wowhead.com/search?q=Brendormi
+      - Skyskin Hornstrider                has xy   
+
+  Collector Ta'steld
+    https://www.wowhead.com/search?q=Collector+Ta'steld
+      - Crimson Lupine                     (no xy)  
+      - Skypaw Glimmerfur                  (no xy)  
+      - Snowpaw Glimmerfur Prowler         (no xy)  
+
+  Degentrius
+    https://www.wowhead.com/search?q=Degentrius
+      - Lucent Hawkstrider                 has xy   
+
+--- NOMAPPER (1) — Wowhead page has no map data at all
+
+  Humon'gozz
+    https://www.wowhead.com/search?q=Humon'gozz
+      - Arboreal Gulper                    has xy   
+
+--- RATELIMITED (8) — Not yet attempted (throttled)
+
+  Uncle Bigpocket
+    https://www.wowhead.com/search?q=Uncle+Bigpocket
+      - Blonde Riding Yak                  has xy   
+      - Grand Expedition Yak               (no xy)  
+      - Grey Riding Yak                    has xy   
+
+  Vasarin Redmorn
+    https://www.wowhead.com/search?q=Vasarin+Redmorn
+      - Golden Primal Direhorn             has xy   Alliance
+      - Grand Gryphon                      has xy   Alliance
+      - Sunreaver Dragonhawk               (no xy)  Horde
+      - Sunreaver Hawkstrider              (no xy)  Horde
+
+  Violet Mistake
+    https://www.wowhead.com/search?q=Violet+Mistake
+      - Hulking Deathroc                   has xy   
+
+  Void Researcher Anowin
+    https://www.wowhead.com/search?q=Void+Researcher+Anowin
+      - Ravenous Shredclaw                 has xy   
+      - Voidbound Stormray                 has xy   
+
+  Warbringer Mal'Korak
+    https://www.wowhead.com/search?q=Warbringer+Mal'Korak
+      - Blisterback Bloodtusk              has xy   
+
+  Wild Worldcracker
+    https://www.wowhead.com/search?q=Wild+Worldcracker
+      - Forsworn Aquilon                   has xy   
+
+  Wrangler Kravos
+    https://www.wowhead.com/search?q=Wrangler+Kravos
+      - Maddened Chaosrunner               has xy   
+
+  Zul'jan
+    https://www.wowhead.com/search?q=Zul'jan
+      - The Writhing Brood                 has xy   
+
+
+Total mount rows affected: 51

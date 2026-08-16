@@ -1,0 +1,31 @@
+Adjutant Galos|174937|1533|Bastion|67.4|15
+Caeris Fairdawn|240838|2395|Eversong Woods|43.4|47.4
+Construct V'anore|252956|2393|Silvermoon City|55.8|65.8
+Dealer Vexil|193310|2022|The Waking Shores|34.8|46.6
+Derrick Brindlebeard|33310|118|Icecrown|76.4|19.4
+Doru Thunderhorn|33556|118|Icecrown|76.2|24.4
+Eliza Killian|33555|118|Icecrown|76.4|24
+Fleshwing|180042|1961|Korthia|59.4|42.4
+Freka Bloodaxe|33553|118|Icecrown|76.4|24.2
+Gieger|162741|1536|Maldraxxus|31.4|35.4
+Gormtamer Tizo|164107|1565|Ardenweald|26.6|55.2
+Gottum|148810|863|Nazmir|70.8|56.4
+Granpap Whiskers|187408|2022|The Waking Shores|47.6|83.2
+Hirukon|180978|1970|Zereth Mortis|51.4|74.2
+Hopecrusher|166679|1525|Revendreth|51.4|52.4
+Irisee|33657|118|Icecrown|76.2|19.2
+Magovu|240279|2437|Zul'Aman|45.8|65.8
+Malbog|179684|1961|Korthia|44.4|29.4
+Mothkeeper Wew'tam|251259|2413|Harandar|49.2|54.4
+Naynar|240407|2413|Harandar|51|50.8
+Necrolord Sipe|73190|84|Stormwind City|76.8|65.4
+Nerissa Heartless|162690|1536|Maldraxxus|65.4|35.2
+Ogunaro Wolfrunner|3362|85|Orgrimmar|61|35.2
+Ponzo|204693|2133|Zaralek Cavern|58|53.8
+Rillie Spindlenut|33650|118|Icecrown|76.4|19.4
+Rook Hawkfist|33653|118|Icecrown|76.2|19.2
+Samamba|33554|118|Icecrown|76|24.4
+Stygian Stonecrusher|179985|1961|Korthia|45.4|78.2
+Tahonta|162586|1536|Maldraxxus|44|50.4
+Tattukiaka|199448|2024|The Azure Span|14|49.6
+Trellis Morningsun|33557|118|Icecrown|76.2|23.8
