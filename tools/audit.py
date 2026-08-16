@@ -360,24 +360,41 @@ def readme_record_count():
     and then left to drift, in the one document a stranger reads first. Counted
     rather than maintained: the flat file opens every record with a bare `{` at
     one tab, which is the flattener's own output shape.
+
+    Every README, and every PHRASING. The rule first read one file for one
+    sentence, and a second copy of the count three lines away -- "It catalogues
+    1,608 mounts" in the release README -- drifted for free while this reported
+    zero. A rule that checks one of the two places a number lives is not a
+    check, it is a coincidence.
     """
     bad = []
-    flat, readme = "Data/Mounts.lua", "README.md"
-    if not (os.path.exists(flat) and os.path.exists(readme)):
+    flat = "Data/Mounts.lua"
+    if not os.path.exists(flat):
         return bad
     records = 0
     for line in open(flat, encoding="utf-8"):
         if line.rstrip("\n") == "\t{":
             records += 1
-    text = open(readme, encoding="utf-8").read()
-    stated = re.search(r'curated database of ([\d,]+)', text)
-    if not stated:
-        bad.append((readme, 0, "no record count stated", records))
-        return bad
-    claimed = int(stated.group(1).replace(",", ""))
-    if claimed != records:
-        bad.append((readme, text[:stated.start()].count("\n") + 1,
-                    f"says {claimed:,}", records))
+    # Only claims ABOUT THIS DATABASE. "1,668 journal mounts" is the client's
+    # number and is supposed to differ, so the patterns name their own subject
+    # rather than sweeping up every comma'd figure on the page.
+    patterns = (r'curated database of ([\d,]+)',
+                r'database of ([\d,]+) records',
+                r'catalogues ([\d,]+) mounts')
+    seen_any = False
+    for readme in ("README.md", "../MasterMountsWorldTour-release/README.md"):
+        if not os.path.exists(readme):
+            continue
+        text = open(readme, encoding="utf-8").read()
+        for pat in patterns:
+            for stated in re.finditer(pat, text):
+                seen_any = True
+                claimed = int(stated.group(1).replace(",", ""))
+                if claimed != records:
+                    bad.append((readme, text[:stated.start()].count("\n") + 1,
+                                f"says {claimed:,}", records))
+    if not seen_any:
+        bad.append(("README.md", 0, "no record count stated", records))
     return bad
 
 def currency_name_id_pairs():

@@ -26,9 +26,26 @@ local function stripColors(text)
 	-- Colour AND texture escapes. A vendor cost arrives as "Cost: 1|TInterface\\
 	-- MoneyFrame\\UI-GoldIcon:12|t", and leaving the texture in makes the source
 	-- unreadable the moment it is truncated for display.
+	--
+	-- "|n" IS A LINE BREAK, and it is not a newline character.
+	--
+	-- The journal writes its source text as "|cFFFFD200Treasure:|r Sturdy
+	-- Chest|n|cFFFFD200Zone:|r Gnarldor Isle|n". Nothing here matched "|n", so it
+	-- travelled through every reader intact -- and a frame RENDERS it as a real
+	-- break. The report's mount list broke across lines mid-entry, and /mm stubs
+	-- exported a record whose source text became three lines of Lua the moment
+	-- it was copied out of the box, which does not compile.
+	--
+	-- Every consumer of this wants one line, so it becomes a space here rather
+	-- than a newline each of them would have to collapse again.
 	return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
-		:gsub("|T.-|t", ""):gsub("|A.-|a", ""):gsub("%s+$", ""))
+		:gsub("|T.-|t", ""):gsub("|A.-|a", "")
+		:gsub("|n", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", ""))
 end
+
+-- Exposed because the export path and the diagnostics both need it, and because
+-- a checker cannot hold a local to account.
+S.StripEscapes = stripColors
 
 function S:Rescan()
 	wipe(S.mounts); wipe(S.bySpell); wipe(S.byMountID); wipe(S.byName)

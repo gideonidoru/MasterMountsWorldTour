@@ -7,7 +7,7 @@
 A mount-collection addon for World of Warcraft retail that answers the question
 a checklist can't: **what should I actually do tonight?**
 
-It catalogues 1,608 mounts, works out which ones you can make progress on right
+It catalogues 1,621 mounts, works out which ones you can make progress on right
 now, and plans a route through them — ordered by real travel time, using your
 teleports, hearthstones and portals.
 
@@ -79,7 +79,7 @@ less.
 | `/mm gaps` | what's missing, and whether anyone could supply it |
 | `/mm whynot` | why a planned mount isn't in the route |
 | `/mm compare` | mounts someone in your group has that you don't |
-| `/mm selftest` | run the checks (215 of them) against live state |
+| `/mm selftest` | run the checks (216 of them) against live state |
 
 `/mm` on its own opens the window; `/mm report` bundles every diagnostic into
 one copyable dump.
@@ -98,7 +98,7 @@ limits; that export is how they get found.
 Drop the `MasterMountsWorldTour` folder into `Interface/AddOns/`. The folder must
 keep that exact name — the `.toc` and the art paths are derived from it.
 
-Retail only, tested against 12.0.7 (Midnight).
+Retail only, tested against 12.1.0 (Midnight).
 
 ## License
 

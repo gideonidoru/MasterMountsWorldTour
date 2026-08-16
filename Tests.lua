@@ -921,6 +921,37 @@ local function runData()
 		return pct >= 90, ("%d of %d journal mounts catalogued (%.1f%%)")
 			:format(matched, total, pct)
 	end)
+
+	check("Journal text carries no escape the game meant to render", function()
+		-- Blizzard writes journal source text with its own markup: colour codes,
+		-- money and atlas textures, and "|n" for a line break. A frame RENDERS
+		-- all of that, so an escape left in the string is invisible until it
+		-- reaches somewhere that does not render -- and then it is a line break
+		-- in the middle of a report entry, or, from /mm stubs, a Lua string
+		-- literal split across three lines that will not compile.
+		--
+		-- "|n" was the one nothing matched, because it is not a newline
+		-- character and every reader here was looking for one.
+		local S = MM.Scanner
+		if not (S and S.ready and S.byMountID) then return nil, "scan has not run yet" end
+		local checked, bad = 0, {}
+		for _, e in pairs(S.byMountID) do
+			local src = e.rec and e.rec.source
+			if type(src) == "string" then
+				checked = checked + 1
+				local esc = src:match("|%a")
+				if esc and #bad < 3 then
+					bad[#bad + 1] = ("%s carries %q"):format(e.name or "?", esc)
+				end
+			end
+		end
+		if checked == 0 then return nil, "no journal entry carries source text" end
+		if #bad > 0 then
+			return false, ("%d source text(s) still carry markup: %s")
+				:format(#bad, table.concat(bad, ", "))
+		end
+		return true, ("%d journal source text(s), none carrying markup"):format(checked)
+	end)
 end
 
 ------------------------------------------------------------
