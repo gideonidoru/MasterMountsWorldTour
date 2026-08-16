@@ -795,11 +795,17 @@ function R.Lookup(needle)
 			for i, name in ipairs(names) do
 				if i > 12 then capped = true break end
 				hits = hits + 1
-				MM:Print("  |cffffd24d%s|r  %s = %s",
-					kind == "factions" and "FACTION " or "CURRENCY",
+				-- No colour: the window that carries this strips it, and the
+				-- line is going to be pasted back rather than admired. Shaped
+				-- so the answer to "which index, and what id" is one glance.
+				MM:Print("  %-8s  %-40s id %s",
+					kind == "factions" and "FACTION" or "CURRENCY",
 					name, tostring(index[name]))
 			end
 		end
+	end
+	if hits > 0 then
+		MM:Print("  (%d match%s -- paste this back)", hits, hits == 1 and "" or "es")
 	end
 	if hits == 0 then
 		MM:Print("Nothing in either index matches %q. The client does not know that "

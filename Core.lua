@@ -1021,7 +1021,13 @@ SlashCmdList.MASTERMOUNTS = function(input)
 	elseif input == "export" then
 		MM.IDs.Export()
 	elseif input:match("^lookup ") then
-		MM.IDs.Lookup(input:match("^lookup (.+)$"))
+		-- INTO A WINDOW, like every other answer that is a page rather than a
+		-- line. The whole point of this command is that the result gets pasted
+		-- back to someone, and a chat frame cannot be selected -- which is the
+		-- same fault already fixed for the report, the id export and the gaps
+		-- list, and which this command promptly repeated.
+		local needle = input:match("^lookup (.+)$")
+		windowed(("Lookup: %s"):format(needle), function() MM.IDs.Lookup(needle) end)
 	else
 		MM:Print("Commands: /mm show | plan | monitor | compact | route | easiest")
 		MM:Print("          |cff40d860/mm check|r — run every diagnostic and report")
