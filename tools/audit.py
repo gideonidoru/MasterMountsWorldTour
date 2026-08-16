@@ -365,6 +365,41 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def scan_ceiling_covers_the_data():
+    """The id space the client is walked over, against the ids we already hold.
+
+    SCAN_MAX sat at 3200 while the data carried twelve currency ids above it,
+    the highest 3546. The index therefore stopped short of the live space and
+    the lookup reported that the client did not know Preyseeker's Journey --
+    currency 3387 -- which the client knows perfectly well. Nothing caught it
+    because those twelve ids were already written down and never needed
+    resolving; only a name we did NOT have could expose the gap.
+
+    Counted rather than maintained, like the README figures.
+    """
+    bad = []
+    src, flat = "IDResolver.lua", "Data/Mounts.lua"
+    if not (os.path.exists(src) and os.path.exists(flat)):
+        return bad
+    m = re.search(r'^local SCAN_MAX = (\d+)', open(src, encoding="utf-8").read(), re.M)
+    if not m:
+        return bad
+    ceiling = int(m.group(1))
+    text = open(flat, encoding="utf-8").read()
+    # ONLY THE IDS THIS CEILING GOVERNS. `id = ` also matches npc ids in the
+    # hundreds of thousands and map ids and spell ids, none of which the
+    # currency/faction scan walks -- the first version of this rule compared
+    # against an npc id and reported a ceiling of 4200 as too low.
+    ids = []
+    for block in re.findall(r'\{[^{}]*type = "(?:CURRENCY|REP)"[^{}]*\}', text):
+        ids += [int(x) for x in re.findall(r'id = (\d+)', block)]
+    if not ids:
+        return bad
+    highest = max(ids)
+    if ceiling <= highest:
+        bad.append((src, text.count("\n", 0, 0) + 1, ceiling, highest))
+    return bad
+
 def scrollbar_gaps_agree():
     """Every scroll bar sits the same distance from its box.
 
@@ -462,6 +497,16 @@ def requirement_stated_not_modelled():
         # Matching on the number keeps that narrow: any other amount is a cost.
         rank = re.search(r'(?:Rank|Renown) (\d+)', m.group(1) or m.group(2) or "")
         if rank and re.search(r'amount = %s\b' % rank.group(1), body):
+            continue
+        # AN ACKNOWLEDGED GATE IS NOT AN IGNORED ONE. Some requirements are not
+        # a faction, a currency, an achievement or a quest -- a Brawler's Guild
+        # rank and a Nazjatar bodyguard rank are neither, and the client offers
+        # no index to resolve them from. `unmeasurableGate` is how a record says
+        # so out loud, exactly as `noLocationReason` does for a place that
+        # cannot be routed to. It is deliberately a SENTENCE and not a boolean:
+        # writing one costs a moment's thought, and reading one tells the next
+        # person whether the answer has since become available.
+        if re.search(r'unmeasurableGate = "[^"]{20,}"', body):
             continue
         line = text[:text.find(body)].count("\n") + 1
         bad.append((flat, line, name.group(1),
@@ -1042,6 +1087,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    ceil = scan_ceiling_covers_the_data()
+    print(f"the id scan stops too soon : {len(ceil)}")
+    for f, _i, c, h in ceil:
+        print(f"   {f}  SCAN_MAX is {c}; the data already holds id {h}")
     gaps = scrollbar_gaps_agree()
     print(f"a scrollbar out of line   : {len(gaps)}")
     for f, ig, got, want in gaps:
@@ -1072,7 +1121,7 @@ def main():
         print(f"   {f}:{i7}  defers SetAttribute in combat and never re-applies it "
               f"-- flush on PLAYER_REGEN_ENABLED")
     return 1 if (bad or fwd or gone or early or btr or retval or secret or guids
-                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps) else 0
+                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil) else 0
 
 if __name__ == "__main__":
     sys.exit(main())

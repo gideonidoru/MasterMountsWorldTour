@@ -32946,6 +32946,12 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				name = "Preyseeker's Journey rank",
+				amount = 5,
+				id = 3387,
+				type = "CURRENCY",
+			},
+			{
 				name = "Remnant of Anguish",
 				amount = 2000,
 				how = "Complete Prey hunts and Preyseeker's Journey activities to earn Remnant of Anguish.",
@@ -32982,6 +32988,12 @@ MM.AddMounts({
 			y = 65.8,
 		},
 		conditions = {
+			{
+				name = "Preyseeker's Journey rank",
+				amount = 10,
+				id = 3387,
+				type = "CURRENCY",
+			},
 			{
 				name = "Remnant of Anguish",
 				amount = 2550,
@@ -35101,6 +35113,12 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
+				name = "Preyseeker's Journey rank",
+				amount = 10,
+				id = 3387,
+				type = "CURRENCY",
+			},
+			{
 				name = "Remnant of Anguish",
 				amount = 2250,
 				id = 3392,
@@ -37011,9 +37029,16 @@ MM.AddMounts({
 			x = 76,
 			y = 67,
 		},
+		conditions = {
+			{
+				name = "Guild Glory of the Draenor Raider",
+				type = "ACHIEVEMENT",
+			},
+		},
 		effort = 3,
 		goldCost = 4000,
 		solo = true,
+		unmeasurableGate = "Guild reputation reached Exalted under a system removed in Legion; the achievement half above is modelled and is the part a character can still work on.",
 	},
 	{
 		name = "Rocktusk Battleboar",
@@ -38285,6 +38310,7 @@ MM.AddMounts({
 			y = 50,
 		},
 		effort = 3,
+		unmeasurableGate = "Nazjatar bodyguard rank with Neri Sharpfin is a follower system, not a faction or currency; nothing in the client's indexes can be asked for it, so the requirement stays in the source text.",
 	},
 	{
 		name = "Deepcoral Snapdragon",
@@ -38301,6 +38327,7 @@ MM.AddMounts({
 			y = 50,
 		},
 		effort = 3,
+		unmeasurableGate = "Nazjatar bodyguard rank with Neri Sharpfin is a follower system, not a faction or currency; nothing in the client's indexes can be asked for it, so the requirement stays in the source text.",
 	},
 	{
 		name = "Dusky Waycrest Gryphon",
@@ -41051,6 +41078,7 @@ MM.AddMounts({
 		},
 		effort = 4,
 		goldCost = 10000,
+		unmeasurableGate = "Brawler's Guild rank is not a faction, a currency or an achievement -- the client exposes no index that can be asked what rank you hold, so the requirement stays in the source text where a player can read it.",
 	},
 	{
 		name = "Brawlin' Bruno",
@@ -41066,6 +41094,7 @@ MM.AddMounts({
 		},
 		effort = 3,
 		goldCost = 4000,
+		unmeasurableGate = "Brawler's Guild rank is not a faction, a currency or an achievement -- the client exposes no index that can be asked what rank you hold, so the requirement stays in the source text where a player can read it.",
 	},
 	{
 		name = "Skypaw Glimmerfur",

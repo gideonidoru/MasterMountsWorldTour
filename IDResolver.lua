@@ -401,7 +401,16 @@ end
 -- how the router froze the client for minutes in Addendum 97; that lesson cost
 -- an evening and is not being relearned. This runs 200 ids per frame, once per
 -- install, and stores the result.
-local SCAN_MAX = 3200
+-- THE CEILING HAS TO CLEAR THE IDS WE ALREADY HOLD. This sat at 3200 while our
+-- own data carried twelve currency ids above it, the highest 3546 -- so the
+-- index silently stopped short of the live space and `/mm lookup` reported that
+-- the client did not know Preyseeker's Journey (currency 3387) when the client
+-- knows it perfectly well. The gap was invisible because those twelve already
+-- carried explicit ids and never needed resolving.
+--
+-- An audit rule keeps this above the highest id in the data, so the next patch
+-- that pushes the space up reports rather than quietly truncating.
+local SCAN_MAX = 4200
 local SCAN_CHUNK = 200
 
 -- The two name readers, named once. The lookup below walks the same space for

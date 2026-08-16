@@ -801,6 +801,34 @@ MM:On("MM_KNOWN_DEBUG", function()
 		elseif o[3] == "player" then playerC = playerC + o[2]
 		else nobodyC = nobodyC + o[2] end
 	end
+	------------------------------------------------------------
+	-- Requirements nothing in the client can be asked about
+	------------------------------------------------------------
+	-- A GATE THE ADDON CANNOT MEASURE, SAID OUT LOUD. `unmeasurableGate` exists
+	-- so a record can state that its requirement is real and unresolvable --
+	-- a Brawler's Guild rank, a follower's rank, a track the client keeps under
+	-- no name we can find. Listing them here is the point: a field that only
+	-- ever satisfied a checker would be a comment with extra steps, and the
+	-- next person deserves to see whether the answer has since arrived.
+	local gated = {}
+	for _, rec in ipairs(MM.DBList or {}) do
+		if rec.unmeasurableGate then
+			gated[#gated + 1] = { name = rec.name, why = rec.unmeasurableGate }
+		end
+	end
+	if #gated > 0 then
+		table.sort(gated, function(a, b) return a.name < b.name end)
+		MM:Print("|cffffd84dRequirements nothing here can measure|r  (%d)", #gated)
+		for _, g in ipairs(gated) do
+			MM:Print("   %s", g.name)
+			MM:Print("      %s", g.why)
+		end
+		MM:Print("   These are NOT missing data. Each one names a requirement the")
+		MM:Print("   client offers no way to ask about, so it stays in the mount's")
+		MM:Print("   own text where a player can read it rather than being modelled")
+		MM:Print("   from a guess.")
+	end
+
 	MM:Print("|cffffd84dIn total|r")
 	MM:Print("   %5d close themselves in-game, with nobody's help", selfC)
 	MM:Print("   %5d want a player who is already standing there  -> /mm contribute", playerC)

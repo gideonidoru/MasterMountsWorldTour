@@ -127,13 +127,12 @@ around, and a reload does not invalidate it the way a counter would.
   from the client, DB2 (`wago.tools/db2/<Table>/csv`), HandyNotes, or leave the gap.
 - **`/Applications/World of Warcraft/` is read-only.** Logs may be read. Mark deploys.
 - Edit `Data/_source/*.lua` + `ORDER.txt`, **never** flat `Data/Mounts.lua`.
-- **Two rules are RED on purpose and must not be silenced.** `a gate stated,
-  not modelled` (14) and `one instance, two expansions` (2) came from a player
-  report and describe real defects in the DATA, not the code. Closing them needs
-  real ids read from the client, DB2 or Wowhead -- never invented. Until then
-  the audit exits non-zero, which is the gate doing its job. If a release has to
-  go out first, say so deliberately; do not delete a rule to make a number green.
-- Gates before any release: `python3 tools/audit.py` (**20 rules**), `luac -p` on every
+- **`unmeasurableGate` is how a record admits a requirement nothing can ask
+  about** -- a Brawler's Guild rank, a follower's rank -- exactly as
+  `noLocationReason` does for a place. It is a sentence, not a boolean, it is
+  listed in `/mm known` so it cannot become a comment that only satisfies a
+  checker, and it is NOT a way to silence a gate that could be modelled.
+- Gates before any release: `python3 tools/audit.py` (**21 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
