@@ -37224,9 +37224,10 @@ MM.AddMounts({
 			y = 67,
 		},
 		effort = 3,
+		achievementID = 9669,
 		goldCost = 4000,
 		solo = true,
-		unmeasurableGate = "Guild reputation reached Exalted under a system removed in Legion. The achievement half is not modelled either: \"Guild Glory of the Draenor Raider\" matched nothing in the client's 5,546-name achievement index, so the name recorded here is likely wrong and correcting it needs the real one, not a guess.",
+		unmeasurableGate = "Guild reputation reached Exalted under a system removed in Legion. The achievement half -- \"Guild Glory of the Draenor Raider\", 9669 -- is real and recorded, but the guild reputation it sits behind cannot be earned any more, so the mount stays unobtainable regardless.",
 	},
 	{
 		name = "Rocktusk Battleboar",
