@@ -37029,16 +37029,10 @@ MM.AddMounts({
 			x = 76,
 			y = 67,
 		},
-		conditions = {
-			{
-				name = "Guild Glory of the Draenor Raider",
-				type = "ACHIEVEMENT",
-			},
-		},
 		effort = 3,
 		goldCost = 4000,
 		solo = true,
-		unmeasurableGate = "Guild reputation reached Exalted under a system removed in Legion; the achievement half above is modelled and is the part a character can still work on.",
+		unmeasurableGate = "Guild reputation reached Exalted under a system removed in Legion. The achievement half is not modelled either: \"Guild Glory of the Draenor Raider\" matched nothing in the client's 5,546-name achievement index, so the name recorded here is likely wrong and correcting it needs the real one, not a guess.",
 	},
 	{
 		name = "Rocktusk Battleboar",
