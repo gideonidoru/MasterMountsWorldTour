@@ -2432,8 +2432,30 @@ local function runLogic()
 		-- note rather than a failure.
 		local learned = C.LearnedSkillLines()
 		if #learned == 0 then
-			return nil, ("%d skill lines in the catalogue, none levelled on this character")
-				:format(#lines)
+			-- NOTHING LEVELLED IS ONLY LEGITIMATE IF THERE IS NOTHING TO LEVEL.
+			--
+			-- This degraded either way, on the reasoning that a character with
+			-- no professions is legitimate -- true, and it made the check blind
+			-- to the case it was written for. A maxed engineer reported "none
+			-- levelled" and six engineering travel options were withheld, while
+			-- the report called that correct.
+			--
+			-- GetProfessions is the reader that demonstrably works. When it
+			-- names professions and every skill line still reads zero, the two
+			-- disagree, and that is a defect rather than an absent feature.
+			local known = C.KnownProfessions and C.KnownProfessions() or {}
+			if #known > 0 then
+				local names = {}
+				for _, p in ipairs(known) do
+					names[#names + 1] = ("%s %d"):format(p.name, p.level or 0)
+				end
+				return false, ("GetProfessions reports %s, and all %d skill "
+					.. "lines read 0 -- expansion gates refuse for a character "
+					.. "who has the profession"):format(
+						table.concat(names, ", "), #lines)
+			end
+			return nil, ("%d skill lines in the catalogue, and GetProfessions "
+				.. "names none either -- both readers agree"):format(#lines)
 		end
 		-- every line must carry a usable level, or comparisons are meaningless
 		for _, line in ipairs(lines) do

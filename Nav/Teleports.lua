@@ -1098,9 +1098,33 @@ MM:On("MM_TRAVEL_DEBUG", function()
 	end
 	MM:Print("   GetProfessions says: %s",
 		#primary > 0 and table.concat(primary, ", ") or "|cff9a9a9anone|r")
+	-- WHAT THE OTHER READER SAYS, before claiming anything about this one.
+	--
+	-- This printed "nothing levelled, which is correct on a character with no
+	-- professions" whenever the skill-line reader came back empty -- while
+	-- GetProfessions, three lines above, was naming five professions. On a
+	-- maxed engineer it stated the opposite of the truth and read as a settled
+	-- answer, which is worse than reporting nothing at all.
+	local known = (C and C.KnownProfessions) and C.KnownProfessions() or {}
 	if #learned == 0 then
-		MM:Print("   |cff9a9a9aNothing levelled, so every skill-line gate refuses --|r")
-		MM:Print("   |cff9a9a9awhich is correct on a character with no professions.|r")
+		if #known > 0 then
+			MM:Print("   |cffff6060The two readers disagree.|r GetProfessions "
+				.. "reports %d profession(s):", #known)
+			for _, p in ipairs(known) do
+				MM:Print("     %s %d/%d", p.name, p.level or 0, p.max or 0)
+			end
+			MM:Print("   |cff9a9a9aEvery expansion skill line reads 0, so the level|r")
+			MM:Print("   |cff9a9a9ais NOT READABLE here -- it is not zero. Gates naming|r")
+			MM:Print("   |cff9a9a9aan expansion line (\"Northrend Engineering 40\") refuse|r")
+			MM:Print("   |cff9a9a9arather than guess, which withholds those options from|r")
+			MM:Print("   |cff9a9a9aa character who may well have earned them.|r")
+			MM:Print("   |cffffd84dWorth trying:|r open the Engineering window once and")
+			MM:Print("   run this again. Recipes and flight points both need that,")
+			MM:Print("   and if skill lines do too, this closes itself.")
+		else
+			MM:Print("   |cff9a9a9aNothing levelled, and GetProfessions names none|r")
+			MM:Print("   |cff9a9a9aeither, so the two readers agree: no professions.|r")
+		end
 	end
 	for _, line in ipairs(learned) do
 		MM:Print("   %s — %d/%d", line.label, line.level, line.max)
