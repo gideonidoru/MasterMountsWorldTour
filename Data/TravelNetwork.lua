@@ -1044,6 +1044,21 @@ MM.TravelNodes = {
 	["TRIAL_OF_THE_CRUSADER_RAID"]={name="Trial of the Crusader",mapID=118,x=0.750,y=0.210,group="NORTHREND"},
 	["TRIAL_OF_VALOR_RAID"]={name="Trial of Valor",mapID=634,x=0.710,y=0.730,group="BROKEN_ISLES"},
 	["TRIUMVIRATES_END_FLIGHT"]={name="Triumvirate's End",mapID=882,x=0.5275,y=0.7568,group="ARGUS_EREDATH"},
+	-- Trueshot Lodge is not gated, it was simply never here. The zone sat off
+	-- the travel network with two goals on it and the diagnosis read "no travel
+	-- node", which was exact: map 739 had none, while Highmountain (650) had
+	-- thirteen. Nothing refused to connect it -- there was nothing to connect.
+	--
+	-- No edge is declared, because none needs to be. The lodge is a place in
+	-- Highmountain that a hunter flies to, and BROKEN_ISLES is the group the
+	-- surrounding flight points already use, so the self-flight pass below joins
+	-- it to its neighbours at the measured distance. A hand-written duration
+	-- here would be a number nobody took.
+	--
+	-- (There is also an eagle in Legion Dalaran that flies only to the lodge. It
+	-- is a real second way in and it is deliberately not modelled: a taxi edge
+	-- needs a duration, and nobody has timed that one.)
+	["TRUESHOT_LODGE"]={name="Trueshot Lodge",mapID=739,x=0.588,y=0.318,group="BROKEN_ISLES"},
 	["TUSHUI_LANDING_FLIGHT"]={name="Tushui Landing",mapID=554,x=0.230,y=0.710,faction="ALLIANCE",group="TIMELESS_ISLE"},
 	["TUSK_ISLE_FLIGHT"]={name="Tusk Isle",mapID=862,x=0.5875,y=0.7779,faction="HORDE",group="ZANDALAR"},
 	["TWILIGHT_GLADE_FLIGHT"]={name="Twilight Glade",mapID=539,x=0.402,y=0.554,faction="ALLIANCE",group="DRAENOR"},

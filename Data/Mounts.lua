@@ -24411,26 +24411,47 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		expansion = 9,
 		category = "TREASURE",
 		obtainable = true,
-		source = "From a Zskera Vault in The Forbidden Reach.",
+		source = "Assembled in five steps from six Zskera Vault reagents, in the post-storm Forbidden Reach.",
 		zone = {
 			name = "The Forbidden Reach",
-			mapID = 2107,
+			mapID = 2151,
 		},
 		conditions = {
 			{
 				amount = 1,
-				id = 204374,
+				id = 204360,
 				type = "ITEM",
 			},
 			{
 				amount = 1,
-				id = 204367,
+				id = 204369,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 204371,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 204375,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 204372,
+				type = "ITEM",
+			},
+			{
+				amount = 1,
+				id = 204374,
 				type = "ITEM",
 			},
 		},
 		attempts = "NONE",
 		timePerAttempt = 15,
 		effort = 3,
+		notes = "Five combines, not a drop: Strange Petrified Orb + Scrap of Black Dragonscales makes a Particularly Ordinary Egg; then Drop of Blue Dragon Magic, then Everburning Ruby Coals, then Speck of Bronze Dust, then an Emerald Dragon Brooch, each combining with the previous result. Every reagent comes out of the Zskera Vaults, so the real cost is vault runs until all six have dropped.",
 	},
 	{
 		name = "Evening Sun Dreamsaber",
@@ -28573,6 +28594,7 @@ MM.AddMounts({
 		acquire = {
 			name = "Devoured Energy-Pod",
 			count = 20,
+			item = 246240,
 			note = "four a week per WARBAND, so five weeks at the absolute best",
 			perWeek = 4,
 		},
@@ -33511,6 +33533,7 @@ MM.AddMounts({
 		acquire = {
 			name = "Delicious Sporesnack",
 			count = 4,
+			item = 269245,
 			note = "one a week, account-wide, so four weeks at best",
 			perWeek = 1,
 		},
@@ -39876,10 +39899,12 @@ MM.AddMounts({
 		source = "Combine 50 Leftover Elemental Slime, 0-5 per kill of the final boss of the Froststone Vault Primal Storm event in The Forbidden Reach.",
 		zone = {
 			name = "The Forbidden Reach",
+			mapID = 2151,
 		},
 		acquire = {
 			name = "Leftover Elemental Slime",
 			count = 50,
+			item = 204352,
 			note = "0-5 per kill of the Froststone Vault final boss",
 			perAttempt = {
 				max = 5,
@@ -40509,6 +40534,7 @@ MM.AddMounts({
 		acquire = {
 			name = "Charred Elemental Remains",
 			count = 20,
+			item = 209419,
 			note = "one to three per portal closed, so about ten portals",
 			perAttempt = {
 				max = 3,
