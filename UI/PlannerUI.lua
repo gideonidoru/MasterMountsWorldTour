@@ -618,8 +618,13 @@ function UI.BuildPlanner(panel)
 	missingBox:SetPoint("BOTTOMRIGHT", panel, "BOTTOMLEFT", 434, 6)
 
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
-	missingBar:SetPoint("TOPLEFT", missingBox, "TOPRIGHT", 4, 0)
-	missingBar:SetPoint("BOTTOMLEFT", missingBox, "BOTTOMRIGHT", 4, 0)
+	-- SIX, LIKE EVERY OTHER SCROLLBAR HERE. This one sat at 4 and nothing else
+	-- did: the Farm Plan bar beside it and the Collection bar on the other tab
+	-- are both 6. Two pixels is not much on its own, and it is plenty when the
+	-- two bars are side by side in the same window with nothing between them to
+	-- explain the difference.
+	missingBar:SetPoint("TOPLEFT", missingBox, "TOPRIGHT", 6, 0)
+	missingBar:SetPoint("BOTTOMLEFT", missingBox, "BOTTOMRIGHT", 6, 0)
 	MM.Theme.Register(missingBar, "scrollbar", false)
 
 	local mview = CreateScrollBoxListLinearView()

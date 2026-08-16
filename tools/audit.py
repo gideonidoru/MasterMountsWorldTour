@@ -365,6 +365,38 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def scrollbar_gaps_agree():
+    """Every scroll bar sits the same distance from its box.
+
+    Spotted in a screenshot, not by any gate: the Missing Mounts bar was
+    anchored 4 from its box while the Farm Plan bar beside it and the
+    Collection bar on the next tab were both 6. Two pixels is nothing in
+    isolation and obvious when two bars sit side by side in one window.
+
+    Offsets are compared rather than fixed to a constant, so the house
+    standard can change -- it just has to change everywhere at once.
+    """
+    bad = []
+    found = []
+    for f in sorted(glob.glob("UI/*.lua") + glob.glob("*.lua")):
+        if f.startswith(("Libs/", "tools/")):
+            continue
+        for i, line in enumerate(open(f, encoding="utf-8", errors="replace"), 1):
+            if line.lstrip().startswith("--"):
+                continue
+            m = re.search(r'\w*[Bb]ar:SetPoint\("(?:TOP|BOTTOM)LEFT",\s*\w+,\s*'
+                          r'"(?:TOP|BOTTOM)RIGHT",\s*(-?\d+)', line)
+            if m:
+                found.append((f, i, int(m.group(1))))
+    if not found:
+        return bad
+    gaps = collections.Counter(g for _f, _i, g in found)
+    standard = gaps.most_common(1)[0][0]
+    for f, i, g in found:
+        if g != standard:
+            bad.append((f, i, g, standard))
+    return bad
+
 def requirement_stated_not_modelled():
     """A requirement written in prose, with no condition that models it.
 
@@ -971,6 +1003,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    gaps = scrollbar_gaps_agree()
+    print(f"a scrollbar out of line   : {len(gaps)}")
+    for f, ig, got, want in gaps:
+        print(f"   {f}:{ig}  sits {got} from its box; every other bar sits {want}")
     gated = requirement_stated_not_modelled()
     print(f"a gate stated, not modelled: {len(gated)}")
     for f, ig, who, phrase in gated:
@@ -997,7 +1033,7 @@ def main():
         print(f"   {f}:{i7}  defers SetAttribute in combat and never re-applies it "
               f"-- flush on PLAYER_REGEN_ENABLED")
     return 1 if (bad or fwd or gone or early or btr or retval or secret or guids
-                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared) else 0
+                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps) else 0
 
 if __name__ == "__main__":
     sys.exit(main())

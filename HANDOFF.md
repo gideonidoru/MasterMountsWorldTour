@@ -133,7 +133,7 @@ around, and a reload does not invalidate it the way a counter would.
   real ids read from the client, DB2 or Wowhead -- never invented. Until then
   the audit exits non-zero, which is the gate doing its job. If a release has to
   go out first, say so deliberately; do not delete a rule to make a number green.
-- Gates before any release: `python3 tools/audit.py` (**19 rules**), `luac -p` on every
+- Gates before any release: `python3 tools/audit.py` (**20 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
