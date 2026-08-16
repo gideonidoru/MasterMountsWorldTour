@@ -61,8 +61,17 @@ Player reports, and a zone that had been quietly costing more than it should.
   Crusade city rather than the one next door. Place names now resolve near the
   map that names them.
 
-  K'aresh stays off the network, correctly: its portal names Dornogal, and
-  Dornogal publishes no portal back.
+- **A zone reached under a second map id is no longer called unreachable.**
+  Every K'aresh travel node is recorded on Tazavesh, which UiMap.db2 gives as a
+  CHILD of K'aresh -- so the gap report asked for a portal from Dornogal that
+  has shipped since the first release, while the router was already travelling
+  through it. A node inside a sub-zone is inside the zone that holds it. The
+  same reading recovered Vashj'ir and Ashran; the off-network list fell from
+  eight zones to five, and the five that remain genuinely have none.
+
+  The reverse is refused. A node somewhere on a continent says nothing about
+  whether one place inside it can be reached, and accepting that would mark
+  most of the world reachable.
 
 ### Faster
 
