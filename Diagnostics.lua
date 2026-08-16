@@ -768,6 +768,42 @@ MM:On("MM_GAPS_DEBUG", function()
 			MM:Print("   The map has not been read yet this session -- that runs a")
 			MM:Print("   few seconds after login. /mm portals reads it now.")
 		end
+		-- WHAT THE CLIENT CALLS THE MAPS AROUND AN UNREACHED ZONE.
+		--
+		-- K'aresh is reported here with nineteen goals while eleven travel
+		-- nodes named Tazavesh, Shadow Point and The Oasis sit on a DIFFERENT
+		-- map id, and the router plainly travels through them. Rather than
+		-- guess at the relation between the two ids -- which has been wrong
+		-- twice already -- this prints what the client says about the zone and
+		-- its immediate family, so the answer comes from the client.
+		local J = MM.Journey
+		for _, z in ipairs(offList) do
+			local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(z.mapID)
+			local parent = info and info.parentMapID
+			local kids = {}
+			if C_Map and C_Map.GetMapChildrenInfo then
+				local ok, list = pcall(C_Map.GetMapChildrenInfo, z.mapID)
+				if ok and type(list) == "table" then
+					for _, kid in ipairs(list) do
+						if kid.mapID and J and J.ZoneOnNetwork
+							and J.ZoneOnNetwork(kid.mapID) then
+							kids[#kids + 1] = ("%s (%d)")
+								:format(kid.name or "?", kid.mapID)
+						end
+					end
+				end
+			end
+			local parentOnNet = parent and parent > 0 and J and J.ZoneOnNetwork
+				and J.ZoneOnNetwork(parent)
+			if #kids > 0 or parentOnNet then
+				MM:Print("      |cff9a9a9a%s (%d, type %s): parent %s%s%s|r",
+					z.name or "?", z.mapID, tostring(info and info.mapType),
+					tostring(parent),
+					parentOnNet and " IS on the network" or "",
+					#kids > 0 and (", child(ren) on the network: "
+						.. table.concat(kids, ", ")) or "")
+			end
+		end
 		MM:Print("   WHAT IS LEFT -> a zone reached by something the map does not")
 		MM:Print("   publish as a point of interest. Stand at each end and note")
 		MM:Print("   the coordinates; a zone joins the graph the way Harandar did,")

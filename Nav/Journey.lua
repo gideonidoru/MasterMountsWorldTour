@@ -51,47 +51,59 @@ local function nameOf(mapID)
 	return info and info.name
 end
 
+-- Built once, by whichever of the two readers below is asked first. Neither
+-- calls the other to do it: that was tried, and ZoneOnNetwork asking
+-- NetworkTwin to prime a cache while NetworkTwin asked ZoneOnNetwork the same
+-- thing is a stack overflow the offline harness caught on the first run.
+local function prime()
+	if onNetwork then return end
+	onNetwork, networkNames = {}, {}
+	for _, node in pairs(MM.TravelNodes or {}) do
+		if node.mapID then onNetwork[node.mapID] = true end
+	end
+	-- What each of those maps is CALLED, once, so the same place under a
+	-- second id can be recognised without asking the client per query.
+	for id in pairs(onNetwork) do
+		local name = nameOf(id)
+		if name then
+			networkNames[name] = networkNames[name] or {}
+			local list = networkNames[name]
+			list[#list + 1] = id
+		end
+	end
+end
+
 function J.ZoneOnNetwork(mapID)
 	if not mapID then return false end
-	if not onNetwork then
-		onNetwork, networkNames = {}, {}
-		for _, node in pairs(MM.TravelNodes or {}) do
-			if node.mapID then onNetwork[node.mapID] = true end
-		end
-		-- What each of those maps is CALLED, once, so the same place under a
-		-- second id can be recognised without asking the client per query.
-		for id in pairs(onNetwork) do
-			local name = nameOf(id)
-			if name then
-				networkNames[name] = networkNames[name] or {}
-				local list = networkNames[name]
-				list[#list + 1] = id
-			end
-		end
-	end
+	prime()
 	if onNetwork[mapID] then return true end
+	return J.NetworkTwin(mapID) ~= nil
+end
 
+-- WHICH map id carries the nodes for this place, when it is not this one.
+--
+-- ONE ANSWER, not two. This was written as a second walk over the same list
+-- that returned twins[1] -- the first map sharing the name, rather than the one
+-- that actually passed the continent test. Broken Isles Dalaran matched Broken
+-- Isles Dalaran and was reported as Northrend's, which reads as the addon
+-- confusing two famously different places when it had told them apart
+-- correctly. The test and the answer now come from the same loop.
+function J.NetworkTwin(mapID)
+	if not mapID then return nil end
+	prime()
+	if onNetwork[mapID] then return nil end
 	local name = nameOf(mapID)
 	local twins = name and networkNames[name]
-	if not twins then return false end
+	if not twins then return nil end
 	local U = MM.Util
 	for _, id in ipairs(twins) do
-		if not (U and U.IsSameContinent) then return true end
-		if U.IsSameContinent(id, mapID) then return true end
+		if not (U and U.IsSameContinent) then return id end
+		if U.IsSameContinent(id, mapID) then return id end
 	end
-	return false
+	return nil
 end
 
--- Which map id actually carries the nodes for this place, when it is not the
--- one asked about. Reported rather than hidden: a zone reachable only under a
--- second id is worth seeing, because it means two halves of this addon are
--- naming the same place differently.
-function J.NetworkTwin(mapID)
-	if not mapID or not J.ZoneOnNetwork(mapID) then return nil end
-	if onNetwork[mapID] then return nil end
-	local twins = networkNames[nameOf(mapID) or ""]
-	return twins and twins[1] or nil
-end
+
 
 local graph, byZone      -- node name -> { mapID, x, y, zone }, and zone -> {names}
 local edges              -- from -> { to -> {secs, mode} }
