@@ -1435,10 +1435,22 @@ end
 local function skinTint(texture, spec)
 	if not (texture and spec) then return end
 	local color = T.Color(spec.role)
+	-- NO ALPHA MEANS THE COLOUR'S OWN, and that matters because several palette
+	-- entries carry their intensity in the fourth component rather than in the
+	-- hue. `row` is the clearest case: modern states a brown at 0.20, Blizzard
+	-- and ElvUI state WHITE at 0.03 and 0.02, because on those themes a row
+	-- band is a barely-there lightening rather than a tint.
+	--
+	-- Passing a fixed alpha throws that away and cannot be right for all three
+	-- at once. A caller that asked for 0.55 turned Blizzard's white-at-3% into
+	-- white at 55% -- opaque grey slabs across the plan, reported from play.
+	-- An explicit alpha still wins; omitting one now means "as the theme
+	-- intends", which is the only thing that travels between palettes.
+	local alpha = spec.alpha or color[4] or 1
 	if spec.vertex and texture.SetVertexColor then
-		texture:SetVertexColor(color[1], color[2], color[3], spec.alpha or 1)
+		texture:SetVertexColor(color[1], color[2], color[3], alpha)
 	else
-		texture:SetColorTexture(color[1], color[2], color[3], spec.alpha or 1)
+		texture:SetColorTexture(color[1], color[2], color[3], alpha)
 	end
 	texture:SetAlpha(1)
 end

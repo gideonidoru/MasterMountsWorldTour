@@ -297,7 +297,11 @@ local function initPlanRow(row, data)
 		row.band = row:CreateTexture(nil, "BACKGROUND", nil, 2)
 		row.band:SetPoint("TOPLEFT", 1, 0)
 		row.band:SetPoint("BOTTOMRIGHT", -1, 0)
-		MM.Theme.RegisterTint(row.band, "row", 0.55)
+		-- No alpha: the `row` colour states its own in every palette, and those
+		-- three numbers are not interchangeable -- a brown at 0.20 on modern, a
+		-- white at 0.03 on Blizzard, a white at 0.02 on ElvUI. Naming one here
+		-- would be picking a theme.
+		MM.Theme.RegisterTint(row.band, "row")
 
 		-- gold bar marking the active route goal
 		row.cur = row:CreateTexture(nil, "ARTWORK")
