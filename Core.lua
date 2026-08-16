@@ -1020,12 +1020,15 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Fire("MM_STUBS_EXPORT")
 	elseif input == "export" then
 		MM.IDs.Export()
+	elseif input:match("^lookup ") then
+		MM.IDs.Lookup(input:match("^lookup (.+)$"))
 	else
 		MM:Print("Commands: /mm show | plan | monitor | compact | route | easiest")
 		MM:Print("          |cff40d860/mm check|r — run every diagnostic and report")
 		MM:Print("          |cff40d860/mm report|r — full copyable log (also Options > Diagnostics)")
 		MM:Print("          |cff40d860/mm fixes|r — is everything this build claims to fix still fixed?")
 		MM:Print("          /mm audit | events | callings | post | travel | bags | gates | assaults | weights | routeinfo | layers | whynot | matrix | zone | zone show | onboard | welcome | onboarding | crafting | known | release | score | sources")
+		MM:Print("          /mm lookup <name> — which index a faction or currency is in, and its id")
 		MM:Print("          /mm contribute [import|clear] — fill the data gaps")
 		MM:Print("          /mm session [20|45|90|180|stop] — a plan that fits the time you have")
 		MM:Print("          /mm ids | resolve | export | stubs | spells | selftest")

@@ -131,12 +131,27 @@ local function resolveInstances(store)
 					local key = name:lower()
 					local rec = store.instances[key] or {}
 					if rec.journalInstanceID and rec.journalInstanceID ~= instanceID then
+						-- RECORDED ONCE PER ID, NOT ONCE PER HARVEST. The first
+						-- version appended unconditionally, and the harvest runs
+						-- again on every /mm resolve and at login, so the export
+						-- showed each pair twice over and would have grown
+						-- without limit.
 						rec.alsoKnown = rec.alsoKnown or {}
-						rec.alsoKnown[#rec.alsoKnown + 1] = {
-							id = rec.journalInstanceID,
-							tier = rec.tier,
-							isRaid = rec.isRaid,
-						}
+						local seen = false
+						for _, k in ipairs(rec.alsoKnown) do
+							if k.id == rec.journalInstanceID then
+								k.tier = k.tier or rec.tier
+								seen = true
+								break
+							end
+						end
+						if not seen then
+							rec.alsoKnown[#rec.alsoKnown + 1] = {
+								id = rec.journalInstanceID,
+								tier = rec.tier,
+								isRaid = rec.isRaid,
+							}
+						end
 					end
 					rec.tier = tier
 					rec.journalInstanceID = instanceID
@@ -748,6 +763,52 @@ end
 -- WTF/Account/<ACCOUNT>/SavedVariables/MasterMountsWorldTour.lua at /reload or
 -- logout -- the file takes the ADDON FOLDER's name, not the variable's.
 ------------------------------------------------------------
+-- WHICH INDEX IS THIS NAME IN, AND HOW IS IT SPELLED?
+--
+-- Fourteen records state a requirement in prose -- "Delver's Journey Rank 5"
+-- and its like -- and model none of it, because modelling it needs to know
+-- whether the client keeps that track as a FACTION with renown ranks or as a
+-- CURRENCY, and exactly how it spells the name. Both indexes are already built
+-- from the client and sit in saved variables; nothing could ask them a
+-- question. Guessing the answer is how a wrong id gets committed.
+--
+-- Substring, case-insensitive, both indexes, capped: the point is to find the
+-- real spelling from a half-remembered one.
+function R.Lookup(needle)
+	needle = tostring(needle or ""):lower()
+	if needle == "" then
+		MM:Print("Usage: /mm lookup <part of a faction or currency name>")
+		return
+	end
+	local store = db()
+	local hits, capped = 0, false
+	for _, kind in ipairs({ "factions", "currencies" }) do
+		local index = store[kind]
+		if not index then
+			MM:Print("  %s index not built yet -- run /mm resolve first.", kind)
+		else
+			local names = {}
+            for name in pairs(index) do
+				if name:lower():find(needle, 1, true) then names[#names + 1] = name end
+			end
+			table.sort(names)
+			for i, name in ipairs(names) do
+				if i > 12 then capped = true break end
+				hits = hits + 1
+				MM:Print("  |cffffd24d%s|r  %s = %s",
+					kind == "factions" and "FACTION " or "CURRENCY",
+					name, tostring(index[name]))
+			end
+		end
+	end
+	if hits == 0 then
+		MM:Print("Nothing in either index matches %q. The client does not know that "
+			.. "name, so a condition using it would never resolve.", needle)
+	elseif capped then
+		MM:Print("  ...more matches than shown; narrow the search.")
+	end
+end
+
 function R.Export()
 	local store = db()
 	local out = {}

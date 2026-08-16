@@ -459,8 +459,16 @@ def instance_name_shared_across_expansions():
     re-used name is not only a routing mistake: clearing one version marks the
     other as locked, and a goal the player can still do disappears.
 
-    Expansion is the discriminator because it is already on every record and
-    is exactly what differs between a dungeon and its remake.
+    Expansion was the first discriminator and it was the wrong one. It reported
+    Zul'Aman, where the Amani War Bear (Burning Crusade) and the Amani Battle
+    Bear (Cataclysm) come from ONE dungeon that the journal lists once -- two
+    mounts added in different expansions, not two dungeons. A rule that cannot
+    tell those apart is noise.
+
+    What actually settles it is `journalInstanceID`, read from a live client.
+    Records that carry distinct ids are pinned and correct; records that carry
+    the SAME id are one dungeon and fine; and only records with no id to tell
+    them apart are still guessing, which is the case worth reporting.
     """
     bad = []
     flat = "Data/Mounts.lua"
@@ -477,12 +485,22 @@ def instance_name_shared_across_expansions():
         nm = re.search(r'name = "([^"]+)"', body)
         if not (inst and exp and nm):
             continue
+        jid = re.search(r'journalInstanceID = (\d+)', body)
         byname[inst.group(1)].add(exp.group(1))
-        holder[inst.group(1)].append((nm.group(1), exp.group(1)))
+        holder[inst.group(1)].append((nm.group(1), exp.group(1),
+                                      jid.group(1) if jid else None))
     for iname, exps in sorted(byname.items()):
-        if len(exps) > 1:
-            who = ", ".join(f"{n} (exp {e})" for n, e in sorted(holder[iname]))
-            bad.append((flat, 0, iname, who))
+        if len(exps) < 2:
+            continue
+        ids = [j for _n, _e, j in holder[iname]]
+        if all(ids) and len(set(ids)) == len(ids):
+            continue          # every record pinned, and pinned differently
+        if all(ids) and len(set(ids)) == 1:
+            continue          # every record pinned to the SAME dungeon
+        who = ", ".join(
+            f"{n} (exp {e}{'' if j is None else ', id ' + j})"
+            for n, e, j in sorted(holder[iname]))
+        bad.append((flat, 0, iname, who))
     return bad
 
 def missing_textures():

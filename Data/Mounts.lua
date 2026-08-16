@@ -2277,6 +2277,7 @@ MM.AddMounts({
 		instance = {
 			name = "Magisters' Terrace",
 			difficulty = "Heroic",
+			journalInstanceID = 249,
 			lockout = "DAILY",
 		},
 		dropRate = 3.0303,
@@ -4318,6 +4319,7 @@ MM.AddMounts({
 		instance = {
 			name = "Zul'Aman",
 			difficulty = "Normal",
+			journalInstanceID = 77,
 			lockout = "NONE",
 		},
 		effort = 5,
@@ -6637,6 +6639,7 @@ MM.AddMounts({
 		instance = {
 			name = "Zul'Aman",
 			difficulty = "Heroic",
+			journalInstanceID = 77,
 			lockout = "DAILY",
 		},
 		dropRate = 100,
@@ -33045,6 +33048,7 @@ MM.AddMounts({
 		instance = {
 			name = "Magisters' Terrace",
 			difficulty = "Mythic/Mythic+",
+			journalInstanceID = 1300,
 			lockout = "DAILY",
 		},
 		altSources = {
