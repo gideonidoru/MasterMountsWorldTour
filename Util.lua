@@ -294,6 +294,60 @@ function U.ResolveMapsByName(name)
 	return nameToMaps[name] or {}
 end
 
+-- The map a PLACE NAME means, resolved near a map we already know.
+--
+-- Two maps can carry the same name a decade apart. "Silvermoon" resolved to
+-- map 110 -- the Burning Crusade city -- when the portal naming it was in
+-- Voidstorm, next door to the Midnight one. Following that answer walked the
+-- scan into the wrong corner of the world, and had 110 published a portal of
+-- its own it would have wired the two together.
+--
+-- Ambiguity is settled by PROXIMITY TO THE ASKER: the portal is in Voidstorm,
+-- so the Silvermoon it means is the one on Voidstorm's continent. Where that
+-- does not separate them, the nearer uiMapID wins -- ids are issued roughly
+-- chronologically, so the map made alongside the asker is the one it means.
+-- That is the same reasoning the expansion bands above already rely on.
+function U.ResolveMapNear(name, nearMapID)
+	if not name or name == "" then return nil end
+	if not nameToMaps then buildMapIndex() end
+
+	local ids = {}
+	for _, id in ipairs(nameToMaps[name] or {}) do ids[#ids + 1] = id end
+	if #ids == 0 then
+		-- A portal names the short form: "Silvermoon" for "Silvermoon City".
+		-- Only when exactly one NAME extends it -- two would be a guess.
+		local want, matched, howMany = name:lower() .. " ", nil, 0
+		for mapName, list in pairs(nameToMaps) do
+			if mapName:lower():sub(1, #want) == want then
+				howMany = howMany + 1
+				matched = list
+			end
+		end
+		if howMany == 1 then
+			for _, id in ipairs(matched) do ids[#ids + 1] = id end
+		end
+	end
+	if #ids == 0 then return nil end
+	if #ids == 1 then return ids[1] end
+	if not nearMapID then return nil end
+
+	local sameContinent, howManyNear = nil, 0
+	for _, id in ipairs(ids) do
+		if U.IsSameContinent(id, nearMapID) then
+			howManyNear = howManyNear + 1
+			sameContinent = id
+		end
+	end
+	if howManyNear == 1 then return sameContinent end
+
+	local best, bestGap
+	for _, id in ipairs(ids) do
+		local gap = math.abs(id - nearMapID)
+		if not bestGap or gap < bestGap then best, bestGap = id, gap end
+	end
+	return best
+end
+
 -- A map whose name STARTS with this one, when nothing is named it exactly.
 --
 -- Portal points of interest use the short form of a place: Voidstorm's reads

@@ -112,7 +112,10 @@ function PL.Pair(pois, resolve, parentOf)
 			if dest then
 				local entry = {
 					mapID = poi.mapID, x = x, y = y,
-					dest = dest, destMap = resolve(dest), method = method,
+					-- RESOLVED NEAR THE MAP THAT NAMES IT. Two maps can share
+					-- a name a decade apart, and the one a portal means is the
+					-- one beside it.
+					dest = dest, destMap = resolve(dest, poi.mapID), method = method,
 				}
 				parsed[#parsed + 1] = entry
 				byMap[poi.mapID] = byMap[poi.mapID] or {}
@@ -141,7 +144,24 @@ function PL.Pair(pois, resolve, parentOf)
 				-- nothing to be ambiguous about: the only portal in a zone
 				-- this portal points into IS the way back. With two or more,
 				-- picking one would be a guess, so nothing is emitted.
-				if not back and #candidates == 1 then back = candidates[1] end
+					if not back and #candidates == 1 then
+						-- A LONE PORTAL IS THE WAY BACK ONLY IF IT DOES NOT
+						-- SAY OTHERWISE.
+						--
+						-- One naming somewhere unrelated is telling us it goes
+						-- there, and treating it as the return leg would invent
+						-- a portal between two places that are not connected.
+						-- This nearly happened: "Silvermoon" read from Voidstorm
+						-- resolved to the Burning Crusade city, and had that map
+						-- published a portal of its own the two would have been
+						-- wired together. A zone left off the network is merely
+						-- priced pessimistically; a zone wired to the wrong one
+						-- sends somebody through a door that is not there.
+						local only = candidates[1]
+						if not only.destMap or related(only.destMap, out.mapID) then
+							back = only
+						end
+					end
 			end
 			if back then
 					-- ONE LINK PER UNORDERED PAIR OF ENDPOINTS.
@@ -261,8 +281,9 @@ function PL.Scan()
 	-- PREFIX-TOLERANT. A portal names the short form of a place: Voidstorm's
 	-- reads "Portal to Silvermoon" and the map is "Silvermoon City". Exact
 	-- resolution alone left the zone off the network for want of one word.
-	local resolve = function(name)
+	local resolve = function(name, nearMapID)
 		if not U then return nil end
+		if U.ResolveMapNear then return U.ResolveMapNear(name, nearMapID) end
 		if U.ResolveMapByPrefix then return U.ResolveMapByPrefix(name) end
 		return U.ResolveMapByName and U.ResolveMapByName(name) or nil
 	end
@@ -283,6 +304,23 @@ function PL.Scan()
 
 	local candidates = candidateMaps()
 	for mapID in pairs(candidates) do ask(mapID) end
+
+	-- EVERY MAP OUR OWN RECORDS NAME, TOO.
+	--
+	-- The reciprocal end lives wherever it lives, and finding it by following
+	-- the unjoined zone's own portal is only as good as that portal's name
+	-- resolving. It did not: Voidstorm's read "Silvermoon", which landed on a
+	-- city of the same name from a decade earlier, and Eversong Woods -- which
+	-- publishes the portal pointing straight back at Voidstorm -- was never
+	-- asked.
+	--
+	-- The zones this addon already catalogues are a bounded, known set, and
+	-- they are exactly the places a mount-hunting route travels between. Asking
+	-- them costs one pass and does not depend on a name resolving at all.
+	for _, rec in pairs(MM.DBByName or {}) do
+		local z = rec.zone
+		if z and z.mapID then ask(z.mapID) end
+	end
 
 	-- SECOND PASS: THE MAP THE PORTAL NAMES, AND THE MAPS AROUND IT.
 	--
@@ -324,7 +362,7 @@ function PL.Scan()
 	end
 	for _, poi in ipairs(pois) do
 		local dest = PL.Parse(poi.rawName) or PL.Parse(poi.rawDesc)
-		if dest then reachOut(resolve(dest)) end
+		if dest then reachOut(resolve(dest, poi.mapID)) end
 	end
 	for mapID in pairs(reach) do ask(mapID) end
 
@@ -337,7 +375,7 @@ function PL.Scan()
 		local dest = PL.Parse(poi.rawName)
 		if not dest then dest = PL.Parse(poi.rawDesc) end
 		if dest then
-			local m = resolve(dest)
+			local m = resolve(dest, poi.mapID)
 			local info = m and C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(m)
 			PL.sightings[#PL.sightings + 1] = {
 				onMap = poi.mapID, dest = dest, destMap = m,
