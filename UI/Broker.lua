@@ -23,13 +23,13 @@ local function summaryTooltip(tt)
 	local muted = palette.muted or { 0.65, 0.65, 0.68 }
 	local info = palette.info or accent
 	tt:AddLine("Master Mounts", accent[1], accent[2], accent[3])
-	local c, t = MM.Scanner.collectedCount, MM.Scanner.totalCount
-	t:AddDoubleLine("Collected", ("%d / %d (%d%%)"):format(c, t,
-		t > 0 and (c * 100 / t) or 0), muted[1], muted[2], muted[3],
+	local collected, total = MM.Scanner.collectedCount, MM.Scanner.totalCount
+	tt:AddDoubleLine("Collected", ("%d / %d (%d%%)"):format(collected, total,
+		total > 0 and (collected * 100 / total) or 0), muted[1], muted[2], muted[3],
 		text[1], text[2], text[3])
 
 	local plan = MM.Planner:GetPlan()
-	t:AddDoubleLine("Farm plan", ("%d goals"):format(#plan),
+	tt:AddDoubleLine("Farm plan", ("%d goals"):format(#plan),
 		muted[1], muted[2], muted[3], text[1], text[2], text[3])
 
 	local cur = MM.Router:Current()

@@ -704,6 +704,7 @@ function flatSkin(frame, kind, c)
 			end
 			local active = frame.IsEnabled and not frame:IsEnabled()
 			frame.mmFlatTabIndicator:SetColorTexture(c.accent[1], c.accent[2], c.accent[3], 0.92)
+			frame.mmFlatTabIndicator:SetAlpha(1)
 			frame.mmFlatTabIndicator:SetShown(active and true or false)
 			if active and frame.mmBackground then
 				frame.mmBackground:SetColorTexture(c.accent[1] * 0.20,
@@ -742,15 +743,34 @@ function flatSkin(frame, kind, c)
 			box:SetPoint("CENTER")
 			box.mmNoSkin = true
 			frame.mmFlatCheckboxBox = box
+			local tick = box:CreateTexture(nil, "OVERLAY")
+			tick:SetSize(14, 14)
+			tick:SetPoint("CENTER")
+			tick:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+			frame.mmFlatCheck = tick
 		end
 		flatBackground(frame.mmFlatCheckboxBox, { 0.10, 0.10, 0.10, 0.98 })
 		flatBorder(frame.mmFlatCheckboxBox, 0, 0, 0, 0.82)
 		frame.mmFlatCheckboxBox:SetAlpha(1)
-		-- keep the tick, tint it to the accent so state is still obvious
+		-- A dedicated 14px tick keeps the mark proportional to the 18px chassis;
+		-- native checkbox ticks vary by client and can fill the whole 24px target.
 		local checked = frame.GetCheckedTexture and frame:GetCheckedTexture()
 		if checked then
 			modernTexture(frame, checked, checked:GetTexture())
-			checked:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
+			checked:SetAlpha(0)
+		end
+		frame.mmFlatCheck:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
+		frame.mmFlatCheck:SetShown(frame:GetChecked() and true or false)
+		if not frame.mmFlatCheckboxHooks then
+			frame.mmFlatCheckboxHooks = true
+			local function update(self)
+				if T.Active() == "elvui" and self.mmFlatCheck then
+					self.mmFlatCheck:SetShown(self:GetChecked() and true or false)
+				end
+			end
+			frame:HookScript("OnClick", update)
+			frame:HookScript("OnShow", update)
+			if hooksecurefunc then hooksecurefunc(frame, "SetChecked", update) end
 		end
 		return
 	end
@@ -862,6 +882,7 @@ local function modernControlState(frame, kind, state)
 
 	local disabled = frame.IsEnabled and not frame:IsEnabled()
 	local activeTab = kind == "tab" and disabled
+	local danger = kind == "button" and frame.mmIntent == "danger" and not disabled
 	local path
 	if kind == "row" then
 		path = MODERN_ASSET.row
@@ -870,6 +891,15 @@ local function modernControlState(frame, kind, state)
 			or (state == "hover" and MODERN_ASSET.tabHover or MODERN_ASSET.tab)
 	else
 		modernButtonParts(frame, disabled and "disabled" or state)
+		if danger and frame.mmModernButtonParts then
+			for _, part in pairs(frame.mmModernButtonParts) do
+				part:SetVertexColor(0.76, 0.42, 0.38, 0.88)
+			end
+		elseif frame.mmModernButtonParts then
+			for _, part in pairs(frame.mmModernButtonParts) do
+				part:SetVertexColor(1, 1, 1, 1)
+			end
+		end
 	end
 	if path then
 		modernBackground(frame, path)
@@ -893,7 +923,8 @@ local function modernControlState(frame, kind, state)
 	local c = PALETTE.modern
 	local fs = controlFont(frame)
 	if fs then
-		local tc = activeTab and c.accent or (disabled and c.muted or c.text)
+		local tc = activeTab and c.accent or danger and c.danger
+			or (disabled and c.muted or c.text)
 		fs:SetTextColor(tc[1], tc[2], tc[3])
 	end
 end
@@ -1242,8 +1273,8 @@ function T.ExtendCheckboxHitTarget(check, label, padding)
 		local width = label.GetStringWidth and label:GetStringWidth() or 0
 		check:SetHitRectInsets(0, -math.ceil(width + (padding or 8)), 0, 0)
 	end
+	check.mmRefreshHitTarget = refresh
 	refresh()
-	if label.HookScript then label:HookScript("OnSizeChanged", refresh) end
 	return check
 end
 

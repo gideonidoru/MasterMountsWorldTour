@@ -974,7 +974,7 @@ local function buildTravel()
 						if it.dungeon and not it.off then anyOn = true break end
 					end
 					group.turnOff = anyOn
-					MM.Theme.SetIntent(group, anyOn and "danger" or "primary")
+					MM.Theme.SetIntent(group, "neutral")
 					group:SetText(anyOn and "Turn off all dungeon teleports"
 						or "Turn on all dungeon teleports")
 					group:ClearAllPoints()
@@ -991,6 +991,7 @@ local function buildTravel()
 			row.label:SetText(item.place and item.place ~= ""
 				and ("%s  |cff9d9d9d-> %s|r"):format(item.name, item.place)
 				or item.name)
+			if row.mmRefreshHitTarget then row.mmRefreshHitTarget() end
 			row.mmKey = item.key
 			row:SetChecked(not item.off)
 			row:Show()

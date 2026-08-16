@@ -595,7 +595,7 @@ local function buildMain()
 	local function fitToScreen()
 		local pw, ph = UIParent:GetWidth() or 1000, UIParent:GetHeight() or 640
 		local fit = math.min(1, (pw * 0.94) / 1000, (ph * 0.90) / 640)
-		frame:SetScale(math.max(0.68, fit))
+		frame:SetScale(math.max(0.01, fit))
 	end
 	frame.mmFitToScreen = fitToScreen
 	fitToScreen()

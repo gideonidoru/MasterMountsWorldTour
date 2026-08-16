@@ -108,6 +108,7 @@ local CARD_PAD, CARD_GAP_Y = 11, 8
 
 local function makeCard(parent, group, value, title, desc, y, selected)
 	local card = CreateFrame("Button", nil, parent, "BackdropTemplate")
+	card.mmNoSkin = true -- selected/hover state is fully authored by styleCard
 	card:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
 	card:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, y)
 	card:SetHeight(44)
