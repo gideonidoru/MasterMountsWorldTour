@@ -1949,9 +1949,36 @@ local function runLogic()
 		-- what is being asserted, so clearing it would be the check moving the
 		-- very thing it is about to say has not moved.
 		local real = R.Measure
+		-- THE ROUTER ANNOUNCES A FAILED BUILD IN CHAT, which is right for a
+		-- player and wrong for a check that breaks the build on purpose: the
+		-- report printed a red "route build failed" at somebody who had done
+		-- nothing but ask for a report.
+		--
+		-- Captured rather than silenced. The announcement is still proved to
+		-- happen -- asserted below -- it just is not shown to a reader who did
+		-- not cause it. Silencing it outright would trade one wrong behaviour
+		-- for a blind spot.
+		local realPrint, said = MM.Print, {}
+		-- Packed before the pcall: 5.1 will not let a nested closure reach the
+		-- enclosing function's `...`, and the format has to be guarded because
+		-- a caller's arguments are not this check's to vouch for.
+		MM.Print = function(_, fmt, ...)
+			local n, args = select("#", ...), { ... }
+			local okFmt, line = pcall(function()
+				if n > 0 then return tostring(fmt):format(unpack(args, 1, n)) end
+				return tostring(fmt)
+			end)
+			said[#said + 1] = okFmt and line or tostring(fmt)
+		end
 		R.Measure = function() error("self-test: deliberate late build failure") end
 		local ok = pcall(function() return R:BuildSync(true) end)
 		R.Measure = real
+		MM.Print = realPrint
+
+		local announced = false
+		for _, line in ipairs(said) do
+			if line:find("route build failed", 1, true) then announced = true end
+		end
 
 		local after = fingerprint()
 		local hereAfter = R.hereDebug
@@ -1971,6 +1998,12 @@ local function runLogic()
 		end
 		if chartAfter ~= chartBefore then
 			return false, "a failed build left a chart behind in saved variables"
+		end
+		-- Asserted here, after the repair above, so a missing announcement is
+		-- reported without leaving the router in the state that was broken on
+		-- purpose. Every return past this point has already put it back.
+		if not announced then
+			return false, "a failed build did not announce itself"
 		end
 		return true, ok and "the failure was contained and nothing moved"
 			or "the build reported failure and nothing moved"
