@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.2.2 — unreleased
+
 ## 1.2.1 — 2026-08-16
 
 Mostly player reports, and the things they turned out to be hiding. Several of

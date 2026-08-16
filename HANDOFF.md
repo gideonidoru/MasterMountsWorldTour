@@ -14,12 +14,12 @@
   **Do that check rather than trusting a timestamp.** It is the first release
   whose zip contains `LICENSE`; every 1.1.x download was a distribution without
   the notice the MIT licence requires be included in all copies.
-- **Working version is 1.2.1, unreleased and untagged.** So far it carries the
-  hardening pass that followed 1.2.0: the id export and the saved report no
-  longer sit unbounded in saved variables (~140 KB per account, shed once on
-  upgrade), the boss-kill debounce table is swept, and a seventeenth audit rule
-  checks that a referenced texture is actually on disk -- including the sixteen
-  button textures named only by interpolation, which no literal scan could see.
+- **Working version is 1.2.2, unreleased and untagged.** Nothing in it yet.
+  1.2.1 shipped to CurseForge on 2026-08-16 and is tagged `v1.2.1`; it was
+  mostly player reports and what they turned out to be hiding -- a finished
+  Timewalking week reading as a live one, the close button on ElvUI, Blizzard
+  and ElvUI reaching Modern's coverage, four wrong currency ids, and the route
+  no longer leading with work that cannot be finished by turning up.
 - **Why 1.2.0 is a minor rather than a patch:** attempt counts start moving for
   mounts that never counted, weight
   sliders that did nothing now re-chart, session totals shift onto the router's
