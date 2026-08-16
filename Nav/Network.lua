@@ -144,6 +144,14 @@ local function build()
 	NW.autoEdges = added
 end
 
+-- Forget the memoised graph. The node and edge tables are read once, on first
+-- use; a portal learned from the map afterwards would otherwise not exist as
+-- far as routing is concerned until the next login.
+function NW.Invalidate()
+	built = false
+	byMap, graph = nil, nil
+end
+
 -- Nodes usable by this character. A faction-locked portal is not a shortcut.
 local function usable(n)
 	if not n.faction then return true end

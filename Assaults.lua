@@ -121,6 +121,15 @@ local function poiNames(mapID)
 				-- Hunt MOVES BETWEEN ZONES and sits at a point inside one, so
 				-- the answer has to carry where as well as whether.
 				out[#out + 1] = { name = text, source = "poi", poiID = poiID,
+					-- THE TWO FIELDS SEPARATELY, as well as joined.
+					-- `text` above concatenates name and description so an
+					-- assault whose wording sits in either one still matches.
+					-- A portal carries its destination in ONE of them --
+					-- Eversong's portal room reads name "Portal Room",
+					-- description "Portal to Orgrimmar" -- so a reader
+					-- looking for a destination needs them unglued.
+					rawName = MM.Util.ReadableString(info.name),
+					rawDesc = MM.Util.ReadableString(info.description),
 					timeString = info.timeString, position = info.position,
 					-- WHERE THE REWARD LINE ACTUALLY IS. AreaPOIInfo carries no
 					-- reward field at all -- checked against the client's own
@@ -135,6 +144,10 @@ local function poiNames(mapID)
 	end
 	return out
 end
+
+-- Points of interest on any map, for readers other than the assault gate.
+-- The portal learner uses this to read both ends of a portal from its POIs.
+A.PoisForMap = poiNames
 
 local function questEntries(mapID)
 	if not (C_TaskQuest and C_TaskQuest.GetQuestsForPlayerByMapID) then return end

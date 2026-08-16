@@ -60,6 +60,7 @@ Nav\Taxi.lua
 Nav\Network.lua
 Nav\BorderData.lua
 Nav\Journey.lua
+Nav\PortalLearn.lua
 Nav\Teleports.lua
 Nav\Travel.lua
 Nav\TomTomBridge.lua

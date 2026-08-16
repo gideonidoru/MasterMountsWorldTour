@@ -4215,6 +4215,54 @@ local function runLogic()
 			goals, measured / total * 100, assumed / total * 100)
 	end)
 
+	check("A zone with no travel node learns its portal from the map", function()
+		local PL = MM.PortalLearn
+		if not PL then return false, "the portal learner is not loaded" end
+		-- The PARSER is what can rot: Blizzard rewords a point of interest and
+		-- the reader silently stops matching. Exercised against the exact
+		-- strings this client was observed to publish.
+		local dest, method = PL.Parse("Portal to Voidstorm")
+		if dest ~= "Voidstorm" or method ~= "portal" then
+			return false, ("a portal POI no longer parses: %s"):format(tostring(dest))
+		end
+		if PL.Parse("Portal Room") then
+			return false, "a portal naming no destination is being read as one"
+		end
+		local zep = select(2, PL.Parse("Zeppelin to Orgrimmar"))
+		if zep ~= "zeppelin" then
+			return false, "a zeppelin is being priced as a portal"
+		end
+		-- Both ends, paired, with no client call involved.
+		local pois = {
+			{ mapID = 2395, rawName = "Portal to Voidstorm",
+				position = { x = 0.42, y = 0.30 } },
+			{ mapID = 2405, rawName = "Portal to Silvermoon",
+				position = { x = 0.369, y = 0.59 } },
+		}
+		local links = PL.Pair(pois, function(n)
+			return n == "Voidstorm" and 2405 or nil
+		end, function() return nil end)
+		if #links ~= 1 then
+			return false, ("two published ends did not pair: %d link(s)"):format(#links)
+		end
+		local learned = PL.Count and PL.Count() or 0
+		local scanned = PL.scanned
+		if not scanned then
+			return "degraded", "the map has not been scanned yet this session"
+		end
+		if learned == 0 then
+			return true, ("%d map(s) read, no unjoined zone published a portal pair")
+				:format(PL.mapsAsked or 0)
+		end
+		local names = {}
+		for _, l in ipairs(PL.learned or {}) do
+			local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(l.toMap)
+			names[#names + 1] = (info and info.name) or ("map " .. tostring(l.toMap))
+		end
+		return true, ("%d portal(s) learned from %d map(s): %s")
+			:format(learned, PL.mapsAsked or 0, table.concat(names, ", "))
+	end)
+
 	check("Travel data is loaded and routable", function()
 		-- Two datasets now decide most of the route's cost, and both fail the
 		-- same silent way: a file left out of the .toc loads nothing, errors

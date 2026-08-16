@@ -706,9 +706,35 @@ MM:On("MM_GAPS_DEBUG", function()
 		MM:Print("   The planner can only reach these by teleporting out and back,")
 		MM:Print("   so travel to everything in them is priced the same and stops")
 		MM:Print("   there cannot be grouped by geography.")
-		MM:Print("   NEEDS YOU -> stand at each end of a portal into the zone and")
-		MM:Print("   note the coordinates. A zone joins the graph the way Harandar")
-		MM:Print("   did: an endpoint each side, and one portal edge between them.")
+		-- WHAT WAS TRIED AUTOMATICALLY, BEFORE ASKING ANYBODY FOR ANYTHING.
+		-- A zone's portals are published on its map as points of interest,
+		-- both ends, with positions. Those are read and paired without a
+		-- player going anywhere; only what that cannot reach is asked for.
+		local PL = MM.PortalLearn
+		if PL and PL.scanned then
+			MM:Print("   Read from the map automatically: %d portal(s) across %d map(s).",
+				PL.Count and PL.Count() or 0, PL.mapsAsked or 0)
+			for _, l in ipairs(PL.learned or {}) do
+				local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(l.toMap)
+				local from = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(l.fromMap)
+				MM:Print("      %s (%.1f, %.1f) <-> %s (%.1f, %.1f)",
+					(from and from.name) or ("map " .. l.fromMap),
+					l.fromX * 100, l.fromY * 100,
+					(info and info.name) or ("map " .. l.toMap),
+					l.toX * 100, l.toY * 100)
+			end
+			if (PL.Count and PL.Count() or 0) == 0 then
+				MM:Print("      Nothing paired: these zones publish no portal POI,")
+				MM:Print("      or only one end of one, which is not an edge.")
+			end
+		elseif PL then
+			MM:Print("   The map has not been read yet this session -- that runs a")
+			MM:Print("   few seconds after login. /mm portals reads it now.")
+		end
+		MM:Print("   WHAT IS LEFT -> a zone reached by something the map does not")
+		MM:Print("   publish as a point of interest. Stand at each end and note")
+		MM:Print("   the coordinates; a zone joins the graph the way Harandar did,")
+		MM:Print("   an endpoint each side and one portal edge between them.")
 		if instanceMaps > 0 then
 			MM:Print("   (%d dungeon or raid map(s) left out: those are entered by",
 				instanceMaps)

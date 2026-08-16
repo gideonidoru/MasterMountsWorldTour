@@ -305,6 +305,14 @@ local function fold(s)
 	return h
 end
 
+-- Forget the memoised fingerprint. It is cached against the teleport snapshot's
+-- identity, which does not change when a portal is learned from the map -- so
+-- without this the signature would keep describing the world as it was before
+-- the zone joined the graph.
+function MM.InvalidateTravelFingerprint()
+	travelPrint, travelPrintFrom = nil, nil
+end
+
 function MM.TravelFingerprint()
 	local TP = MM.Teleports
 	local options = (TP and TP.Options) and TP.Options() or nil
@@ -342,6 +350,11 @@ function MM.TravelFingerprint()
 	for _ in pairs(MM.db and MM.db.taxi or {}) do maps = maps + 1 end
 	for _ in pairs(MM.db and MM.db.taxiLearned or {}) do legs = legs + 1 end
 	parts[#parts + 1] = ("%d/%d"):format(maps, legs)
+	-- Portals learned from the map, by count, for the same reason. A zone that
+	-- has just joined the travel graph changes what every stop in it costs, so
+	-- an order charted before it joined cannot be restored over it.
+	parts[#parts + 1] = ("p%d"):format(
+		(MM.PortalLearn and MM.PortalLearn.Count and MM.PortalLearn.Count()) or 0)
 	travelPrint = tostring(fold(table.concat(parts, ";")))
 	travelPrintFrom = options
 	return travelPrint
@@ -1014,6 +1027,30 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		else
 			MM:Fire("MM_GAPS_DEBUG")
 		end
+	elseif input == "portals" then
+		-- Reads every unjoined zone's map for portals and joins what it can.
+		-- Runs on its own a few seconds after login; this is for running it
+		-- again after stepping into a zone that had not been catalogued.
+		local PL = MM.PortalLearn
+		if not PL then
+			MM:Print("The portal learner is not loaded.")
+		else
+			local added = PL.Scan() or 0
+			MM:Print("Read %d map(s); %d portal(s) learned, %d known in total.",
+				PL.mapsAsked or 0, added, PL.Count())
+			for _, l in ipairs(PL.learned or {}) do
+				local a = C_Map.GetMapInfo(l.fromMap)
+				local b = C_Map.GetMapInfo(l.toMap)
+				MM:Print("   %s (%.1f, %.1f) <-> %s (%.1f, %.1f) by %s",
+					(a and a.name) or l.fromMap, l.fromX * 100, l.fromY * 100,
+					(b and b.name) or l.toMap, l.toX * 100, l.toY * 100,
+					l.method or "portal")
+			end
+			if added == 0 and PL.Count() == 0 then
+				MM:Print("   Nothing paired. A zone joins only when BOTH ends are")
+				MM:Print("   published on a map -- one end alone is not an edge.")
+			end
+		end
 	elseif input == "spells" then
 		MM:Fire("MM_SPELLS_EXPORT")
 	elseif input == "stubs" then
@@ -1033,7 +1070,7 @@ SlashCmdList.MASTERMOUNTS = function(input)
 		MM:Print("          |cff40d860/mm check|r — run every diagnostic and report")
 		MM:Print("          |cff40d860/mm report|r — full copyable log (also Options > Diagnostics)")
 		MM:Print("          |cff40d860/mm fixes|r — is everything this build claims to fix still fixed?")
-		MM:Print("          /mm audit | events | callings | post | travel | bags | gates | assaults | weights | routeinfo | layers | whynot | matrix | zone | zone show | onboard | welcome | onboarding | crafting | known | release | score | sources")
+		MM:Print("          /mm audit | events | callings | post | travel | bags | gates | assaults | weights | routeinfo | layers | whynot | matrix | zone | zone show | onboard | welcome | onboarding | crafting | known | release | score | sources | portals")
 		MM:Print("          /mm lookup <name> — which index a faction or currency is in, and its id")
 		MM:Print("          /mm contribute [import|clear] — fill the data gaps")
 		MM:Print("          /mm session [20|45|90|180|stop] — a plan that fits the time you have")
