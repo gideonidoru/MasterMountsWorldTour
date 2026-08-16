@@ -365,6 +365,43 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def one_track_two_ids():
+    """The same named currency track carrying more than one id.
+
+    Renown ids are minted per season, so these get rewritten at every rollover
+    -- and a rewrite that misses a record leaves the database measuring two
+    different seasons for one requirement. "Preyseeker's Journey rank" was
+    written three times across two files; moving it from an earlier season's
+    track to 3514 had to catch all three.
+
+    Names are the anchor because they are what a person reads while editing.
+    """
+    out = []
+    seen = {}
+    for path in sorted(glob.glob("Data/_source/*.lua")):
+        text = open(path, encoding="utf-8", errors="replace").read()
+        for i, line in enumerate(text.split("\n"), 1):
+            if line.lstrip().startswith("--"):
+                continue
+            m = re.search(r'type\s*=\s*"CURRENCY"[^}]*?id\s*=\s*(\d+)[^}]*?name\s*=\s*"([^"]+)"', line)
+            if not m:
+                m = re.search(r'type\s*=\s*"CURRENCY"[^}]*?name\s*=\s*"([^"]+)"[^}]*?id\s*=\s*(\d+)', line)
+                if not m:
+                    continue
+                cid, cname = m.group(2), m.group(1)
+            else:
+                cid, cname = m.group(1), m.group(2)
+            key = cname.strip().lower()
+            seen.setdefault(key, {}).setdefault(cid, []).append((path, i))
+    for name, ids in sorted(seen.items()):
+        if len(ids) > 1:
+            where = []
+            for cid, spots in sorted(ids.items()):
+                f, ln = spots[0]
+                where.append(f"{cid} at {f}:{ln}")
+            out.append((name, ", ".join(where)))
+    return out
+
 def bar_text_takes_window_colour():
     """A label drawn on a status bar registered with a window text role.
 
@@ -1334,6 +1371,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    twoid = one_track_two_ids()
+    print(f"one track, two currency ids: {len(twoid)}")
+    for name, where in twoid:
+        print(f"   \"{name}\" is measured as {where}")
     bartext = bar_text_takes_window_colour()
     print(f"bar text with window colour: {len(bartext)}")
     for f, il, label, owner, role in bartext:

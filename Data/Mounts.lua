@@ -32943,7 +32943,7 @@ MM.AddMounts({
 			{
 				name = "Preyseeker's Journey rank",
 				amount = 5,
-				id = 3387,
+				id = 3514,
 				type = "CURRENCY",
 			},
 			{
@@ -32986,7 +32986,7 @@ MM.AddMounts({
 			{
 				name = "Preyseeker's Journey rank",
 				amount = 10,
-				id = 3387,
+				id = 3514,
 				type = "CURRENCY",
 			},
 			{
@@ -35105,7 +35105,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			{
 				name = "Preyseeker's Journey rank",
 				amount = 10,
-				id = 3387,
+				id = 3514,
 				type = "CURRENCY",
 			},
 			{

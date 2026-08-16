@@ -132,7 +132,7 @@ around, and a reload does not invalidate it the way a counter would.
   `noLocationReason` does for a place. It is a sentence, not a boolean, it is
   listed in `/mm known` so it cannot become a comment that only satisfies a
   checker, and it is NOT a way to silence a gate that could be modelled.
-- Gates before any release: `python3 tools/audit.py` (**27 rules**), `luac -p` on every
+- Gates before any release: `python3 tools/audit.py` (**28 rules**), `luac -p` on every
   file, `tools/rebuild_data.sh` must print **IDENTICAL**. Every rule must read 0
   **except** `file-level forward calls`, which reports exactly one hit inside
   `HandyNotes/Libs/AceAddon-3.0/` — the reference copy in the project folder, which
@@ -191,6 +191,12 @@ around, and a reload does not invalidate it the way a counter would.
   had never begun. Check an id against the CLIENT'S OWN NAME for it (`/mm
   lookup`), never against whether it has data. `/mm report` now lists ids whose
   client name shares no word with ours.
+- **Renown ids are minted per season and go stale on purpose.** Delver's Journey
+  and Preyseeker's Journey both carry a season-scoped track, so a gate written
+  against last season's id passes for anyone who ranked that one up. Revisit
+  every such condition at a season rollover -- the id changing is expected, not
+  a defect. Rule 28 catches a rollover that updated some records and missed
+  others by reporting one named track measured as two different ids.
 
 ## Where things live
 
