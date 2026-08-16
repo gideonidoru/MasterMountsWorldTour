@@ -1057,6 +1057,29 @@ R.StopValue = stopValue
 -- nearest-neighbour, not on chaos.
 function R.NearestChain(steps, fromWorld) return nearestChain(steps, fromWorld) end
 
+-- Sorting on a value that costs something to compute.
+--
+-- table.sort makes O(n log n) comparisons and each comparator here asked for
+-- StopValue TWICE, so a 300-goal plan evaluated the selection objective
+-- thousands of times over -- for a number that does not change while the sort
+-- runs. Priced once per stop, the same sort needs n evaluations instead of
+-- roughly 2n log n.
+--
+-- Deliberately NOT a cache on the stop: values are read once, immediately
+-- before the sort that uses them, and thrown away after. Nothing can go stale
+-- between phases because nothing survives one.
+local function sortByValue(list, tiebreak)
+	local value = {}
+	for i = 1, #list do value[list[i]] = stopValue(list[i]) end
+	table.sort(list, function(a, b)
+		local va, vb = value[a], value[b]
+		if va ~= vb then return va > vb end
+		if tiebreak then return tiebreak(a, b) end
+		return false
+	end)
+	return list
+end
+
 function nearestChain(steps, start)
 	local ordered = {}
 	local pool = { unpack(steps) }
@@ -2292,9 +2315,7 @@ function R.RunBuild(sig)
 	--
 	-- Layer 1 is preference alone: what you asked for, before the world gets a
 	-- vote. No travel, no batching.
-	table.sort(pending, function(a, b)
-		local va, vb = R.StopValue(a), R.StopValue(b)
-		if va ~= vb then return va > vb end
+	sortByValue(pending, function(a, b)
 		return (a.entry and a.entry.name or "") < (b.entry and b.entry.name or "")
 	end)
 	for i, step in ipairs(pending) do step.layerPreference = i end
@@ -2418,9 +2439,7 @@ function R.RunBuild(sig)
 	-- them, which moves things: four mounts behind one raid door beats a single
 	-- better mount somewhere else. This is where "effectiveness" enters.
 	local grouped = groupStops(pending)
-	table.sort(grouped, function(a, b)
-		local va, vb = R.StopValue(a), R.StopValue(b)
-		if va ~= vb then return va > vb end
+	sortByValue(grouped, function(a, b)
 		return (a.layerPreference or 0) < (b.layerPreference or 0)
 	end)
 	for i, stop in ipairs(grouped) do stop.layerGrouped = i end
@@ -2466,7 +2485,7 @@ function R.RunBuild(sig)
 	end
 	-- best payoff first among the free ones: you are already standing here, so
 	-- the only question left is which is worth most
-	table.sort(nearby, function(a, b) return R.StopValue(a) > R.StopValue(b) end)
+	sortByValue(nearby)
 
 	-- Record what the "already here" test actually decided.
 	--
@@ -2521,7 +2540,7 @@ function R.RunBuild(sig)
 	-- thing that would quietly overrule "order rules".
 	local leftovers = opportunistic
 	if not strictOrdering() then
-		table.sort(opportunistic, function(a, b) return R.StopValue(a) > R.StopValue(b) end)
+		sortByValue(opportunistic)
 		leftovers = weaveOpportunistic(built, opportunistic, playerWorld, playerContinent)
 	end
 

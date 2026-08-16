@@ -210,6 +210,14 @@ around, and a reload does not invalidate it the way a counter would.
   today however lucky you are. A tier fast-path was short-circuiting the visit
   measurement for everything at FIELD or below, which is how two Zul'Aman
   treasures reached positions 3 and 5 with 13-day estimates.
+- **The route build's cost was never the travel scan.** Everything assumed it
+  was: the O(n^2) scan is the loudest thing in the file and there is a chart
+  cache built specifically to skip it. Per-phase instrumentation said otherwise
+  -- 743 ms with the chart REUSED and the scan skipped, of which layer 2 was
+  676 ms and layer 3 was 3 ms. The real cost was `W.TierRank`, which opened
+  with `W.Order()` (three table allocations) and a `table.concat` to test its
+  own cache, called from `selectionScore` inside sort comparators. Measure the
+  phases before optimising anything here; the obvious suspect was wrong.
 - **`SetConditionAmount` matches BY NAME, and the flat file resolves it at build
   time.** So a renamed condition prices nothing, the shipped addon never runs
   the call, and no in-client check can ever see the failure -- the miss only

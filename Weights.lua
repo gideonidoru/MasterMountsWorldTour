@@ -508,14 +508,41 @@ end)
 -- Position of a tier in the player's order, 1-based. BLOCKED is pinned past the
 -- end so it can never be promoted, whatever is saved.
 local rankCache, rankCacheOrder
+-- THIS IS A HOT PATH. It is called from selectionScore, which the router calls
+-- inside sort comparators -- twice per comparison, several thousand times per
+-- build. It used to open with `W.Order()`, which runs validOrder and allocates
+-- THREE tables every call, and then `table.concat` to build a string purely to
+-- test its own cache. Four allocations per call, ~20,000 per route build, and
+-- the resulting garbage collection was the single largest cost in the build.
+--
+-- The concat is not waste, though: W.Silent suppresses MM_WEIGHTS_CHANGED, so
+-- the order CAN move without the event that clears this cache, and the string
+-- comparison was the backstop that caught it. So the backstop stays and only
+-- its cost goes -- compare the raw saved order element by element, which
+-- allocates nothing and detects exactly the same changes.
+local function orderUnchanged(saved)
+	if not rankCacheOrder then return false end
+	local n = saved and #saved or 0
+	if n ~= #rankCacheOrder then return false end
+	for i = 1, n do
+		if saved[i] ~= rankCacheOrder[i] then return false end
+	end
+	return true
+end
+
 function W.TierRank(tier)
 	local P = MM.Planner
 	if not P then return tier end
 	if tier == P.TIER.BLOCKED then return #W.DEFAULT_ORDER + 1 end
-	local order = W.Order()
-	if rankCacheOrder ~= table.concat(order, ",") then
+	local saved = store().order
+	if not (rankCache and orderUnchanged(saved)) then
+		local order = W.Order()
 		rankCache = {}
-		rankCacheOrder = table.concat(order, ",")
+		-- A COPY, not the saved table: W.Move mutates what it reads back, and
+		-- holding its table would let the snapshot change underneath us and
+		-- report "unchanged" for a move that had already happened.
+		rankCacheOrder = {}
+		for i = 1, (saved and #saved or 0) do rankCacheOrder[i] = saved[i] end
 		for i, key in ipairs(order) do rankCache[P.TIER[key]] = i end
 	end
 	return rankCache[tier] or (#W.DEFAULT_ORDER + 1)
