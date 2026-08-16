@@ -180,3 +180,19 @@ end
 
 io.stderr:write(("flattened %d source files -> %d canonical records, %d vendor locations\n")
 	:format(#files, #canonical, vendorCount))
+
+-- A PRICE THAT LANDS ON NOTHING IS A PRICE THAT DID NOT HAPPEN.
+--
+-- SetConditionAmount finds its condition BY NAME and returns false when it
+-- finds none. Every caller ignored that, so renaming a condition priced
+-- nothing and said nothing -- two covenant mounts lost their cost, and it
+-- surfaced two reports later as a contribution gap. This is the only place
+-- the calls actually run: the flat file resolves them at build time, so the
+-- shipped addon never executes one and no in-client check can see this.
+local misses = MM.conditionAmountMisses or {}
+if #misses > 0 then
+	io.stderr:write(("\n%d PRICE(S) LANDED ON NOTHING -- refusing to install:\n")
+		:format(#misses))
+	for _, why in ipairs(misses) do io.stderr:write("   " .. why .. "\n") end
+	os.exit(1)
+end

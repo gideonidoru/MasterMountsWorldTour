@@ -210,6 +210,16 @@ around, and a reload does not invalidate it the way a counter would.
   today however lucky you are. A tier fast-path was short-circuiting the visit
   measurement for everything at FIELD or below, which is how two Zul'Aman
   treasures reached positions 3 and 5 with 13-day estimates.
+- **`SetConditionAmount` matches BY NAME, and the flat file resolves it at build
+  time.** So a renamed condition prices nothing, the shipped addon never runs
+  the call, and no in-client check can ever see the failure -- the miss only
+  surfaced two reports later as a contribution gap. `tools/flatten_data.sh` now
+  refuses to install a build where any price landed on nothing. That is the
+  only layer that can see it.
+- **The FIRST record for a name is canonical; later ones become altSources.** A
+  bare Trading Post stub for Soaring Meaderbee therefore outranked the detailed
+  War Within record, and the real price sat in an alternate source nothing
+  reads. Check for an earlier duplicate before concluding a record is unpriced.
 
 ## Where things live
 

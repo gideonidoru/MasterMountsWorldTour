@@ -18435,6 +18435,12 @@ MM.AddMounts({
 				name = "Grateful Offering",
 				type = "CURRENCY",
 			},
+			{
+				name = "Reservoir Anima",
+				amount = 5000,
+				id = 1813,
+				type = "CURRENCY",
+			},
 		},
 		effort = 4,
 		access = "Route depends on covenant: Kyrian must beat Azuurax on Wisdom difficulty, Necrolord buy from Atticus, Venthyr need an Ember Court Best Friend.",
@@ -20053,6 +20059,12 @@ MM.AddMounts({
 			},
 			{
 				name = "Grateful Offering",
+				type = "CURRENCY",
+			},
+			{
+				name = "Reservoir Anima",
+				amount = 2500,
+				id = 1813,
 				type = "CURRENCY",
 			},
 		},
@@ -24611,46 +24623,6 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		},
 	},
 	{
-		name = "Soaring Meaderbee",
-		spellID = 447151,
-		expansion = 9,
-		category = "TRADINGPOST",
-		obtainable = true,
-		source = "Trading Post (Dragonflight era)",
-		npc = {
-			id = 222956,
-		},
-		zone = {
-			mapID = 2248,
-			x = 74.4,
-			y = 45.2,
-		},
-		altSources = {
-			{
-				name = "Soaring Meaderbee",
-				expansion = 10,
-				category = "CURRENCY",
-				obtainable = true,
-				source = "Purchased from Cendvin in the Cinderwold for 900 Sizzling Cinderpollen gathered from elite mobs there",
-				zone = {
-					name = "The Ringing Deeps",
-					mapID = 2214,
-				},
-				conditions = {
-					{
-						name = "Sizzling Cinderpollen",
-						cost = "900",
-						type = "ITEM",
-					},
-				},
-				effort = 3,
-				notes = "Cinderpollen drops from elites in the Cinderwold area; farm is group-friendly.",
-			},
-		},
-		effort = 2,
-		notes = "Trading Post rotation — availability varies.",
-	},
-	{
 		name = "Armored Bruffalon",
 		expansion = 9,
 		category = "STORE",
@@ -24850,6 +24822,33 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		attempts = "NONE",
 		effort = 3,
 		notes = "Rough solo and much faster in a farm group. The Faithful of Zirix double-dip with Crackling Shards if you need those too.",
+	},
+	{
+		name = "Soaring Meaderbee",
+		spellID = 447151,
+		expansion = 10,
+		category = "CURRENCY",
+		obtainable = true,
+		source = "Purchased from Cendvin in the Cinderwold for 900 Sizzling Cinderpollen gathered from elite mobs there",
+		npc = {
+			id = 222956,
+		},
+		zone = {
+			mapID = 2248,
+			x = 74.4,
+			y = 45.2,
+		},
+		conditions = {
+			{
+				name = "Sizzling Cinderpollen",
+				amount = 900,
+				cost = "900",
+				id = 225557,
+				type = "ITEM",
+			},
+		},
+		effort = 3,
+		notes = "Cinderpollen drops from elites in the Cinderwold area; farm is group-friendly. Has also appeared in a Trading Post rotation.",
 	},
 	{
 		name = "Dauntless Imperial Lynx",

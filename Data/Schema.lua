@@ -269,19 +269,38 @@ end
 --
 -- Returns true only when a condition was actually found and changed, so a
 -- generated file cannot quietly price nothing after a record is renamed.
+--
+-- RETURNING FALSE IS NOT ENOUGH IF NOBODY READS IT. Every caller ignored the
+-- result, so renaming the condition this looks for -- which is how it finds
+-- anything -- priced nothing at all and said nothing about it. Two covenant
+-- mounts silently lost their cost that way. Misses are recorded and the
+-- release gate reads them.
+MM.conditionAmountMisses = MM.conditionAmountMisses or {}
+
 function MM.SetConditionAmount(mountName, kind, condName, amount, id)
 	local rec = MM.DBByName[mountName:lower()]
-	if not (rec and rec.conditions and amount) then return false end
+	local function missed(why)
+		local misses = MM.conditionAmountMisses
+		misses[#misses + 1] = ("%s: %s \"%s\" — %s")
+			:format(tostring(mountName), tostring(kind), tostring(condName), why)
+		return false
+	end
+	if not amount then return missed("no amount given") end
+	if not (rec and rec.conditions) then
+		return missed("no such record, or it states no conditions")
+	end
 	local want = condName and condName:lower()
 	for _, cond in ipairs(rec.conditions) do
 		if cond.type == kind and cond.name and cond.name:lower() == want then
-			if cond.amount then return false end   -- never overwrite a real price
+			-- Already priced is not a miss; it is this refusing to overwrite
+			-- a real price, which is the behaviour we want.
+			if cond.amount then return false end
 			cond.amount = amount
 			if id and not cond.id then cond.id = id end
 			return true
 		end
 	end
-	return false
+	return missed("the record states no condition of that name")
 end
 
 -- Put an id on every record whose npc is named but unidentified.
