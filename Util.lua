@@ -294,6 +294,33 @@ function U.ResolveMapsByName(name)
 	return nameToMaps[name] or {}
 end
 
+-- A map whose name STARTS with this one, when nothing is named it exactly.
+--
+-- Portal points of interest use the short form of a place: Voidstorm's reads
+-- "Portal to Silvermoon", and the client's map is "Silvermoon City". Resolving
+-- the exact string fails, and the zone stays off the travel network for want of
+-- one word.
+--
+-- ONLY WHEN IT IS UNAMBIGUOUS. If two maps share the prefix, nothing is
+-- returned -- picking one is how a portal ends up pointing at the wrong city.
+-- The prefix must end at a word boundary, so "Dala" never matches "Dalaran".
+function U.ResolveMapByPrefix(name)
+	if not name or name == "" then return nil end
+	if not nameToMap then buildMapIndex() end
+	local exact = U.ResolveMapByName(name)
+	if exact then return exact end
+	local want = name:lower() .. " "
+	local found, count = nil, 0
+	for lower, mapID in pairs(lowerToMap) do
+		if lower:sub(1, #want) == want then
+			count = count + 1
+			found = mapID
+		end
+	end
+	if count == 1 then return found end
+	return nil
+end
+
 -- Best uiMapID for a record's zone info, if any.
 function U.GetRecordMapID(rec)
 	-- a record's own zone wins; otherwise inherit its vendor's location

@@ -724,8 +724,30 @@ MM:On("MM_GAPS_DEBUG", function()
 					l.toX * 100, l.toY * 100)
 			end
 			if (PL.Count and PL.Count() or 0) == 0 then
-				MM:Print("      Nothing paired: these zones publish no portal POI,")
-				MM:Print("      or only one end of one, which is not an edge.")
+				-- EVERY TRAVEL POI THAT WAS READ, and what its destination
+				-- resolved to. A bare zero cannot be told apart from a parser
+				-- that stopped matching, a name that will not resolve, and a
+				-- zone that genuinely publishes nothing -- and those want
+				-- three different fixes.
+				local n = #(PL.sightings or {})
+				if n == 0 then
+					MM:Print("      No travel point of interest on any of them, so")
+					MM:Print("      there is nothing on the map to read.")
+				else
+					MM:Print("      %d travel point(s) read, none of which paired:", n)
+					for _, sight in ipairs(PL.sightings) do
+						local from = C_Map and C_Map.GetMapInfo
+							and C_Map.GetMapInfo(sight.onMap)
+						MM:Print("         %s -> \"%s\" = %s",
+							(from and from.name) or ("map " .. tostring(sight.onMap)),
+							sight.dest,
+							sight.destMap
+								and ("%s (%d)"):format(sight.destName or "?", sight.destMap)
+								or "no map of that name")
+					end
+					MM:Print("      A pair needs BOTH ends published. One end alone")
+					MM:Print("      is a portal we cannot say where you arrive from.")
+				end
 			end
 		elseif PL then
 			MM:Print("   The map has not been read yet this session -- that runs a")

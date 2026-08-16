@@ -258,8 +258,13 @@ function PL.Scan()
 	local A = MM.Assaults
 	if not (A and A.PoisForMap and MM.TravelNodes) then return 0 end
 	local U = MM.Util
+	-- PREFIX-TOLERANT. A portal names the short form of a place: Voidstorm's
+	-- reads "Portal to Silvermoon" and the map is "Silvermoon City". Exact
+	-- resolution alone left the zone off the network for want of one word.
 	local resolve = function(name)
-		return U and U.ResolveMapByName and U.ResolveMapByName(name) or nil
+		if not U then return nil end
+		if U.ResolveMapByPrefix then return U.ResolveMapByPrefix(name) end
+		return U.ResolveMapByName and U.ResolveMapByName(name) or nil
 	end
 	local parentOf = function(mapID)
 		local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
@@ -276,17 +281,70 @@ function PL.Scan()
 		end
 	end
 
-	for mapID in pairs(candidateMaps()) do ask(mapID) end
-	-- Second pass: whatever the first pass' portals named.
+	local candidates = candidateMaps()
+	for mapID in pairs(candidates) do ask(mapID) end
+
+	-- SECOND PASS: THE MAP THE PORTAL NAMES, AND THE MAPS AROUND IT.
+	--
+	-- Following the destination alone is not enough, and this is exactly how
+	-- the first attempt found nothing. Voidstorm's portal names Silvermoon,
+	-- which is the CITY map -- while the portal pointing back at Voidstorm
+	-- sits on Eversong Woods, the zone containing that city. Reading only the
+	-- named map reads the one place the other end is not.
+	--
+	-- So the destination's parent and its children are read too. That is three
+	-- extra maps per portal, once per session, against a portal that otherwise
+	-- never joins at all.
 	local reach = {}
-	for _, poi in ipairs(pois) do
-		local dest = PL.Parse(poi.rawName) or PL.Parse(poi.rawDesc)
-		if dest then
-			local m = resolve(dest)
-			if m then reach[m] = true end
+	local function children(mapID)
+		if not (mapID and C_Map and C_Map.GetMapChildrenInfo) then return end
+		local ok, kids = pcall(C_Map.GetMapChildrenInfo, mapID)
+		if ok and type(kids) == "table" then
+			for _, kid in ipairs(kids) do
+				if kid.mapID then reach[kid.mapID] = true end
+			end
 		end
 	end
+	local function reachOut(mapID)
+		if not mapID then return end
+		reach[mapID] = true
+		children(mapID)
+		local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+		local parent = info and info.parentMapID
+		if parent and parent > 0 then
+			reach[parent] = true
+			-- AND THE SIBLINGS. Whether Silvermoon City hangs off Eversong
+			-- Woods or off Quel'Thalas alongside it is a fact about this
+			-- client's map tree, not something to be assumed from the outside.
+			-- Reading the parent covers the first layout and its children
+			-- cover the second, which is a handful of extra maps once per
+			-- session against a portal that otherwise never joins.
+			children(parent)
+		end
+	end
+	for _, poi in ipairs(pois) do
+		local dest = PL.Parse(poi.rawName) or PL.Parse(poi.rawDesc)
+		if dest then reachOut(resolve(dest)) end
+	end
 	for mapID in pairs(reach) do ask(mapID) end
+
+	-- WHAT WAS SEEN, so a failure says why rather than printing a zero.
+	-- "0 portals across 11 maps" is not a diagnosis; it cannot be told apart
+	-- from a parser that stopped matching, a name that will not resolve, and a
+	-- zone that genuinely publishes nothing.
+	PL.sightings = {}
+	for _, poi in ipairs(pois) do
+		local dest = PL.Parse(poi.rawName)
+		if not dest then dest = PL.Parse(poi.rawDesc) end
+		if dest then
+			local m = resolve(dest)
+			local info = m and C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(m)
+			PL.sightings[#PL.sightings + 1] = {
+				onMap = poi.mapID, dest = dest, destMap = m,
+				destName = info and info.name,
+			}
+		end
+	end
 
 	local links = PL.Pair(pois, resolve, parentOf)
 	local added = 0
