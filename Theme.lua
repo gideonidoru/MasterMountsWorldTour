@@ -657,6 +657,9 @@ function flatSkin(frame, kind, c)
 			or kind == "utility" and 1.22
 			or kind == "card" and 1.35
 			or kind == "content" and 0.95
+			-- Recessed: an inset well reads as cut INTO the panel holding it,
+			-- so it goes darker than anything it can sit inside.
+			or kind == "inset" and 0.68
 		if shade then
 			fill = { math.min(1, c.bg[1] * shade), math.min(1, c.bg[2] * shade),
 				math.min(1, c.bg[3] * shade), kind == "card" and 0.90 or 0.96 }
@@ -1102,8 +1105,21 @@ local function skinModern(frame, kind)
 	end
 	hideArt(frame)
 
+	-- "inset" IS A REAL KIND NOW, AND IT WAS THE MISSING LEVEL.
+	--
+	-- surface_inset_v2.tga has shipped in every build, sits in the asset table
+	-- above, and could never be drawn: the fallback that names it was
+	-- unreachable because this condition never admitted the kind. 192 KB of art
+	-- with no way in.
+	--
+	-- It matters because it is the level the reference interface uses for every
+	-- list. There the nesting is window -> column panel -> INSET WELL -> rows,
+	-- and the well is what makes a list read as recessed into its column rather
+	-- than painted onto it. We had window -> column -> rows and no well, which
+	-- is why our columns look like flat areas with text on them.
 	if kind == "frame" or kind == "panel" or kind == "content"
-		or kind == "sidebar" or kind == "utility" or kind == "card" then
+		or kind == "sidebar" or kind == "utility" or kind == "card"
+		or kind == "inset" then
 		local path = kind == "frame" and MODERN_ASSET.window
 			or kind == "content" and MODERN_ASSET.content
 			or kind == "sidebar" and MODERN_ASSET.sidebar

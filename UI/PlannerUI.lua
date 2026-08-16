@@ -464,6 +464,33 @@ function UI.BuildPlanner(panel)
 	MM.Theme.Register(rightPane, "content", true)
 	panel.mmRightPane = rightPane
 
+	-- THE WELL EACH LIST SITS IN.
+	--
+	-- The reference interface nests window -> column panel -> inset well ->
+	-- rows, and every list it draws is inside one of these. The well is what
+	-- makes a list read as recessed into its column instead of painted onto
+	-- it, and its absence is why our columns looked like flat areas with text
+	-- on them however the plates were tinted.
+	--
+	-- Sized the way theirs are: in from the column edge, and starting below the
+	-- column's heading rather than under it, so the heading belongs to the
+	-- column and the well belongs to the heading.
+	local leftWell = CreateFrame("Frame", nil, leftPane, "BackdropTemplate")
+	leftWell:SetPoint("TOPLEFT", 10, -10)
+	leftWell:SetPoint("BOTTOMRIGHT", -10, 10)
+	leftWell:SetFrameLevel(leftPane:GetFrameLevel() + 1)
+	MM.Theme.Register(leftWell, "inset", true)
+	panel.mmLeftWell = leftWell
+
+	local rightWell = CreateFrame("Frame", nil, rightPane, "BackdropTemplate")
+	rightWell:SetPoint("TOPLEFT", 10, -10)
+	-- 44 keeps the action button on the column plate, below the well, the way
+	-- the reference keeps its buttons on the panel rather than in the list.
+	rightWell:SetPoint("BOTTOMRIGHT", -10, 44)
+	rightWell:SetFrameLevel(rightPane:GetFrameLevel() + 1)
+	MM.Theme.Register(rightWell, "inset", true)
+	panel.mmRightWell = rightWell
+
 	-- toolbar band behind the button row
 	local band = panel:CreateTexture(nil, "BORDER")
 	band:SetPoint("TOPLEFT")
@@ -709,14 +736,14 @@ function UI.BuildPlanner(panel)
 	-- what stops it hanging over the edge -- it did, because the box was placed
 	-- by arithmetic and the bar by an offset from the box, so nothing in the
 	-- chain knew where the pane actually ended.
-	missingBox:SetFrameLevel(leftPane:GetFrameLevel() + 4)
-	missingBox:SetPoint("TOPLEFT", leftPane, "TOPLEFT", 8, -8)
+	missingBox:SetFrameLevel(leftWell:GetFrameLevel() + 4)
+	missingBox:SetPoint("TOPLEFT", leftWell, "TOPLEFT", 6, -6)
 	-- BOTTOM 48, THE SAME AS THE PLAN COLUMN. This sat at 6 while the column
 	-- beside it stopped at 48 to clear the action strip, so the two panes --
 	-- and the two scroll bars on them -- ended forty-two pixels apart with
 	-- nothing in the gap to explain why. The strip now reads as a full-width
 	-- footer under both columns rather than a notch cut out of one.
-	missingBox:SetPoint("BOTTOMLEFT", leftPane, "BOTTOMLEFT", 8, 8)
+	missingBox:SetPoint("BOTTOMLEFT", leftWell, "BOTTOMLEFT", 6, 6)
 
 	local missingBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
 	-- SIX, LIKE EVERY OTHER SCROLLBAR HERE. This one sat at 4 and nothing else
@@ -724,9 +751,9 @@ function UI.BuildPlanner(panel)
 	-- are both 6. Two pixels is not much on its own, and it is plenty when the
 	-- two bars are side by side in the same window with nothing between them to
 	-- explain the difference.
-	missingBar:SetFrameLevel(leftPane:GetFrameLevel() + 4)
-	missingBar:SetPoint("TOPRIGHT", leftPane, "TOPRIGHT", -8, -8)
-	missingBar:SetPoint("BOTTOMRIGHT", leftPane, "BOTTOMRIGHT", -8, 8)
+	missingBar:SetFrameLevel(leftWell:GetFrameLevel() + 4)
+	missingBar:SetPoint("TOPRIGHT", leftWell, "TOPRIGHT", -6, -6)
+	missingBar:SetPoint("BOTTOMRIGHT", leftWell, "BOTTOMRIGHT", -6, 6)
 	missingBox:SetPoint("RIGHT", missingBar, "LEFT", -6, 0)
 	MM.Theme.Register(missingBar, "scrollbar", false)
 
@@ -947,15 +974,15 @@ function UI.BuildPlanner(panel)
 	summaryHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 	planBox = CreateFrame("Frame", nil, panel, "WowScrollBoxList")
-	planBox:SetFrameLevel(rightPane:GetFrameLevel() + 4)
-	planBox:SetPoint("TOPLEFT", rightPane, "TOPLEFT", 8, -8)
+	planBox:SetFrameLevel(rightWell:GetFrameLevel() + 4)
+	planBox:SetPoint("TOPLEFT", rightWell, "TOPLEFT", 6, -6)
 	-- 44 clears the action button, which lives inside this pane.
-	planBox:SetPoint("BOTTOMLEFT", rightPane, "BOTTOMLEFT", 8, 44)
+	planBox:SetPoint("BOTTOMLEFT", rightWell, "BOTTOMLEFT", 6, 6)
 
 	local planBar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
-	planBar:SetFrameLevel(rightPane:GetFrameLevel() + 4)
-	planBar:SetPoint("TOPRIGHT", rightPane, "TOPRIGHT", -8, -8)
-	planBar:SetPoint("BOTTOMRIGHT", rightPane, "BOTTOMRIGHT", -8, 44)
+	planBar:SetFrameLevel(rightWell:GetFrameLevel() + 4)
+	planBar:SetPoint("TOPRIGHT", rightWell, "TOPRIGHT", -6, -6)
+	planBar:SetPoint("BOTTOMRIGHT", rightWell, "BOTTOMRIGHT", -6, 6)
 	planBox:SetPoint("RIGHT", planBar, "LEFT", -6, 0)
 	MM.Theme.Register(planBar, "scrollbar", false)
 
