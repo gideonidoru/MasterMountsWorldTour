@@ -87,10 +87,20 @@ MM:On("MM_SCANNED", function()
 	end)
 end)
 
--- Exactly the messages Availability listens to. MM_CURRENCY and MM_REP were in
--- an earlier draft of this list and nothing fires either of them -- a listener
--- for a message nobody sends is decoration that reads like coverage.
-for _, msg in ipairs({ "MM_SCANNED", "MM_LOCKS", "MM_CALENDAR", "MM_PLAN_CHANGED" }) do
+-- The messages that can change what "available now" means. MM_CURRENCY and
+-- MM_REP were in an earlier draft and nothing fires either -- a listener for a
+-- message nobody sends is decoration that reads like coverage.
+--
+-- This list used to say it was "exactly the messages Availability listens to",
+-- which stopped being true the moment Availability grew MM_STATUS_INVALIDATED:
+-- ranks re-sorted on it (P.InvalidateRanks below) while the missing list did
+-- not, so currency, reputation, bag and quest changes could leave "Available
+-- now" showing a stale answer next to a freshly re-sorted one. Naming the
+-- other file's behaviour as the rule is what let the two drift apart -- the
+-- comment was checkable and nobody checked it -- so the list now states what
+-- it is for instead.
+for _, msg in ipairs({ "MM_SCANNED", "MM_LOCKS", "MM_CALENDAR", "MM_PLAN_CHANGED",
+	"MM_STATUS_INVALIDATED" }) do
 	MM:On(msg, function() missingEpoch = missingEpoch + 1 end)
 end
 

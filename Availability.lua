@@ -220,10 +220,27 @@ local function requestCalendar()
 end
 
 -- The server's answer arriving is itself proof the calendar is synced.
+--
+-- ONE HANDLER, ONE SCAN, ONE PUBLISH. There were two registrations for this
+-- event and three publishes per arrival: this one scanned and then fired
+-- MM_CALENDAR again although scanCalendar already fires it, and a second
+-- registration further down scheduled another whole scan a second later. The
+-- calendar sends this event in bursts, so every listener downstream -- ranks,
+-- the missing list, the planner -- re-derived itself several times over for
+-- one piece of news.
+--
+-- The delayed re-scan is kept because it earns its place: the first answer can
+-- arrive incomplete and the second look catches the rest. It is debounced, so
+-- a burst of events costs one re-scan rather than one each.
+local calendarRescan
 MM:RegisterGameEvent("CALENDAR_UPDATE_EVENT_LIST", function()
 	A.calendarLoaded = true
-	scanCalendar()
-	MM:Fire("MM_CALENDAR")
+	scanCalendar()  -- fires MM_CALENDAR itself
+	if calendarRescan then calendarRescan:Cancel() end
+	calendarRescan = C_Timer.NewTimer(1, function()
+		calendarRescan = nil
+		scanCalendar()
+	end)
 end)
 
 function A.EnsureCalendar()
@@ -282,10 +299,6 @@ MM:On("MM_LOGIN", function()
 		pcall(RequestRaidInfo)
 		backgroundCalendarSync()
 	end)
-end)
-
-MM:RegisterGameEvent("CALENDAR_UPDATE_EVENT_LIST", function()
-	C_Timer.After(1, scanCalendar)
 end)
 
 -- /mm events — what the calendar scan sees (for debugging event detection)

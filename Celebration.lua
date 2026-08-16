@@ -6,6 +6,9 @@ MM.Celebration = {}
 local CB = MM.Celebration
 
 local overlay
+-- Bumped on every splash; a deferred callback only acts if it is still the
+-- splash that scheduled it. See the note at the show below.
+local generation = 0
 
 local function build()
 	if overlay then return end
@@ -83,6 +86,14 @@ function CB:Show(mountID, mountName, noScreenshot)
 		pcall(overlay.model.SetRotation, overlay.model, 0.4)
 	end
 
+	-- WHICH SPLASH THIS IS. The overlay is a singleton, so "is it still shown"
+	-- cannot tell a splash that is still up from a DIFFERENT one that went up
+	-- after it. Collect two mounts within nine seconds -- an ordinary thing on
+	-- a shared stop -- and the first mount's timer hid the second mount's
+	-- splash, and its screenshot caught the wrong mount.
+	generation = generation + 1
+	local mine = generation
+
 	overlay:Show()
 	overlay.popGroup:Play()
 	overlay.spinGroup:Play()
@@ -96,12 +107,13 @@ function CB:Show(mountID, mountName, noScreenshot)
 	if MM.db.celebrationShot and not noScreenshot then
 		-- give the pop-in a beat so the screenshot catches the full splash
 		C_Timer.After(1.0, function()
-			if overlay:IsShown() then Screenshot() end
+			if generation == mine and overlay:IsShown() then Screenshot() end
 		end)
 	end
 
 	C_Timer.After(9, function()
-		if overlay:IsShown() then overlay:Hide() end
+		-- Only this splash may retire itself. A newer one owns the overlay now.
+		if generation == mine and overlay:IsShown() then overlay:Hide() end
 	end)
 end
 

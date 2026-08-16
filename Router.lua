@@ -3795,6 +3795,34 @@ MM:On("MM_MOUNT_LEARNED", function(_, spellID)
 	R:Advance()
 end)
 
+-- A DEFERRED ACTION'S LICENCE TO STILL HAPPEN.
+--
+-- Three seconds is a long time. In it a player can advance by hand, stop the
+-- route, start a different one, or have a rebuild land underneath them -- and a
+-- timer that captured nothing would then advance whatever route it woke up to,
+-- skipping a goal nobody had reached. A ticket records which route, and which
+-- stop on it, the decision was made about; anything that moves invalidates it.
+--
+-- `builtSignature` is the published route's own identity and is written only by
+-- Publish, so a rebuild that changes the order fails the check even when the
+-- index happens to match.
+function R.Ticket()
+	local cdb = MM.cdb or {}
+	return {
+		active = cdb.routeActive or false,
+		sig = R.builtSignature,
+		index = cdb.routeIndex,
+	}
+end
+
+function R.TicketValid(t)
+	if not t then return false end
+	local cdb = MM.cdb or {}
+	return (cdb.routeActive or false) == t.active
+		and R.builtSignature == t.sig
+		and cdb.routeIndex == t.index
+end
+
 -- Attempt used on a daily/weekly goal → nothing more to do here today, advance.
 MM:On("MM_ATTEMPT", function(spellID)
 	local cur = R:Current()
@@ -3815,7 +3843,10 @@ MM:On("MM_ATTEMPT", function(spellID)
 	local spent = MM.Attempts.IsParagonGoal and MM.Attempts.IsParagonGoal(cur.rec)
 	if lockout == "DAILY" or lockout == "WEEKLY" or spent then
 		MM:Print("Attempt recorded for %s — advancing the route.", cur.label)
-		C_Timer.After(3, function() R:Advance() end)
+		local ticket = R.Ticket()
+		C_Timer.After(3, function()
+			if R.TicketValid(ticket) then R:Advance() end
+		end)
 	end
 end)
 

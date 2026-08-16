@@ -5,6 +5,10 @@ local U = MM.Util
 local UI = MM.UI
 
 local frame
+-- Assigned below, once `refresh` exists; hooked onto the window inside build().
+-- Forward-declared because build() runs long before either is defined and
+-- would otherwise close over a nil global.
+local startTicker, stopTicker
 
 local function build()
 	if frame then return end
@@ -146,6 +150,12 @@ local function build()
 	frame.diffBtn:Hide()
 
 	MM.Theme.SkinTree(frame)
+
+	-- The periodic refresh belongs to the window. Hooked rather than assigned,
+	-- so any OnShow/OnHide behaviour set above survives.
+	frame:HookScript("OnShow", function() if startTicker then startTicker() end end)
+	frame:HookScript("OnHide", function() if stopTicker then stopTicker() end end)
+
 	frame:Hide()
 end
 
@@ -278,5 +288,22 @@ MM:On("MM_ROUTE_STOPPED", function() MM.UI.HideMonitor() end)
 MM:On("MM_ATTEMPT", refresh)
 MM:On("MM_SCANNED", refresh)
 
--- periodic refresh so lockout timers/currency stay fresh
-C_Timer.NewTicker(30, refresh)
+-- Periodic refresh so lockout timers and currency stay fresh -- OWNED BY THE
+-- WINDOW, not by the session.
+--
+-- This was a bare NewTicker at file scope: it started at load and ran every
+-- thirty seconds for the rest of the session on every character, including the
+-- players who never open the monitor at all. The work it does is only visible
+-- while the window is up, so it now starts when the window appears and stops
+-- when it goes away. A ticker nobody can see the results of is pure cost.
+--
+-- Hooked rather than assigned: `frame` already carries OnShow/OnHide handlers
+-- from the build above, and replacing them would silently drop that behaviour.
+local ticker
+startTicker = function()
+	if ticker then return end
+	ticker = C_Timer.NewTicker(30, refresh)
+end
+stopTicker = function()
+	if ticker then ticker:Cancel() ticker = nil end
+end

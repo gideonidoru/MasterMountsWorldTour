@@ -540,6 +540,9 @@ end
 -- target the PREVIOUS rare, and sending someone at the wrong mob is worse than
 -- a button that is briefly grey.
 local pendingTarget
+-- Bumped on every alert raised; a deferred dismissal only fires if it is still
+-- the alert that scheduled it.
+local alertGeneration = 0
 
 local function applyTarget(npcName)
 	local button = alertFrame and alertFrame.targetButton
@@ -551,13 +554,40 @@ local function applyTarget(npcName)
 		return
 	end
 	pendingTarget = nil
+	-- BOTH ATTRIBUTES, EVERY TIME. `type` used to be set once, at the moment
+	-- the alert frame was first built -- and that build is lazy, so a player
+	-- whose first-ever rare appeared while they were in combat had that one
+	-- write refused by lockdown with nothing to re-apply it. The macrotext was
+	-- deferred and flushed correctly; `type` was not, so the button stayed
+	-- inert for the rest of the session and did nothing when clicked.
+	--
+	-- Setting it here costs one redundant write per alert and puts both
+	-- attributes behind the same combat guard and the same flush.
+	button:SetAttribute("type", "macro")
 	button:SetAttribute("macrotext", "/targetexact " .. npcName)
 	button:Enable()
 	button:SetAlpha(1)
 end
 
+-- BUILD THE ALERT OUT OF COMBAT, rather than on the first rare that appears.
+--
+-- The Target button is a SecureActionButtonTemplate, and configuring one is
+-- refused under lockdown. A lazy build whose first trigger happened mid-fight
+-- therefore produced a button that could not be finished -- and the first rare
+-- a player meets is quite often one they are already fighting something near.
+--
+-- Both hooks are deliberate: login covers the ordinary case, and combat-ending
+-- covers a player who was already fighting when the timer came round. Building
+-- twice costs nothing, because buildAlert returns immediately once built.
+MM:On("MM_LOGIN", function()
+	C_Timer.After(5, function()
+		if not InCombatLockdown() then buildAlert() end
+	end)
+end)
+
 -- Only worth applying while the alert this name belongs to is still up.
 MM:RegisterGameEvent("PLAYER_REGEN_ENABLED", function()
+	if not alertFrame then buildAlert() end
 	local waiting = pendingTarget
 	pendingTarget = nil
 	if not (waiting and alertFrame) then return end
@@ -706,7 +736,15 @@ function RA.Alert(npcName, hit, mapPos, force)
 	-- A preview stays up until dismissed. It exists to be positioned, and a frame
 	-- that vanishes after 45 seconds cannot be dragged anywhere deliberately.
 	if not RA.previewing then
+		-- WHICH ALERT THIS IS. The frame is a singleton, so "is it still shown"
+		-- cannot tell this alert from a DIFFERENT rare that appeared after it.
+		-- Two rares inside forty-five seconds is ordinary in a busy zone, and
+		-- the first one's timer would dismiss the second one early -- taking
+		-- its waypoint and its Target button with it.
+		alertGeneration = alertGeneration + 1
+		local mine = alertGeneration
 		C_Timer.After(45, function()
+			if mine ~= alertGeneration then return end
 			if alertFrame and (alertFrame:IsShown() or MM.Util.ShownPending(alertFrame)) then
 				MM.Util.SetShownWhenCombatAllows(alertFrame, false)
 			end
