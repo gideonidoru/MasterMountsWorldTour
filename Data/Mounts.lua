@@ -34401,6 +34401,7 @@ Prices are heavily discounted while an event is active, which is the other reaso
 	},
 	{
 		name = "Nether-Swept Drake",
+		itemID = 260916,
 		expansion = 11,
 		category = "PROFESSION",
 		obtainable = true,
