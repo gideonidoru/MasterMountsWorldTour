@@ -45,10 +45,18 @@ local J = MM.Journey
 -- The client settles it: two maps with the SAME NAME on the SAME CONTINENT are
 -- the same place. Name alone is not enough -- there are two Dalarans and two
 -- Silvermoons, and one of each having nodes says nothing about the other.
-local onNetwork, networkNames
+local onNetwork, networkNames, containers
+local function infoOf(mapID)
+	return C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID) or nil
+end
 local function nameOf(mapID)
-	local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+	local info = infoOf(mapID)
 	return info and info.name
+end
+local function parentOf(mapID)
+	local info = infoOf(mapID)
+	local p = info and info.parentMapID
+	return (p and p > 0) and p or nil
 end
 
 -- Built once, by whichever of the two readers below is asked first. Neither
@@ -57,18 +65,28 @@ end
 -- thing is a stack overflow the offline harness caught on the first run.
 local function prime()
 	if onNetwork then return end
-	onNetwork, networkNames = {}, {}
+	onNetwork, networkNames, containers = {}, {}, {}
 	for _, node in pairs(MM.TravelNodes or {}) do
 		if node.mapID then onNetwork[node.mapID] = true end
 	end
-	-- What each of those maps is CALLED, once, so the same place under a
-	-- second id can be recognised without asking the client per query.
 	for id in pairs(onNetwork) do
+		-- What each of those maps is CALLED, for the same-name test below.
 		local name = nameOf(id)
 		if name then
 			networkNames[name] = networkNames[name] or {}
 			local list = networkNames[name]
 			list[#list + 1] = id
+		end
+		-- AND WHAT CONTAINS IT. A node inside a sub-zone is inside the zone
+		-- that holds it: every K'aresh travel node is recorded on map 2472,
+		-- which UiMap.db2 gives as "Tazavesh", parent 2371 -- K'aresh itself.
+		-- No amount of name comparison finds that, because the two are not
+		-- named the same thing; containment is the relation, and it is exact.
+		local up, guard = parentOf(id), 0
+		while up and guard < 6 do
+			guard = guard + 1
+			if containers[up] == nil then containers[up] = id end
+			up = parentOf(up)
 		end
 	end
 end
@@ -92,13 +110,24 @@ function J.NetworkTwin(mapID)
 	if not mapID then return nil end
 	prime()
 	if onNetwork[mapID] then return nil end
+	-- CONTAINMENT FIRST, because it is a fact about the map tree rather than
+	-- an inference from a shared name.
+	if containers[mapID] then return containers[mapID] end
+
+	-- Then the same place recorded twice under one name. SAME PARENT, not
+	-- same continent: Pandaria holds two maps called "Vale of Eternal
+	-- Blossoms" and Eastern Kingdoms two called "Arathi Highlands", and each
+	-- pair is one place at two points in its history. Two maps called
+	-- "Dalaran" hang off Broken Isles and Crystalsong Forest respectively, and
+	-- those are genuinely different cities -- a continent test is loose enough
+	-- to confuse them, a parent test is not.
 	local name = nameOf(mapID)
 	local twins = name and networkNames[name]
 	if not twins then return nil end
-	local U = MM.Util
+	local mine = parentOf(mapID)
+	if not mine then return nil end
 	for _, id in ipairs(twins) do
-		if not (U and U.IsSameContinent) then return id end
-		if U.IsSameContinent(id, mapID) then return id end
+		if parentOf(id) == mine then return id end
 	end
 	return nil
 end
@@ -377,7 +406,7 @@ function J.Forget()
 	-- invisible to every reader that asks whether a zone is on it: the gap
 	-- report went on naming Voidstorm as unreachable while the route was
 	-- already travelling through its portal.
-	onNetwork, networkNames = nil, nil
+	onNetwork, networkNames, containers = nil, nil, nil
 	planCache = {}
 	planCacheSize = 0
 	nodeWorldCache = {}
