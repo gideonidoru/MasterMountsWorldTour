@@ -660,28 +660,41 @@ MM:On("MM_GAPS_DEBUG", function()
 	--
 	-- Named here because it is not derivable from the client: it needs the two
 	-- ends of a portal, and nothing exposes those but standing at them.
-	local offNetwork = {}
+	local offNetwork, instanceMaps = {}, 0
 	local onNet = MM.Journey and MM.Journey.ZoneOnNetwork
 	for _, rec in pairs(onNet and MM.DBByName or {}) do
 		if rec.obtainable and rec.zone and rec.zone.mapID
 			and not onNet(rec.zone.mapID) then
 			local z = offNetwork[rec.zone.mapID]
-			if not z then
+			if z == nil then
 				-- THE CLIENT'S NAME FOR THE MAP, not the record's zone name.
 				-- A record may name a place that is not a map -- "Trading Post"
 				-- sits on Silvermoon's id -- and whichever record was reached
 				-- first then named the whole zone.
 				local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(rec.zone.mapID)
-				z = { name = (info and info.name) or rec.zone.name
-					or ("map " .. rec.zone.mapID), n = 0 }
-				offNetwork[rec.zone.mapID] = z
+				-- A RAID IS NOT A ZONE YOU SURVEY A PORTAL INTO. Antorus and
+				-- The Vindicaar have no travel node and never will: you enter
+				-- them by their own door. mapType 3 is a zone, 2 a continent;
+				-- anything above that is a dungeon, raid or micro map, and
+				-- asking somebody to go and measure one wastes their evening.
+				-- Counted rather than dropped in silence.
+				local kind = info and info.mapType
+				if kind and kind > 3 then
+					offNetwork[rec.zone.mapID] = false
+					instanceMaps = instanceMaps + 1
+					z = false
+				else
+					z = { name = (info and info.name) or rec.zone.name
+						or ("map " .. rec.zone.mapID), n = 0 }
+					offNetwork[rec.zone.mapID] = z
+				end
 			end
-			z.n = z.n + 1
+			if z then z.n = z.n + 1 end
 		end
 	end
 	local offList = {}
 	for mapID, z in pairs(offNetwork) do
-		offList[#offList + 1] = { mapID = mapID, name = z.name, n = z.n }
+		if z then offList[#offList + 1] = { mapID = mapID, name = z.name, n = z.n } end
 	end
 	table.sort(offList, function(a, b) return a.n > b.n end)
 	if #offList > 0 then
@@ -696,6 +709,11 @@ MM:On("MM_GAPS_DEBUG", function()
 		MM:Print("   NEEDS YOU -> stand at each end of a portal into the zone and")
 		MM:Print("   note the coordinates. A zone joins the graph the way Harandar")
 		MM:Print("   did: an endpoint each side, and one portal edge between them.")
+		if instanceMaps > 0 then
+			MM:Print("   (%d dungeon or raid map(s) left out: those are entered by",
+				instanceMaps)
+			MM:Print("   their own door, so they need no travel node.)")
+		end
 	end
 
 	-- 4. Trading Post rotation
