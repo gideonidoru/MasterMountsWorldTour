@@ -764,11 +764,29 @@ MM:On("MM_KNOWN_DEBUG", function()
 	-- Everything else
 	------------------------------------------------------------
 	local _, counts = CO.Scan()
-	local crafts, harvested = 0, 0
+	-- A RECIPE IS NOT THE ONLY THING FILED UNDER A PROFESSION.
+	--
+	-- This counted every unpriced PROFESSION record as a reagent list waiting
+	-- to be harvested, and told the player it would close itself the next time
+	-- they opened a profession window. For the seven it was counting, that was
+	-- never going to happen: Fossilized Raptor, Scepter of Azj'Aqir and Spirit
+	-- of Eche'ro are ARCHAEOLOGY solves, and Great Sea Ray, Sea Turtle, Pond
+	-- Nettle and Nether-Swept Drake are rare FISHING catches. None of them has
+	-- a reagent list to read, in the client or in DB2, because none of them is
+	-- made from anything.
+	--
+	-- A gap that promises to close and then does not is worse than one that
+	-- says nobody can, so a craft with no reagents ANYWHERE is only counted
+	-- here while it still looks like a recipe.
+	local crafts, harvested, gathered = 0, 0, 0
 	for _, rec in pairs(MM.DBByName) do
 		if MM.Crafting and MM.Crafting.IsCraft(rec) and rec.obtainable then
-			crafts = crafts + 1
-			if MM.Crafting.IsPriced(rec) then harvested = harvested + 1 end
+			if rec.unpriced then
+				gathered = gathered + 1
+			else
+				crafts = crafts + 1
+				if MM.Crafting.IsPriced(rec) then harvested = harvested + 1 end
+			end
 		end
 	end
 
@@ -785,6 +803,11 @@ MM:On("MM_KNOWN_DEBUG", function()
 			"all Midnight-era. No guide exists yet, for anyone" },
 		{ "Craft reagents", crafts - harvested, "selfclosing",
 			"harvests from C_TradeSkillUI -- open a profession window once" },
+		-- Counted, not dropped. These are filed under a profession and have no
+		-- reagents anywhere, and saying so is the whole point.
+		{ "Gathered, not made", gathered, "nobody",
+			"archaeology solves and rare fishing catches -- nothing is combined, "
+				.. "so there is no reagent list to read" },
 		{ "Trading Post", (MM.db.tradingPost and 0 or 1), "selfclosing",
 			"captured on your first vendor visit, then remembered all month" },
 	}

@@ -1150,11 +1150,49 @@ MM:On("MM_IDS_DEBUG", function()
 		for name in pairs(store.achievementAmbiguous or {}) do amb[#amb + 1] = name end
 		if #amb > 0 then
 			table.sort(amb)
+			-- AND WHETHER ANYTHING IS ACTUALLY WAITING ON ONE.
+			--
+			-- "left alone" read as an open gap for as long as this line has
+			-- existed, and for both current names it is not one: every record
+			-- using them already states its own achievement id, so the index
+			-- never gets asked. A name the resolver declines to guess at
+			-- matters only if some condition still needs an answer from it.
+			--
+			-- Both of the present pair are the same shape, and Achievement.db2
+			-- says why: each is a Legion achievement (category 15252) beside an
+			-- identically-titled Timerunning copy (15604) that rewards Infinite
+			-- Knowledge. Breaching the Tomb is 11546, not 42647; Insurrection is
+			-- 11340, not 42537. The records carry the Legion ids.
+			local pinned, waiting = 0, {}
+			for _, name in ipairs(amb) do
+				local unresolved = 0
+				for _, rec in pairs(MM.DBByName) do
+					for _, cond in ipairs(rec.conditions or {}) do
+						if cond.type == "ACHIEVEMENT" and cond.name == name
+							and not cond.id then
+							unresolved = unresolved + 1
+						end
+					end
+				end
+				if unresolved > 0 then
+					waiting[#waiting + 1] = ("%s (%d condition(s))"):format(name, unresolved)
+				else
+					pinned = pinned + 1
+				end
+			end
 			MM:Print("   %d names match more than one achievement and are left alone:",
 				#amb)
 			for i = 1, math.min(#amb, 5) do MM:Print("      %s", amb[i]) end
 			if #amb > 5 then MM:Print("      ...and %d more", #amb - 5) end
 			MM:Print("   Picking one at random is how you tell someone to earn the wrong thing.")
+			if pinned > 0 then
+				MM:Print("   |cff7bc86c%d of them are already answered|r — every condition "
+					.. "using those names states its own id, so nothing is waiting on "
+					.. "the index.", pinned)
+			end
+			if #waiting > 0 then
+				MM:Print("   |cffff9a3cSTILL WAITING|r: %s", table.concat(waiting, ", "))
+			end
 		end
 	end
 

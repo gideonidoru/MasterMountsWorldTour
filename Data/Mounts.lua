@@ -34664,7 +34664,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "Coiled Isle treasures",
+				name = "Treasures of the Coiled Isle",
 				id = 63359,
 				type = "ACHIEVEMENT",
 			},
@@ -34757,7 +34757,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "250 Vault patrols",
+				name = "Pro Poison Patroller",
 				id = 63653,
 				type = "ACHIEVEMENT",
 			},
@@ -35063,7 +35063,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "The Venomous Abyss meta",
+				name = "Glory of the Venomous Raider",
 				id = 63254,
 				type = "ACHIEVEMENT",
 			},
@@ -35092,7 +35092,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		source = "Achievement: reach Mythic+ rating 2000",
 		conditions = {
 			{
-				name = "Mythic+ rating 2000",
+				name = "Midnight Keystone Master: Season 2",
 				id = 62447,
 				type = "ACHIEVEMENT",
 			},
@@ -35123,7 +35123,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		source = "Achievement: reach Mythic+ rating 3000",
 		conditions = {
 			{
-				name = "Mythic+ rating 3000",
+				name = "Midnight Keystone Legend: Season 2",
 				id = 62449,
 				type = "ACHIEVEMENT",
 			},
@@ -35311,7 +35311,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		source = "Achievement: win 50 3v3 games at Elite rank",
 		conditions = {
 			{
-				name = "50 Elite 3v3 wins",
+				name = "Gladiator: Midnight Season 2",
 				id = 62930,
 				type = "ACHIEVEMENT",
 			},
@@ -35349,7 +35349,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		},
 		conditions = {
 			{
-				name = "Vicious mount (Horde)",
+				name = "Venomous Combatant (Horde)",
 				id = 63099,
 				type = "ACHIEVEMENT",
 			},
@@ -35378,7 +35378,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		source = "Not yet in the game (12.1 content). Vicious mounts are earned with Vicious Saddles from rated PvP; the Horde counterpart does not exist in the journal either.",
 		conditions = {
 			{
-				name = "Vicious mount (Alliance)",
+				name = "Venomous Combatant (Alliance)",
 				id = 63103,
 				type = "ACHIEVEMENT",
 			},

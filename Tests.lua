@@ -4203,6 +4203,51 @@ local function runLogic()
 				store.achievementsSeen or 0, ambiguous)
 	end)
 
+	check("Every achievement id names the achievement the condition names", function()
+		-- The same question the spell check asks, on the other side of the
+		-- database: an id can be perfectly valid and still be attached to a
+		-- name nobody can look up. Eight conditions DESCRIBED their achievement
+		-- rather than naming it -- "Coiled Isle treasures" for what the game
+		-- calls "Treasures of the Coiled Isle", "Mythic+ rating 2000" for
+		-- "Midnight Keystone Master: Season 2" -- so a player who read the
+		-- requirement and searched their achievement UI for it found nothing.
+		--
+		-- Faction qualifiers are stripped before comparing: the game gives
+		-- 63099 and 63103 the same title, and this database tells them apart
+		-- the way it tells the Vicious mounts apart.
+		if not GetAchievementInfo then return nil, "no achievement API" end
+		local checked, unread, wrong, bad = 0, 0, 0, {}
+		for _, rec in pairs(MM.DBByName) do
+			for _, cond in ipairs(rec.conditions or {}) do
+				if cond.type == "ACHIEVEMENT" and cond.id and cond.name then
+					local ok, _, title = pcall(GetAchievementInfo, cond.id)
+					if not ok or not title or title == "" then
+						unread = unread + 1
+					else
+						checked = checked + 1
+						local mine = cond.name:gsub("%s*%(Horde%)$", "")
+							:gsub("%s*%(Alliance%)$", "")
+						if mine:lower() ~= title:lower() then
+							wrong = wrong + 1
+							if #bad < 3 then
+								bad[#bad + 1] = ("%d is %q, we call it %q")
+									:format(cond.id, title, cond.name)
+							end
+						end
+					end
+				end
+			end
+		end
+		if checked == 0 then return nil, "no achievement resolved on this client" end
+		if wrong > 0 then
+			return false, ("%d of %d achievement id(s) name something else: %s")
+				:format(wrong, checked, table.concat(bad, "; "))
+		end
+		return true, ("%d achievement id(s) checked against the client, every one "
+			.. "named as the game names it%s"):format(checked,
+			unread > 0 and ("; %d not readable here"):format(unread) or "")
+	end)
+
 	check("Every instance mount has a door", function()
 		-- A mount with an `instance` block but no `zone` cannot be routed at
 		-- all: it lands in "no location to route to" and silently never appears
