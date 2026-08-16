@@ -365,6 +365,35 @@ def readme_record_count():
                     f"says {claimed:,}", records))
     return bad
 
+def texture_handed_its_own_path():
+    """A texture passed its own GetTexture() back into a setter.
+
+    Shipped one: `modernTexture(frame, t, t:GetTexture())`, five times over.
+    It reads as a no-op and IS one for a file-backed texture -- which is why it
+    survived review. For an atlas-backed texture it is destructive: GetTexture
+    on an atlas returns the whole SHEET, so setting it drops the atlas
+    coordinates and every icon in the file draws at once. Blizzard's close
+    button is atlas-backed, and it came out as a grid of X glyphs.
+
+    A caller that only wants to record the current look must say so rather than
+    round-tripping the value through a setter.
+    """
+    out = []
+    for path in sorted(glob.glob("UI/*.lua") + glob.glob("*.lua")):
+        if path.startswith(("Libs/", "tools/")):
+            continue
+        for i, line in enumerate(open(path, encoding="utf-8", errors="replace"), 1):
+            if line.lstrip().startswith("--"):
+                continue
+            # the arguments themselves contain calls, so allow one nesting level
+            for m in re.finditer(r"\b(\w+)\s*\(((?:[^()]|\([^()]*\))*)\)", line):
+                args = [a.strip() for a in m.group(2).split(",")]
+                for a in args:
+                    am = re.fullmatch(r"([\w.]+):Get(Texture|Atlas)\(\)", a)
+                    if am and am.group(1) in args:
+                        out.append((path, i, m.group(1), am.group(1), am.group(2)))
+    return out
+
 def kind_styled_but_never_matched():
     """A theme computes styling for a kind whose branch never admits it.
 
@@ -1274,6 +1303,10 @@ def main():
     print(f"a command that does not exist: {len(slash)}")
     for f, i8, c in slash:
         print(f"   {f}:{i8}  names `/mm {c}`, which the dispatcher does not accept")
+    ownpath = texture_handed_its_own_path()
+    print(f"a texture given its own art: {len(ownpath)}")
+    for f, il, fn, var, what in ownpath:
+        print(f"   {f}:{il}  {fn}(... {var}, {var}:Get{what}()) -- a no-op on a file, destructive on an atlas")
     dead = kind_styled_but_never_matched()
     print(f"a kind styled, never matched: {len(dead)}")
     for f, il, fn, k in dead:

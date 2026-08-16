@@ -1785,6 +1785,7 @@ local function runLogic()
 
 		local was = MM.db.theme
 		local broken = {}
+		local atlasBy = {}
 		for _, name in ipairs({ "modern", "blizzard", "elvui" }) do
 			MM.db.theme = name
 			local ok = pcall(T.ReskinAll)
@@ -1813,11 +1814,30 @@ local function runLogic()
 					elseif artAlpha <= 0 then
 						broken[#broken + 1] = name .. "'s close button has no visible art"
 					end
+					-- An atlas names ONE icon inside a shared sheet. Lose it
+					-- and the texture still draws, still has alpha, and shows
+					-- the entire sheet -- a grid of glyphs where the X was.
+					-- Alpha checks cannot see that, so track the atlas itself.
+					if art and art.GetAtlas and shown == frame.mmNativeClose then
+						atlasBy[name] = select(2, pcall(art.GetAtlas, art)) or false
+					end
 				end
 			end
 		end
 		MM.db.theme = was
 		pcall(T.ReskinAll)
+
+		-- Blizzard leaves the native button untouched, so it is the reference
+		-- for what that texture is supposed to be.
+		local reference = atlasBy.blizzard
+		if reference then
+			for name, atlas in pairs(atlasBy) do
+				if atlas == false then
+					broken[#broken + 1] = name ..
+						" dropped the close button's atlas, so it draws the whole sheet"
+				end
+			end
+		end
 
 		if #broken > 0 then
 			return false, table.concat(broken, "; ")

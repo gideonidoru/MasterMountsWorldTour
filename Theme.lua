@@ -683,7 +683,17 @@ T.RestoreTemplateArt = restoreArt
 -- Any Modern control that borrows a native texture records it first. Theme
 -- switching then restores the exact path and geometry instead of relying on a
 -- reload to repair a slider thumb or scrollbar arrow.
-local function modernTexture(frame, texture, path)
+-- Record a texture's original appearance and CHANGE NOTHING.
+--
+-- Callers that only mean to recolour art must use this. modernTexture ends by
+-- applying `path`, and handing it a texture's own GetTexture() reads like a
+-- no-op -- it is one for a file-backed texture. It is not one for an
+-- atlas-backed texture: GetTexture on an atlas returns the whole SHEET, and
+-- setting that discards the atlas coordinates, so every icon in the file draws
+-- at once. Blizzard's close button is atlas-backed and the sweep classifies it
+-- as a glyph, so it came out as a grid of X glyphs -- under ElvUI alone, that
+-- being the only theme which shows the native button rather than hiding it.
+local function rememberTexture(frame, texture)
 	if not (frame and texture and texture.GetTexture and texture.SetTexture) then return end
 	frame.mmModernTextureRestore = frame.mmModernTextureRestore or {}
 	if not frame.mmModernTextureRestore[texture] then
@@ -698,7 +708,11 @@ local function modernTexture(frame, texture, path)
 			desaturated = texture.IsDesaturated and texture:IsDesaturated() or false,
 		}
 	end
-	texture:SetTexture(path)
+end
+
+local function modernTexture(frame, texture, path)
+	rememberTexture(frame, texture)
+	if texture and texture.SetTexture then texture:SetTexture(path) end
 end
 
 restoreModernControls = function(frame)
@@ -812,7 +826,7 @@ function flatSkin(frame, kind, c)
 		-- block behind after switching back to the Blizzard theme.
 		local hl = frame.GetHighlightTexture and frame:GetHighlightTexture()
 		if hl and hl.SetVertexColor then
-			modernTexture(frame, hl, hl:GetTexture())
+			rememberTexture(frame, hl)
 			pcall(hl.SetVertexColor, hl, c.accent[1], c.accent[2], c.accent[3], 0.45)
 			pcall(hl.SetAlpha, hl, 1)
 		end
@@ -843,7 +857,7 @@ function flatSkin(frame, kind, c)
 		-- native checkbox ticks vary by client and can fill the whole 24px target.
 		local checked = frame.GetCheckedTexture and frame:GetCheckedTexture()
 		if checked then
-			modernTexture(frame, checked, checked:GetTexture())
+			rememberTexture(frame, checked)
 			checked:SetAlpha(0)
 		end
 		frame.mmFlatCheck:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
@@ -870,7 +884,7 @@ function flatSkin(frame, kind, c)
 			if frame[get] then
 				local okT, t = pcall(frame[get], frame)
 				if okT and t and t.SetVertexColor then
-					modernTexture(frame, t, t:GetTexture())
+					rememberTexture(frame, t)
 					pcall(t.SetVertexColor, t, dimmed[1], dimmed[2], dimmed[3])
 					pcall(t.SetDesaturated, t, true)
 				end
@@ -878,7 +892,7 @@ function flatSkin(frame, kind, c)
 		end
 		local hl = frame.GetHighlightTexture and frame:GetHighlightTexture()
 		if hl and hl.SetVertexColor then
-			modernTexture(frame, hl, hl:GetTexture())
+			rememberTexture(frame, hl)
 			pcall(hl.SetVertexColor, hl, c.accent[1], c.accent[2], c.accent[3])
 		end
 		return
@@ -901,7 +915,7 @@ function flatSkin(frame, kind, c)
 		flatBorder(frame, c.border[1], c.border[2], c.border[3], 1)
 		local thumb = frame.GetThumbTexture and frame:GetThumbTexture()
 		if thumb and thumb.SetVertexColor then
-			modernTexture(frame, thumb, thumb:GetTexture())
+			rememberTexture(frame, thumb)
 			thumb:SetVertexColor(c.accent[1], c.accent[2], c.accent[3], 1)
 		end
 		return
