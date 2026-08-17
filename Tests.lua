@@ -1048,10 +1048,9 @@ local function runData()
 				ungated[#ungated + 1] = rec.name
 			end
 		end
-		-- Two are deliberately not gated and say why in Data_99zzZr: one is a
-		-- world-boss drop whose record does not state a week, and one disagrees
-		-- with itself about which currency buys it.
-		local KNOWN = { ["Illidari Doomhawk"] = true, ["Sandy Shalewing"] = true }
+		-- One is deliberately not gated and says why in Data_99zzZr: a
+		-- world-boss drop whose record does not state a week.
+		local KNOWN = { ["Illidari Doomhawk"] = true }
 		local unexpected = {}
 		for _, n in ipairs(ungated) do
 			if not KNOWN[n] then unexpected[#unexpected + 1] = n end

@@ -118,23 +118,47 @@ local function normalise(name)
 	return (name:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
+-- REPORTED FROM PLAY, as coordinates for the wrong Silvermoon.
+--
+-- Four zone keys in the shipped list end " m", and they are the four Quel'Thalas
+-- zones Midnight rebuilt: eversong woods, isle of quel danas, silvermoon city,
+-- zul aman. Nothing stripped that suffix and nothing preferred it, so both
+-- halves of the list were wrong in opposite directions:
+--
+--   * "Eversong Woods" matched the PRE-MIDNIGHT list on the direct lookup,
+--     whose Silvermoon City flight master stands at 54.37, 50.73 -- a
+--     coordinate in the old city.
+--   * "Silvermoon City", "Isle of Quel'Danas" and "Zul'Aman" have ONLY a
+--     Midnight key, so they matched nothing at all and reported as zones with
+--     no flight point while their data sat in the file.
+--
+-- The client is Midnight, so the " m" list is the live one and wins wherever
+-- both exist. The older list is still reachable under its own exact key, which
+-- is what a caller naming it explicitly should get.
+local MIDNIGHT_SUFFIX = "%s+m$"
+
 local normIndex
 local function lookup(name)
 	local data = MM.FlightPointData
 	if not data then return nil end
-	local direct = data[(name or ""):lower()]
+	local lower = (name or ""):lower()
+	-- Midnight first, then the name as given.
+	local direct = data[lower .. " m"] or data[lower]
 	if direct then return direct end
 
 	if not normIndex then
 		normIndex = {}
 		for key, list in pairs(data) do
-			local n = normalise(key)
-			-- First writer wins: a real zone must not be shadowed by a suffixed
-			-- variant of a different one.
-			if n ~= "" and not normIndex[n] then normIndex[n] = list end
+			local n = normalise(key):gsub(MIDNIGHT_SUFFIX, "")
+			-- Midnight OVERWRITES; everything else keeps first-writer-wins, so a
+			-- real zone still cannot be shadowed by a suffixed variant of a
+			-- different one.
+			if n ~= "" and (not normIndex[n] or key:find(MIDNIGHT_SUFFIX)) then
+				normIndex[n] = list
+			end
 		end
 	end
-	local n = normalise(name)
+	local n = normalise(name):gsub(MIDNIGHT_SUFFIX, "")
 	return normIndex[n] or normIndex[(n:gsub("^the%s+", ""))] or normIndex["the " .. n]
 end
 

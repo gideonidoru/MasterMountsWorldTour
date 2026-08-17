@@ -24119,19 +24119,10 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		spellID = 408654,
 		itemID = 205208,
 		expansion = 9,
-		category = "CURRENCY",
+		category = "VENDOR",
 		obtainable = true,
-		source = "Purchased with Paracausal Flakes from the Time Rift vendor in Thaldraszus (10.1.5)",
-		zone = {
-			name = "Thaldraszus",
-			mapID = 2025,
-		},
+		source = "Bought with Timewarped Badges from whichever Timewalking vendor is live -- stocked in every era.",
 		conditions = {
-			{
-				name = "Paracausal Flakes",
-				id = 2594,
-				type = "CURRENCY",
-			},
 			{
 				name = "Timewarped Badge",
 				amount = 5000,
@@ -24162,8 +24153,10 @@ The zone below is only a fallback for when the client cannot be asked where the 
 			},
 		},
 		timePerAttempt = 15,
-		effort = 3,
-		notes = "Farm Paracausal Flakes from Time Rift events.",
+		effort = 2,
+		holidayGate = "Timewalking",
+		anyEra = true,
+		notes = "Any Timewalking week works. Originally free from the Master of the Turbulent Timeways achievement (Turbulent Timeways I/II).",
 	},
 	{
 		name = "Duskwing Ohuna",
@@ -48316,7 +48309,7 @@ MM.quantumCourserPool = {
 	"Cartel Master's Gearglider",
 }
 
--- the 13 Timewalking mounts catalogued under another category
+-- the 14 Timewalking mounts catalogued under another category
 MM.timewalkingGated = {
 	"Amani Hunting Bear",
 	"Broodling of Sinestra",
@@ -48326,6 +48319,7 @@ MM.timewalkingGated = {
 	"Ivory Savagemane",
 	"Moonlit Nightsaber",
 	"Nightfall Skyreaver",
+	"Sandy Shalewing",
 	"Soaring Spelltome",
 	"Timely Buzzbee",
 	"Ur'zul Fleshripper",
