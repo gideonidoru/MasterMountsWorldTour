@@ -10568,7 +10568,19 @@ MM.AddMounts({
 		},
 		timePerAttempt = 30,
 		effort = 3,
-		notes = "The big Apexis sink of patch 6.2. Friendly is a low bar and arrives from the first few Tanaan dailies -- the 150,000 crystals are the real cost. Tanaan rares, treasures and daily objectives are the fastest source today.",
+		notes = "The big Apexis sink of patch 6.2. Friendly is a low bar and arrives from the first few Tanaan dailies -- the 150,000 crystals are the real cost. Tanaan rares, treasures and daily objectives are the fastest source today. Dawn-Seeker Krisek stands in two places in Tanaan Jungle -- 60.4, 46.6 and 57.8, 59.4 -- and either sells it.",
+		spawns = {
+			{
+				mapID = 534,
+				x = 60.4,
+				y = 46.6,
+			},
+			{
+				mapID = 534,
+				x = 57.8,
+				y = 59.4,
+			},
+		},
 	},
 	{
 		name = "Armored Irontusk",
