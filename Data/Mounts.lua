@@ -24157,6 +24157,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		holidayGate = "Timewalking",
 		anyEra = true,
 		notes = "Any Timewalking week works. Originally free from the Master of the Turbulent Timeways achievement (Turbulent Timeways I/II).",
+		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
 	{
 		name = "Duskwing Ohuna",

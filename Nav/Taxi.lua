@@ -111,10 +111,18 @@ end
 -- where the shipped list says "dalaran", and it carries sub-map suffixes like
 -- "the forbidden reach/5". Two of five apparent gaps were this, not missing
 -- data -- so the names are normalised on both sides before giving up.
+-- The apostrophe is not written consistently on either side. Older keys keep it
+-- ("isle of quel'danas", "dazar'alor"); the Midnight keys were generated with it
+-- turned into a space ("isle of quel danas m", "zul aman m"). Our records write
+-- it the way the game does, so "Zul'Aman" matched neither. Folding it to a space
+-- on BOTH sides makes the three spellings one string.
 local function normalise(name)
 	name = (name or ""):lower()
 	name = name:gsub("/%d+$", "")          -- sub-map suffix
 	name = name:gsub("%s*%b()%s*$", "")    -- "(Broken Isles)"
+	name = name:gsub("'", " ")             -- quel'danas / quel danas
+	name = name:gsub("%s+m$", "")          -- the Midnight variant of a zone
+	name = name:gsub("%s+", " ")
 	return (name:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
@@ -137,19 +145,19 @@ end
 -- is what a caller naming it explicitly should get.
 local MIDNIGHT_SUFFIX = "%s+m$"
 
+-- DELIBERATELY NOT AN EXACT-KEY SHORTCUT FIRST. "Isle of Quel'Danas" is a real
+-- key in its own right AND has a Midnight twin under a different spelling, so an
+-- exact hit would return the pre-Midnight list and never look further. Every
+-- lookup goes through the normalised index, where Midnight wins.
 local normIndex
 local function lookup(name)
 	local data = MM.FlightPointData
 	if not data then return nil end
-	local lower = (name or ""):lower()
-	-- Midnight first, then the name as given.
-	local direct = data[lower .. " m"] or data[lower]
-	if direct then return direct end
 
 	if not normIndex then
 		normIndex = {}
 		for key, list in pairs(data) do
-			local n = normalise(key):gsub(MIDNIGHT_SUFFIX, "")
+			local n = normalise(key)
 			-- Midnight OVERWRITES; everything else keeps first-writer-wins, so a
 			-- real zone still cannot be shadowed by a suffixed variant of a
 			-- different one.
@@ -158,7 +166,7 @@ local function lookup(name)
 			end
 		end
 	end
-	local n = normalise(name):gsub(MIDNIGHT_SUFFIX, "")
+	local n = normalise(name)
 	return normIndex[n] or normIndex[(n:gsub("^the%s+", ""))] or normIndex["the " .. n]
 end
 
