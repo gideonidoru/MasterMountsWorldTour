@@ -934,6 +934,28 @@ local function runData()
 			:format(matched, total, pct)
 	end)
 
+	check("Every mount the Quantum Courser can give is still in the pool", function()
+		-- Reins of the Quantum Courser grants one of sixteen mounts, and the pool
+		-- is written in ITEM names everywhere it is published -- eleven of the
+		-- sixteen differ from the mount's own name. Each is resolved by name at
+		-- load, so a rename anywhere in those sixteen would drop a member and
+		-- shrink the pool without a word.
+		--
+		-- The item is not modelled as a cost. This asserts only that the source
+		-- reached every mount it belongs to.
+		local pool = MM.quantumCourserPool or {}
+		local missed = MM.quantumCourserMisses or {}
+		if #pool == 0 and #missed == 0 then return nil, "pool not declared" end
+		if #missed > 0 then
+			return false, ("%d pool member(s) no longer resolve: %s"):format(
+				#missed, table.concat(missed, ", ", 1, math.min(3, #missed)))
+		end
+		if #pool ~= 16 then
+			return false, ("the pool is sixteen mounts, %d resolved"):format(#pool)
+		end
+		return true, ("%d mounts carry the Quantum Courser as a source"):format(#pool)
+	end)
+
 	check("A record removed as a phantom was actually there", function()
 		-- Seven records named a mount the game does not have -- the same mount
 		-- catalogued a second time under a spelling Mount.db2 has never used,

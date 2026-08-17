@@ -1460,7 +1460,7 @@ MM.AddMounts({
 		attempts = "NONE",
 		timePerAttempt = 10,
 		effort = 4,
-		notes = "No lockout, but limited by the 10-instances-per-hour cap. The item (Deathcharger's Reins) is BoE-era loot lore, but it is a normal drop today.",
+		notes = "No lockout, but limited by the 10-instances-per-hour cap. The item (Deathcharger's Reins) is BoE-era loot lore, but it is a normal drop today. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		dropObserved = {
 			count = 1837,
 			outOf = 212124,
@@ -2255,7 +2255,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 5,
 		effort = 4,
-		notes = "Must set the dungeon to Heroic; Anzu spawns without any summoning requirement nowadays. Daily per-character heroic lockout.",
+		notes = "Must set the dungeon to Heroic; Anzu spawns without any summoning requirement nowadays. Daily per-character heroic lockout. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 	},
 	{
 		name = "Swift White Hawkstrider",
@@ -2284,7 +2284,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 8,
 		effort = 4,
-		notes = "Heroic only. Daily per-character heroic lockout.",
+		notes = "Heroic only. Daily per-character heroic lockout. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 	},
 	{
 		name = "Onyx Netherwing Drake",
@@ -4556,7 +4556,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 8,
 		effort = 3,
-		notes = "Heroic only. Daily lockout makes this a quick daily farm.",
+		notes = "Heroic only. Daily lockout makes this a quick daily farm. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 	},
 	{
 		name = "Bronze Drake",
@@ -6535,7 +6535,7 @@ MM.AddMounts({
 		attempts = "NONE",
 		timePerAttempt = 5,
 		effort = 3,
-		notes = "Drops on BOTH Normal and Heroic. Normal can be reset and re-run (10 instances/hour cap); Heroic locks daily.",
+		notes = "Drops on BOTH Normal and Heroic. Normal can be reset and re-run (10 instances/hour cap); Heroic locks daily. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		dropObserved = {
 			count = 1073,
 			outOf = 139155,
@@ -6568,7 +6568,7 @@ MM.AddMounts({
 		attempts = "NONE",
 		timePerAttempt = 7,
 		effort = 3,
-		notes = "Drops on BOTH Normal and Heroic. Normal is resettable (10 instances/hour cap); Heroic locks daily.",
+		notes = "Drops on BOTH Normal and Heroic. Normal is resettable (10 instances/hour cap); Heroic locks daily. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 	},
 	{
 		name = "Armored Razzashi Raptor",
@@ -6595,7 +6595,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 10,
 		effort = 3,
-		notes = "Heroic-only dungeon (patch 4.1 version of Zul'Gurub). Walk in directly; no group needed today.",
+		notes = "Heroic-only dungeon (patch 4.1 version of Zul'Gurub). Walk in directly; no group needed today. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		dropObserved = {
 			count = 2116,
 			outOf = 308873,
@@ -6627,7 +6627,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 12,
 		effort = 3,
-		notes = "Heroic-only dungeon. Not the same mount as the removed vanilla ZG panther.",
+		notes = "Heroic-only dungeon. Not the same mount as the removed vanilla ZG panther. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		dropObserved = {
 			count = 2593,
 			outOf = 285605,
@@ -11665,7 +11665,7 @@ MM.AddMounts({
 		timePerAttempt = 10,
 		effort = 3,
 		blackmarket = true,
-		notes = "Mythic-only dungeon; Attumen is reachable in a few minutes via the stables.",
+		notes = "Mythic-only dungeon; Attumen is reachable in a few minutes via the stables. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		dropObserved = {
 			count = 1038,
 			outOf = 110237,
@@ -14625,7 +14625,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 10,
 		effort = 3,
-		notes = "Taught by Underrot Crawg Harness. Farm Mythic daily; Heroic/Normal also eligible.",
+		notes = "Taught by Underrot Crawg Harness. Farm Mythic daily; Heroic/Normal also eligible. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		paths = {
 			{
 				zone = {
@@ -14667,7 +14667,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 15,
 		effort = 3,
-		notes = "Taught by the Mummified Raptor Skull. King's Rest was a Mythic-only dungeon in BfA; run it on Mythic daily.",
+		notes = "Taught by the Mummified Raptor Skull. King's Rest was a Mythic-only dungeon in BfA; run it on Mythic daily. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		paths = {
 			{
 				zone = {
@@ -14779,7 +14779,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 12,
 		effort = 3,
-		notes = "Taught by Sharkbait's Favorite Crackers.",
+		notes = "Taught by Sharkbait's Favorite Crackers. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		paths = {
 			{
 				zone = {
@@ -14850,7 +14850,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 20,
 		effort = 3,
-		notes = "Activate the hard-mode consoles (as for the Hertz Locker achievement) before the fight for the mount-eligible kill.",
+		notes = "Activate the hard-mode consoles (as for the Hertz Locker achievement) before the fight for the mount-eligible kill. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 	},
 	{
 		name = "Obsidian Krolusk",
@@ -21208,6 +21208,7 @@ MM.AddMounts({
 		attempts = "DAILY",
 		timePerAttempt = 20,
 		effort = 4,
+		notes = "Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		dropObserved = {
 			count = 226,
 			outOf = 49948,
@@ -21290,7 +21291,7 @@ MM.AddMounts({
 		timePerAttempt = 40,
 		effort = 4,
 		access = "Portal to Oribos, then take the taxi out to the Veiled Market.",
-		notes = "Guaranteed from Hard Mode while 9.1 was current; now a low-chance drop.",
+		notes = "Guaranteed from Hard Mode while 9.1 was current; now a low-chance drop. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 	},
 	{
 		name = "Tazavesh Gearglider",
@@ -30255,7 +30256,7 @@ MM.AddMounts({
 		timePerAttempt = 20,
 		effort = 4,
 		anyEra = true,
-		notes = "Only during a Timewalking Dungeon Event week. Every dungeon boss (and TW raid bosses) has a chance.",
+		notes = "Only during a Timewalking Dungeon Event week. Every dungeon boss (and TW raid bosses) has a chance. Also from Reins of the Quantum Courser (item 208216), about 1.3% from Chrono-Lord Deios in Dawn of the Infinite: it grants a mount you do not already own from a pool of sixteen, so it can never be a duplicate. Tradeable within the run, and it can drop more than once.",
 		noLocationReason = "Drops from ANY Timewalking boss, weekly cache or the Quantum Courser -- no single source to route to",
 		unpriced = "a rare drop from any Timewalking boss",
 	},
