@@ -34997,6 +34997,12 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		npc = {
 			name = "Zul'jan",
 		},
+		zone = {
+			name = "Vaults of Atal'Utek",
+			mapID = 2509,
+			x = 47.2,
+			y = 68.1,
+		},
 		instance = {
 			name = "Altar of Fangs",
 			lockout = "DAILY",
@@ -35015,7 +35021,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		attempts = "DAILY",
 		timePerAttempt = 25,
 		effort = 3,
-		noLocationReason = "Instance entrance not recorded yet -- queue or walk in",
 	},
 	{
 		name = "Primeval Skyfriend",
@@ -35027,6 +35032,12 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		source = "Drops from Ula'tek in The Venomous Abyss on Mythic difficulty",
 		npc = {
 			name = "Ula'tek",
+		},
+		zone = {
+			name = "Vaults of Atal'Utek",
+			mapID = 2509,
+			x = 47.2,
+			y = 22.9,
 		},
 		instance = {
 			name = "The Venomous Abyss",
@@ -35048,7 +35059,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		timePerAttempt = 60,
 		effort = 5,
 		notes = "Mythic raid — needs a full group.",
-		noLocationReason = "Instance entrance not recorded yet -- queue or walk in",
 		solo = false,
 	},
 	{
@@ -35059,6 +35069,12 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		category = "ACHIEVEMENT",
 		obtainable = true,
 		source = "Achievement meta: complete the The Venomous Abyss achievements",
+		zone = {
+			name = "Vaults of Atal'Utek",
+			mapID = 2509,
+			x = 47.2,
+			y = 22.9,
+		},
 		instance = {
 			name = "The Venomous Abyss",
 			lockout = "WEEKLY",
