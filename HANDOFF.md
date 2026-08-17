@@ -16,8 +16,15 @@
   the notice the MIT licence requires be included in all copies.
 - **1.2.2 is released and uploaded to CurseForge** (tag `v1.2.2` on `ba20acf`).
 - **1.2.3 is released and uploaded to CurseForge**, tagged `v1.2.3` on
-  `9eaa847` -- the commit the clean report measured.
-- **Working version is 1.2.4, unreleased and untagged.** Nothing in it yet.
+  `9eaa847` -- the commit the clean report measured. NOTE: the tag on the remote
+  still points at `6db76ba`, one commit earlier, and correcting it needs a
+  force-push of a published tag. Left for the maintainer to decide.
+- **1.2.4 is released and uploaded to CurseForge**, tagged `v1.2.4` on
+  `e5844a5`. Twenty-five phantom records removed (1,621 -> 1,596), one real
+  mount recovered from "unobtainable TCG loot" (Ultramarine Qiraji Battle Tank,
+  an archaeology solve), and the Quantum Courser recorded as a source on the
+  sixteen mounts it can give.
+- **Working version is 1.2.5, unreleased and untagged.** Nothing in it yet.
   1.2.1 shipped to CurseForge on 2026-08-16 and is tagged `v1.2.1`; it was
   mostly player reports and what they turned out to be hiding -- a finished
   Timewalking week reading as a live one, the close button on ElvUI, Blizzard

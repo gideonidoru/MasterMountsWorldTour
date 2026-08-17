@@ -1059,14 +1059,25 @@ def instance_name_shared_across_expansions():
     Records that carry distinct ids are pinned and correct; records that carry
     the SAME id are one dungeon and fine; and only records with no id to tell
     them apart are still guessing, which is the case worth reporting.
+
+    A SHARED BOSS SETTLES IT TOO, and costs nothing to know. Three mounts drop
+    from Coren Direbrew's one Brewfest chest, two of them added in Classic and
+    the third in 11.2, so Blackrock Depths reported here the moment the three
+    records were made to agree on the instance name -- the rule had only been
+    quiet because one of them was spelling it differently, which was the actual
+    defect. Mounts that name the same boss are in the same dungeon by
+    definition; that is the Zul'Aman case again, and asserting a journal id to
+    silence it would be inventing data to satisfy a check.
     """
     bad = []
     flat = "Data/Mounts.lua"
     if not os.path.exists(flat):
         return bad
     text = open(flat, encoding="utf-8").read()
+    boss_re = re.compile(r"\bfrom (?:the )?((?:[A-Z][\w'-]+ ){0,3}[A-Z][\w'-]+)'s\b")
     byname = collections.defaultdict(set)
     holder = collections.defaultdict(list)
+    bosses = collections.defaultdict(list)
     for rec in text.split("\n\t{\n")[1:]:
         body = rec.split("\n\t},")[0]
         inst = re.search(r'instance = \{[^}]*name = "([^"]+)"', body) \
@@ -1076,9 +1087,12 @@ def instance_name_shared_across_expansions():
         if not (inst and exp and nm):
             continue
         jid = re.search(r'journalInstanceID = (\d+)', body)
+        src = re.search(r'\bsource = "([^"]*)"', body)
+        boss = boss_re.search(src.group(1)) if src else None
         byname[inst.group(1)].add(exp.group(1))
         holder[inst.group(1)].append((nm.group(1), exp.group(1),
                                       jid.group(1) if jid else None))
+        bosses[inst.group(1)].append(boss.group(1) if boss else None)
     for iname, exps in sorted(byname.items()):
         if len(exps) < 2:
             continue
@@ -1087,6 +1101,9 @@ def instance_name_shared_across_expansions():
             continue          # every record pinned, and pinned differently
         if all(ids) and len(set(ids)) == 1:
             continue          # every record pinned to the SAME dungeon
+        seen = bosses[iname]
+        if all(seen) and len(set(seen)) == 1:
+            continue          # one boss, so one dungeon, whatever the expansions
         who = ", ".join(
             f"{n} (exp {e}{'' if j is None else ', id ' + j})"
             for n, e, j in sorted(holder[iname]))

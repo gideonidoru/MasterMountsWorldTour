@@ -1,5 +1,91 @@
 # Changelog
 
+## 1.2.4 — 2026-08-16
+
+Twenty-five records named mounts the game does not have, and one real mount was
+filed as gone.
+
+### Mounts that were never there
+
+- **Twenty-five phantom records removed**, taking the database from 1,621 to
+  1,596. Every one named a mount with no entry in the game's own mount table:
+  the same mount catalogued twice under a spelling never used (Sunflash for
+  Sunflare, Scorching Courage for Scorching Valor), an item recorded as though
+  it were the mount it teaches, a garrison ability, a druid shapeshift form,
+  and six that simply are not in the game. A phantom is indistinguishable from
+  a missing mount in every count that walks the database, so each one had been
+  reported as a gap in your collection that no amount of play could close.
+
+- **A real mount was recovered.** The Ultramarine Qiraji Battle Tank was marked
+  as an unobtainable TCG loot card. It is an archaeology mount — a rare Tol'vir
+  solve for 150 fragments — and it is obtainable today. Chasing a phantom found
+  it, because the phantom was the archaeology *project* filed beside it.
+
+- **Reins of the Quantum Courser is recorded as a source, on all sixteen mounts
+  it can give.** It drops from Chrono-Lord Deios in Dawn of the Infinite and
+  grants a mount you do not already own, so it can never be a duplicate. Eleven
+  of the sixteen are published under an item name that differs from the mount's
+  own — Deathcharger's Reins is Rivendare's Deathcharger, Mummified Raptor Skull
+  is Tomb Stalker — and each now says so in its own tooltip.
+
+- **The Brewfest Bomber offers the queue instead of a walk.** Three mounts drop
+  from Coren Direbrew's one daily chest, and the third disagreed with the other
+  two about which instance it was, what difficulty it ran at, and where the door
+  is. It alone was routed as a journey to a mountainside.
+
+### Under the hood
+
+- **Two self-test checks now actually run.** Both were written against data that
+  only exists while the database is being built, so in a shipped copy they
+  reported "not declared" and counted as skipped. They now check the database
+  you loaded: that no removed record has come back, and that all sixteen
+  Quantum Courser mounts still name their source.
+
+- **Archaeology mounts stopped asking for a recipe.** Nothing is combined to
+  make them, so they will never have a reagent list, and they now say that
+  rather than sitting in a list headed "open a profession window".
+
+- **The published files no longer carry anyone's home directory.**
+
+## 1.2.3 — 2026-08-16
+
+Places you could not get to, and a line break the journal writes as two
+characters.
+
+### Getting there
+
+- **The Coiled Isle is reachable.** It sat 4,226 yards off the coast with no
+  route to it, so four mounts there were never planned. The three gates down
+  into the Vaults of Atal'Utek, the Siren Isle ship and mole machine, and two
+  instance doors read from the game's own point-of-interest data are all
+  recorded now — Siren Isle alone had six goals and no way in.
+
+- **Twelve Coiled Isle rares are watched for.** Ruby Writhe and Topaz Skyfang
+  drop from any of them and named no creature at all, which meant the rare alert
+  never fired and the map showed nothing. Every one now has a coordinate,
+  including the two that are not simply standing there.
+
+- **Every named vendor has a coordinate.** The list that reports this was
+  reading a different table from the one the route reads, so five vendors looked
+  answered and were not.
+
+### Saying what is actually true
+
+- **Thirteen mounts missing from the catalogue were a line break.** The journal
+  writes one as the two characters `|n`, not as a newline, and the export that
+  finds uncatalogued mounts only looked for the latter.
+
+- **Horrific Visions are retired, and the planner did not know.** Two mounts
+  were still being routed toward content nobody can enter — twelve hours of
+  budgeted work for the motorbike alone. Both are parked with their steps and
+  coordinates intact, against the content returning.
+
+- **Four achievement requirements named the wrong achievement**, including one
+  that named the other faction's version.
+
+- **The Skull of Er'inye is not on the isle**, and a mount is no longer charged
+  for an item nobody can loot.
+
 ## 1.2.2 — 2026-08-16
 
 Player reports, and a zone that had been quietly costing more than it should.

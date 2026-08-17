@@ -2,7 +2,7 @@
 ## Title: Master Mounts – World Tour
 ## Notes: The definitive mount collector — collection audit, availability and lockouts, farm planning, routing and navigation.
 ## Author: Indrik - Mal'Ganis
-## Version: 1.2.4
+## Version: 1.2.5
 ## SavedVariables: MasterMountsDB
 ## SavedVariablesPerCharacter: MasterMountsCharDB
 ## IconTexture: Interface\AddOns\MasterMountsWorldTour\Media\icon
