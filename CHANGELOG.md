@@ -1,5 +1,52 @@
 # Changelog
 
+## 1.2.5 — 2026-08-16
+
+Two player reports, and the six defects behind them.
+
+### "You are still showing the timewalking mounts when 'available now' is checked"
+
+- **Fourteen Timewalking mounts no longer appear as available outside a
+  Timewalking week.** The window was only ever asked about for mounts filed
+  under the Timewalking category, and most of these are filed by how you get
+  them instead — the Enchanted Spellweave Carpet is a vendor purchase, and
+  that is the right thing for it to be. It is just a vendor who exists one week
+  in seven. The category stays and the window is now stated separately, the
+  same way the Darkmoon Faire mounts have always worked.
+
+- **Sandy Shalewing is a Timewalking mount, and was reading as a Time Rift
+  one.** It has two sources recorded and kept the wrong one, so it asked for
+  Paracausal Flakes in Thaldraszus rather than 5,000 Timewarped Badges from
+  whichever vendor is live. It was also being charged for both at once.
+
+### "Your coords for the org portal in silvermoon are for old silvermoon"
+
+- **Midnight's flight points are used where Midnight rebuilt the zone.** Four
+  Quel'Thalas zones are listed twice, once as they were and once as they are,
+  and nothing preferred the newer half. Eversong Woods was handing out the old
+  Silvermoon City flight master's position; Zul'Aman, Silvermoon City and the
+  Isle of Quel'Danas matched nothing at all and reported as zones with no
+  flight point while their data sat in the file. Four Zul'Aman mounts now land
+  at Amani'Zar Village.
+
+- **Dazar'alor's Silvermoon portal lands in the city it actually lands in.**
+  Both Silvermoons are real and both have an Orgrimmar portal; only this route
+  pointed at the wrong one.
+
+### Found while checking those
+
+- **The Ravenous Black Gryphon is Alliance and the White War Wolf is Horde.**
+  They were recorded the other way round, so a Horde player was offered the
+  gryphon they cannot buy and never shown the wolf they can. Both are 3,000
+  Paracausal Flakes from Warden Krizzik in the Warlands Time Rift.
+
+- **Every Time Rift mount names its rift as well as its vendor** — Azmourne,
+  A.Z.E.R.O.T.H., Azewrath, Azq'roth, Ulderoth and Warlands. All seven prices
+  were already correct at 3,000 flakes.
+
+- **Stonard is in Swamp of Sorrows.** It was filed on the Azshara map, in
+  Kalimdor, with coordinates that were right for Swamp of Sorrows all along.
+
 ## 1.2.4 — 2026-08-16
 
 Twenty-five records named mounts the game does not have, and one real mount was

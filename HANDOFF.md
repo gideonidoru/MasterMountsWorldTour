@@ -24,7 +24,14 @@
   mount recovered from "unobtainable TCG loot" (Ultramarine Qiraji Battle Tank,
   an archaeology solve), and the Quantum Courser recorded as a source on the
   sixteen mounts it can give.
-- **Working version is 1.2.5, unreleased and untagged.** Nothing in it yet.
+- **1.2.5 is released and uploaded to CurseForge**, tagged `v1.2.5` on
+  `a73fce1`. Two player reports and the six defects behind them: fourteen
+  Timewalking mounts offered outside a Timewalking week, a flight point
+  list whose Midnight half was unreachable, Sandy Shalewing charged in two
+  currencies at once, the Warlands pair sold to the wrong factions, Stonard
+  filed on the wrong continent, and Dazar'alor's portal aimed at the wrong
+  Silvermoon.
+- **Working version is 1.2.6, unreleased and untagged.** Nothing in it yet.
   1.2.1 shipped to CurseForge on 2026-08-16 and is tagged `v1.2.1`; it was
   mostly player reports and what they turned out to be hiding -- a finished
   Timewalking week reading as a live one, the close button on ElvUI, Blizzard
