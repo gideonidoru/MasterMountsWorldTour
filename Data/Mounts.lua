@@ -10549,9 +10549,8 @@ MM.AddMounts({
 		source = "Sold by Dawn-Seeker Krisek in Tanaan Jungle for 150,000 Apexis Crystals, at Friendly with the Order of the Awakened.",
 		vendor = "Dawn-Seeker Krisek",
 		zone = {
+			name = "Tanaan Jungle",
 			mapID = 534,
-			x = 57.8,
-			y = 59.4,
 		},
 		conditions = {
 			{
@@ -45646,7 +45645,7 @@ MM.AddMounts({
 	},
 })
 
--- 43 vendor locations
+-- 47 vendor locations
 MM.AddVendorLocations({
 	["anub'okki"] = {
 		name = "Azj-Kahet",
@@ -45724,6 +45723,12 @@ MM.AddVendorLocations({
 		x = 54.5,
 		y = 39,
 	},
+	["dawn-seeker krisek"] = {
+		name = "Tanaan Jungle",
+		mapID = 534,
+		x = 60.4,
+		y = 46.6,
+	},
 	["drake dealer hurlunk"] = {
 		name = "Shadowmoon Valley",
 		mapID = 104,
@@ -45781,6 +45786,18 @@ MM.AddVendorLocations({
 		name = "Tazavesh, the Veiled Market",
 		x = 40.6,
 		y = 29.1,
+	},
+	pogg = {
+		name = "Tol Barad Peninsula",
+		mapID = 245,
+		x = 54.6,
+		y = 81,
+	},
+	["quartermaster brazie"] = {
+		name = "Tol Barad Peninsula",
+		mapID = 245,
+		x = 72.4,
+		y = 63,
 	},
 	["rocco razzboom"] = {
 		name = "Undermine",
@@ -45870,6 +45887,12 @@ MM.AddVendorLocations({
 		approx = true,
 		x = 57.3,
 		y = 51.1,
+	},
+	["z'tenga the walker"] = {
+		name = "Tanaan Jungle",
+		mapID = 534,
+		x = 55.2,
+		y = 74.8,
 	},
 	["zo'turu"] = {
 		name = "K'aresh",
