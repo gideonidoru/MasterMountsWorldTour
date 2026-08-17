@@ -1507,6 +1507,22 @@ MM.TravelEdges = {
 	{from="EMERALD_DREAMWAY_DUSKWOOD_PORTAL",to="DUSKWOOD_DRUID",method="portal"},
 }
 
+-- MAPS THAT ARE ENTERED, NOT TRAVELLED TO.
+--
+-- The gap report lists a zone holding goals with no travel node, because
+-- that is usually a link nobody has recorded yet. For these it is not: a
+-- Horrific Vision is a scenario you step into from a fixed entrance, and no
+-- endpoint pair or portal edge exists to find. Dungeon and raid maps are
+-- already excluded by their map type; these are ordinary Zone-typed maps
+-- that behave the same way, so they have to be stated.
+--
+-- The reason travels with the id deliberately. An unexplained exclusion
+-- list is indistinguishable from a list of things somebody gave up on.
+MM.EnteredNotTravelled = {
+	[2404] = "Vision of Stormwind -- a Horrific Vision, entered from Dornogal "
+		.. "rather than travelled to",
+}
+
 MM.MapTraversalGroup = {
 	[13]="EK_OVERWORLD",
 	[12]="KALIMDOR_OVERWORLD",

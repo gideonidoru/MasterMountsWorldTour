@@ -15,8 +15,9 @@
   whose zip contains `LICENSE`; every 1.1.x download was a distribution without
   the notice the MIT licence requires be included in all copies.
 - **1.2.2 is released and uploaded to CurseForge** (tag `v1.2.2` on `ba20acf`).
-- **1.2.3 is tagged and verified** (`v1.2.3` on `6db76ba`), not yet uploaded.
-- **Working version is 1.2.4, unreleased and untagged.**
+- **Working version is 1.2.3, tagged but NOT uploaded.** The `v1.2.3` tag sits
+  on `6db76ba` and work has landed since, so the tag needs to move forward to
+  whatever the final verified commit is before the zip goes to CurseForge.
   1.2.1 shipped to CurseForge on 2026-08-16 and is tagged `v1.2.1`; it was
   mostly player reports and what they turned out to be hiding -- a finished
   Timewalking week reading as a live one, the close button on ElvUI, Blizzard

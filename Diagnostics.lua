@@ -661,6 +661,8 @@ MM:On("MM_GAPS_DEBUG", function()
 	-- Named here because it is not derivable from the client: it needs the two
 	-- ends of a portal, and nothing exposes those but standing at them.
 	local offNetwork, instanceMaps = {}, 0
+	-- Maps deliberately left out, with the reason each one gives.
+	local enteredMaps = {}
 	local onNet = MM.Journey and MM.Journey.ZoneOnNetwork
 	for _, rec in pairs(onNet and MM.DBByName or {}) do
 		if rec.obtainable and rec.zone and rec.zone.mapID
@@ -679,7 +681,15 @@ MM:On("MM_GAPS_DEBUG", function()
 				-- asking somebody to go and measure one wastes their evening.
 				-- Counted rather than dropped in silence.
 				local kind = info and info.mapType
-				if kind and kind > 3 then
+				-- STATED EXCLUSIONS FIRST. A Horrific Vision is a Zone-typed map
+				-- you step into from a fixed entrance; there is no endpoint pair
+				-- to survey and no portal edge to find, so listing it beside zones
+				-- that genuinely want one asks somebody to go and do nothing.
+				if (MM.EnteredNotTravelled or {})[rec.zone.mapID] then
+					offNetwork[rec.zone.mapID] = false
+					enteredMaps[rec.zone.mapID] = MM.EnteredNotTravelled[rec.zone.mapID]
+					z = false
+				elseif kind and kind > 3 then
 					offNetwork[rec.zone.mapID] = false
 					instanceMaps = instanceMaps + 1
 					z = false
@@ -819,6 +829,19 @@ MM:On("MM_GAPS_DEBUG", function()
 				.. "%d -- one place under two ids, and it IS on the network.|r",
 				tostring((a and a.name) or mapID), other, mapID)
 		end
+	end
+
+	-- OUTSIDE the block above on purpose. Once the last genuinely unreachable
+	-- zone is wired, offList is empty and that block does not run -- and a
+	-- deliberate exclusion that only prints while something else is broken is
+	-- indistinguishable from having been forgotten.
+	local excluded = {}
+	for _, why in pairs(enteredMaps) do excluded[#excluded + 1] = why end
+	if #excluded > 0 then
+		table.sort(excluded)
+		MM:Print("|cff9a9a9aEntered rather than travelled to, so not counted as a "
+			.. "gap (%d):|r", #excluded)
+		for _, why in ipairs(excluded) do MM:Print("   |cff9a9a9a%s|r", why) end
 	end
 
 	-- 4. Trading Post rotation
