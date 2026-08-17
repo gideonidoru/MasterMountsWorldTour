@@ -414,6 +414,51 @@ def comments_name_the_conversation():
     return bad
 
 
+def one_boss_two_instances():
+    """Records naming the same boss that disagree about where it is.
+
+    Three mounts drop from Coren Direbrew's one daily Brewfest chest. Two of
+    them said "Blackrock Depths (Grim Guzzler)", difficulty "Event", entered
+    from Searing Gorge. The third said "Blackrock Depths (Brewfest)",
+    difficulty "Holiday", and no door -- and because its notes omitted the
+    words "Dungeon Finder", Nav/Queue offered an arrow to walk there while its
+    two siblings correctly offered the queue.
+
+    Nothing was missing; the record simply disagreed with the two beside it,
+    and a disagreement between records is invisible to every check that reads
+    one record at a time. Read against the FLAT file, which is the resolved
+    result after every override layer has had its say.
+    """
+    bad = []
+    flat = "Data/Mounts.lua"
+    if not os.path.exists(flat):
+        return bad
+    text = open(flat, encoding="utf-8").read()
+    # Boss names as the source lines actually write them: "Drops from Coren
+    # Direbrew's daily ...", "Chance from the Headless Horseman's ...".
+    boss_re = re.compile(r"\bfrom (?:the )?((?:[A-Z][\w'-]+ ){0,3}[A-Z][\w'-]+)'s\b")
+    groups = collections.defaultdict(list)
+    for block in re.finditer(r"\n\t\{\n(.*?)\n\t\},", text, re.S):
+        body = block.group(1)
+        name = re.search(r'\bname = "([^"]+)"', body)
+        source = re.search(r'\bsource = "([^"]*)"', body)
+        inst = re.search(r'\binstance = \{\n\t\t\tname = "([^"]+)",'
+                         r'(?:\n\t\t\tdifficulty = "([^"]*)",)?', body)
+        if not (name and source and inst):
+            continue
+        boss = boss_re.search(source.group(1))
+        if boss:
+            groups[boss.group(1)].append(
+                (name.group(1), inst.group(1), inst.group(2) or ""))
+    for boss, members in sorted(groups.items()):
+        if len(members) < 2:
+            continue
+        shapes = {(m[1], m[2]) for m in members}
+        if len(shapes) > 1:
+            bad.append((boss, members))
+    return bad
+
+
 def absolute_home_paths():
     """A hardcoded home directory in a file that gets published.
 
@@ -1717,8 +1762,14 @@ def main():
     print(f"a published file holds a home path: {len(homes)}")
     for f, ihp, path in homes:
         print(f"   {f}:{ihp}  hardcodes {path} -- this repository is public")
+    bosses = one_boss_two_instances()
+    print(f"one boss, two instances  : {len(bosses)}")
+    for boss, members in bosses:
+        print(f"   {boss} -- {len(members)} mounts disagree about the instance:")
+        for mname, iname, diff in members:
+            print(f"      {mname}: {iname} ({diff or 'no difficulty'})")
     return 1 if (bad or fwd or gone or early or btr or retval or secret or guids
-                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf or anch or convo or homes) else 0
+                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf or anch or convo or homes or bosses) else 0
 
 if __name__ == "__main__":
     sys.exit(main())
