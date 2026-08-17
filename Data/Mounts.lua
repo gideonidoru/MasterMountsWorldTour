@@ -34992,10 +34992,11 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		source = "Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. The zone name does not resolve on this client, so this cannot be routed to a point on the map yet.",
 		vendor = "Skull of Er'inye",
 		npc = {
-			name = "Skull of Erinye",
+			name = "Skull of Er'inye",
 		},
 		zone = {
-			name = "Coiled Isle",
+			name = "The Coiled Isle",
+			mapID = 2512,
 		},
 		conditions = {
 			{
@@ -35006,7 +35007,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 4,
-		notes = "Sold by the Skull of Erinye on the Coiled Isle for 10,000 isle currency. The exact vendor coordinate has not been recorded yet, so this points at the zone rather than at a spot within it.",
+		notes = "Sold by the Skull of Er'inye on The Coiled Isle for 10,000 Corrosive Coin. The vendor's coordinate is not published, so this points at the isle rather than at a spot on it.",
 		needsSource = true,
 	},
 	{
@@ -35018,9 +35019,10 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		obtainable = true,
 		source = "Achievement: complete 250 patrols within the Vaults of Atal'Utek",
 		zone = {
-			name = "The Coiled Isle",
-			x = 58.8,
-			y = 46,
+			name = "Vaults of Atal'Utek",
+			mapID = 2509,
+			x = 44.3,
+			y = 62.2,
 		},
 		conditions = {
 			{
@@ -35053,9 +35055,10 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		obtainable = true,
 		source = "Achievement meta: complete the Vaults of Atal'Utek achievements",
 		zone = {
-			name = "The Coiled Isle",
-			x = 58.8,
-			y = 46,
+			name = "Vaults of Atal'Utek",
+			mapID = 2509,
+			x = 44.3,
+			y = 62.2,
 		},
 		conditions = {
 			{
