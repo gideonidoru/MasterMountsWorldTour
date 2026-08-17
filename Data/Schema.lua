@@ -230,15 +230,41 @@ end
 --
 -- MISSES ARE RECORDED. A name removed by a typo would drop nothing and say
 -- nothing, which is the failure this whole mechanism exists to end.
+--
+-- THE DUPLICATE IS SOMETIMES THE BETTER-DOCUMENTED COPY, which is the trap.
+-- Every override layer that named the wrong spelling applied to the record
+-- about to be deleted, so removing it deleted their work too -- silently, and
+-- long after those layers ran. It happened twice on the first pass: an
+-- archaeology mount lost the flag saying it has no reagent list, and a Brewfest
+-- mount lost its instance block and was left pointing at a mountainside.
+--
+-- So the removal now DIFFS the two records and records every field the phantom
+-- held that its counterpart does not. `waive` lists the ones deliberately not
+-- carried over; anything else stops the build. See tools/flatten_data.lua.
 MM.removedPhantoms = MM.removedPhantoms or {}
 MM.phantomMisses = MM.phantomMisses or {}
+MM.phantomLostFields = MM.phantomLostFields or {}
 
-function MM.RemoveMount(name, realName, why)
+function MM.RemoveMount(name, realName, why, waive)
 	local key = name and name:lower()
 	local rec = key and MM.DBByName[key]
 	if not rec then
 		MM.phantomMisses[#MM.phantomMisses + 1] = tostring(name)
 		return false
+	end
+
+	-- Diffed BEFORE the indexes are cleared, while both records still resolve.
+	local real = realName and MM.DBByName[realName:lower()]
+	if real then
+		local waived = {}
+		for _, f in ipairs(waive or {}) do waived[f] = true end
+		for field in pairs(rec) do
+			if field ~= "name" and real[field] == nil and not waived[field] then
+				MM.phantomLostFields[#MM.phantomLostFields + 1] =
+					("%s -> %s: `%s` is on the copy being removed and not on the one kept")
+						:format(name, realName, field)
+			end
+		end
 	end
 	MM.DBByName[key] = nil
 	if rec.spellID and MM.DBBySpell[rec.spellID] == rec then

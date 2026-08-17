@@ -943,15 +943,33 @@ local function runData()
 		--
 		-- The item is not modelled as a cost. This asserts only that the source
 		-- reached every mount it belongs to.
+		--
+		-- The pool is BUILT at build time and shipped as a declaration, because
+		-- the flat database is the applied result and carries no trace of what
+		-- applied it. Read against the live database, this asks the question
+		-- that still matters here: are all sixteen present, and does each one
+		-- actually carry the source that was appended to it.
 		local pool = MM.quantumCourserPool or {}
-		local missed = MM.quantumCourserMisses or {}
-		if #pool == 0 and #missed == 0 then return nil, "pool not declared" end
-		if #missed > 0 then
-			return false, ("%d pool member(s) no longer resolve: %s"):format(
-				#missed, table.concat(missed, ", ", 1, math.min(3, #missed)))
-		end
+		if #pool == 0 then return nil, "pool not declared" end
 		if #pool ~= 16 then
-			return false, ("the pool is sixteen mounts, %d resolved"):format(#pool)
+			return false, ("the pool is sixteen mounts, %d declared"):format(#pool)
+		end
+		local gone, silent = {}, {}
+		for _, name in ipairs(pool) do
+			local rec = MM.DBByName[name:lower()]
+			if not rec then
+				gone[#gone + 1] = name
+			elseif not (rec.notes and rec.notes:find("Quantum Courser", 1, true)) then
+				silent[#silent + 1] = name
+			end
+		end
+		if #gone > 0 then
+			return false, ("%d pool member(s) are not in the database: %s"):format(
+				#gone, table.concat(gone, ", ", 1, math.min(3, #gone)))
+		end
+		if #silent > 0 then
+			return false, ("%d pool member(s) do not name the source: %s"):format(
+				#silent, table.concat(silent, ", ", 1, math.min(3, #silent)))
 		end
 		return true, ("%d mounts carry the Quantum Courser as a source"):format(#pool)
 	end)
@@ -967,13 +985,27 @@ local function runData()
 		-- typo here, would match nothing and drop nothing, and the only visible
 		-- effect would be the audit quietly listing a mount as missing again.
 		-- RemoveMount records both the hits and the misses so neither is silent.
+		--
+		-- The removals happen at build time, so nothing here ever calls
+		-- RemoveMount and a name that matched nothing cannot be seen from the
+		-- client at all -- tools/flatten_data.lua refuses to install a build
+		-- where one did. What IS visible here is the result, and the list is
+		-- shipped as a declaration so it can be checked against the database
+		-- the player actually loaded.
 		local removed = MM.removedPhantoms or {}
-		local missed = MM.phantomMisses or {}
-		if #missed > 0 then
-			return false, ("%d phantom name(s) matched no record: %s"):format(
-				#missed, table.concat(missed, ", ", 1, math.min(3, #missed)))
-		end
 		if #removed == 0 then return nil, "no phantoms declared" end
+		-- A phantom that is back is the whole failure, restated: a record naming
+		-- a mount the game does not have, counted as a mount we are missing.
+		local returned = {}
+		for _, r in ipairs(removed) do
+			if r.name and MM.DBByName[r.name:lower()] then
+				returned[#returned + 1] = r.name
+			end
+		end
+		if #returned > 0 then
+			return false, ("%d removed phantom(s) are in the database again: %s"):format(
+				#returned, table.concat(returned, ", ", 1, math.min(3, #returned)))
+		end
 		-- And the mount each one was a copy OF must still be here, or the
 		-- removal took the real record with it.
 		-- Five of these have no counterpart at all -- a garrison ability, an

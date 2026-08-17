@@ -7624,6 +7624,7 @@ MM.AddMounts({
 		blackmarket = false,
 		notes = "Rare Tol'vir solve, keystone Tol'vir Hieroglyphic. Tol'vir fragments come from Uldum dig sites only, which is what makes it slow rather than hard.",
 		noLocationReason = "Archaeology -- dig sites move, so there is nothing fixed to travel to",
+		unpriced = "gathered, not crafted -- no reagents exist",
 	},
 	{
 		name = "Heavenly Onyx Cloud Serpent",
@@ -41417,15 +41418,20 @@ MM.AddMounts({
 		expansion = 10,
 		category = "HOLIDAY",
 		obtainable = true,
-		source = "Chance from Coren Direbrew's daily Keg-Shaped Treasure Chest during Brewfest.",
+		source = "Chance from Coren Direbrew during Brewfest. Queue for the holiday boss; no door to walk to.",
 		zone = {
-			name = "Blackrock Mountain",
-			x = 50,
-			y = 60,
+			name = "Blackrock Depths (Brewfest)",
+			mapID = 242,
+		},
+		instance = {
+			name = "Blackrock Depths (Brewfest)",
+			difficulty = "Holiday",
+			lockout = "DAILY",
 		},
 		dropRate = 4,
 		attempts = "DAILY",
 		effort = 3,
+		notes = "Available annually during Brewfest.",
 	},
 	{
 		name = "The Headless Horseman's Ghoulish Charger",
@@ -48161,3 +48167,137 @@ MM.AddResolvedIDs({
 	},
 	vendors = {},
 })
+
+-- 25 records removed as phantoms, with the mount each was a copy of
+MM.removedPhantoms = {
+	{
+		name = "Fiendish Hellfire Core",
+		real = "Hellfire Infernal",
+		why = "the ITEM that teaches it, recorded as the mount",
+	},
+	{
+		name = "Lana'thel's Sanguine Cascade",
+		real = "Lana'thel's Crimson Cascade",
+		why = "identical source text; Crimson is the name the game uses",
+	},
+	{
+		name = "Sunflash Driftmoth",
+		real = "Sunflare Driftmoth",
+		why = "Sunflare, not Sunflash",
+	},
+	{
+		name = "Brewfest Barrel Bomber",
+		real = "Brewfest Bomber",
+		why = "no Barrel in the name",
+	},
+	{
+		name = "Bilgewater X-TREME",
+		real = "Bilgewater X-TREME Firework Rocket",
+		why = "the name is truncated",
+	},
+	{
+		name = "Cerulean Phase-Hunter",
+		real = "Cobalt Phase-Hunter",
+		why = "identical source text; the Outland pack mount is Cobalt",
+	},
+	{
+		name = "Scorching Courage",
+		real = "Scorching Valor",
+		why = "identical source text; Valor, not Courage",
+	},
+	{
+		name = "Frostwolf War Wolf",
+		why = "a Warlords garrison ability, not a collectable mount",
+	},
+	{
+		name = "G-99 Breakneck",
+		why = "a zone ability in Undermine, not a collectable mount",
+	},
+	{
+		name = "Armored Bruffalon",
+		why = "not in the game",
+	},
+	{
+		name = "Trainee's Outrider Wolf",
+		why = "not in the game",
+	},
+	{
+		name = "Scepter of Azj'Aqir",
+		real = "Ultramarine Qiraji Battle Tank",
+		why = "the archaeology project that teaches it, recorded as the mount",
+	},
+	{
+		name = "Vicious Warsaber",
+		real = "Vicious Kaldorei Warsaber",
+		why = "the beast; Reins of the Vicious Warsaber teaches the Kaldorei one",
+	},
+	{
+		name = "Telaari Talbuk",
+		why = "the Alliance garrison ability, twin of Frostwolf War Wolf",
+	},
+	{
+		name = "Archdruid's Lunarwing Form",
+		why = "a druid shapeshift form taught by Moon-Kissed Feather, not a mount",
+	},
+	{
+		name = "Trainee's Sentinel Nightsaber",
+		why = "not in the game",
+	},
+	{
+		name = "Slumbering Worldsnail",
+		real = "Scrappy Worldsnail",
+		why = "the item is the Slumbering Worldsnail Shell; the mount is Scrappy",
+	},
+	{
+		name = "Festering Emerald Drake",
+		why = "Wrath of the Lich King Classic only -- this database is retail",
+	},
+	{
+		name = "Witherbark Direhorn",
+		why = "not in the game",
+	},
+	{
+		name = "Obsidian Gladiator's Drake",
+		why = "not in the game",
+	},
+	{
+		name = "Verdant Gladiator's Drake",
+		why = "not in the game",
+	},
+	{
+		name = "Draconic Gladiator's Slitherdrake",
+		why = "not in the game",
+	},
+	{
+		name = "Amber Vorquin",
+		why = "not in the game",
+	},
+	{
+		name = "Perilous Hellsteed",
+		why = "not in the game",
+	},
+	{
+		name = "Quantum Courser",
+		why = "item 208216 is a container that grants one of sixteen mounts; there is no mount by this name, and the source is recorded on all sixteen below",
+	},
+}
+
+-- the 16 mounts Reins of the Quantum Courser can grant
+MM.quantumCourserPool = {
+	"Rivendare's Deathcharger",
+	"Raven Lord",
+	"Swift White Hawkstrider",
+	"Blue Proto-Drake",
+	"Drake of the North Wind",
+	"Vitreous Stone Drake",
+	"Armored Razzashi Raptor",
+	"Swift Zulian Panther",
+	"Infinite Timereaver",
+	"Midnight",
+	"Sharkbait",
+	"Tomb Stalker",
+	"Underrot Crawg",
+	"Mechagon Peacekeeper",
+	"Marrowfang",
+	"Cartel Master's Gearglider",
+}

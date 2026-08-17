@@ -353,6 +353,67 @@ def build_return_as_value(sources):
                     break
     return bad
 
+def comments_name_the_conversation():
+    """A comment that cites who said something rather than what is true.
+
+    This repository is public, and a comment is not the place for a person.
+    "<name>'s observation, and he is right" tells a reader nothing they can
+    check, puts a real person into a source file, and guesses a pronoun for
+    them on the way past. Seven had accumulated.
+
+    The fact always survives the rewrite, which is why this is worth enforcing
+    rather than arguing each time: "<name>'s note, and it is the whole reason
+    these stay map-only: a garrison vendor MOVES as the garrison levels up"
+    loses nothing at all by starting at "The whole reason".
+
+    MATCHED BY SHAPE, NEVER BY NAME. A rule against putting a person in the
+    source cannot itself hold a person's name -- it would be committing the
+    thing it forbids, in a file every reader of the audit opens. So it looks
+    for attribution GRAMMAR around any capitalised word, and carries only a
+    list of proper nouns that are sources rather than people, since citing
+    those is exactly what the comments should be doing.
+    """
+    bad = []
+    # Cited rather than credited: naming these is the good case.
+    SOURCES = (r"Wowhead|Blizzard|HandyNotes|Zygor|ATT|AllTheThings|Rarity|"
+               r"MountsRarity|TomTom|ElvUI|Curse|CurseForge|Lua|WoW|DB2|"
+               r"Mount|Achievement|Journal|Wago")
+    NAME = r"(?!(?:%s)\b)[A-Z][a-z]+" % SOURCES
+    # Deliberately narrow. "the user" appears legitimately in UI code talking
+    # about the person at the keyboard, so only reporting speech is matched.
+    patterns = (
+        r"\bthe user (?:asked|said|noted|pointed out|wants|reported|confirmed)\b",
+        r"\b(?:[Ss]upplied|[Cc]onfirmed|[Mm]easured|[Rr]eported|[Cc]hecked"
+        r"|[Tt]old) by %s\b" % NAME,
+        r"\b%s's (?:\w+ )?(?:note|judgement|judgment|observation|figure|"
+        r"number|estimate|call|say-so|account|reading)\b" % NAME,
+        # A possessive alone is usually a place -- "is Draenor's" -- so this
+        # wants the citation that follows it too.
+        r"\b(?:are|is|was|were) %s's, from\b" % NAME,
+        r"\b%s, who (?:plays|runs|uses|owns|collects|raids)\b" % NAME,
+        r"\bas (?:an|the) AI\b",
+        r"\bthis conversation\b",
+    )
+    files = [f for f in glob.glob("**/*.lua", recursive=True)
+             if not f.startswith(("Libs/", "dist/"))]
+    files += [f for f in glob.glob("tools/*.py")]
+    for f in sorted(files):
+        try:
+            lines = open(f, encoding="utf-8").read().splitlines()
+        except OSError:
+            continue
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if not (stripped.startswith("--") or stripped.startswith("#")):
+                continue
+            for pat in patterns:
+                m = re.search(pat, stripped)
+                if m:
+                    bad.append((f, i, m.group(0)))
+                    break
+    return bad
+
+
 def readme_record_count():
     """The README's record count, against the flattened database itself.
 
@@ -371,9 +432,19 @@ def readme_record_count():
     flat = "Data/Mounts.lua"
     if not os.path.exists(flat):
         return bad
-    records = 0
+    # ONLY INSIDE THE AddMounts CALLS. "a bare `{` at one tab" counted records
+    # for as long as records were the only thing in the file. The flattener now
+    # also emits the phantom removals, which are a list of tables and indent
+    # identically -- so the count silently rose by exactly the number of records
+    # that had been REMOVED, which is a memorably wrong direction to be wrong in.
+    records, inside = 0, False
     for line in open(flat, encoding="utf-8"):
-        if line.rstrip("\n") == "\t{":
+        line = line.rstrip("\n")
+        if line.startswith("MM.AddMounts("):
+            inside = True
+        elif line == "})":
+            inside = False
+        elif inside and line == "\t{":
             records += 1
     # Only claims ABOUT THIS DATABASE. "1,668 journal mounts" is the client's
     # number and is supposed to differ, so the patterns name their own subject
@@ -1609,8 +1680,12 @@ def main():
     for f, i7 in noflush:
         print(f"   {f}:{i7}  defers SetAttribute in combat and never re-applies it "
               f"-- flush on PLAYER_REGEN_ENABLED")
+    convo = comments_name_the_conversation()
+    print(f"a comment names who said it: {len(convo)}")
+    for f, icv, phrase in convo:
+        print(f"   {f}:{icv}  says \"{phrase}\" -- state the fact, not who supplied it")
     return 1 if (bad or fwd or gone or early or btr or retval or secret or guids
-                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf or anch) else 0
+                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf or anch or convo) else 0
 
 if __name__ == "__main__":
     sys.exit(main())

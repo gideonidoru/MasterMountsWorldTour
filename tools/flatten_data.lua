@@ -178,6 +178,32 @@ if MM.ResolvedIDs then
 	out("MM.AddResolvedIDs(" .. ser(MM.ResolvedIDs, 0) .. ")\n")
 end
 
+-- WHAT WAS REMOVED, AND WHAT THE REMOVAL WAS FOR.
+--
+-- Both of these are built by code that runs HERE and never in the client: the
+-- phantom removals happen at build time, and the Quantum Courser's source is
+-- appended to sixteen records at build time. The shipped addon sees only the
+-- result, so two self-test checks written against these tables could never run
+-- there -- they reported "not declared" and were counted as degraded, which is
+-- the same as not having written them.
+--
+-- Emitting the declarations turns both into checks the client CAN run, and the
+-- questions change with the setting. At build time they ask whether the removal
+-- and the append landed. Shipped, they ask whether the result survived: that no
+-- phantom name has come back, that no real counterpart was taken down with its
+-- duplicate, and that all sixteen pool members still carry the source.
+if MM.removedPhantoms and #MM.removedPhantoms > 0 then
+	out(("\n-- %d records removed as phantoms, with the mount each was a copy of\n")
+		:format(#MM.removedPhantoms))
+	out("MM.removedPhantoms = " .. ser(MM.removedPhantoms, 0) .. "\n")
+end
+
+if MM.quantumCourserPool and #MM.quantumCourserPool > 0 then
+	out(("\n-- the %d mounts Reins of the Quantum Courser can grant\n")
+		:format(#MM.quantumCourserPool))
+	out("MM.quantumCourserPool = " .. ser(MM.quantumCourserPool, 0) .. "\n")
+end
+
 io.stderr:write(("flattened %d source files -> %d canonical records, %d vendor locations\n")
 	:format(#files, #canonical, vendorCount))
 
@@ -189,10 +215,32 @@ io.stderr:write(("flattened %d source files -> %d canonical records, %d vendor l
 -- surfaced two reports later as a contribution gap. This is the only place
 -- the calls actually run: the flat file resolves them at build time, so the
 -- shipped addon never executes one and no in-client check can see this.
-local misses = MM.conditionAmountMisses or {}
-if #misses > 0 then
-	io.stderr:write(("\n%d PRICE(S) LANDED ON NOTHING -- refusing to install:\n")
-		:format(#misses))
-	for _, why in ipairs(misses) do io.stderr:write("   " .. why .. "\n") end
-	os.exit(1)
+local function refuse(list, headline)
+	if #list == 0 then return false end
+	io.stderr:write(("\n%d %s -- refusing to install:\n"):format(#list, headline))
+	for _, why in ipairs(list) do io.stderr:write("   " .. why .. "\n") end
+	return true
 end
+
+local bad = false
+bad = refuse(MM.conditionAmountMisses or {}, "PRICE(S) LANDED ON NOTHING") or bad
+
+-- A NAME THAT MATCHES NOTHING REMOVES NOTHING, AND SAYS NOTHING.
+--
+-- Both of these resolve records by name and both fail by doing exactly what
+-- success looks like from the outside. A mistyped phantom leaves the record in
+-- place and the audit goes on calling it a missing mount; a pool member that no
+-- longer resolves quietly shrinks the pool from sixteen. Same shape as the
+-- price misses above, and the same answer.
+bad = refuse(MM.phantomMisses or {}, "PHANTOM NAME(S) MATCHED NO RECORD") or bad
+bad = refuse(MM.quantumCourserMisses or {},
+	"QUANTUM COURSER POOL MEMBER(S) NO LONGER RESOLVE") or bad
+
+-- AND THE REMOVAL MUST NOT TAKE ANYTHING WITH IT. Every override layer naming
+-- the duplicate spelling applied to the record about to be deleted, so its work
+-- vanished when the record did -- an instance block, a "no reagent list" flag.
+-- Anything the copy held and the record kept does not is reported here; the
+-- deliberate ones are waived in Data_99zzZp_Phantoms.
+bad = refuse(MM.phantomLostFields or {}, "FIELD(S) LOST TO A PHANTOM REMOVAL") or bad
+
+if bad then os.exit(1) end
