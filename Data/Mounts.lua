@@ -8,7 +8,7 @@
 -- consumes them at runtime, once the player's faction is known.
 local _, MM = ...
 
--- 1604 mounts, in chunks of 300
+-- 1596 mounts, in chunks of 300
 MM.AddMounts({
 	{
 		name = "Brown Horse",
@@ -16054,24 +16054,6 @@ MM.AddMounts({
 		effort = 2,
 	},
 	{
-		name = "Witherbark Direhorn",
-		expansion = 7,
-		category = "RARE",
-		obtainable = false,
-		source = "Drops from the rare Nimar the Slayer in Arathi Highlands (warfront cycle)",
-		npc = {
-			name = "Nimar the Slayer",
-			id = 142692,
-		},
-		zone = {
-			name = "Arathi Highlands",
-		},
-		attempts = "DAILY",
-		timePerAttempt = 10,
-		effort = 3,
-		notes = "Believed never implemented. Long listed as a drop from Nimar the Slayer during the Arathi warfront cycle, but no confirmed loot has surfaced and the NPC is missing from the rare-spawn datasets. Marked unobtainable on that basis, not on proof.",
-	},
-	{
 		name = "Highland Mustang",
 		spellID = 279456,
 		itemID = 163579,
@@ -17301,9 +17283,6 @@ MM.AddMounts({
 		notes = "Two-seater plane; higher RAF reward tier than the Dunetrekker.",
 		noLocationReason = "Promotional reward -- claimed outside the game, nowhere to travel",
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Seabraid Stallion",
 		spellID = 255695,
@@ -17316,6 +17295,9 @@ MM.AddMounts({
 		effort = 1,
 		notes = "No longer sold; the BfA Deluxe upgrade was retired when BfA rolled into the base game.",
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Gilded Ravasaur",
 		spellID = 255696,
@@ -23381,24 +23363,6 @@ MM.AddMounts({
 		notes = "Seasonal Gladiator reward; removed when the season ended.",
 	},
 	{
-		name = "Obsidian Gladiator's Drake",
-		expansion = 9,
-		category = "REMOVED",
-		obtainable = false,
-		source = "Gladiator: Dragonflight Season 2",
-		effort = 5,
-		notes = "Seasonal Gladiator reward; removed when the season ended.",
-	},
-	{
-		name = "Verdant Gladiator's Drake",
-		expansion = 9,
-		category = "REMOVED",
-		obtainable = false,
-		source = "Gladiator: Dragonflight Season 3",
-		effort = 5,
-		notes = "Seasonal Gladiator reward; removed when the season ended.",
-	},
-	{
 		name = "Draconic Gladiator's Drake",
 		spellID = 424539,
 		expansion = 9,
@@ -24476,21 +24440,6 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		goldCost = 40,
 	},
 	{
-		name = "Amber Vorquin",
-		expansion = 9,
-		category = "VENDOR",
-		obtainable = false,
-		source = "Sold in Silvermoon City after the Blood Elf heritage questline (10.1.5)",
-		zone = {
-			name = "Valdrakken",
-			mapID = 2112,
-			x = 33,
-			y = 35,
-		},
-		effort = 2,
-		notes = "No mount of this name could be found in the item table, the mount journal, or any external listing, and the record carries no spellID. The Dracthyr racial vorquins are Crimson, Obsidian, Sapphire and Bronze. Restore this if a source ever turns up.",
-	},
-	{
 		name = "Ash'adar, Harbinger of Dawn",
 		spellID = 366962,
 		itemID = 190231,
@@ -24581,15 +24530,6 @@ The zone below is only a fallback for when the client cannot be asked where the 
 				y = 56,
 			},
 		},
-	},
-	{
-		name = "Perilous Hellsteed",
-		expansion = 9,
-		category = "PROMOTION",
-		obtainable = false,
-		source = "Diablo IV cross-promotion (2023)",
-		effort = 1,
-		notes = "Limited-time promotional mount; no longer available.",
 	},
 	{
 		name = "Polly Roger",
@@ -26157,9 +26097,6 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 		solo = true,
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Honeyback Hivemother",
 		spellID = 303767,
@@ -26271,6 +26208,9 @@ MM.AddMounts({
 		notes = "Debuted with the Plunderstore in 11.0.7, so it has only ever been buyable during Season 2. Plunderstorm is a 60-player battle royale with a solo queue, so no group is needed - but the mode itself has been dark since February 2025 and is absent from the 2026 roadmap. Plunder cannot be earned or spent between seasons and the store has never moved to the Trading Post or the Blizzard shop. Treat as dormant rather than removed: every Season 1 mount was re-offered in Season 2, so a future season is the likely route back.",
 		solo = true,
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Plunderlord's Midnight Crocolisk",
 		spellID = 457656,
@@ -36494,9 +36434,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		attempts = "NONE",
 		effort = 2,
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Obsidian Nightwing",
 		spellID = 121820,
@@ -36607,6 +36544,9 @@ MM.AddMounts({
 		effort = 1,
 		goldCost = 3000,
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Blonde Riding Yak",
 		spellID = 127220,
@@ -39996,30 +39936,6 @@ MM.AddMounts({
 		notes = "No daily lockout -- the Froststone Vault Primal Storm runs every couple of hours and every clear of the final boss counts, so the whole thing can be done in a day if you catch the events. Nought to five slime a kill, so roughly twenty clears.",
 	},
 	{
-		name = "Slumbering Worldsnail",
-		expansion = 9,
-		category = "VENDOR",
-		obtainable = false,
-		source = "Sold by Dealer Vexil at Smoldering Perch for 1,000 Magmotes after The Shadow of His Wings.",
-		zone = {
-			name = "The Waking Shores",
-			mapID = 2022,
-			x = 34.8,
-			y = 46.6,
-		},
-		conditions = {
-			{
-				name = "Magmote",
-				amount = 1000,
-				how = "Gather Magmotes in Zaralek Cavern; sold by Dealer Vexil at the Smoldering Perch after The Shadow of His Wings",
-				id = 202173,
-				type = "ITEM",
-			},
-		},
-		effort = 3,
-		notes = "Not a mount. This is the NAME OF THE ITEM -- Slumbering Worldsnail Shell, 192786 -- and the mount it teaches is the Scrappy Worldsnail (spell 374162), which has its own record. Confirmed through the client's own item-effect table rather than by resemblance.",
-	},
-	{
 		name = "Big Slick in the City",
 		spellID = 408313,
 		itemID = 205155,
@@ -40959,15 +40875,6 @@ MM.AddMounts({
 		notes = "Correct journal name; an earlier record may exist under a shortened name.",
 	},
 	{
-		name = "Draconic Gladiator's Slitherdrake",
-		expansion = 9,
-		category = "PVP",
-		obtainable = false,
-		source = "Gladiator: Dragonflight Season 4.",
-		effort = 5,
-		notes = "Correct journal name; an earlier record may exist under a shortened name.",
-	},
-	{
 		name = "Vicious Kaldorei Warsaber",
 		spellID = 146615,
 		expansion = 4,
@@ -41642,14 +41549,6 @@ MM.AddMounts({
 		obtainable = false,
 		source = "Hearthstone 10th Anniversary login cross-promotion.",
 		effort = 4,
-	},
-	{
-		name = "Festering Emerald Drake",
-		expansion = 9,
-		category = "PROMOTION",
-		obtainable = false,
-		source = "Quest reward exclusive to the 2023 12-Month Subscription Bundle.",
-		effort = 3,
 	},
 	{
 		name = "Gargantuan Grrloc",
@@ -42859,9 +42758,6 @@ MM.AddMounts({
 			},
 		},
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Savage Crimson Battle Turtle",
 		spellID = 1266248,
@@ -43160,6 +43056,9 @@ MM.AddMounts({
 			},
 		},
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Summer Harvesthog",
 		spellID = 1226531,
