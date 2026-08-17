@@ -8,7 +8,7 @@
 -- consumes them at runtime, once the player's faction is known.
 local _, MM = ...
 
--- 1621 mounts, in chunks of 300
+-- 1614 mounts, in chunks of 300
 MM.AddMounts({
 	{
 		name = "Brown Horse",
@@ -29097,25 +29097,6 @@ MM.AddMounts({
 		solo = false,
 	},
 	{
-		name = "Brewfest Barrel Bomber",
-		expansion = 10,
-		category = "HOLIDAY",
-		obtainable = true,
-		source = "Chance from Coren Direbrew during Brewfest. Queue for the holiday boss; no door to walk to.",
-		zone = {
-			name = "Blackrock Depths (Brewfest)",
-			mapID = 242,
-		},
-		instance = {
-			name = "Blackrock Depths (Brewfest)",
-			difficulty = "Holiday",
-			lockout = "DAILY",
-		},
-		attempts = "DAILY",
-		effort = 2,
-		notes = "Available annually during Brewfest.",
-	},
-	{
 		name = "Algarian Stormrider",
 		spellID = 417888,
 		expansion = 10,
@@ -31121,43 +31102,6 @@ MM.AddMounts({
 		},
 		effort = 2,
 		notes = "Rocket mount; rotates out monthly but can return in later rotations.",
-		spawns = {
-			{
-				mapID = 2393,
-				x = 49.15,
-				y = 78.31,
-			},
-			{
-				mapID = 85,
-				x = 43.08,
-				y = 42.22,
-			},
-			{
-				mapID = 84,
-				x = 49.5,
-				y = 69.5,
-			},
-			{
-				mapID = 2339,
-				x = 44,
-				y = 56,
-			},
-		},
-	},
-	{
-		name = "Bilgewater X-TREME",
-		expansion = 11,
-		category = "TRADINGPOST",
-		obtainable = true,
-		source = "Trading Post — July 2026 Traveler's Log completion bonus reward (free).",
-		zone = {
-			name = "Trading Post",
-			mapID = 2393,
-			x = 49.15,
-			y = 78.31,
-		},
-		effort = 2,
-		notes = "Awarded for filling the July 2026 Traveler's Log bar; may return in a future rotation if missed.",
 		spawns = {
 			{
 				mapID = 2393,
@@ -36395,9 +36339,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		goldCost = 500,
 		solo = true,
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Silver Covenant Hippogryph",
 		spellID = 66087,
@@ -36480,6 +36421,9 @@ MM.AddMounts({
 		notes = "Identical gate to the Sunreaver Hawkstrider, just the flying tier and 150 seals instead of 100. Buy both in the same trip once Exalted.",
 		solo = true,
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Crusader's White Warhorse",
 		spellID = 68187,
@@ -38010,26 +37954,6 @@ MM.AddMounts({
 			count = 128,
 			outOf = 1966,
 		},
-	},
-	{
-		name = "Fiendish Hellfire Core",
-		expansion = 6,
-		category = "DROP",
-		obtainable = true,
-		source = "Drops from Gul'dan in The Nighthold on Mythic difficulty.",
-		zone = {
-			name = "Suramar",
-			mapID = 680,
-			x = 45.6,
-			y = 47,
-		},
-		instance = {
-			name = "The Nighthold",
-			difficulty = "Mythic",
-			lockout = "WEEKLY",
-		},
-		dropRate = 1,
-		effort = 3,
 	},
 	{
 		name = "Grove Defiler",
@@ -42009,15 +41933,6 @@ MM.AddMounts({
 		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
 	},
 	{
-		name = "Cerulean Phase-Hunter",
-		expansion = 10,
-		category = "STORE",
-		obtainable = true,
-		source = "Battle.net Shop: Outland Heroic/Epic Pack (since 18 November 2025).",
-		effort = 1,
-		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
-	},
-	{
 		name = "Cobalt Phase-Hunter",
 		spellID = 1256677,
 		expansion = 10,
@@ -42058,26 +41973,8 @@ MM.AddMounts({
 		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
 	},
 	{
-		name = "Lana'thel's Sanguine Cascade",
-		expansion = 11,
-		category = "STORE",
-		obtainable = true,
-		source = "Battle.net Shop, about 25 USD (released January 2026).",
-		effort = 1,
-		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
-	},
-	{
 		name = "Scorching Valor",
 		spellID = 1247422,
-		expansion = 11,
-		category = "STORE",
-		obtainable = true,
-		source = "Battle.net Shop, about 25 USD (released January 2026).",
-		effort = 1,
-		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
-	},
-	{
-		name = "Scorching Courage",
 		expansion = 11,
 		category = "STORE",
 		obtainable = true,
@@ -42104,15 +42001,6 @@ MM.AddMounts({
 		category = "STORE",
 		obtainable = true,
 		source = "Battle.net Shop / In-Game Store.",
-		effort = 1,
-		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
-	},
-	{
-		name = "Sunflash Driftmoth",
-		expansion = 11,
-		category = "STORE",
-		obtainable = true,
-		source = "Battle.net Shop, about 25 USD (released 14 July 2026).",
 		effort = 1,
 		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
 	},
@@ -42523,9 +42411,6 @@ MM.AddMounts({
 			},
 		},
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Hateforged Blazecycle",
 		spellID = 428067,
@@ -42786,6 +42671,9 @@ MM.AddMounts({
 			},
 		},
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Majestic Azure Peafowl",
 		spellID = 432558,

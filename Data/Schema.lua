@@ -213,6 +213,51 @@ end
 -- the way the game titles it -- "Keystone Myth" for "Midnight Keystone Myth:
 -- Season 1". The id is what makes the requirement checkable; the title is what
 -- the player reads in the tooltip, and the two should agree.
+-- A RECORD THAT NAMES A MOUNT THE GAME DOES NOT HAVE.
+--
+-- Not the same thing as a mount nobody can get any more -- that is
+-- obtainable = false, and the record is still about something real. This is for
+-- a record whose NAME does not exist: the mount is already catalogued correctly
+-- somewhere else and this one is a second entry under a wrong spelling.
+--
+-- They are worth removing rather than flagging, because a phantom is
+-- indistinguishable from a coverage gap in every report that counts records:
+-- the audit lists it as "ours, obtainable, and the journal does not have it",
+-- which is precisely what a real missing mount looks like.
+--
+-- Both indexes have to be cleared, and DBList compacted, or the record survives
+-- in whichever one was missed and comes back at the next scan.
+--
+-- MISSES ARE RECORDED. A name removed by a typo would drop nothing and say
+-- nothing, which is the failure this whole mechanism exists to end.
+MM.removedPhantoms = MM.removedPhantoms or {}
+MM.phantomMisses = MM.phantomMisses or {}
+
+function MM.RemoveMount(name, realName, why)
+	local key = name and name:lower()
+	local rec = key and MM.DBByName[key]
+	if not rec then
+		MM.phantomMisses[#MM.phantomMisses + 1] = tostring(name)
+		return false
+	end
+	MM.DBByName[key] = nil
+	if rec.spellID and MM.DBBySpell[rec.spellID] == rec then
+		MM.DBBySpell[rec.spellID] = nil
+	end
+	for _, alt in ipairs(rec.altSpellIDs or {}) do
+		if MM.DBBySpell[alt] == rec then MM.DBBySpell[alt] = nil end
+	end
+	if rec.itemID and MM.ItemToMount[rec.itemID] == rec then
+		MM.ItemToMount[rec.itemID] = nil
+	end
+	for i = #MM.DBList, 1, -1 do
+		if MM.DBList[i] == rec then tremove(MM.DBList, i) end
+	end
+	MM.removedPhantoms[#MM.removedPhantoms + 1] =
+		("%s -> %s (%s)"):format(name, tostring(realName), tostring(why))
+	return true
+end
+
 function MM.SetConditionID(mountName, kind, condName, id, properName)
 	local rec = MM.DBByName[mountName:lower()]
 	if not (rec and rec.conditions and id) then return false end

@@ -934,6 +934,42 @@ local function runData()
 			:format(matched, total, pct)
 	end)
 
+	check("A record removed as a phantom was actually there", function()
+		-- Seven records named a mount the game does not have -- the same mount
+		-- catalogued a second time under a spelling Mount.db2 has never used,
+		-- once as the ITEM that teaches it. They are removed rather than
+		-- flagged, because a phantom is indistinguishable from a coverage gap
+		-- in every count that walks the database.
+		--
+		-- Removing by NAME is the risk this guards. A rename upstream, or a
+		-- typo here, would match nothing and drop nothing, and the only visible
+		-- effect would be the audit quietly listing a mount as missing again.
+		-- RemoveMount records both the hits and the misses so neither is silent.
+		local removed = MM.removedPhantoms or {}
+		local missed = MM.phantomMisses or {}
+		if #missed > 0 then
+			return false, ("%d phantom name(s) matched no record: %s"):format(
+				#missed, table.concat(missed, ", ", 1, math.min(3, #missed)))
+		end
+		if #removed == 0 then return nil, "no phantoms declared" end
+		-- And the mount each one was a copy OF must still be here, or the
+		-- removal took the real record with it.
+		local orphaned = {}
+		for _, line in ipairs(removed) do
+			local real = line:match("%-> ([^(]+)")
+			real = real and real:gsub("%s+$", "")
+			if real and not MM.DBByName[real:lower()] then
+				orphaned[#orphaned + 1] = real
+			end
+		end
+		if #orphaned > 0 then
+			return false, ("%d phantom(s) removed whose real record is gone too: %s")
+				:format(#orphaned, table.concat(orphaned, ", "))
+		end
+		return true, ("%d phantom record(s) removed, every real counterpart still present")
+			:format(#removed)
+	end)
+
 	check("Journal text carries no escape the game meant to render", function()
 		-- Blizzard writes journal source text with its own markup: colour codes,
 		-- money and atlas textures, and "|n" for a line break. A frame RENDERS
