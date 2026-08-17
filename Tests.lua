@@ -954,12 +954,14 @@ local function runData()
 		if #removed == 0 then return nil, "no phantoms declared" end
 		-- And the mount each one was a copy OF must still be here, or the
 		-- removal took the real record with it.
+		-- Five of these have no counterpart at all -- a garrison ability, an
+		-- item, two mounts that are not in the game -- so `real` is absent and
+		-- there is nothing to check. The ones that ARE a copy of something must
+		-- leave that something behind.
 		local orphaned = {}
-		for _, line in ipairs(removed) do
-			local real = line:match("%-> ([^(]+)")
-			real = real and real:gsub("%s+$", "")
-			if real and not MM.DBByName[real:lower()] then
-				orphaned[#orphaned + 1] = real
+		for _, r in ipairs(removed) do
+			if r.real and not MM.DBByName[r.real:lower()] then
+				orphaned[#orphaned + 1] = r.real
 			end
 		end
 		if #orphaned > 0 then

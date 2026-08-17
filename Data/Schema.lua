@@ -253,8 +253,11 @@ function MM.RemoveMount(name, realName, why)
 	for i = #MM.DBList, 1, -1 do
 		if MM.DBList[i] == rec then tremove(MM.DBList, i) end
 	end
+	-- STRUCTURED, not a sentence. A checker had to pick the real name back out
+	-- of a formatted string, and skipped the "no counterpart" case only
+	-- because of where a bracket happened to fall.
 	MM.removedPhantoms[#MM.removedPhantoms + 1] =
-		("%s -> %s (%s)"):format(name, tostring(realName), tostring(why))
+		{ name = name, real = realName, why = why }
 	return true
 end
 

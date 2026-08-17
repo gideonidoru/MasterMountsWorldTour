@@ -8,7 +8,7 @@
 -- consumes them at runtime, once the player's faction is known.
 local _, MM = ...
 
--- 1614 mounts, in chunks of 300
+-- 1608 mounts, in chunks of 300
 MM.AddMounts({
 	{
 		name = "Brown Horse",
@@ -7167,28 +7167,6 @@ MM.AddMounts({
 		unpriced = "gathered, not crafted -- no reagents exist",
 	},
 	{
-		name = "Scepter of Azj'Aqir",
-		spellID = 92148,
-		expansion = 3,
-		category = "PROFESSION",
-		obtainable = true,
-		source = "Archaeology: ultra-rare Tol'vir solve (Uldum dig sites)",
-		zone = {
-			name = "Uldum",
-			mapID = 249,
-		},
-		conditions = {
-			{
-				name = "Archaeology",
-				type = "PROFESSION",
-			},
-		},
-		effort = 5,
-		notes = "Red qiraji battle tank usable outside Ahn'Qiraj. Tol'vir dig sites only spawn in Uldum and the rare solve is heavily RNG-gated; famous months-long grind. Tol'vir Hieroglyphic keystones speed up solves.",
-		noLocationReason = "Archaeology -- an ultra-rare Tol'vir solve, and dig sites move; nothing fixed to route to",
-		unpriced = "gathered, not crafted -- no reagents exist",
-	},
-	{
 		name = "Sandstone Drake",
 		spellID = 93326,
 		itemID = 65891,
@@ -7627,12 +7605,25 @@ MM.AddMounts({
 		name = "Ultramarine Qiraji Battle Tank",
 		spellID = 92155,
 		expansion = 3,
-		category = "TCG",
-		obtainable = false,
-		source = "TCG loot card (2012)",
-		effort = 5,
-		blackmarket = true,
-		notes = "Blue qiraji tank usable outside Ahn'Qiraj; do not confuse with the red Scepter of Azj'Aqir from Archaeology. TCG is discontinued; BMAH or unused loot codes only.",
+		category = "PROFESSION",
+		obtainable = true,
+		source = "Archaeology: rare Tol'vir solve, 150 Tol'vir Archaeology Fragments",
+		conditions = {
+			{
+				name = "Archaeology",
+				type = "PROFESSION",
+			},
+			{
+				name = "Tol'vir Archaeology Fragment",
+				amount = 150,
+				id = 401,
+				type = "CURRENCY",
+			},
+		},
+		effort = 4,
+		blackmarket = false,
+		notes = "Rare Tol'vir solve, keystone Tol'vir Hieroglyphic. Tol'vir fragments come from Uldum dig sites only, which is what makes it slow rather than hard.",
+		noLocationReason = "Archaeology -- dig sites move, so there is nothing fixed to travel to",
 	},
 	{
 		name = "Heavenly Onyx Cloud Serpent",
@@ -8321,9 +8312,6 @@ MM.AddMounts({
 		notes = "Sold by Speaker Gulan, Emissary of Ordos, on the Timeless Isle. The unlisted requirement is that this is a pure world-PvP currency: you must be carrying the Censer of Eternal Agony (or Fire-Watcher's Oath) and land the killing blow on another player, one coin at a time, 500 times. No NPC on the isle awards a coin. In practice this is done by arrangement with a partner rather than by hunting strangers. Caveat worth an in-game check: the wiki wording still specifies level 90 players, which predates several level squishes, so confirm the buff still credits kills at current level before committing to the grind.",
 		solo = false,
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Heavenly Golden Cloud Serpent",
 		spellID = 127164,
@@ -8354,6 +8342,9 @@ MM.AddMounts({
 		effort = 4,
 		notes = "Mistweaver Ku is the Emperor Shaohao quartermaster; farm coins from chests, rares and mobs on the isle.",
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Heavenly Azure Cloud Serpent",
 		spellID = 127169,
@@ -11424,22 +11415,6 @@ MM.AddMounts({
 		timePerAttempt = 30,
 		effort = 1,
 		notes = "Awarded during the Alliance Nagrand outpost storyline. Originally usable while in combat within Nagrand.",
-	},
-	{
-		name = "Frostwolf War Wolf",
-		spellID = 164222,
-		expansion = 5,
-		category = "QUEST",
-		obtainable = true,
-		faction = "Horde",
-		source = "Nagrand garrison campaign (Horde): quest reward for establishing the corral outpost",
-		zone = {
-			name = "Nagrand",
-			mapID = 550,
-		},
-		timePerAttempt = 30,
-		effort = 1,
-		notes = "Awarded during the Horde Nagrand outpost storyline. Originally usable while in combat within Nagrand.",
 	},
 	{
 		name = "Soaring Skyterror",
@@ -17334,9 +17309,6 @@ MM.AddMounts({
 			},
 		},
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Alabaster Stormtalon",
 		spellID = 302361,
@@ -17361,6 +17333,9 @@ MM.AddMounts({
 		effort = 1,
 		notes = "Sold only during anniversary windows; not in the permanent catalog.",
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Meat Wagon",
 		spellID = 281554,
@@ -24675,15 +24650,6 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		},
 	},
 	{
-		name = "Armored Bruffalon",
-		expansion = 9,
-		category = "STORE",
-		obtainable = true,
-		source = "Blizzard Shop (Dragonflight era)",
-		effort = 1,
-		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
-	},
-	{
 		name = "Perilous Hellsteed",
 		expansion = 9,
 		category = "PROMOTION",
@@ -26108,9 +26074,6 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		effort = 1,
 		noLocationReason = "Blizzard Shop purchase -- delivered to the mount journal, nowhere to travel",
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Chaos-Forged Wind Rider",
 		spellID = 466845,
@@ -26189,6 +26152,9 @@ MM.AddMounts({
 		effort = 3,
 		notes = "The Forgotten Vault entrance is at 44.0, 23.1. Cyrce's Circlet is rumoured to improve fragment drops; that is unconfirmed and is recorded here as a rumour, not a requirement.",
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Soweezi's Vintage Waveshredder",
 		spellID = 473137,
@@ -26776,21 +26742,6 @@ MM.AddMounts({
 		source = "Mists of Pandaria Classic Blazing Heroic Pack purchase",
 		effort = 1,
 		noLocationReason = "Promotional reward -- claimed outside the game, nowhere to travel",
-	},
-	{
-		name = "G-99 Breakneck",
-		spellID = 460013,
-		itemID = 232523,
-		expansion = 10,
-		category = "QUEST",
-		obtainable = true,
-		source = "Awarded by \"License Not Required\", chapter 2 of the Undermine(d) campaign. The core D.R.I.V.E. mount.",
-		zone = {
-			name = "Undermine",
-			mapID = 2346,
-		},
-		effort = 1,
-		notes = "Highly customizable (paint, wheels, horns, boosts) via the D.R.I.V.E. system; driving physics apply in Undermine.",
 	},
 	{
 		name = "Personalized Goblin S.C.R.A.P.per",
@@ -35706,21 +35657,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		goldCost = 8,
 	},
 	{
-		name = "Trainee's Outrider Wolf",
-		expansion = 0,
-		category = "VENDOR",
-		obtainable = true,
-		faction = "Horde",
-		source = "Sold for 8g by Kelm Hargunth at Mor'shan Base Camp in the Barrens (Warsong Gulch entrance).",
-		zone = {
-			name = "Northern Barrens",
-			x = 40.2,
-			y = 19.9,
-		},
-		effort = 1,
-		goldCost = 8,
-	},
-	{
 		name = "Felsaber",
 		spellID = 200175,
 		expansion = 6,
@@ -36421,9 +36357,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		notes = "Identical gate to the Sunreaver Hawkstrider, just the flying tier and 150 seals instead of 100. Buy both in the same trip once Exalted.",
 		solo = true,
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Crusader's White Warhorse",
 		spellID = 68187,
@@ -36549,6 +36482,9 @@ MM.AddMounts({
 		effort = 4,
 		solo = false,
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Sea Turtle",
 		spellID = 64731,
@@ -42671,9 +42607,6 @@ MM.AddMounts({
 			},
 		},
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Majestic Azure Peafowl",
 		spellID = 432558,
@@ -42859,6 +42792,9 @@ MM.AddMounts({
 			},
 		},
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Felcrystal Scorpion",
 		spellID = 411565,
@@ -45372,31 +45308,6 @@ MM.AddMounts({
 		source = "Removed from the game.",
 		effort = 5,
 		notes = "Awarded alongside the Deathbringer title. Requires the full set of Shadowlands world PvP achievements.",
-	},
-	{
-		name = "Quantum Courser",
-		spellID = 418593,
-		itemID = 208216,
-		expansion = 9,
-		category = "DROP",
-		obtainable = true,
-		source = "Reins of the Quantum Courser drops from Chrono-Lord Deios, final boss of Dawn of the Infinite. Grants one of 16 legacy dungeon mounts you do not own, with duplicate protection.",
-		npc = {
-			name = "Chrono-Lord Deios",
-			id = 199000,
-		},
-		zone = {
-			name = "Thaldraszus",
-			mapID = 2025,
-		},
-		instance = {
-			name = "Dawn of the Infinite",
-		},
-		dropRate = 100,
-		attempts = "DAILY",
-		timePerAttempt = 30,
-		effort = 4,
-		notes = "Not a mount itself -- it hands you an unowned mount from a fixed list. Unusable once you own all sixteen. Tradable within the run, and can drop more than once.",
 	},
 	{
 		name = "Perfected Juggernaut",
