@@ -1038,6 +1038,12 @@ MM.TravelNodes = {
 	["TOL_DAGOR_FLIGHT_HORDE"]={name="Tol Dagor Flightmaster",mapID=974,x=0.2296,y=0.4654,faction="HORDE",group="TOL_DAGOR"},
 	["TOMB_OF_SARGERAS_RAID"]={name="Tomb of Sargeras",mapID=646,x=0.640,y=0.210,group="BROKEN_ISLES"},
 	["TORNTUSK_OVERLOOK_FLIGHT"]={name="Torntusk Overlook Flightmaster",mapID=2437,x=0.3388,y=0.7836,group="EK_OVERWORLD"},
+	-- THE COILED ISLE, WHICH IS REACHED BY FLYING AND NOTHING ELSE.
+	-- Tokka's Landing is the isle's flight master: TaxiNodes.db2 3168, world
+	-- (6098.52, -12045.80) on continent 0, converted through The Coiled
+	-- Isle's own UiMapAssignment -- which sits on MapID 0 because the isle is
+	-- Eastern Kingdoms proper, not a world of its own. Hence the EK group.
+	["TOKKAS_LANDING_FLIGHT"]={name="Tokka's Landing",mapID=2512,x=0.579,y=0.458,group="EK_OVERWORLD"},
 	["TORTAKA_REFUGE_FLIGHT"]={name="Tortaka Refuge",mapID=864,x=0.6169,y=0.2139,group="ZANDALAR"},
 	["TORTOLLAN_BASE_CAMP"]={name="Seekers Vista",mapID=942,x=0.403,y=0.365,group="KUL_TIRAS"},
 	["TOSHLEYS_STATION_FLIGHT"]={name="Toshley's Station Flightmaster",mapID=105,x=0.607,y=0.704,faction="ALLIANCE",group="OUTLANDS"},
@@ -1437,6 +1443,22 @@ MM.TravelEdges = {
 	-- One way in is what the zone was missing; getting off it is a hearthstone.
 	{from="DORNOGAL_SIREN_ISLE_SHIP",to="SIREN_ISLE_DOCK",method="ship"},
 	{from="IRONHAUL_STATION_MOLE",to="SIREN_ISLE_MOLE",method="portal"},
+	-- 4,226 yards of open water from Camp Stonewash, the nearest Zul'Aman
+	-- flight point -- measured between two TaxiNodes.db2 positions, then priced
+	-- at this addon's own 1500 yards a minute. It has to be stated because the
+	-- self-flight pass stops at 3000 yards, which is why an island a short hop
+	-- offshore looked exactly like an island with no way to it.
+	--
+	-- BOTH DIRECTIONS, unlike the Siren Isle boats. Flying is symmetric and the
+	-- self-flight pass already writes its own fly edges both ways; there is no
+	-- vessel here whose return trip could fail to exist.
+	--
+	-- The Silvermoon portal from Astalor's Sanctum is deliberately absent: it
+	-- unlocks behind the Prey questline, and no AreaPOI in the client carries
+	-- its position. If it is published on the map in game, PortalLearn reads it
+	-- the way it read the Voidstorm and Dornogal portals.
+	{from="CAMP_STONEWASH_FLIGHT",to="TOKKAS_LANDING_FLIGHT",method="fly",cost=169},
+	{from="TOKKAS_LANDING_FLIGHT",to="CAMP_STONEWASH_FLIGHT",method="fly",cost=169},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_MOONGLADE_PORTAL",method="walk"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_AMIRDRASSIL_PORTAL",method="walk"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_FERALAS_PORTAL",method="walk"},
