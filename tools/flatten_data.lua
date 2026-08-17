@@ -210,6 +210,12 @@ if MM.timewalkingGated and #MM.timewalkingGated > 0 then
 	out("MM.timewalkingGated = " .. ser(MM.timewalkingGated, 0) .. "\n")
 end
 
+if MM.timeRiftMounts and #MM.timeRiftMounts > 0 then
+	out(("\n-- the %d Time Rift mounts, with the rift and vendor that sells each\n")
+		:format(#MM.timeRiftMounts))
+	out("MM.timeRiftMounts = " .. ser(MM.timeRiftMounts, 0) .. "\n")
+end
+
 io.stderr:write(("flattened %d source files -> %d canonical records, %d vendor locations\n")
 	:format(#files, #canonical, vendorCount))
 
@@ -243,6 +249,8 @@ bad = refuse(MM.quantumCourserMisses or {},
 	"QUANTUM COURSER POOL MEMBER(S) NO LONGER RESOLVE") or bad
 bad = refuse(MM.timewalkingGateMisses or {},
 	"TIMEWALKING GATE NAME(S) MATCHED NO RECORD") or bad
+bad = refuse(MM.timeRiftMisses or {},
+	"TIME RIFT MOUNT NAME(S) MATCHED NO RECORD") or bad
 
 -- AND THE REMOVAL MUST NOT TAKE ANYTHING WITH IT. Every override layer naming
 -- the duplicate spelling applied to the record about to be deleted, so its work

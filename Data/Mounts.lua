@@ -40294,9 +40294,9 @@ MM.AddMounts({
 		expansion = 9,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold for 3,000 Paracausal Flakes by Falara Nightsong at the Tyrhold Reservoir (Time Rifts).",
+		source = "Sold for 3,000 Paracausal Flakes by Falara Nightsong at the Tyrhold Reservoir, in the Azewrath Time Rift.",
 		npc = {
-			id = 208341,
+			name = "Falara Nightsong",
 		},
 		zone = {
 			name = "Thaldraszus",
@@ -40322,9 +40322,9 @@ MM.AddMounts({
 		expansion = 9,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold for 3,000 Paracausal Flakes by Sorotis at the Tyrhold Reservoir (Time Rifts).",
+		source = "Sold for 3,000 Paracausal Flakes by Sorotis at the Tyrhold Reservoir, in the Ulderoth Time Rift.",
 		npc = {
-			id = 208343,
+			name = "Sorotis",
 		},
 		zone = {
 			name = "Thaldraszus",
@@ -40350,9 +40350,9 @@ MM.AddMounts({
 		expansion = 9,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold for 3,000 Paracausal Flakes by Baron Sliver at the Tyrhold Reservoir (Time Rifts).",
+		source = "Sold for 3,000 Paracausal Flakes by Baron Silver at the Tyrhold Reservoir, in the Azmourne Time Rift.",
 		npc = {
-			id = 208338,
+			name = "Baron Silver",
 		},
 		zone = {
 			name = "Thaldraszus",
@@ -40378,9 +40378,9 @@ MM.AddMounts({
 		expansion = 9,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold for 3,000 Paracausal Flakes by Provisioner Qorra at the Tyrhold Reservoir (Time Rifts).",
+		source = "Sold for 3,000 Paracausal Flakes by Provisioner Qorra at the Tyrhold Reservoir, in the Azq'roth Time Rift.",
 		npc = {
-			id = 208347,
+			name = "Provisioner Qorra",
 		},
 		zone = {
 			name = "Thaldraszus",
@@ -40405,10 +40405,13 @@ MM.AddMounts({
 		spellID = 414323,
 		itemID = 207083,
 		expansion = 9,
-		category = "DROP",
+		category = "CURRENCY",
 		obtainable = true,
-		faction = "Horde",
-		source = "Warlands Time Rift: gifted to a Horde player by an Alliance player who loots the Gift.",
+		faction = "Alliance",
+		source = "Sold for 3,000 Paracausal Flakes by Warden Krizzik at the Tyrhold Reservoir, in the Warlands Time Rift. Alliance only; the other faction is sold the matching mount at the same vendor.",
+		npc = {
+			name = "Warden Krizzik",
+		},
 		zone = {
 			name = "Thaldraszus",
 			mapID = 2025,
@@ -40417,6 +40420,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				name = "Paracausal Flakes",
 				amount = 3000,
 				id = 2594,
 				type = "CURRENCY",
@@ -40445,10 +40449,13 @@ MM.AddMounts({
 		name = "White War Wolf",
 		spellID = 414316,
 		expansion = 9,
-		category = "DROP",
+		category = "CURRENCY",
 		obtainable = true,
-		faction = "Alliance",
-		source = "Warlands Time Rift: gifted to an Alliance player by a Horde player who loots the Gift.",
+		faction = "Horde",
+		source = "Sold for 3,000 Paracausal Flakes by Warden Krizzik at the Tyrhold Reservoir, in the Warlands Time Rift. Horde only; the other faction is sold the matching mount at the same vendor.",
+		npc = {
+			name = "Warden Krizzik",
+		},
 		zone = {
 			name = "Thaldraszus",
 			mapID = 2025,
@@ -40457,6 +40464,7 @@ MM.AddMounts({
 		},
 		conditions = {
 			{
+				name = "Paracausal Flakes",
 				amount = 3000,
 				id = 2594,
 				type = "CURRENCY",
@@ -45146,10 +45154,10 @@ MM.AddMounts({
 		expansion = 9,
 		category = "CURRENCY",
 		obtainable = true,
-		source = "Sold by Gill the Drill at Tyrhold Reservoir for 3,000 Paracausal Flakes",
+		source = "Sold for 3,000 Paracausal Flakes by Gill the Drill at the Tyrhold Reservoir, in the A.Z.E.R.O.T.H. Time Rift.",
 		vendor = "Gill the Drill",
 		npc = {
-			id = 208342,
+			name = "Gill the Drill",
 		},
 		zone = {
 			mapID = 2025,
@@ -48325,4 +48333,15 @@ MM.timewalkingGated = {
 	"Ur'zul Fleshripper",
 	"Val'sharah Hippogryph",
 	"Yu'lei, Daughter of Jade",
+}
+
+-- the 7 Time Rift mounts, with the rift and vendor that sells each
+MM.timeRiftMounts = {
+	"Scourgebound Vanquisher (Azmourne, Baron Silver)",
+	"Perfected Juggernaut (A.Z.E.R.O.T.H., Gill the Drill)",
+	"Felstorm Dragon (Azewrath, Falara Nightsong)",
+	"Sulfur Hound (Azq'roth, Provisioner Qorra)",
+	"Gold-Toed Albatross (Ulderoth, Sorotis)",
+	"Ravenous Black Gryphon (Warlands, Warden Krizzik)",
+	"White War Wolf (Warlands, Warden Krizzik)",
 }

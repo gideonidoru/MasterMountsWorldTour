@@ -1398,7 +1398,10 @@ MM.TravelEdges = {
 	{from="NIGHTHOLD_ORGRIMMAR_PORTAL",to="ORGRIMMAR_EMBASSY",method="portal"},
 	{from="DAZARALOR_PORTAL_ROOM",to="ORGRIMMAR_PORTAL_ROOM_UPPER",method="portal"},
 	{from="DAZARALOR_PORTAL_ROOM",to="THUNDER_BLUFF",method="portal"},
-	{from="DAZARALOR_PORTAL_ROOM",to="SILVERMOON",method="portal"},
+	-- Dazar'alor's portal lands in the MIDNIGHT city (map 2393), not the Burning
+	-- Crusade one (110). Both cities exist and both have an Orgrimmar portal, so
+	-- the two nodes stay; only this edge was pointed at the wrong one.
+	{from="DAZARALOR_PORTAL_ROOM",to="SILVERMOON_PORTAL_ROOM",method="portal"},
 	{from="DAZARALOR_PORTAL_ROOM",to="NAZJATAR_HORDE",method="portal"},
 	{from="DAZARALOR_PORTAL_ROOM",to="SILITHUS",method="portal"},
 	{from="WESTERN_EARTHSHRINE_OG",to="TENEBROUS_CAVERN_PORTAL",method="portal"},
