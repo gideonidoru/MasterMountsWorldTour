@@ -28107,13 +28107,13 @@ MM.AddMounts({
 		spellID = 447189,
 		expansion = 10,
 		category = "DROP",
-		obtainable = true,
+		obtainable = false,
 		source = "Click the trash pile in the Cathedral in the Vision of Stormwind until the Nesting Swarmite rare spawns, then kill it.",
 		zone = {
-			name = "Dornogal",
-			mapID = 2339,
-			x = 34.4,
-			y = 68.3,
+			name = "Vision of Stormwind",
+			mapID = 2404,
+			x = 55.8,
+			y = 49.2,
 		},
 		acquire = {
 			hours = 3,
@@ -28134,7 +28134,7 @@ MM.AddMounts({
 		},
 		attempts = "WEEKLY",
 		effort = 3,
-		notes = "Roughly nine resets and twenty-odd piles in the one detailed report. That report also suspects a mask increases the chance -- it came after several maskless runs and dropped on the second run with one -- which is a hunch on a small sample rather than a measurement. Whether this is still obtainable at all is uncertain.",
+		notes = "Horrific Visions have been retired -- the Dornogal queue is gone and there is no way in. The steps and coordinates are kept against the content returning.",
 		rateReason = "spawns from a trash pile rather than dropping; about nine resets in one report, no published rate",
 	},
 	{
@@ -28159,7 +28159,7 @@ MM.AddMounts({
 		spellID = 428068,
 		expansion = 10,
 		category = "PUZZLE",
-		obtainable = true,
+		obtainable = false,
 		source = "Recover the motorbike in the Vision of Stormwind, then rebuild it from parts found across both Horrific Visions.",
 		zone = {
 			name = "Vision of Stormwind",
@@ -28197,7 +28197,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
-		notes = "Big Keech sells in the OLD Vale of Eternal Blossoms at 71.1, 46.1 -- speak to Zidormi to get there. Vendor materials alone are about 5,500g and the auction house side is roughly 7,000-10,000g more, depending entirely on your server and whether you can get the rank-3 crafts made rather than bought.",
+		notes = "Horrific Visions have been retired -- the Dornogal queue is gone and there is no way in. The steps and coordinates are kept against the content returning.",
 	},
 	{
 		name = "Radiant Imperial Lynx",
