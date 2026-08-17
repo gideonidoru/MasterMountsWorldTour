@@ -8,7 +8,7 @@
 -- consumes them at runtime, once the player's faction is known.
 local _, MM = ...
 
--- 1608 mounts, in chunks of 300
+-- 1604 mounts, in chunks of 300
 MM.AddMounts({
 	{
 		name = "Brown Horse",
@@ -9700,35 +9700,6 @@ MM.AddMounts({
 		solo = true,
 	},
 	{
-		name = "Vicious Warsaber",
-		expansion = 4,
-		category = "PVP",
-		obtainable = true,
-		faction = "Alliance",
-		source = "Purchased with a Vicious Saddle (earned from rated PvP wins) from the Alliance saddle vendor",
-		zone = {
-			name = "Stormwind City",
-			mapID = 84,
-			x = 78,
-			y = 54,
-		},
-		conditions = {
-			{
-				name = "Vicious Saddle",
-				cost = "Fill the Vicious mount bar in rated PvP",
-				id = 103533,
-				type = "ITEM",
-			},
-		},
-		effort = 4,
-		notes = "MoP-era Vicious mount; still purchasable with any Vicious Saddle.",
-		pvpBarTotal = 2400,
-		pvpMatchMinutes = 18,
-		pvpPerLoss = 0,
-		pvpPerWin = 60,
-		solo = false,
-	},
-	{
 		name = "Vicious Skeletal Warhorse",
 		spellID = 146622,
 		expansion = 4,
@@ -11399,22 +11370,6 @@ MM.AddMounts({
 		access = "Fishing Shack to LEVEL 3 plus max Draenor Fishing to recruit Nat Pagle, then fish Lunkers to Best Friend and pay 100 Nat's Lucky Coins.",
 		notes = "Three stacked requirements that are easy to miss: a level 3 Fishing Shack, maximum Draenor Fishing skill, and only then can Nat Pagle be recruited at all. After that you still need Best Friend standing with him and 100 Nat's Lucky Coins from the Lunker turn-in quests. The cost is coins, not gold.",
 		solo = true,
-	},
-	{
-		name = "Telaari Talbuk",
-		spellID = 165803,
-		expansion = 5,
-		category = "QUEST",
-		obtainable = true,
-		faction = "Alliance",
-		source = "Nagrand garrison campaign (Alliance): quest reward for establishing the corral outpost",
-		zone = {
-			name = "Nagrand",
-			mapID = 550,
-		},
-		timePerAttempt = 30,
-		effort = 1,
-		notes = "Awarded during the Alliance Nagrand outpost storyline. Originally usable while in combat within Nagrand.",
 	},
 	{
 		name = "Soaring Skyterror",
@@ -13782,29 +13737,6 @@ MM.AddMounts({
 		attempts = "NONE",
 		effort = 3,
 		notes = "Demon Hunter only. Complete the Broken Shore Legionfall campaign plus the class mount quest.",
-	},
-	{
-		name = "Archdruid's Lunarwing Form",
-		spellID = 231437,
-		expansion = 6,
-		category = "CLASS",
-		obtainable = true,
-		source = "Druid class mount: Legionfall class campaign (Breaching the Tomb)",
-		zone = {
-			name = "Broken Shore",
-			x = 44.6,
-			y = 63.4,
-		},
-		conditions = {
-			{
-				name = "Breaching the Tomb",
-				id = 11546,
-				type = "ACHIEVEMENT",
-			},
-		},
-		attempts = "NONE",
-		effort = 3,
-		notes = "Druid only. Grants an owl flight form rather than a summonable mount; tint variants unlockable afterwards.",
 	},
 	{
 		name = "Huntmaster's Loyal Wolfhawk",
@@ -17333,9 +17265,6 @@ MM.AddMounts({
 		effort = 1,
 		notes = "Sold only during anniversary windows; not in the permanent catalog.",
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Meat Wagon",
 		spellID = 281554,
@@ -17372,6 +17301,9 @@ MM.AddMounts({
 		notes = "Two-seater plane; higher RAF reward tier than the Dunetrekker.",
 		noLocationReason = "Promotional reward -- claimed outside the game, nowhere to travel",
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Seabraid Stallion",
 		spellID = 255695,
@@ -26153,9 +26085,6 @@ The zone below is only a fallback for when the client cannot be asked where the 
 		effort = 3,
 		notes = "The Forgotten Vault entrance is at 44.0, 23.1. Cyrce's Circlet is rumoured to improve fragment drops; that is unconfirmed and is recorded here as a rumour, not a requirement.",
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Soweezi's Vintage Waveshredder",
 		spellID = 473137,
@@ -26228,6 +26157,9 @@ MM.AddMounts({
 		noLocationReason = "Achievement reward -- granted on completion, nowhere to travel",
 		solo = true,
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Honeyback Hivemother",
 		spellID = 303767,
@@ -35643,21 +35575,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		goldCost = 1,
 	},
 	{
-		name = "Trainee's Sentinel Nightsaber",
-		expansion = 0,
-		category = "VENDOR",
-		obtainable = true,
-		faction = "Alliance",
-		source = "Sold for 8g by Illiyana Moonblaze in Silverwing Grove, Ashenvale (Warsong Gulch entrance).",
-		zone = {
-			name = "Ashenvale",
-			x = 61.5,
-			y = 83.9,
-		},
-		effort = 1,
-		goldCost = 8,
-	},
-	{
 		name = "Felsaber",
 		spellID = 200175,
 		expansion = 6,
@@ -36483,9 +36400,6 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 		effort = 4,
 		solo = false,
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Sea Turtle",
 		spellID = 64731,
@@ -36580,6 +36494,9 @@ MM.AddMounts({
 		attempts = "NONE",
 		effort = 2,
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Obsidian Nightwing",
 		spellID = 121820,
@@ -42793,9 +42710,6 @@ MM.AddMounts({
 			},
 		},
 	},
-})
-
-MM.AddMounts({
 	{
 		name = "Felcrystal Scorpion",
 		spellID = 411565,
@@ -42945,6 +42859,9 @@ MM.AddMounts({
 			},
 		},
 	},
+})
+
+MM.AddMounts({
 	{
 		name = "Savage Crimson Battle Turtle",
 		spellID = 1266248,

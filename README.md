@@ -7,7 +7,7 @@
 A mount-collection addon for World of Warcraft retail that answers the question
 a checklist can't: **what should I actually do tonight?**
 
-It catalogues 1,608 mounts, works out which ones you can make progress on right
+It catalogues 1,604 mounts, works out which ones you can make progress on right
 now, and plans a route through them — ordered by real travel time, using your
 teleports, hearthstones and portals.
 
