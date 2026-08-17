@@ -247,6 +247,13 @@ MM.TravelNodes = {
 	["DORNOGAL_KARESH_PORTAL"]={name="Karesh Portal",mapID=2339,x=0.404,y=0.404,group="KHAZ_ALGAR"},
 	["DORNOGAL_PORTAL_ROOM"]={name="Portal Room",mapID=2339,x=0.4127,y=0.2743,group="KHAZ_ALGAR"},
 	["DORNOGAL_UNDERMINE_PORTAL"]={name="Undermine Portal",mapID=2339,x=0.523,y=0.507,group="KHAZ_ALGAR"},
+	-- SIREN ISLE, WHICH HAD NO WAY IN AT ALL.
+	-- Two routes, both recorded from warcraft.wiki.gg, both ending at Flotsam
+	-- Shoal: Sky-Captain Cableclamp aboard the Princess's Pride in Dornogal,
+	-- and a Mole Machine Transport at Ironhaul Station in the Ringing Deeps.
+	-- Siren Isle (2369) is a child of Khaz Algar, so it shares the group its
+	-- neighbours already use.
+	["DORNOGAL_SIREN_ISLE_SHIP"]={name="Princess's Pride",mapID=2339,x=0.724,y=0.049,group="KHAZ_ALGAR"},
 	["DRAGONMAW_PORT"]={name="Dragonmaw Port",mapID=1275,x=0.743,y=0.508,faction="HORDE",group="EK_OVERWORLD"},
 	["DRAGONMAW_PORT_FLIGHT"]={name="Dragonmaw Port Flightmaster",mapID=1275,x=0.7347,y=0.5254,faction="HORDE",group="EK_OVERWORLD"},
 	["DRAGONSCALE_BASECAMP_FLIGHT"]={name="Dragonscale Basecamp",mapID=2022,x=0.4772,y=0.8337,group="DRAGON_ISLES"},
@@ -459,6 +466,7 @@ MM.TravelNodes = {
 	["IRONFORGE_FLIGHT"]={name="Flightmaster",mapID=87,x=0.557,y=0.479,faction="ALLIANCE",group="EK_OVERWORLD"},
 	["IRONFORGE_MOLE"]={name="Ironforge (Eastern Kingdoms)",mapID=27,x=0.613,y=0.372,faction="ALLIANCE",group="EK_OVERWORLD"},
 	["IRONGROVE_RETREAT_FLIGHT"]={name="Irongrove Retreat",mapID=680,x=0.2542,y=0.3182,group="BROKEN_ISLES"},
+	["IRONHAUL_STATION_MOLE"]={name="Ironhaul Station Mole Machine",mapID=2214,x=0.461,y=0.302,group="KHAZ_ALGAR"},
 	["IRONHORN_ENCLAVE_FLIGHT"]={name="Ironhorn Enclave",mapID=650,x=0.5664,y=0.8399,group="BROKEN_ISLES"},
 	["IRONMAUL_OVERLOOK_FLIGHT"]={name="Ironmaul Overlook",mapID=942,x=0.7570,y=0.6392,faction="HORDE",group="KUL_TIRAS"},
 	["IRONTREE_CLEARING_FLIGHT"]={name="Irontree Clearing",mapID=77,x=0.5616,y=0.0910,faction="HORDE",group="KALIMDOR_OVERWORLD"},
@@ -801,6 +809,8 @@ MM.TravelNodes = {
 	["SILVERWIND_REFUGE_FLIGHT"]={name="Silverwind Refuge",mapID=63,x=0.4910,y=0.6614,faction="HORDE",group="KALIMDOR_OVERWORLD"},
 	["SILVER_TIDE_HOLLOW_FLIGHT"]={name="Silver Tide Hollow",mapID=205,x=0.493,y=0.400,group="EK_OVERWORLD"},
 	["SINFALL_FLIGHT"]={name="Sinfall",mapID=1525,x=0.2979,y=0.3948,group="SL_REVENDRETH"},
+	["SIREN_ISLE_DOCK"]={name="Flotsam Shoal Dock",mapID=2369,x=0.707,y=0.535,group="KHAZ_ALGAR"},
+	["SIREN_ISLE_MOLE"]={name="Flotsam Shoal Mole Machine",mapID=2369,x=0.677,y=0.391,group="KHAZ_ALGAR"},
 	["SKYFIRE_TRIAGE_CAMP_FLIGHT"]={name="Skyfire Triage Camp",mapID=634,x=0.333,y=0.505,faction="ALLIANCE",group="BROKEN_ISLES"},
 	["SKYHORN_FLIGHT"]={name="Skyhorn",mapID=650,x=0.5251,y=0.4508,group="BROKEN_ISLES"},
 	["SKYREACH_DUNGEON"]={name="Skyreach",mapID=542,x=0.350,y=0.330,group="DRAENOR"},
@@ -1421,6 +1431,12 @@ MM.TravelEdges = {
 	{from="TEMPLE_OF_EARTH_PORTAL",to="THERAZANES_THRONE_PORTAL",method="portal"},
 	{from="ARCANTINA_EXIT",to="SILVERMOON_PORTAL_ROOM",method="portal"},
 	{from="HARANDAR_EVERSONG_PORTAL",to="EVERSONG_HARANDAR_PORTAL",method="portal"},
+	-- INBOUND ONLY, as written. The wiki states both of these as ways TO Siren
+	-- Isle and says nothing about the return, and this file does not invent
+	-- return legs -- the rule that keeps a player off a boat that is not there.
+	-- One way in is what the zone was missing; getting off it is a hearthstone.
+	{from="DORNOGAL_SIREN_ISLE_SHIP",to="SIREN_ISLE_DOCK",method="ship"},
+	{from="IRONHAUL_STATION_MOLE",to="SIREN_ISLE_MOLE",method="portal"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_MOONGLADE_PORTAL",method="walk"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_AMIRDRASSIL_PORTAL",method="walk"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_FERALAS_PORTAL",method="walk"},
