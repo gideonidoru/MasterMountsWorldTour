@@ -34995,8 +34995,10 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			name = "Skull of Er'inye",
 		},
 		zone = {
-			name = "The Coiled Isle",
-			mapID = 2512,
+			name = "Vaults of Atal'Utek",
+			mapID = 2509,
+			x = 51.2,
+			y = 62.6,
 		},
 		conditions = {
 			{
@@ -35007,7 +35009,7 @@ Expect a long haul: the one detailed account is in the high thousands of casts."
 			},
 		},
 		effort = 4,
-		notes = "Sold by the Skull of Er'inye on The Coiled Isle for 10,000 Corrosive Coin. The vendor's coordinate is not published, so this points at the isle rather than at a spot on it.",
+		notes = "Sold by the Skull of Er'inye for 10,000 Corrosive Coin, inside the Vaults of Atal'Utek rather than on the isle above it.",
 		needsSource = true,
 	},
 	{
