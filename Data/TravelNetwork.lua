@@ -38,6 +38,16 @@ MM.TravelNodes = {
 	["ALGETHERA_FLIGHT"]={name="Algeth'era",mapID=2025,x=0.4941,y=0.4205,group="DRAGON_ISLES"},
 	["ALLERIAN_STRONGHOLD_FLIGHT"]={name="Allerian Stronghold",mapID=108,x=0.592,y=0.552,faction="ALLIANCE",group="OUTLANDS"},
 	["ALTAR_OF_SHATAR_FLIGHT"]={name="Altar of Sha'tar",mapID=104,x=0.628,y=0.302,group="OUTLANDS"},
+	-- THE VAULTS OF ATAL'UTEK, reached through three gates on the isle above.
+	-- Amani Foothold is the Vaults' own flight master -- TaxiNodes.db2 3288,
+	-- world (5028.16, -10316.60) through uiMap 2509's assignment.
+	--
+	-- ITS OWN GROUP, DELIBERATELY. The self-flight pass prices pairs inside a
+	-- group from their world positions, and 2509 sits on world map 2916 while
+	-- the isle sits on map 0 -- two coordinate spaces that cannot be compared.
+	-- Sharing EK_OVERWORLD would have invited a distance between them that is
+	-- arithmetic rather than geography. Only the stated gates connect it.
+	["AMANI_FOOTHOLD_FLIGHT"]={name="Amani Foothold",mapID=2509,x=0.443,y=0.622,group="VAULTS_ATAL_UTEK"},
 	["AMANIZAR_FLIGHT"]={name="Amani'Zar Flightmaster",mapID=2437,x=0.4483,y=0.6544,group="EK_OVERWORLD"},
 	["AMBERPINE_LODGE_FLIGHT"]={name="Amberpine Lodge",mapID=116,x=0.313,y=0.609,faction="ALLIANCE",group="NORTHREND"},
 	["AMBER_LEDGE_FLIGHT"]={name="Amber Ledge",mapID=114,x=0.449,y=0.337,group="NORTHREND"},
@@ -1044,6 +1054,12 @@ MM.TravelNodes = {
 	-- Isle's own UiMapAssignment -- which sits on MapID 0 because the isle is
 	-- Eastern Kingdoms proper, not a world of its own. Hence the EK group.
 	["TOKKAS_LANDING_FLIGHT"]={name="Tokka's Landing",mapID=2512,x=0.579,y=0.458,group="EK_OVERWORLD"},
+	-- The three ways down, all on the western end of the isle. They keep the
+	-- EK group, so the self-flight pass joins them to Tokka's Landing on its
+	-- own -- the furthest is about 2,400 yards out, inside the 3,000 cap.
+	["TOKKA_GATE_WESTERN_FANG"]={name="Gate of the Western Fang",mapID=2512,x=0.318,y=0.649,group="EK_OVERWORLD"},
+	["TOKKA_GATE_SERPENTS_EYE"]={name="Gate of the Serpent's Eye",mapID=2512,x=0.434,y=0.442,group="EK_OVERWORLD"},
+	["TOKKA_GATE_EASTERN_FANG"]={name="Gate of the Eastern Fang",mapID=2512,x=0.454,y=0.649,group="EK_OVERWORLD"},
 	["TORTAKA_REFUGE_FLIGHT"]={name="Tortaka Refuge",mapID=864,x=0.6169,y=0.2139,group="ZANDALAR"},
 	["TORTOLLAN_BASE_CAMP"]={name="Seekers Vista",mapID=942,x=0.403,y=0.365,group="KUL_TIRAS"},
 	["TOSHLEYS_STATION_FLIGHT"]={name="Toshley's Station Flightmaster",mapID=105,x=0.607,y=0.704,faction="ALLIANCE",group="OUTLANDS"},
@@ -1459,6 +1475,20 @@ MM.TravelEdges = {
 	-- the way it read the Voidstorm and Dornogal portals.
 	{from="CAMP_STONEWASH_FLIGHT",to="TOKKAS_LANDING_FLIGHT",method="fly",cost=169},
 	{from="TOKKAS_LANDING_FLIGHT",to="CAMP_STONEWASH_FLIGHT",method="fly",cost=169},
+	-- Three tunnels into the Vaults, and back out of them. No cost is stated,
+	-- so each takes the file's own default for a walk: the transition is short
+	-- and the tunnels grant a large ground-speed buff for its duration, but
+	-- nobody has timed one and a number here would be invented.
+	--
+	-- BOTH WAYS, like the flying edge above and unlike the Siren Isle boats.
+	-- A tunnel you walk down is a tunnel you walk back up; there is no vessel
+	-- whose return trip could fail to exist.
+	{from="TOKKA_GATE_WESTERN_FANG",to="AMANI_FOOTHOLD_FLIGHT",method="walk"},
+	{from="TOKKA_GATE_SERPENTS_EYE",to="AMANI_FOOTHOLD_FLIGHT",method="walk"},
+	{from="TOKKA_GATE_EASTERN_FANG",to="AMANI_FOOTHOLD_FLIGHT",method="walk"},
+	{from="AMANI_FOOTHOLD_FLIGHT",to="TOKKA_GATE_WESTERN_FANG",method="walk"},
+	{from="AMANI_FOOTHOLD_FLIGHT",to="TOKKA_GATE_SERPENTS_EYE",method="walk"},
+	{from="AMANI_FOOTHOLD_FLIGHT",to="TOKKA_GATE_EASTERN_FANG",method="walk"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_MOONGLADE_PORTAL",method="walk"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_AMIRDRASSIL_PORTAL",method="walk"},
 	{from="EMERALD_DREAMWAY",to="EMERALD_DREAMWAY_FERALAS_PORTAL",method="walk"},
