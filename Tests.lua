@@ -144,6 +144,18 @@ local BUILD_BOUND = {
 	-- looked expensive. The cost was always the router's; only which check
 	-- paid it moved.
 	["Build answers with a status, never a stop count"] = true,
+	-- THREE SYNCHRONOUS BUILDS, none of them optional. Starting a session
+	-- rebuilds the route, stopping it rebuilds again, and the BuildSync at the
+	-- end restores what the next check inherits -- the check asserts a promise
+	-- ABOUT the route, so it has to make the route it is asserting about, twice
+	-- over, and then put the previous one back.
+	--
+	-- It passed at 1,146 ms for a long time and that was the same luck the note
+	-- above describes: the plan grew by a dozen goals, the leading stops grew
+	-- with it, and 1,247 ms landed in a check whose cost had never been its
+	-- own. Its sibling, "A session promise is kept", is NOT here -- that one
+	-- answers four questions with four fits and stays well inside the bar.
+	["A session's promise reaches the route"] = true,
 }
 
 -- ONE ANSWER TO "WHICH CHECK IS SLOWEST", because there were two and they

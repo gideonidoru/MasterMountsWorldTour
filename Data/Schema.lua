@@ -239,7 +239,13 @@ end
 -- Recorded rather than resolved here because the data layer runs before the
 -- player's faction is known. ResolveFactionVariants picks one at login, which
 -- is the same moment it promotes faction-specific sources.
-function MM.SetConditionIDByFaction(mountName, kind, condName, allianceID, hordeID)
+--
+-- allianceName / hordeName are OPTIONAL and only needed for the minority whose
+-- two copies are titled differently. Supply them and the resolver swaps the
+-- displayed name along with the id, so the requirement reads as the achievement
+-- this player can actually earn.
+function MM.SetConditionIDByFaction(mountName, kind, condName, allianceID, hordeID,
+	allianceName, hordeName)
 	local rec = MM.DBByName[mountName:lower()]
 	if not (rec and rec.conditions and allianceID and hordeID) then return false end
 	local want = condName and condName:lower()
@@ -250,6 +256,8 @@ function MM.SetConditionIDByFaction(mountName, kind, condName, allianceID, horde
 		if cond.type == kind and cond.name and cond.name:lower() == want
 			and (not cond.id or cond.id == allianceID or cond.id == hordeID) then
 			cond.idAlliance, cond.idHorde = allianceID, hordeID
+			if allianceName then cond.nameAlliance = allianceName end
+			if hordeName then cond.nameHorde = hordeName end
 			return true
 		end
 	end
@@ -800,6 +808,17 @@ function MM.ResolveFactionVariants(playerFaction)
 				-- to everybody, which is the thing the pair exists to correct.
 				if cond["id" .. side] then
 					cond.id = cond["id" .. side]
+					-- AND THE NAME, WHEN THE TWO SIDES DO NOT SHARE ONE.
+					--
+					-- The pair above is documented as "both copies carry the
+					-- same name", and for twelve of the fifteen that is true --
+					-- Mountain o' Mounts is Mountain o' Mounts either way. Three
+					-- are not: 614 is "For the Alliance!" and 619 is "For the
+					-- Horde!", and the Argent pair reads "...of the Alliance"
+					-- against "...of the Horde". Picking the id per side and
+					-- leaving one side's NAME on it told a Horde player to go
+					-- and earn For the Alliance!.
+					if cond["name" .. side] then cond.name = cond["name" .. side] end
 				end
 				if not cond.factionID and cond["factionID" .. side] then
 					cond.factionID = cond["factionID" .. side]

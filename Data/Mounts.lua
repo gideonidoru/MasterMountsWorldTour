@@ -5318,6 +5318,8 @@ MM.AddMounts({
 				name = "Exalted Argent Champion of the Alliance / of the Horde (Crusader title)",
 				idAlliance = 2817,
 				idHorde = 2816,
+				nameAlliance = "Exalted Argent Champion of the Alliance",
+				nameHorde = "Exalted Argent Champion of the Horde",
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -5348,6 +5350,8 @@ MM.AddMounts({
 				name = "Crusader",
 				idAlliance = 2817,
 				idHorde = 2816,
+				nameAlliance = "Exalted Argent Champion of the Alliance",
+				nameHorde = "Exalted Argent Champion of the Horde",
 				type = "ACHIEVEMENT",
 			},
 			{
@@ -36316,6 +36320,8 @@ MM.AddMounts({
 				name = "For the Alliance!",
 				idAlliance = 614,
 				idHorde = 619,
+				nameAlliance = "For the Alliance!",
+				nameHorde = "For the Horde!",
 				type = "ACHIEVEMENT",
 			},
 		},
