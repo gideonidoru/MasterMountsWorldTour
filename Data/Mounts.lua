@@ -45646,7 +45646,7 @@ MM.AddMounts({
 	},
 })
 
--- 42 vendor locations
+-- 43 vendor locations
 MM.AddVendorLocations({
 	["anub'okki"] = {
 		name = "Azj-Kahet",
@@ -45802,6 +45802,11 @@ MM.AddVendorLocations({
 		name = "Undermine",
 		x = 30.8,
 		y = 38.2,
+	},
+	["skull of er'inye"] = {
+		name = "Vaults of Atal'Utek",
+		x = 51.2,
+		y = 62.6,
 	},
 	["smaks topskimmer"] = {
 		name = "Undermine",
