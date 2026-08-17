@@ -9696,6 +9696,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		holidayGate = "Timewalking",
 		access = "MoP Timewalking week only: reach the Timeless Isle, then Mistweaver Xia at the Celestial Court, 43.0, 55.6. 5,000 Timewarped Badges.",
 		notes = "Same vendor and price as the Copper-Maned Quilen, so plan to buy both in one Mists Timewalking week if you have 10,000 badges banked. Badges carry over between events indefinitely and are Warband transferable.",
 		solo = true,
@@ -22969,6 +22970,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 4,
+		holidayGate = "Timewalking",
 		notes = "Complete all seven Mage Tower challenges; Mage Tower is available whenever Legion Timewalking is active (and permanently since later patches).",
 	},
 	{
@@ -23017,6 +23019,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 3,
+		holidayGate = "Timewalking",
 		notes = "Purchasable only while Legion Timewalking is active.",
 	},
 	{
@@ -25796,6 +25799,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 		notes = "Costs Timewalking currency; only available while the relevant Timewalking event is active.",
 	},
 	{
@@ -25845,6 +25849,7 @@ The zone below is only a fallback for when the client cannot be asked where the 
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 	},
 	{
 		name = "Startouched Furline",
@@ -26272,6 +26277,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 		anyEra = true,
 		notes = "Available during Timewalking events for Timewalking currency.",
 		noLocationReason = "sold by every Timewalking vendor, in every capital",
@@ -26325,6 +26331,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 		paths = {
 			{
 				faction = "Alliance",
@@ -26393,6 +26400,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 	},
 	{
 		name = "Copper-Maned Quilen",
@@ -26442,6 +26450,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 		access = "MoP Timewalking week only: reach the Timeless Isle, then Mistweaver Xia at the Celestial Court, 43.0, 55.6. 5,000 Timewarped Badges.",
 		notes = "Two-stage problem. The vendor only exists during a Mists of Pandaria Timewalking week, and the Timeless Isle itself needs the Vale of Eternal Blossoms shrine teleport quest before you have a quick way in (otherwise it is a long flight east from the Jade Forest through fatigue water). Badges come from queued 5-player Timewalking dungeons, so no premade group is needed.",
 		solo = true,
@@ -26499,6 +26508,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 		access = "Only during a Warlords Timewalking week: Kronnus, west Warspear 42.8,54.8 (Horde) / Tempra, Stormshield 37,73 (Alliance).",
 		paths = {
 			{
@@ -28146,6 +28156,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 		anyEra = true,
 		noLocationReason = "sold by every Timewalking vendor, in every capital",
 	},
@@ -28201,6 +28212,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 	},
 	{
 		name = "Moonlit Nightsaber",
@@ -28254,6 +28266,7 @@ MM.AddMounts({
 			},
 		},
 		effort = 2,
+		holidayGate = "Timewalking",
 	},
 	{
 		name = "Inarius' Charger",
@@ -48301,4 +48314,21 @@ MM.quantumCourserPool = {
 	"Mechagon Peacekeeper",
 	"Marrowfang",
 	"Cartel Master's Gearglider",
+}
+
+-- the 13 Timewalking mounts catalogued under another category
+MM.timewalkingGated = {
+	"Amani Hunting Bear",
+	"Broodling of Sinestra",
+	"Chrono Corsair",
+	"Copper-Maned Quilen",
+	"Enchanted Spellweave Carpet",
+	"Ivory Savagemane",
+	"Moonlit Nightsaber",
+	"Nightfall Skyreaver",
+	"Soaring Spelltome",
+	"Timely Buzzbee",
+	"Ur'zul Fleshripper",
+	"Val'sharah Hippogryph",
+	"Yu'lei, Daughter of Jade",
 }

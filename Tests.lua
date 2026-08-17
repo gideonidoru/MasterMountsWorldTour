@@ -1026,6 +1026,70 @@ local function runData()
 			:format(#removed)
 	end)
 
+	check("A Timewalking mount is not offered outside a Timewalking week", function()
+		-- REPORTED FROM PLAY: "you are still showing the timewalking mounts when
+		-- 'available now' is checked."
+		--
+		-- The window was asked about for `category == "TIMEWALKING"` and nowhere
+		-- else, and thirteen of these are catalogued VENDOR, CURRENCY or
+		-- ACHIEVEMENT because that is how you get them. They carry
+		-- `holidayGate = "Timewalking"` now, and this reads the finished database
+		-- rather than the list that set it: what matters is that no record which
+		-- names a Timewalking week in its own text can report AVAILABLE while no
+		-- week is running.
+		local declared = MM.timewalkingGated or {}
+		if #declared == 0 then return nil, "no Timewalking gates declared" end
+		local ungated = {}
+		for _, rec in ipairs(MM.DBList) do
+			local src = (rec.source or ""):lower()
+			if rec.obtainable ~= false and src:find("timewalking", 1, true)
+				and rec.category ~= "TIMEWALKING"
+				and rec.holidayGate ~= "Timewalking" then
+				ungated[#ungated + 1] = rec.name
+			end
+		end
+		-- Two are deliberately not gated and say why in Data_99zzZr: one is a
+		-- world-boss drop whose record does not state a week, and one disagrees
+		-- with itself about which currency buys it.
+		local KNOWN = { ["Illidari Doomhawk"] = true, ["Sandy Shalewing"] = true }
+		local unexpected = {}
+		for _, n in ipairs(ungated) do
+			if not KNOWN[n] then unexpected[#unexpected + 1] = n end
+		end
+		if #unexpected > 0 then
+			return false, ("%d Timewalking mount(s) with no window gate: %s"):format(
+				#unexpected, table.concat(unexpected, ", ", 1, math.min(3, #unexpected)))
+		end
+		-- And the gate must actually be doing something: with no week running,
+		-- every gated record has to refuse.
+		if not MM.Timewalking.IsActive() then
+			local leaking, asked = {}, 0
+			for _, name in ipairs(declared) do
+				local entry = MM.Scanner and MM.Scanner.byName
+					and MM.Scanner.byName[name:lower()]
+				if entry then
+					asked = asked + 1
+					if MM.Availability.GetStatus(entry) == "AVAILABLE" then
+						leaking[#leaking + 1] = name
+					end
+				end
+			end
+			-- A check that asked nothing has proved nothing. Without this, an
+			-- empty index reads exactly like thirteen mounts behaving.
+			if asked == 0 then
+				return nil, "the journal index has no entry for any of them yet"
+			end
+			if #leaking > 0 then
+				return false, ("%d gated mount(s) still read as available: %s"):format(
+					#leaking, table.concat(leaking, ", ", 1, math.min(3, #leaking)))
+			end
+			return true, ("%d of %d gated checked against the client, no week running — none reads as available")
+				:format(asked, #declared)
+		end
+		return true, ("%d Timewalking mounts gated on the window; a week is running")
+			:format(#declared)
+	end)
+
 	check("Journal text carries no escape the game meant to render", function()
 		-- Blizzard writes journal source text with its own markup: colour codes,
 		-- money and atlas textures, and "|n" for a line break. A frame RENDERS

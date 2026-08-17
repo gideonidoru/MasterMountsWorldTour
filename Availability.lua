@@ -554,7 +554,21 @@ function A.ComputeStatus(entry)
 	-- A window gate that applies whatever the category says. Darkmoon Faire
 	-- mounts are CURRENCY purchases -- you can hold the tickets all month, but
 	-- the vendor only exists during the Faire, so category alone never caught it.
-	if rec.holidayGate then
+	-- REPORTED FROM PLAY: Timewalking mounts were still listed with "Available
+	-- now" ticked. The window was only ever asked about for category
+	-- TIMEWALKING, and thirteen of these mounts are catalogued by HOW YOU GET
+	-- THEM -- VENDOR, CURRENCY, ACHIEVEMENT -- because that is what decides
+	-- where the router files them and what a player looks under. A mount sold by
+	-- Aridormi in Dalaran is a vendor purchase; it is just one you cannot make
+	-- for fifty-one weeks of the year.
+	--
+	-- Category was the wrong question, exactly as it was for the Darkmoon Faire
+	-- mounts above. `holidayGate` is the answer already built for that, so those
+	-- thirteen carry `holidayGate = "Timewalking"` and the window is asked about
+	-- once, below, for both kinds at once.
+	local isTW = rec.category == "TIMEWALKING" or rec.holidayGate == "Timewalking"
+
+	if rec.holidayGate and not isTW then
 		if not A.calendarLoaded then
 			return "HOLIDAY", rec.holidayGate .. " — event calendar still syncing", nil
 		end
@@ -564,9 +578,13 @@ function A.ComputeStatus(entry)
 	end
 
 	-- Holiday / Timewalking window
-	if rec.category == "HOLIDAY" or rec.category == "TIMEWALKING" then
+	if rec.category == "HOLIDAY" or isTW then
 		local eventUp, eventName
-		if rec.category == "TIMEWALKING" then
+		if isTW then
+			-- Deliberately NOT IsEventActive("Timewalking"). MM.Timewalking reads
+			-- the seven-day window rather than today's calendar row, which is the
+			-- reader that survives a week whose only calendar entries are its
+			-- START and END Tuesdays.
 			eventUp, eventName = MM.Timewalking.IsActive(), "Timewalking"
 		else
 			local kw = A.HolidayKeywordFor(rec)
@@ -584,7 +602,7 @@ function A.ComputeStatus(entry)
 		-- Third copy of this rule, now retired. This one already handled "any
 		-- era"; Router.lua's did not, and they disagreed for months on Infinite
 		-- Timereaver. One resolver means they cannot drift apart again.
-		if rec.category == "TIMEWALKING" and rec.conditions
+		if isTW and rec.conditions
 			and not (MM.Timewalking.IsAnyEra and MM.Timewalking.IsAnyEra(rec)) then
 			local badgeVendor = false
 			for _, c in ipairs(rec.conditions) do

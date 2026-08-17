@@ -843,7 +843,11 @@ MM.TravelNodes = {
 	["STARDUST_SPIRE_FLIGHT"]={name="Stardust Spire",mapID=63,x=0.360,y=0.706,faction="ALLIANCE",group="KALIMDOR_OVERWORLD"},
 	["STARSONG_REFUGE_FLIGHT"]={name="Starsong Refuge",mapID=641,x=0.6881,y=0.5110,group="BROKEN_ISLES"},
 	["STARS_REST_FLIGHT"]={name="Stars' Rest",mapID=115,x=0.298,y=0.549,faction="ALLIANCE",group="NORTHREND"},
-	["STONARD"]={name="Stonard",mapID=76,x=0.4984,y=0.5581,faction="HORDE",group="EK_OVERWORLD"},
+	-- mapID was 76, which is Azshara, in Kalimdor. Stonard is the Horde town in
+	-- Swamp of Sorrows (51) and the group said so all along; the coordinates were
+	-- read off the right map and paired with the wrong id. Position is TaxiNodes
+	-- row 56, "Stonard, Swamp of Sorrows", projected onto map 51.
+	["STONARD"]={name="Stonard",mapID=51,x=0.4776,y=0.5509,faction="HORDE",group="EK_OVERWORLD"},
 	["STONARD_FLIGHT"]={name="Stonard",mapID=51,x=0.4674,y=0.5484,faction="HORDE",group="EK_OVERWORLD"},
 	["STONEBREAKER_HOLD_FLIGHT"]={name="Stonebreaker Hold",mapID=108,x=0.4886,y=0.4319,faction="HORDE",group="OUTLANDS"},
 	["STONEFANG_OUTPOST_FLIGHT"]={name="Stonefang Outpost",mapID=525,x=0.4003,y=0.5148,faction="HORDE",group="DRAENOR"},
