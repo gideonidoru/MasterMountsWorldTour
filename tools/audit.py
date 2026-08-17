@@ -414,6 +414,35 @@ def comments_name_the_conversation():
     return bad
 
 
+def absolute_home_paths():
+    """A hardcoded home directory in a file that gets published.
+
+    Four cross-check scripts opened their inputs at an absolute path under a
+    user's home directory. They worked, and they were tracked, so a private
+    machine's account name went out with every release -- in a repository whose
+    whole point is to be read by strangers.
+
+    Nothing here needs an absolute path. The scripts run from the repository
+    root and read a sibling checkout, so a relative default with an environment
+    override does the same job and is portable besides.
+    """
+    bad = []
+    home = re.compile(r"[\"'](/(?:Users|home)/[A-Za-z0-9._-]+/)")
+    files = [f for f in glob.glob("**/*.lua", recursive=True)
+             if not f.startswith(("Libs/", "dist/"))]
+    files += glob.glob("tools/*.py") + glob.glob("tools/*.sh")
+    for f in sorted(files):
+        try:
+            lines = open(f, encoding="utf-8").read().splitlines()
+        except OSError:
+            continue
+        for i, line in enumerate(lines, 1):
+            m = home.search(line)
+            if m:
+                bad.append((f, i, m.group(1)))
+    return bad
+
+
 def readme_record_count():
     """The README's record count, against the flattened database itself.
 
@@ -1684,8 +1713,12 @@ def main():
     print(f"a comment names who said it: {len(convo)}")
     for f, icv, phrase in convo:
         print(f"   {f}:{icv}  says \"{phrase}\" -- state the fact, not who supplied it")
+    homes = absolute_home_paths()
+    print(f"a published file holds a home path: {len(homes)}")
+    for f, ihp, path in homes:
+        print(f"   {f}:{ihp}  hardcodes {path} -- this repository is public")
     return 1 if (bad or fwd or gone or early or btr or retval or secret or guids
-                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf or anch or convo) else 0
+                 or written or noflush or slash or zones or counts or donate or tcount or tex or gated or shared or gaps or ceil or rowf or anch or convo or homes) else 0
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -1,7 +1,16 @@
 -- Harvest ONLY gaps from MCL, and validate every value against the client
 -- export before it is allowed through.
-local MMDIR="/Users/markmurray/Downloads/MasterMountsWorldTour/"
-local MCL="/Users/markmurray/Downloads/MCL/"
+-- Paths come from the environment so this file carries no one's home
+-- directory. MM_DIR defaults to the repository this script sits in;
+-- the others are only needed by the cross-checks that read them.
+local function envdir(name, default)
+	local v = os.getenv(name)
+	if v and #v > 0 then return (v:gsub("/*$", "") .. "/") end
+	return default
+end
+
+local MMDIR = envdir("MM_DIR", "./")
+local MCL = envdir("MCL_DIR", "../MCL/")
 
 -- 1. client truth
 local p="/Applications/World of Warcraft/_retail_/WTF/Account/GIDEONALT/SavedVariables/MasterMountsWorldTour.lua"

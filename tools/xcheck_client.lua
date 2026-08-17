@@ -1,5 +1,14 @@
 -- Validate our static spellIDs against the CLIENT's own journal data
 -- (Data_87_ResolvedIDs was generated from a live game client).
+-- Paths come from the environment so this file carries no one's home
+-- directory. MM_DIR defaults to the repository this script sits in;
+-- the others are only needed by the cross-checks that read them.
+local function envdir(name, default)
+	local v = os.getenv(name)
+	if v and #v > 0 then return (v:gsub("/*$", "") .. "/") end
+	return default
+end
+
 local p="/Applications/World of Warcraft/_retail_/WTF/Account/GIDEONALT/SavedVariables/MasterMountsWorldTour.lua"
 assert(loadfile(p))()
 local client = MasterMountsDB.ids and MasterMountsDB.ids.mounts or {}
@@ -9,7 +18,7 @@ local files = {"00_Classic","01_TBC","02_WotLK","03_Cataclysm","04_MoP","05_WoD"
   "07_BfA","08_Shadowlands","09_Dragonflight","10_TWW","11_Timewalking","13_GapFill","14_Midnight"}
 local agree, bad, unknown = 0, {}, 0
 for _,f in ipairs(files) do
-  local fh=io.open("/Users/markmurray/Downloads/MasterMountsWorldTour/Data/_source/Data_"..f..".lua")
+  local fh=io.open(envdir("MM_DIR", "./") .. "Data/_source/Data_"..f..".lua")
   if fh then opened=opened+1 for line in fh:lines() do
     local nm=line:match('name%s*=%s*"([^"]+)"')
     local sid=line:match("spellID%s*=%s*(%d+)")

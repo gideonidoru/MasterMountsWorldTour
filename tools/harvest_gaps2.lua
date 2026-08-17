@@ -1,5 +1,14 @@
 -- Harvest gaps from MountCollector, gated on client validation.
-local MMDIR="/Users/markmurray/Downloads/MasterMountsWorldTour/"
+-- Paths come from the environment so this file carries no one's home
+-- directory. MM_DIR defaults to the repository this script sits in;
+-- the others are only needed by the cross-checks that read them.
+local function envdir(name, default)
+	local v = os.getenv(name)
+	if v and #v > 0 then return (v:gsub("/*$", "") .. "/") end
+	return default
+end
+
+local MMDIR = envdir("MM_DIR", "./")
 local p="/Applications/World of Warcraft/_retail_/WTF/Account/GIDEONALT/SavedVariables/MasterMountsWorldTour.lua"
 assert(loadfile(p))()
 local client = MasterMountsDB.ids.mounts        -- [lowername]={mountID,spellID}
@@ -38,7 +47,7 @@ end
 
 -- parse MountCollector
 local mc, cur = {}, nil
-for line in io.lines("/Users/markmurray/Downloads/MountCollector/MountsDB.lua") do
+for line in io.lines(envdir("MOUNTCOLLECTOR_DIR", "../MountCollector/") .. "MountsDB.lua") do
   local nm = line:match("^%s*%[%d+%] = { %-%- (.+)%s*$")
   if nm then cur = { name = nm:gsub("%s+$","") }; mc[#mc+1] = cur end
   if cur then
